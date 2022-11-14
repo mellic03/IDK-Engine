@@ -1,14 +1,21 @@
 #pragma once
 
 #include <iostream>
-#include <SDL2/SDL.h>
 #include <GL/glew.h>
-#include <SDL2/SDL_opengl.h>
 #include <GL/glu.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_opengl.h>
 #include <stdio.h>
 #include <fstream>
 #include <string>
 #include <sstream>
+
+#include "../include/glm/glm.hpp"
+#include "../include/glm/gtc/matrix_transform.hpp"
+#include "../include/glm/gtc/type_ptr.hpp"
+
+#define SCR_WDTH 1000
+#define SCR_HGHT 1000
 
 typedef enum { SHADER_NONE=-1, SHADER_VERTEX, SHADER_FRAGMENT } ShaderType;
 
@@ -18,4 +25,8 @@ typedef struct {
   std::string fragment_source;
 
 } ShaderSource;
+
+void engine_input(SDL_Event *event);
+
+
 

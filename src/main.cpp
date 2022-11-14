@@ -8,15 +8,9 @@
 #include <string>
 #include <sstream>
 
-#include "../include/glm/glm.hpp"
-#include "../include/glm/gtc/matrix_transform.hpp"
-#include "../include/glm/gtc/type_ptr.hpp"
-
 #include "renderer.h"
 #include "model.h"
 
-#define SCR_WDTH 1000
-#define SCR_HGHT 1000
 
 static ShaderSource parse_shader(const std::string &filepath)
 {
@@ -115,8 +109,7 @@ int main(int argc, char **argv)
   SDL_GL_MakeCurrent(window, gl_context);
 
   if (glewInit() != GLEW_OK)
-    return 0;
-
+    return 1;
 
   screen_surface = SDL_GetWindowSurface(window);
   SDL_UpdateWindowSurface(window);
@@ -125,40 +118,40 @@ int main(int argc, char **argv)
   bool running = true;
 
   Model model_1;
+  model_1.load("assets/cube/cube.obj");
 
   ShaderSource ssrc = parse_shader("./src/shaders/basic.glsl");
 
   unsigned int shader = create_shader(ssrc.vertex_source, ssrc.fragment_source);
   glUseProgram(shader);
 
+  glm::mat4 trans = glm::mat4(1.0f);
+  trans = glm::rotate(trans, glm::radians(0.001f), glm::vec3(0, 0, 1));
+  GLuint loc = glGetUniformLocation(shader, "transform");
+
+
   while (running)
   {
-    while (SDL_PollEvent(&event))
-    {
-      if (event.type == SDL_KEYDOWN)
-      {
-        switch (event.key.keysym.sym)
-        {
-          case SDLK_ESCAPE:
-            running = false;
-            break;
-        }
-      }
-      
-      else if (event.type == SDL_QUIT)
-        running = 0;
-    }
-
-    glClearColor(1, 1, 1, 1);
-    glClear(GL_COLOR_BUFFER_BIT);
+    engine_input(&event);
 
     // RENDER LOOP
     //----------------------------------------
+    glClearColor(1, 1, 1, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+
+    trans = glm::rotate(trans, glm::radians(0.001f), glm::vec3(0, 0, 1));
+    glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(trans));
 
     model_1.draw();
 
-    //----------------------------------------
+
+
+
+
+
     SDL_GL_SwapWindow(window);
+    //----------------------------------------
   }
 
   glDeleteProgram(shader);
