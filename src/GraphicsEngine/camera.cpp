@@ -4,7 +4,6 @@
 
 Camera::Camera()
 {
-
   this->pos = glm::vec3(0.0f, 0.0f, 3.0f);
   this->target = glm::vec3(0.0f, 0.0f, 0.0f);
   this->dir = glm::normalize(this->pos - this->target);
@@ -21,14 +20,12 @@ Camera::Camera()
     this->up
   ); 
 
-  this->projection;
-  this->projection = glm::perspective(glm::radians(90.0f), (float)(SCR_WDTH/SCR_HGHT), 0.1f, RENDER_DISTANCE);
+  this->projection = glm::perspective(glm::radians(fov), (float)SCR_WDTH / (float)SCR_HGHT, 0.1f, RENDER_DISTANCE);
 }
 
 
 void Camera::input(SDL_Event *event)
 {
-
   const Uint8 *state = SDL_GetKeyboardState(NULL);
 
   glm::vec3 temp_front = { this->front.x, 0.0f, this->front.z };
@@ -67,7 +64,6 @@ void Camera::input(SDL_Event *event)
     this->pos + this->front,
     this->up
   ); 
-
 
   while (SDL_PollEvent(event))
   {

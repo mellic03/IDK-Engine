@@ -9,6 +9,7 @@
 #include <sstream>
 
 #include "GraphicsEngine/GraphicsEngine.h"
+#include "GameEngine/GameEngine.h"
 
 
 int main(int argc, char **argv)
@@ -34,6 +35,7 @@ int main(int argc, char **argv)
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
 
   gl_context = SDL_GL_CreateContext(window);
   SDL_GL_MakeCurrent(window, gl_context);
@@ -44,36 +46,37 @@ int main(int argc, char **argv)
 
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
+  glEnable(GL_MULTISAMPLE);  
 
   SDL_Event event;
 
-  Camera cam;
   ShaderSource ssrc = parse_shader("assets/shaders/basic.glsl");
   GLuint shader = create_shader(ssrc.vertex_source, ssrc.fragment_source);
 
-  Model model_1;
-  model_1.load("assets/cube/cube.obj", shader);
 
-  Model ground;
-  ground.load("assets/cube/ground.obj", shader);
+  Player player(shader);
 
-  Model skybox;
-  skybox.load("assets/cube/skybox.obj", shader);
+  ModelContainer model_container;
+  model_container.add("assets/cube/cube.obj", shader);
+  model_container.add("assets/cube/ground.obj", shader);
+  model_container.add("assets/cube/skybox.obj", shader);
+
+
   // RENDER LOOP
   //----------------------------------------
   Uint32 start, end;
   while (1)
   {
     start = SDL_GetTicks();
-    cam.input(&event);
 
     glClearColor(0, 0.5, 0.7, 0.8);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
 
-    model_1.draw(&cam, shader);
-    ground.draw(&cam, shader);
-    skybox.draw(&cam, shader);
+    player.input(&event, shader);
+    model_container.draw(&player.cam, shader);
+
+
 
 
     SDL_GL_SwapWindow(window);

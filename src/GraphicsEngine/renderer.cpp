@@ -9,6 +9,7 @@
 #include <sstream>
 #include "renderer.h"
 
+float fov = 90.0f;
 
 ShaderSource parse_shader(const std::string &filepath)
 {

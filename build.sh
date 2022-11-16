@@ -5,6 +5,9 @@ g++ \
 ./src/GraphicsEngine/model.cpp \
 ./src/GraphicsEngine/camera.cpp \
 \
+./src/GameEngine/player.cpp \
+./src/GameEngine/gameobject.cpp \
+\
 ./src/main.cpp \
 \
 -o main -lSDL2 -lGL -lGLEW -lm -g

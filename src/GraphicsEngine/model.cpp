@@ -28,10 +28,10 @@ bool Texture::load(const char *filepath)
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
   glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -45,6 +45,15 @@ void Texture::bind(GLenum texture_unit)
   glActiveTexture(texture_unit);
   glBindTexture(GL_TEXTURE_2D, this->m_texture_obj);
 }
+
+
+
+
+
+
+
+
+
 
 
 Model::Model(void)
@@ -80,6 +89,8 @@ void Model::load(const char *filepath, GLuint shader)
       poly_count += 1;
   }
   rewind(fh);
+
+  printf("pos_count: %d\n", pos_count);
 
   glm::vec3 *positions = (glm::vec3 *)malloc(pos_count * sizeof(glm::vec3));
   glm::vec3 *normals   = (glm::vec3 *)malloc(norm_count * sizeof(glm::vec3));
@@ -136,7 +147,7 @@ void Model::load(const char *filepath, GLuint shader)
   }
   fclose(fh);
 
-  this->num_vertices = poly_count * 3;
+  this->num_vertices = poly_count;
   this->num_indices = this->num_vertices; // This needs to be changed once number of verts != number of indices
 
   this->indices = (int *)malloc(this->num_vertices * sizeof(int));
@@ -223,8 +234,17 @@ void Model::draw(Camera *cam, GLuint shader)
   this->texture.bind(GL_TEXTURE0);
   glUniform1i(glGetUniformLocation(shader, "gSampler"), 0);
 
+
+  int transform_loc = glGetUniformLocation(shader, "transform");
+  glUniformMatrix4fv(transform_loc, 1, GL_FALSE, glm::value_ptr(this->transform_mat));
+
   int model_loc = glGetUniformLocation(shader, "model");
   glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(this->model_mat));
+
+
+  int parent_model_loc = glGetUniformLocation(shader, "parent_model");
+  glUniformMatrix4fv(parent_model_loc, 1, GL_FALSE, glm::value_ptr(this->parent_model_mat));
+
 
   int view_loc = glGetUniformLocation(shader, "view");
   glUniformMatrix4fv(view_loc, 1, GL_FALSE, glm::value_ptr(cam->view));
@@ -233,16 +253,16 @@ void Model::draw(Camera *cam, GLuint shader)
   glUniformMatrix4fv(projection_loc, 1, GL_FALSE, glm::value_ptr(cam->projection));
 
 
-  glDrawElements(GL_TRIANGLES, this->num_indices/3, GL_UNSIGNED_INT, (void *)0);
-  // glDrawArrays(GL_TRIANGLES, 0, this->num_vertices/3);
+  glDrawElements(GL_TRIANGLES, this->num_indices, GL_UNSIGNED_INT, (void *)0);
   glBindVertexArray(0);
-
 }
 
 
-void Model::translate(float x, float y, float z)
+void Model::translate(glm::vec3 trans)
 {
-  this->model_mat = glm::translate(this->model_mat, glm::vec3(x, y, z));
+  this->pos = trans;
+  this->model_mat = glm::mat4(1.0f);
+  this->model_mat = glm::translate(this->model_mat, trans);
 }
 
 
@@ -262,4 +282,43 @@ void Model::rot_z(float theta)
   // glm::mat4 trans = glm::mat4(1.0f);
   // trans = glm::rotate(trans, glm::radians(this->rot.z), glm::vec3(0.0, 0.0, 1.0));
   // glUniformMatrix4fv(glGetUniformLocation(this->shader, "transform"), 1, GL_FALSE, glm::value_ptr(trans));
+}
+
+
+
+void Model::set_parent(glm::mat4 model_matrix)
+{
+  this->parent_model_mat = model_matrix;
+}
+
+
+
+
+
+
+void ModelContainer::add(const char *filepath, GLuint shader)
+{
+  if (this->head == NULL)
+  {
+    this->head = new Model();
+    this->head->load(filepath, shader);
+    this->head->next = NULL;
+  }
+  else
+  {
+    Model *ptr = new Model();
+    ptr->load(filepath, shader);
+    ptr->next = this->head;
+    this->head = ptr;
+  }
+}
+
+void ModelContainer::draw(Camera *cam, GLuint shader)
+{
+  Model *ptr = this->head;
+  while (ptr != NULL)
+  {
+    ptr->draw(cam, shader);
+    ptr = ptr->next;
+  }
 }

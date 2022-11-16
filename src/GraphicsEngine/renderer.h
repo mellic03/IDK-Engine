@@ -14,10 +14,12 @@
 #include "../include/glm/gtc/matrix_transform.hpp"
 #include "../include/glm/gtc/type_ptr.hpp"
 
-#define SCR_WDTH 1000
-#define SCR_HGHT 1000
+#define SCR_WDTH 1920
+#define SCR_HGHT 1080
 
 #define RENDER_DISTANCE 2000.0f
+
+extern float fov;
 
 
 typedef enum { SHADER_NONE=-1, SHADER_VERTEX, SHADER_FRAGMENT } ShaderType;
@@ -36,3 +38,16 @@ void engine_input(SDL_Event *event);
 ShaderSource parse_shader(const std::string &filepath);
 unsigned int compile_shader(unsigned int type, const std::string &source);
 unsigned int create_shader(const std::string &vertex_shader, const std::string &fragment_shader);
+
+
+
+
+class LightSource {
+
+  public:
+    glm::vec4 color = {0, 0, 0, 1};
+    glm::vec3 position = {0, 0, 0};
+
+
+
+};
