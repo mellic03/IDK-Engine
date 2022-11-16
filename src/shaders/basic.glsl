@@ -1,22 +1,36 @@
 #shader vertex
 
 #version 330 core
-layout (location = 0) in vec4 pos;   // the position variable has attribute position 0
-out vec4 color;
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aNormal;
+layout (location = 2) in vec2 aTexCoord;
+
+out vec3 Normal;
+out vec2 TexCoord;
 uniform mat4 transform;
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
 void main()
 {
-  gl_Position = transform * vec4(pos.xyz, 1.0f);
-  color = vec4(0.5, 0.8, 0.6, 1);
+  gl_Position = projection * view * model * vec4(aPos, 1.0);
+  TexCoord = aTexCoord;
 }
+
 
 
 #shader fragment
 
 #version 330 core
-in vec4 color;
 out vec4 FragColor;
+  
+uniform sampler2D gSampler;
+in vec3 Normal;
+in vec2 TexCoord;
+
 void main()
 {
-  FragColor = color;
+  FragColor = texture(gSampler, TexCoord);
+  // FragColor = vec4(0, TexCoord.x, TexCoord.y, 1);
 }
