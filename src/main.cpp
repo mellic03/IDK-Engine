@@ -8,8 +8,7 @@
 #include <string>
 #include <sstream>
 
-#include "renderer.h"
-#include "model.h"
+#include "GraphicsEngine/GraphicsEngine.h"
 
 
 int main(int argc, char **argv)
@@ -49,7 +48,7 @@ int main(int argc, char **argv)
   SDL_Event event;
 
   Camera cam;
-  ShaderSource ssrc = parse_shader("./src/shaders/basic.glsl");
+  ShaderSource ssrc = parse_shader("assets/shaders/basic.glsl");
   GLuint shader = create_shader(ssrc.vertex_source, ssrc.fragment_source);
 
   Model model_1;
