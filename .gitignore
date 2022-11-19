@@ -1,4 +1,15 @@
 /.vscode
 
+CMakeFiles
+
+external/CMakeFiles
+external/cmake_install.cmake
+external/MakeFile
+
+
+cmake_install.cmake
+CMakeCache.txt
+Makefile
+
 
 main

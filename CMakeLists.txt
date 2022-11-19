@@ -2,6 +2,8 @@
 cmake_minimum_required(VERSION 3.24)
 project(pit-smellers)
 
+
+add_subdirectory (external)
 include_directories(
   external/glew/include/
 )
