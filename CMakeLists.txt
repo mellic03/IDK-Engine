@@ -56,9 +56,6 @@ target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES})
 
 
 
-
-
-
 # cmake_minimum_required(VERSION 3.24)
 # project(pit-smellers)
 
