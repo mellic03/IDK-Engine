@@ -14,13 +14,17 @@
 #include "../include/glm/gtc/matrix_transform.hpp"
 #include "../include/glm/gtc/type_ptr.hpp"
 
+#include "camera.h"
+
 #define SCR_WDTH 1920
 #define SCR_HGHT 1080
 
-#define RENDER_DISTANCE 2000.0f
+#define RENDER_DISTANCE 10000.0f
+#define NEAR_PLANE_DIST 0.1f
 
 extern float fov;
 
+extern Camera main_cam;
 
 typedef enum { SHADER_NONE=-1, SHADER_VERTEX, SHADER_FRAGMENT } ShaderType;
 

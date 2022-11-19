@@ -6,7 +6,8 @@ g++ \
 ./src/GraphicsEngine/camera.cpp \
 \
 ./src/GameEngine/player.cpp \
-./src/GameEngine/gameobject.cpp \
+./src/GameEngine/physics.cpp \
+./src/GameEngine/collision.cpp \
 \
 ./src/main.cpp \
 \

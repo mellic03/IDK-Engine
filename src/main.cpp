@@ -53,38 +53,50 @@ int main(int argc, char **argv)
   ShaderSource ssrc = parse_shader("assets/shaders/basic.glsl");
   GLuint shader = create_shader(ssrc.vertex_source, ssrc.fragment_source);
 
-
   Player player(shader);
 
-  ModelContainer model_container;
-  model_container.add("assets/cube/cube.obj", shader);
-  model_container.add("assets/cube/ground.obj", shader);
-  model_container.add("assets/cube/skybox.obj", shader);
+  Model skybox;  skybox.load("assets/cube/skybox.obj", shader);
+  Model cube;    cube.load("assets/cube/cube.obj", shader);
+  Model ground;  ground.load("assets/cube/ground.obj", shader);
+  
+  ModelContainer render_container;
+  render_container.add(&cube);
+  render_container.add(&ground);
+  render_container.add(&skybox);
 
+  ModelContainer physics_container;
+  physics_container.add(&cube);
+  physics_container.add(&ground);
 
   // RENDER LOOP
   //----------------------------------------
-  Uint32 start, end;
+  Uint64 start = SDL_GetPerformanceCounter(), end = 0;
   while (1)
   {
-    start = SDL_GetTicks();
+    start = end;
+    end = SDL_GetPerformanceCounter();
 
-    glClearColor(0, 0.5, 0.7, 0.8);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
 
+    physics_container.collide(&player);
+
+
+    render_container.draw(&player.cam, shader);
+
+
+    glClear(GL_DEPTH_BUFFER_BIT);
     player.input(&event, shader);
-    model_container.draw(&player.cam, shader);
 
-
-
+    cube.translate(glm::vec3(0.0f, -0.003f, 0.0f));
+    cube.rot_y(0.1f);
 
     SDL_GL_SwapWindow(window);
 
-    end = SDL_GetTicks();
-
-    float dtime = (end - start) / 1000.0f;
-
+    double dtime_milliseconds = ((end - start)*1000 / (double)SDL_GetPerformanceFrequency() );
+    double dtime_seconds = dtime_milliseconds / 1000;
+    // printf("FPS: %lf\n", 1.0f / dtime_seconds);
   }
   //----------------------------------------
 

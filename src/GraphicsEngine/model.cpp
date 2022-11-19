@@ -20,7 +20,7 @@ bool Texture::load(const char *filepath)
     printf("Error loading texture from \"%s\" --%s\n", this->m_filename.c_str(), stbi_failure_reason());
     exit(1);
   }
-  printf("Width: %d, height: %d, bpp: %d\n", width, height, bpp);
+  // printf("Width: %d, height: %d, bpp: %d\n", width, height, bpp);
 
   glGenTextures(1, &this->m_texture_obj);
   glBindTexture(GL_TEXTURE_2D, this->m_texture_obj);
@@ -30,8 +30,8 @@ bool Texture::load(const char *filepath)
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
   glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -45,7 +45,6 @@ void Texture::bind(GLenum texture_unit)
   glActiveTexture(texture_unit);
   glBindTexture(GL_TEXTURE_2D, this->m_texture_obj);
 }
-
 
 
 
@@ -90,8 +89,6 @@ void Model::load(const char *filepath, GLuint shader)
   }
   rewind(fh);
 
-  printf("pos_count: %d\n", pos_count);
-
   glm::vec3 *positions = (glm::vec3 *)malloc(pos_count * sizeof(glm::vec3));
   glm::vec3 *normals   = (glm::vec3 *)malloc(norm_count * sizeof(glm::vec3));
   glm::vec2 *uvs       = (glm::vec2 *)malloc(tex_count * sizeof(glm::vec2));
@@ -123,7 +120,7 @@ void Model::load(const char *filepath, GLuint shader)
     else if (buffer[0] == 'v' && buffer[1] == 't')
     {
       sscanf(buffer, "vt %f %f", &x, &y);
-      uvs[tex_count] = glm::vec2(x, y);
+      uvs[tex_count] = glm::vec2(x, 1-y);
       tex_count += 1;
     }
   
@@ -185,7 +182,7 @@ void Model::load(const char *filepath, GLuint shader)
           token[i] = '\0';
       }
       strcat(asset_path, token);
-      printf("path: %s\n", asset_path);
+      // printf("path: %s\n", asset_path);
       len = strlen(asset_path);
       asset_path[len] = '\0';
 
@@ -234,17 +231,14 @@ void Model::draw(Camera *cam, GLuint shader)
   this->texture.bind(GL_TEXTURE0);
   glUniform1i(glGetUniformLocation(shader, "gSampler"), 0);
 
-
   int transform_loc = glGetUniformLocation(shader, "transform");
   glUniformMatrix4fv(transform_loc, 1, GL_FALSE, glm::value_ptr(this->transform_mat));
 
   int model_loc = glGetUniformLocation(shader, "model");
   glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(this->model_mat));
 
-
   int parent_model_loc = glGetUniformLocation(shader, "parent_model");
   glUniformMatrix4fv(parent_model_loc, 1, GL_FALSE, glm::value_ptr(this->parent_model_mat));
-
 
   int view_loc = glGetUniformLocation(shader, "view");
   glUniformMatrix4fv(view_loc, 1, GL_FALSE, glm::value_ptr(cam->view));
@@ -258,30 +252,42 @@ void Model::draw(Camera *cam, GLuint shader)
 }
 
 
-void Model::translate(glm::vec3 trans)
+void Model::set_pos(glm::vec3 position)
 {
-  this->pos = trans;
+  this->pos = position;
   this->model_mat = glm::mat4(1.0f);
-  this->model_mat = glm::translate(this->model_mat, trans);
+  this->model_mat = glm::translate(this->model_mat, position);
 }
 
+void Model::translate(glm::vec3 translation)
+{
+  this->pos += translation;
+  this->model_mat = glm::translate(this->model_mat, translation);
+}
+
+void Model::set_rot_x(float theta)
+{
+  this->rot.x = theta;
+  this->transform_mat = glm::mat4(1.0f);
+  this->transform_mat = glm::rotate(this->transform_mat, glm::radians(theta), glm::vec3(1.0, 0.0, 0.0));
+}
 
 void Model::rot_x(float theta)
 {
-
+  this->rot.x += theta;
+  this->transform_mat = glm::rotate(this->transform_mat, glm::radians(theta), glm::vec3(1.0, 0.0, 0.0));
 }
 
 void Model::rot_y(float theta)
 {
-
+  this->rot.y += theta;
+  this->transform_mat = glm::rotate(this->transform_mat, glm::radians(theta), glm::vec3(0.0, 1.0, 0.0));
 }
 
 void Model::rot_z(float theta)
 {
-  // this->rot.z += theta;
-  // glm::mat4 trans = glm::mat4(1.0f);
-  // trans = glm::rotate(trans, glm::radians(this->rot.z), glm::vec3(0.0, 0.0, 1.0));
-  // glUniformMatrix4fv(glGetUniformLocation(this->shader, "transform"), 1, GL_FALSE, glm::value_ptr(trans));
+  this->rot.z += theta;
+  this->transform_mat = glm::rotate(this->transform_mat, glm::radians(theta), glm::vec3(0.0, 0.0, 1.0));
 }
 
 
@@ -293,32 +299,3 @@ void Model::set_parent(glm::mat4 model_matrix)
 
 
 
-
-
-
-void ModelContainer::add(const char *filepath, GLuint shader)
-{
-  if (this->head == NULL)
-  {
-    this->head = new Model();
-    this->head->load(filepath, shader);
-    this->head->next = NULL;
-  }
-  else
-  {
-    Model *ptr = new Model();
-    ptr->load(filepath, shader);
-    ptr->next = this->head;
-    this->head = ptr;
-  }
-}
-
-void ModelContainer::draw(Camera *cam, GLuint shader)
-{
-  Model *ptr = this->head;
-  while (ptr != NULL)
-  {
-    ptr->draw(cam, shader);
-    ptr = ptr->next;
-  }
-}

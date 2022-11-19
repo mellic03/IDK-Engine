@@ -2,6 +2,8 @@
 #include "camera.h"
 #include "renderer.h"
 
+int frame_count = 0;
+
 Camera::Camera()
 {
   this->pos = glm::vec3(0.0f, 0.0f, 3.0f);
@@ -19,6 +21,7 @@ Camera::Camera()
     this->pos + this->front,
     this->up
   ); 
+  this->pos = glm::vec3(0.0f, 1.0f, 3.0f);
 
   this->projection = glm::perspective(glm::radians(fov), (float)SCR_WDTH / (float)SCR_HGHT, 0.1f, RENDER_DISTANCE);
 }
@@ -31,18 +34,43 @@ void Camera::input(SDL_Event *event)
   glm::vec3 temp_front = { this->front.x, 0.0f, this->front.z };
   temp_front = glm::normalize(temp_front);
 
+  this->pos += this->vel;
+  this->vel.y -= 0.0001f;
+
+  bool headbob = false;
+
   if (state[SDL_SCANCODE_W])
+  {
     this->pos += this->move_speed * temp_front;
+    headbob = true;
+  }
   else if (state[SDL_SCANCODE_S])
+  {
     this->pos -= this->move_speed * temp_front;
+    headbob = true;
+  }
 
   if (state[SDL_SCANCODE_A])
+  {
     this->pos += this->move_speed * this->right;
+    headbob = true;
+  }
   else if (state[SDL_SCANCODE_D])
+  {
     this->pos -= this->move_speed * this->right;
+    headbob = true;
+  }
+
+  if (headbob)
+    this->headbob_value += 0.035f;
+  
+  float y_offset = 0.02f * sin(this->headbob_value);
 
   if (state[SDL_SCANCODE_SPACE])
-    this->pos += this->move_speed * this->up;
+  {
+    this->pos += this->jump_force * this->up;
+    this->vel += this->jump_force * 0.05f * this->up;
+  }
   else if (state[SDL_SCANCODE_LCTRL])
     this->pos -= this->move_speed * this->up;
 
@@ -51,6 +79,7 @@ void Camera::input(SDL_Event *event)
     this->pitch = -85;
   else if (this->pitch >= 85)
     this->pitch = 85;
+
 
   this->dir.x = cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
   this->dir.y = sin(glm::radians(this->pitch));
@@ -63,27 +92,8 @@ void Camera::input(SDL_Event *event)
     this->pos,
     this->pos + this->front,
     this->up
-  ); 
+  );
 
-  while (SDL_PollEvent(event))
-  {
-    if (event->type == SDL_MOUSEMOTION)
-    {
-      this->yaw   += this->rot_speed * event->motion.xrel;
-      this->pitch -= this->rot_speed * event->motion.yrel;
-    }
+  this->view = glm::translate(this->view, glm::vec3(0.0f, y_offset, 0.0f));
 
-    else if (event->type == SDL_KEYDOWN)
-    {
-      switch (event->key.keysym.sym)
-      {
-        case SDLK_ESCAPE:
-          exit(0);
-          break;
-      }
-    }
-    
-    else if (event->type == SDL_QUIT)
-      exit(0);
-  }
 }
