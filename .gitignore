@@ -5,7 +5,7 @@ CMakeFiles
 external/CMakeFiles
 external/cmake_install.cmake
 external/MakeFile
-
+external/libGLEW_210.a
 
 cmake_install.cmake
 CMakeCache.txt

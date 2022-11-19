@@ -5,12 +5,12 @@ project(pit-smellers)
 
 add_subdirectory (external)
 include_directories(
-  external/glew/include/
+  external/glew-2.1.0/include/
 )
 
 set(ALL_LIBS
   ${OPENGL_LIBRARY}
-  GLEW
+  GLEW_210
 )
 
 add_definitions(
