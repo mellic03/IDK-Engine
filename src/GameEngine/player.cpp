@@ -3,6 +3,7 @@
 #include "physics.h"
 #include "../include/glm/gtx/matrix_interpolation.hpp"
 
+#define G 5.0f
 
 Player::Player()
 {
@@ -27,10 +28,10 @@ void Player::input(SDL_Event *event)
   float damping = 1 / (1 + (renderer.deltaTime * friction));
   this->vel.x *= damping;
   this->vel.z *= damping;
-  this->vel.y -= 0.032f * renderer.deltaTime;
+  this->vel.y -= G * renderer.deltaTime;
 
-  this->vel = glm::clamp(this->vel, glm::vec3(-0.1, -0.1, -0.1), glm::vec3(0.1, 0.1, 0.1));
-  *this->pos += this->vel;
+  this->vel = glm::clamp(this->vel, glm::vec3(-4.5), glm::vec3(4.5));
+  *this->pos += this->vel * renderer.deltaTime;
 
 
   this->cam->input(event);

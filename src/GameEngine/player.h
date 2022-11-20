@@ -22,8 +22,8 @@ class Player {
     float height = 0.5f;
     glm::vec3 temp_pos;
 
-    float move_speed = 0.05f;
-    float jump_force = 0.25;
+    float move_speed = 8.0f;
+    float jump_force = 8.0f;
 
     Player();
 

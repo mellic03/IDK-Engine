@@ -1,3 +1,10 @@
+#ifdef __unix__
+  #define ENTRY main
+#elif defined(_WIN32) || defined(WIN32)
+  #define ENTRY WinMain
+#endif
+
+
 #include <iostream>
 #include <GL/glew.h>
 #include <GL/glu.h>
@@ -15,7 +22,7 @@
 #include "include/imgui/imgui_impl_sdl.h"
 #include "include/imgui/imgui_impl_opengl3.h"
 
-int main(int argc, char **argv)
+int ENTRY(int argc, char **argv)
 {
   SDL_Window *window = NULL;
   SDL_GLContext gl_context;
@@ -82,7 +89,7 @@ int main(int argc, char **argv)
   // RENDER LOOP
   //----------------------------------------
   cube.translate(glm::vec3(0.0f, -7.0f, 0.0f));
-  Uint64 start = SDL_GetPerformanceCounter(), end = 0;
+  Uint64 start = SDL_GetPerformanceCounter(), end = SDL_GetPerformanceCounter();
   while (1)
   {
     start = end;
