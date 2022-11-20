@@ -22,9 +22,10 @@
 #define RENDER_DISTANCE 10000.0f
 #define NEAR_PLANE_DIST 0.1f
 
-extern float fov;
-
-extern Camera main_cam;
+extern float REN_fov;
+extern float REN_deltaTime;
+extern Camera REN_active_cam;
+extern GLuint REN_active_shader;
 
 typedef enum { SHADER_NONE=-1, SHADER_VERTEX, SHADER_FRAGMENT } ShaderType;
 
@@ -35,23 +36,7 @@ typedef struct {
 
 } ShaderSource;
 
-void engine_input(SDL_Event *event);
-
-
 
 ShaderSource parse_shader(const std::string &filepath);
 unsigned int compile_shader(unsigned int type, const std::string &source);
 unsigned int create_shader(const std::string &vertex_shader, const std::string &fragment_shader);
-
-
-
-
-class LightSource {
-
-  public:
-    glm::vec4 color = {0, 0, 0, 1};
-    glm::vec3 position = {0, 0, 0};
-
-
-
-};

@@ -51,13 +51,13 @@ int main(int argc, char **argv)
   SDL_Event event;
 
   ShaderSource ssrc = parse_shader("assets/shaders/basic.glsl");
-  GLuint shader = create_shader(ssrc.vertex_source, ssrc.fragment_source);
+  REN_active_shader = create_shader(ssrc.vertex_source, ssrc.fragment_source);
 
-  Player player(shader);
+  Player player;
 
-  Model skybox;  skybox.load("assets/cube/skybox.obj", shader);
-  Model cube;    cube.load("assets/cube/cube.obj", shader);
-  Model ground;  ground.load("assets/cube/ground.obj", shader);
+  Model skybox;  skybox.load("assets/cube/skybox.obj");
+  Model cube;    cube.load("assets/cube/cube.obj");
+  Model ground;  ground.load("assets/cube/ground.obj");
   
   ModelContainer render_container;
   render_container.add(&cube);
@@ -81,22 +81,22 @@ int main(int argc, char **argv)
     
 
     physics_container.collide(&player);
-
-
-    render_container.draw(&player.cam, shader);
-
+    render_container.draw();
 
     glClear(GL_DEPTH_BUFFER_BIT);
-    player.input(&event, shader);
+    player.input(&event);
 
     cube.translate(glm::vec3(0.0f, -0.003f, 0.0f));
     cube.rot_y(0.1f);
+
+
 
     SDL_GL_SwapWindow(window);
 
     double dtime_milliseconds = ((end - start)*1000 / (double)SDL_GetPerformanceFrequency() );
     double dtime_seconds = dtime_milliseconds / 1000;
-    // printf("FPS: %lf\n", 1.0f / dtime_seconds);
+    REN_deltaTime = dtime_seconds;
+    // printf("DeltaTime: %lf\n", dtime_seconds);
   }
   //----------------------------------------
 

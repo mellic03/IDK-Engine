@@ -64,7 +64,7 @@ Model::Model(void)
   this->model_mat = glm::mat4(1.0f);
 }
 
-void Model::load(const char *filepath, GLuint shader)
+void Model::load(const char *filepath)
 {
   FILE *fh = fopen(filepath, "r");
   if (fh == NULL)
@@ -193,7 +193,7 @@ void Model::load(const char *filepath, GLuint shader)
   }
 
 
-  glUseProgram(shader);
+  glUseProgram(REN_active_shader);
 
   glBindVertexArray(this->VAO);
 
@@ -214,7 +214,7 @@ void Model::load(const char *filepath, GLuint shader)
   
 
   this->texture.bind(GL_TEXTURE0);
-  glUniform1i(glGetUniformLocation(shader, "gSampler"), 0);
+  glUniform1i(glGetUniformLocation(REN_active_shader, "gSampler"), 0);
 
 
   // Indexing
@@ -223,40 +223,35 @@ void Model::load(const char *filepath, GLuint shader)
 }
 
 
-void Model::draw(Camera *cam, GLuint shader)
+void Model::draw()
 {
   glBindVertexArray(this->VAO);
 
-  glUseProgram(shader);
+  glUseProgram(REN_active_shader);
   this->texture.bind(GL_TEXTURE0);
-  glUniform1i(glGetUniformLocation(shader, "gSampler"), 0);
+  glUniform1i(glGetUniformLocation(REN_active_shader, "gSampler"), 0);
 
-  int transform_loc = glGetUniformLocation(shader, "transform");
+  this->model_mat = glm::mat4(1.0f);
+  this->model_mat = glm::translate(this->model_mat, this->pos);
+
+  int transform_loc = glGetUniformLocation(REN_active_shader, "transform");
   glUniformMatrix4fv(transform_loc, 1, GL_FALSE, glm::value_ptr(this->transform_mat));
 
-  int model_loc = glGetUniformLocation(shader, "model");
+  int model_loc = glGetUniformLocation(REN_active_shader, "model");
   glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(this->model_mat));
 
-  int parent_model_loc = glGetUniformLocation(shader, "parent_model");
+  int parent_model_loc = glGetUniformLocation(REN_active_shader, "parent_model");
   glUniformMatrix4fv(parent_model_loc, 1, GL_FALSE, glm::value_ptr(this->parent_model_mat));
 
-  int view_loc = glGetUniformLocation(shader, "view");
-  glUniformMatrix4fv(view_loc, 1, GL_FALSE, glm::value_ptr(cam->view));
+  int view_loc = glGetUniformLocation(REN_active_shader, "view");
+  glUniformMatrix4fv(view_loc, 1, GL_FALSE, glm::value_ptr(REN_active_cam.view));
 
-  int projection_loc = glGetUniformLocation(shader, "projection");
-  glUniformMatrix4fv(projection_loc, 1, GL_FALSE, glm::value_ptr(cam->projection));
+  int projection_loc = glGetUniformLocation(REN_active_shader, "projection");
+  glUniformMatrix4fv(projection_loc, 1, GL_FALSE, glm::value_ptr(REN_active_cam.projection));
 
 
   glDrawElements(GL_TRIANGLES, this->num_indices, GL_UNSIGNED_INT, (void *)0);
   glBindVertexArray(0);
-}
-
-
-void Model::set_pos(glm::vec3 position)
-{
-  this->pos = position;
-  this->model_mat = glm::mat4(1.0f);
-  this->model_mat = glm::translate(this->model_mat, position);
 }
 
 void Model::translate(glm::vec3 translation)

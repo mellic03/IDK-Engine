@@ -63,8 +63,8 @@ class Model {
 
     Model();
 
-    void load(const char *filepath, GLuint shader);
-    void draw(Camera *cam,  GLuint shader);
+    void load(const char *filepath);
+    void draw();
 
     void set_pos(glm::vec3 position);
     void translate(glm::vec3 translation);

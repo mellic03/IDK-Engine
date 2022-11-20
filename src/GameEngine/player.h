@@ -2,6 +2,7 @@
 
 #include "../include/glm/glm.hpp"
 #include "../GraphicsEngine/GraphicsEngine.h"
+#include "weapon.h"
 
 
 
@@ -9,10 +10,13 @@ class Player {
 
   public:
 
-    Camera cam;
+    Camera *cam;
     glm::vec3 *pos;
     glm::vec3 *dir;
     glm::vec3 *vel;
+
+    Weapon weapons[1];
+    WeaponType active_weapon = SHOTGUN;
 
     Model weapon;
     float weapon_sway = 55.0f;
@@ -22,8 +26,8 @@ class Player {
     glm::vec3 temp_pos;
 
 
-    Player(GLuint shader);
+    Player();
 
-    void input(SDL_Event *event, GLuint shader);
+    void input(SDL_Event *event);
 
 };

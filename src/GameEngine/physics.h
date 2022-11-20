@@ -15,7 +15,7 @@ class ModelContainer {
     ModelContainer(void) {};
 
     void add(Model *model);
-    void draw(Camera *cam, GLuint shader);
+    void draw();
     void collide(Player *player);
 };
 

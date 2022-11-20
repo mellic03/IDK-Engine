@@ -9,7 +9,11 @@
 #include <sstream>
 #include "renderer.h"
 
-float fov = 65.0f;
+float REN_fov = 65.0f;
+float REN_deltaTime = 0.0f;
+Camera REN_active_cam;
+GLuint REN_active_shader;
+
 
 ShaderSource parse_shader(const std::string &filepath)
 {

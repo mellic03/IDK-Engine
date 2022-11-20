@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.24)
-set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
-project(pit-smellers)
 
+project(game)
+
+set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 add_subdirectory (external)
 include_directories(

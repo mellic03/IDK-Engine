@@ -23,12 +23,12 @@ void ModelContainer::add(Model *model)
   }
 }
 
-void ModelContainer::draw(Camera *cam, GLuint shader)
+void ModelContainer::draw()
 {
   Model *modelptr = this->head;
   while (modelptr != NULL)
   {
-    modelptr->draw(cam, shader);
+    modelptr->draw();
     modelptr = modelptr->next;
   }
 }
@@ -71,16 +71,14 @@ bool ray_intersect_triangle(  glm::vec3 ray_pos, glm::vec3 ray_dir,
 }
 
 
-float calculate_impulse(glm::vec3 vel, glm::vec3 face_normal, float mass1, float mass2, float elasticity)
+float calculate_impulse(glm::vec3 vel, glm::vec3 face_normal, float mass)
 {
   float relative_to_normal = glm::dot(vel, face_normal);
   if (relative_to_normal > 0)
     return 0.0f;
   
-  float j = -(1 + elasticity) * relative_to_normal;
-  if (mass2 == 0)
-    mass2 = 10000000;
-  j /= (1/mass1) + 0.00001;
+  float j = -1 * relative_to_normal;
+  j /= (1/mass) + 0.00001;
 
   return j;
 }
@@ -98,9 +96,9 @@ void player_collide(Player *player, glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, g
     float dist = glm::distance(player->temp_pos, intersect_point);
     if (0 < dist && dist < d)
     {
-      float impulse_1d = calculate_impulse(*player->vel, normal, 0.2, 0, 0);
+      float impulse_1d = calculate_impulse(*player->vel, normal, 0.2);
       glm::vec3 impulse = impulse_1d * normal;
-      player->vel->y += 1 * impulse.y;
+      *player->vel += impulse;
 
       *player->pos = *player->pos - (d-dist)*ray;
     }

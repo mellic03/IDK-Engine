@@ -33,9 +33,9 @@ class Camera {
     float headbob_value = 0.0f;
 
     float pitch = 0, roll = 0, yaw = -90;
-    float rot_speed = 0.05;
-    float move_speed = 0.015;
-    float jump_force = 0.01;
+    float rot_speed = 5.0f;
+    float move_speed = 0.10;
+    float jump_force = 0.25;
 
     void input(SDL_Event *event);
 
