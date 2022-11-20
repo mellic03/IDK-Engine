@@ -1,5 +1,12 @@
 #pragma once
 
+#ifdef __unix__
+  #define ENTRY main
+#elif defined(_WIN32) || defined(WIN32)
+  #define ENTRY WinMain
+#endif
+
+
 #include <SDL2/SDL.h>
 
 #include <GL/glew.h>
@@ -12,13 +19,8 @@
 
 class Camera {
 
-  private:
-  
-
   public:
     Camera();
-
-    GLuint shader;
 
     glm::mat4 view;
     glm::mat4 projection;
@@ -32,7 +34,12 @@ class Camera {
     float headbob_value = 0.0f;
 
     float pitch = 0, roll = 0, yaw = -90;
-    float rot_speed = 5.0f;
+
+    #ifdef __unix__
+      float rot_speed = 5.0f;
+    #elif defined(_WIN32) || defined(WIN32)
+      float rot_speed = 55.0f;
+    #endif
 
     void input(SDL_Event *event);
 
