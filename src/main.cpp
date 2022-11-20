@@ -53,8 +53,13 @@ int main(int argc, char **argv)
 
   SDL_Event event;
 
-  ShaderSource ssrc = parse_shader("assets/shaders/basic.glsl");
-  REN_active_shader = create_shader(ssrc.vertex_source, ssrc.fragment_source);
+  ShaderSource material = parse_shader("assets/shaders/basic.glsl");
+  renderer.mat_shader = create_shader(material.vertex_source, material.fragment_source);
+
+  // ShaderSource lightsource = parse_shader("assets/shaders/lightsource.glsl");
+  // renderer.light_shader = create_shader(lightsource.vertex_source, lightsource.fragment_source);
+
+
 
   Player player;
 
@@ -62,6 +67,9 @@ int main(int argc, char **argv)
   Model cube;    cube.load("assets/cube/cube.obj");
   Model ground;  ground.load("assets/cube/ground.obj");
   
+  cube.set_emmission(glm::vec4(0.1, 0.1, 0.1, 1.0));
+  ground.set_emmission(glm::vec4(0.1, 0.1, 0.1, 1.0));
+
   ModelContainer render_container;
   render_container.add(&cube);
   render_container.add(&ground);
@@ -84,6 +92,9 @@ int main(int argc, char **argv)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
 
+
+    
+
     physics_container.collide(&player);
     render_container.draw();
 
@@ -93,10 +104,13 @@ int main(int argc, char **argv)
     cube.translate(glm::vec3(0.0f, 0.003f, 0.0f));
 
 
+
+
+
     SDL_GL_SwapWindow(window);
 
     double dtime_milliseconds = ((end - start)*1000 / (double)SDL_GetPerformanceFrequency() );
-    REN_deltaTime = dtime_milliseconds / 1000;
+    renderer.deltaTime = dtime_milliseconds / 1000;
   }
   //----------------------------------------
 

@@ -23,7 +23,7 @@ Camera::Camera()
   ); 
   this->pos = glm::vec3(0.0f, 1.0f, 3.0f);
 
-  this->projection = glm::perspective(glm::radians(REN_fov), (float)SCR_WDTH / (float)SCR_HGHT, 0.1f, RENDER_DISTANCE);
+  this->projection = glm::perspective(glm::radians(renderer.fov), (float)SCR_WDTH / (float)SCR_HGHT, 0.1f, RENDER_DISTANCE);
 }
 
 
@@ -34,48 +34,17 @@ void Camera::input(SDL_Event *event)
   glm::vec3 temp_front = { this->front.x, 0.0f, this->front.z };
   temp_front = glm::normalize(temp_front);
 
-  this->vel.y -= 0.032f * REN_deltaTime;
   // this->vel.y = (this->vel.y < -0.1) ? -0.1 : this->vel.y;
-  this->vel = glm::clamp(this->vel, glm::vec3(-0.1, -0.1, -0.1), glm::vec3(0.1, 0.1, 0.1));
-  this->pos += this->vel;
+
 
 
   bool headbob = false;
 
-  if (state[SDL_SCANCODE_W])
-  {
-    this->vel += this->move_speed * REN_deltaTime * temp_front;
-    headbob = true;
-  }
-  else if (state[SDL_SCANCODE_S])
-  {
-    this->vel -= this->move_speed * REN_deltaTime * temp_front;
-    headbob = true;
-  }
-
-  if (state[SDL_SCANCODE_A])
-  {
-    this->vel += this->move_speed * REN_deltaTime * this->right;
-    headbob = true;
-  }
-  else if (state[SDL_SCANCODE_D])
-  {
-    this->vel -= this->move_speed * REN_deltaTime * this->right;
-    headbob = true;
-  }
 
   if (headbob)
-    this->headbob_value += 0.035f * REN_deltaTime;
+    this->headbob_value += 0.035f * renderer.deltaTime;
   
   float y_offset = 0.02f * sin(this->headbob_value);
-
-  if (state[SDL_SCANCODE_SPACE])
-  {
-    this->pos += this->jump_force * REN_deltaTime * this->up;
-    this->vel += this->jump_force * REN_deltaTime * this->up;
-  }
-  else if (state[SDL_SCANCODE_LCTRL])
-    this->pos -= this->move_speed * REN_deltaTime * this->up;
 
 
   if (this->pitch <= -85)

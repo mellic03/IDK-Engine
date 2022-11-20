@@ -40,3 +40,19 @@ typedef struct {
 ShaderSource parse_shader(const std::string &filepath);
 unsigned int compile_shader(unsigned int type, const std::string &source);
 unsigned int create_shader(const std::string &vertex_shader, const std::string &fragment_shader);
+
+
+class Renderer {
+  
+  public:
+    Camera cam;
+    GLuint light_shader;
+    GLuint mat_shader;
+    float deltaTime = 0.0f;
+    float fov = 90.0f;
+
+    Renderer() { };
+
+};
+
+extern Renderer renderer;

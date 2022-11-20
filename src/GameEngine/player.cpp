@@ -6,11 +6,10 @@
 
 Player::Player()
 {
-  this->cam = &REN_active_cam;
+  this->cam = &renderer.cam;
 
   this->pos = &this->cam->pos;
   this->dir = &this->cam->front;
-  this->vel = &this->cam->vel;
 
   this->active_weapon_type = SHOTGUN;
   this->active_weapon = &this->weapons[this->active_weapon_type];
@@ -23,37 +22,54 @@ SDL_bool mouse_capture = SDL_TRUE;
 
 void Player::input(SDL_Event *event)
 {
-  this->vel->y *= 0.999f;
+  this->vel.y *= 0.999f;
   float friction = 5.0f;
-  float damping = 1 / (1 + (REN_deltaTime * friction));
-  this->vel->x *= damping;
-  this->vel->z *= damping;
+  float damping = 1 / (1 + (renderer.deltaTime * friction));
+  this->vel.x *= damping;
+  this->vel.z *= damping;
+  this->vel.y -= 0.032f * renderer.deltaTime;
+
+  this->vel = glm::clamp(this->vel, glm::vec3(-0.1, -0.1, -0.1), glm::vec3(0.1, 0.1, 0.1));
+  *this->pos += this->vel;
+
 
   this->cam->input(event);
 
+
   const Uint8 *state = SDL_GetKeyboardState(NULL);
+
+  glm::vec3 temp_front = { renderer.cam.front.x, 0.0f, renderer.cam.front.z };
+  temp_front = glm::normalize(temp_front);
+
+  bool headbob = false;
+
   if (state[SDL_SCANCODE_W])
   {
-    // this->weapon_x += x_offset;
-    // this->weapon_z += 0.001f;
+    this->vel += this->move_speed * renderer.deltaTime * temp_front;
+    headbob = true;
   }
 
   if (state[SDL_SCANCODE_S])
   {
-    // this->weapon_x += x_offset;
-    // this->weapon_z -= 0.001f;
+    this->vel -= this->move_speed * renderer.deltaTime * temp_front;
+    headbob = true;
   }
 
   if (state[SDL_SCANCODE_A])
   {
-    // this->weapon_x += 0.001f;
-    // this->weapon_y += y_offset;
+    this->vel += this->move_speed * renderer.deltaTime * renderer.cam.right;
+    headbob = true;
   }
 
   if (state[SDL_SCANCODE_D])
   {
-    // this->weapon_x -= 0.001f;
-    // this->weapon_y += y_offset;
+    this->vel -= this->move_speed * renderer.deltaTime * renderer.cam.right;
+    headbob = true;
+  }
+
+  if (state[SDL_SCANCODE_SPACE])
+  {
+    this->vel.y += this->jump_force * renderer.deltaTime;
   }
 
   while (SDL_PollEvent(event))
@@ -62,24 +78,30 @@ void Player::input(SDL_Event *event)
     switch (event->type)
     {
       case SDL_MOUSEBUTTONDOWN:
-        this->active_weapon->aiming = true;
-        this->active_weapon->sway /= 8;
-        this->cam->move_speed /= 2;
+        if (event->button.button == SDL_BUTTON_RIGHT)
+        {
+          this->active_weapon->aiming = true;
+          this->active_weapon->sway /= 8;
+          this->move_speed /= 2;
+        }
       break;
     
       case SDL_MOUSEBUTTONUP:
-        this->active_weapon->aiming = false;
-        this->active_weapon->sway *= 8;
-        this->cam->move_speed *= 2;
+        if (event->button.button == SDL_BUTTON_RIGHT)
+        {
+          this->active_weapon->aiming = false;
+          this->active_weapon->sway *= 8;
+          this->move_speed *= 2;
+        }
       break;
     }
 
     if (event->type == SDL_MOUSEMOTION)
     {
-      this->cam->yaw   += this->cam->rot_speed * REN_deltaTime * event->motion.xrel;
-      this->cam->pitch -= this->cam->rot_speed * REN_deltaTime * event->motion.yrel;
-      this->active_weapon->movement_offset.x -= this->cam->rot_speed * REN_deltaTime * 0.001f * event->motion.xrel;
-      this->active_weapon->movement_offset.y += this->cam->rot_speed * REN_deltaTime * 0.001f * event->motion.yrel;
+      this->cam->yaw   += this->cam->rot_speed * renderer.deltaTime * event->motion.xrel;
+      this->cam->pitch -= this->cam->rot_speed * renderer.deltaTime * event->motion.yrel;
+      this->active_weapon->movement_offset.x -= this->cam->rot_speed * renderer.deltaTime * 0.001f * event->motion.xrel;
+      this->active_weapon->movement_offset.y += this->cam->rot_speed * renderer.deltaTime * 0.001f * event->motion.yrel;
     }
 
     else if (event->type == SDL_KEYDOWN)

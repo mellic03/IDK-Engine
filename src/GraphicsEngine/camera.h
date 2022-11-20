@@ -24,7 +24,6 @@ class Camera {
     glm::mat4 projection;
 
     glm::vec3 pos;
-    glm::vec3 vel = {0, 0, 0};
     glm::vec3 target;
     glm::vec3 dir;
     glm::vec3 front;
@@ -34,8 +33,6 @@ class Camera {
 
     float pitch = 0, roll = 0, yaw = -90;
     float rot_speed = 5.0f;
-    float move_speed = 0.10;
-    float jump_force = 0.25;
 
     void input(SDL_Event *event);
 

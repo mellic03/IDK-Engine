@@ -47,7 +47,9 @@ class Model {
     Vertex *vertices; int num_vertices;
     int *indices; int num_indices;
 
-    Texture texture;
+    Texture texture; 
+
+    glm::vec4 emmission = {1.0f, 1.0f, 1.0f, 1.0f};
 
     glm::mat4 *view_mat;
     glm::mat4 model_mat;
@@ -65,6 +67,8 @@ class Model {
 
     void load(const char *filepath);
     void draw();
+
+    void set_emmission(glm::vec4 emission_v);
 
     void set_pos(glm::vec3 position);
     void translate(glm::vec3 translation);
