@@ -11,6 +11,9 @@
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GameEngine/GameEngine.h"
 
+#include "include/imgui/imgui.h"
+#include "include/imgui/imgui_impl_sdl.h"
+#include "include/imgui/imgui_impl_opengl3.h"
 
 int main(int argc, char **argv)
 {
@@ -70,6 +73,7 @@ int main(int argc, char **argv)
 
   // RENDER LOOP
   //----------------------------------------
+  cube.translate(glm::vec3(0.0f, -7.0f, 0.0f));
   Uint64 start = SDL_GetPerformanceCounter(), end = 0;
   while (1)
   {
@@ -86,17 +90,13 @@ int main(int argc, char **argv)
     glClear(GL_DEPTH_BUFFER_BIT);
     player.input(&event);
 
-    cube.translate(glm::vec3(0.0f, -0.003f, 0.0f));
-    cube.rot_y(0.1f);
-
+    cube.translate(glm::vec3(0.0f, 0.003f, 0.0f));
 
 
     SDL_GL_SwapWindow(window);
 
     double dtime_milliseconds = ((end - start)*1000 / (double)SDL_GetPerformanceFrequency() );
-    double dtime_seconds = dtime_milliseconds / 1000;
-    REN_deltaTime = dtime_seconds;
-    // printf("DeltaTime: %lf\n", dtime_seconds);
+    REN_deltaTime = dtime_milliseconds / 1000;
   }
   //----------------------------------------
 

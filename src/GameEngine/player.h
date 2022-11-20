@@ -16,7 +16,8 @@ class Player {
     glm::vec3 *vel;
 
     Weapon weapons[1];
-    WeaponType active_weapon = SHOTGUN;
+    Weapon *active_weapon;
+    WeaponType active_weapon_type = SHOTGUN;
 
     Model weapon;
     float weapon_sway = 55.0f;

@@ -23,14 +23,15 @@ add_definitions(
 )
 
 
-
 file(
   GLOB SOURCES
   "src/*.cpp"
   "src/include/stb_image/*.cpp"
+  "src/include/imgui/*.cpp"
   "src/GraphicsEngine/*.cpp"
   "src/GameEngine/*.cpp"
 )
+
 
 find_package(SDL2 REQUIRED)
 find_package(OpenGL REQUIRED)

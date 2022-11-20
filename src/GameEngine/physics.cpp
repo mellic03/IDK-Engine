@@ -96,9 +96,9 @@ void player_collide(Player *player, glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, g
     float dist = glm::distance(player->temp_pos, intersect_point);
     if (0 < dist && dist < d)
     {
-      float impulse_1d = calculate_impulse(*player->vel, normal, 0.2);
+      float impulse_1d = calculate_impulse(*player->vel, normal, 0.1);
       glm::vec3 impulse = impulse_1d * normal;
-      *player->vel += impulse;
+      *player->vel += (1.0f/0.2f) * impulse;
 
       *player->pos = *player->pos - (d-dist)*ray;
     }
@@ -117,17 +117,24 @@ void ModelContainer::collide(Player *player)
       glm::vec3 v1 = modelptr->vertices[i+1].position + modelptr->pos;
       glm::vec3 v2 = modelptr->vertices[i+2].position + modelptr->pos;
       glm::vec3 normal = modelptr->vertices[i+2].normal;
-      // glm::vec4 tnorm = glm::vec4(normal.x, normal.y, normal.z, 0.0f);
+      // glm::vec4 tnorm = glm::vec4(normal.x, normal.y, normal.z, 0.0f) * modelptr->transform_mat;
       // normal = glm::vec3(tnorm.x, tnorm.y, tnorm.z);
 
-      glm::vec4 tpos = glm::vec4(player->pos->x, player->pos->y, player->pos->z, 1.0f) * modelptr->transform_mat;
-      player->temp_pos = glm::vec3(tpos);
+      player->temp_pos = glm::vec4(player->pos->x, player->pos->y, player->pos->z, 1.0f) * modelptr->transform_mat;
 
-      glm::vec4 ray_up   = glm::vec4(0.0f, +1.0f, 0.0f, 0.0f) * modelptr->transform_mat;
-      glm::vec4 ray_down = glm::vec4(0.0f, -1.0f, 0.0f, 0.0f) * modelptr->transform_mat;
+      glm::vec4 ray_up    = glm::vec4( 0.0f, +1.0f,  0.0f,  0.0f);
+      glm::vec4 ray_down  = glm::vec4( 0.0f, -1.0f,  0.0f,  0.0f);
+      glm::vec3 ray_left  = -player->cam->right;
+      glm::vec3 ray_right =  player->cam->right;
+      glm::vec3 ray_front =  player->cam->front;
+      glm::vec3 ray_back  = -player->cam->front;
 
-      player_collide(player, ray_up, v0, v1, v2, normal, player->height/2);
-      player_collide(player, ray_down, v0, v1, v2, normal, player->height);
+      player_collide(player, ray_down , v0, v1, v2, normal, player->height);
+      player_collide(player, ray_up   , v0, v1, v2, normal, player->height/2);
+      player_collide(player, ray_left , v0, v1, v2, normal, player->height/2);
+      player_collide(player, ray_right, v0, v1, v2, normal, player->height/2);
+      player_collide(player, ray_front, v0, v1, v2, normal, player->height/2);
+      player_collide(player, ray_back , v0, v1, v2, normal, player->height/2);
     }
 
     modelptr = modelptr->next;
