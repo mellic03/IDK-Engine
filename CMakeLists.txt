@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.24)
 
-project(game)
-
 set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS_RELEASE "-static-libgcc -static-libstdc++")
+
+project(game)
+
 
 add_subdirectory (external)
 include_directories(
