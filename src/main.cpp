@@ -102,7 +102,7 @@ int ENTRY(int argc, char **argv)
 
   // RENDER LOOP
   //----------------------------------------
-  // cube.translate(glm::vec3(2.0f, -5.8f, 0.0f));
+  cube.translate(glm::vec3(2.0f, -5.8f, 0.0f));
   cam.lightsource.position = {0.0f, -5.8f, 0.0f};
 
   Uint64 start = SDL_GetPerformanceCounter(), end = SDL_GetPerformanceCounter();
@@ -170,6 +170,7 @@ int ENTRY(int argc, char **argv)
     glClear(GL_DEPTH_BUFFER_BIT);
     player.draw(&cam);
 
+    cube.rot_y(0.05f);
 
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
