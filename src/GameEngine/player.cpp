@@ -12,7 +12,7 @@ Player::Player(Camera *cam)
 
   this->active_weapon_type = SHOTGUN;
   this->active_weapon = &this->weapons[this->active_weapon_type];
-  this->active_weapon->load_model("assets/model/gun.obj", cam);
+  this->active_weapon->load_model("assets/gun/", "gun", cam);
   this->active_weapon->hip_pos = glm::vec3(+0.10f, -0.10f, -0.15f);
   this->active_weapon->aim_pos = glm::vec3( 0.00f, -0.015f, -0.10f);
 }

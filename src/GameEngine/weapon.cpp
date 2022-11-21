@@ -8,9 +8,9 @@ glm::vec3 lerp(glm::vec3 from, glm::vec3 to, float alpha)
   return from + direc;
 }
 
-void Weapon::load_model(const char *filepath, Camera *cam)
+void Weapon::load_model(const char *filepath, const char *name, Camera *cam)
 {
-  this->model.load(filepath);
+  this->model.load(filepath, name);
   this->model.setShader(cam->shaders[SHADER_VIEWSPACE]);
 }
 
@@ -26,9 +26,9 @@ void Weapon::draw(Camera *cam)
 
 
   if (this->aiming)
-    this->model.pos = lerp(glm::vec3(this->model.pos), this->aim_pos + this->movement_offset, 0.055f);
+    this->model.pos = lerp(glm::vec3(this->model.pos), this->aim_pos + this->movement_offset, 0.15f);
   else
-    this->model.pos = lerp(glm::vec3(this->model.pos), this->hip_pos + this->movement_offset, 0.055f);
+    this->model.pos = lerp(glm::vec3(this->model.pos), this->hip_pos + this->movement_offset, 0.15f);
   
   this->model.set_pos(this->model.pos);
 

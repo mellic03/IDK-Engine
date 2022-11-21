@@ -36,6 +36,7 @@ void main()
 struct Material {
   sampler2D diffuse;
   sampler2D specular;
+  sampler2D emission;
   float spec_exponent;
 };
 uniform Material material;
@@ -77,6 +78,8 @@ void main()
   vec3 reflectDir = reflect(-lightDir, norm);  
   float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.spec_exponent);
   vec3 specular = light.specular * spec * texture(material.specular, TexCoord).rgb;  
-      
-  FragColor = vec4(ambient + diffuse + specular, 1.0);
+  
+  vec3 emission = texture(material.emission, TexCoord).rgb;
+
+  FragColor = vec4(ambient + diffuse + specular + emission, 1.0);
 }

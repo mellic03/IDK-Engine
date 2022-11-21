@@ -57,14 +57,34 @@ Model::Model(void)
   this->model_mat = glm::mat4(1.0f);
 }
 
-void Model::load(const char *filepath)
+void Model::load(const char *filepath, const char *name)
 {
   this->setName(filepath);
 
-  FILE *fh = fopen(filepath, "r");
+  std::string obj_path(filepath);
+  obj_path.append(name);
+  obj_path.append(".obj");
+
+  std::string mtl_path(filepath);
+  mtl_path.append(name);
+  mtl_path.append(".mtl");
+
+  std::string diffuse_path(filepath);
+  std::string specular_path(filepath);
+  std::string emission_path(filepath);
+  diffuse_path.append(name);
+  diffuse_path.append("_diffuse.png");
+  specular_path.append(name);
+  specular_path.append("_specular.png");
+  emission_path.append(name);
+  emission_path.append("_emission.png");
+
+
+
+  FILE *fh = fopen(obj_path.c_str(), "r");
   if (fh == NULL)
   {
-    printf("Error opening \"%s\"", filepath);
+    printf("Error opening obj: \"%s\"", obj_path.c_str());
     exit(1);
   }
 
@@ -154,17 +174,10 @@ void Model::load(const char *filepath)
 
 
   // load .mtl file
-  char filepath_mtl[64];
-  strcpy(filepath_mtl, filepath);
-  int len = strlen(filepath_mtl);
-  filepath_mtl[len-3] = 'm';
-  filepath_mtl[len-2] = 't';
-  filepath_mtl[len-1] = 'l';
-
-  fh = fopen(filepath_mtl, "r");
+  fh = fopen(mtl_path.c_str(), "r");
   if (fh == NULL)
   {
-    printf("Error opening \"%s\"\n", filepath_mtl);
+    printf("Error opening mtl: \"%s\"\n", mtl_path.c_str());
     exit(1);
   }
 
@@ -206,13 +219,14 @@ void Model::load(const char *filepath)
         if (token[i] == '\n')
           token[i] = '\0';
       }
-      strcat(asset_path, token);
+      // strcat(asset_path, token);
       // printf("path: %s\n", asset_path);
-      len = strlen(asset_path);
-      asset_path[len] = '\0';
+      // len = strlen(asset_path);
+      // asset_path[len] = '\0';
 
-      this->material.diffuse.load(asset_path);
-      this->material.specular.load("assets/model/container_specular.png");
+      this->material.diffuse.load(diffuse_path.c_str());
+      this->material.specular.load(specular_path.c_str());
+      this->material.emission.load(emission_path.c_str());
 
       break;
     }
@@ -253,14 +267,17 @@ void Model::draw(Camera *cam)
   // Get the uniform variables location. You've probably already done that before...
   GLuint diffloc = glGetUniformLocation(this->shader.get(), "material.diffuse");
   GLuint specloc  = glGetUniformLocation(this->shader.get(), "material.specular");
+  GLuint emmloc  = glGetUniformLocation(this->shader.get(), "material.emission");
 
   // Then bind the uniform samplers to texture units:
   glUseProgram(this->shader.get());
-  glUniform1i(diffloc, 0);
-  glUniform1i(specloc, 1);
+  this->shader.setInt("material.diffuse", 0);
+  this->shader.setInt("material.specular", 1);
+  this->shader.setInt("material.emission", 2);
 
  this->material.diffuse.bind(GL_TEXTURE0);
  this->material.specular.bind(GL_TEXTURE1);
+ this->material.emission.bind(GL_TEXTURE2);
 
 
   glBindVertexArray(this->VAO);

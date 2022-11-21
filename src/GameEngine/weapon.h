@@ -21,7 +21,7 @@ class Weapon {
     float sway = 55.0f;
 
     Weapon() { };
-    void load_model(const char *filepath, Camera *cam);
+    void load_model(const char *filepath, const char *name, Camera *cam);
     void draw(Camera *cam);
 
 };

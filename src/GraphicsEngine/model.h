@@ -56,7 +56,7 @@ class Model {
 
     Model();
 
-    void load(const char *filepath);
+    void load(const char *filepath, const char *name);
     void draw(Camera *cam);
 
     void setName(const char *name_str);

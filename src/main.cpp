@@ -68,15 +68,15 @@ int ENTRY(int argc, char **argv)
   cam.init();
   Player player(&cam);
 
-  Model skybox;  skybox.load("assets/model/skybox.obj");  skybox.setShader(cam.shaders[SHADER_WORLDSPACE]);
-  Model cube;    cube.load("assets/model/cube.obj");      cube.setShader(cam.shaders[SHADER_WORLDSPACE]);
-  Model ground;  ground.load("assets/model/ground.obj");  ground.setShader(cam.shaders[SHADER_WORLDSPACE]);
+  // Model skybox;  skybox.load("assets/model/", "skybox");  skybox.setShader(cam.shaders[SHADER_WORLDSPACE]);
+  Model cube;    cube.load("assets/crate/", "crate");      cube.setShader(cam.shaders[SHADER_WORLDSPACE]);
+  Model ground;  ground.load("assets/ground/", "ground");  ground.setShader(cam.shaders[SHADER_WORLDSPACE]);
   
 
   ModelContainer render_container;
   render_container.add(&cube);
   render_container.add(&ground);
-  render_container.add(&skybox);
+  // render_container.add(&skybox);
 
   ModelContainer physics_container;
   physics_container.add(&cube);
@@ -102,7 +102,7 @@ int ENTRY(int argc, char **argv)
 
   // RENDER LOOP
   //----------------------------------------
-  cube.translate(glm::vec3(2.0f, -5.8f, 0.0f));
+  // cube.translate(glm::vec3(2.0f, -5.8f, 0.0f));
   cam.lightsource.position = {0.0f, -5.8f, 0.0f};
 
   Uint64 start = SDL_GetPerformanceCounter(), end = SDL_GetPerformanceCounter();
