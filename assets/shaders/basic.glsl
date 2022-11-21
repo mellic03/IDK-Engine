@@ -9,7 +9,6 @@ layout (location = 3) in vec2 aTexCoord;
 out vec3 normal;
 out vec3 FragPos;
 out vec2 TexCoord;
-out mat4 trans;
 
 uniform mat4 transform;
 uniform mat4 model;
@@ -18,11 +17,12 @@ uniform mat4 projection;
 
 void main()
 {
-  FragPos = vec3(transform * model * vec4(aPos, 1.0));
-  normal = mat3(transpose(inverse(model))) * aNormal; 
+  FragPos = vec3(model * transform * vec4(aPos, 1.0));
+  normal = mat3(transpose(inverse(model * transform))) * aNormal; 
   TexCoord = aTexCoord;
 
   gl_Position = projection * view * vec4(FragPos, 1.0);
+
 }
 
 
@@ -57,14 +57,12 @@ in vec3 FragPos;
 in vec3 normal;
 in vec2 TexCoord;
 
-in mat4 trans;
-
 out vec4 FragColor;
 
 void main()
 {
-  viewPos = vec3(vec4(view_pos, 1) * trans);
-  lightPos = vec3(vec4(light.position, 1) * trans);
+  viewPos = vec3(vec4(view_pos, 1));
+  lightPos = vec3(vec4(light.position, 1));
 
   vec3 ambient = light.ambient * texture(material.diffuse, TexCoord).rgb;
   

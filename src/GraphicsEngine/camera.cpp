@@ -30,6 +30,8 @@ Camera::Camera()
 
 void Camera::input()
 {
+  this->projection = glm::perspective(glm::radians(renderer.fov), (float)renderer.SCR_width/(float)renderer.SCR_height, 0.1f, RENDER_DISTANCE);
+
   const Uint8 *state = SDL_GetKeyboardState(NULL);
 
   glm::vec3 temp_front = { this->front.x, 0.0f, this->front.z };

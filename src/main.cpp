@@ -127,7 +127,7 @@ int ENTRY(int argc, char **argv)
     Model *modelptr = render_container.head;
     while (modelptr != NULL)
     {
-      ImGui::Text("name: %s", modelptr->name);
+      ImGui::Text("name: %s: pos: %f %f %f", modelptr->name, modelptr->pos.x, modelptr->pos.y, modelptr->pos.z);
       modelptr = modelptr->next;
     }
 

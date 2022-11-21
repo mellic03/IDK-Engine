@@ -256,9 +256,6 @@ void Model::draw()
 
   this->texture.bind(GL_TEXTURE0);
 
-  this->model_mat = glm::mat4(1.0f);
-  this->model_mat = glm::translate(this->model_mat, this->pos);
-
   // Model material
   renderer.shader.setInt("material.diffuse", GL_TEXTURE0);
   renderer.shader.setVec3("material.ambient", this->material.ambient);

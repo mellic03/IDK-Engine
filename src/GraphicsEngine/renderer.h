@@ -61,8 +61,8 @@ class Renderer {
     float deltaTime = 0.0f;
     float fov = 90.0f;
 
-    int SCR_width = 1920;
-    int SCR_height = 1080;
+    int SCR_width = 1500;
+    int SCR_height = 900;
 
     Renderer();
 
