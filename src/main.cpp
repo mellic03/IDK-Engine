@@ -22,7 +22,6 @@
 #include "GameEngine/GameEngine.h"
 
 
-
 int ENTRY(int argc, char **argv)
 {
   SDL_Window *window = NULL;
@@ -104,8 +103,6 @@ int ENTRY(int argc, char **argv)
 
   // RENDER LOOP
   //----------------------------------------
-  bool show_demo_window = true;
-  glm::vec3 color;
   cube.translate(glm::vec3(0.0f, -0.6f, 0.0f));
   Uint64 start = SDL_GetPerformanceCounter(), end = SDL_GetPerformanceCounter();
   while (1)

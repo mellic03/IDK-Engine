@@ -17,8 +17,8 @@
 #include "camera.h"
 #include "model.h"
 
-#define SCR_WDTH 1920
-#define SCR_HGHT 1080
+#define SCR_WDTH 1200
+#define SCR_HGHT 700
 
 #define RENDER_DISTANCE 10000.0f
 #define NEAR_PLANE_DIST 0.1f

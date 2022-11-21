@@ -34,12 +34,7 @@ class Camera {
     float headbob_value = 0.0f;
 
     float pitch = 0, roll = 0, yaw = -90;
-
-    #ifdef __unix__
-      float rot_speed = 5.0f;
-    #elif defined(_WIN32) || defined(WIN32)
-      float rot_speed = 55.0f;
-    #endif
+    float rot_speed = 5.0f;
 
     void input();
 
