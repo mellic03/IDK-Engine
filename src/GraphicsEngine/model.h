@@ -33,17 +33,16 @@ struct Material {
 struct Light {
   glm::vec3 position = glm::vec3(0.0f);
   glm::vec3 ambient = glm::vec3(0.3f);
-  glm::vec3 diffuse = glm::vec3(0.0f);
-  glm::vec3 specular = glm::vec3(0.0f);
+  glm::vec3 diffuse = glm::vec3(1.0f);
+  glm::vec3 specular = glm::vec3(1.0f);
 };
 
 class Texture {
 
-  private:
+  public:
     std::string m_filename;
     GLenum m_texture_obj;
 
-  public:
     Texture() {};
 
     bool load(const char *filepath);
@@ -93,8 +92,6 @@ class Model {
     void rot_x(float theta);
     void rot_y(float theta);
     void rot_z(float theta);
-
-    void set_parent(glm::mat4 model_matrix);
 
 };
 

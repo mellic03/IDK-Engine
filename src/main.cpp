@@ -20,7 +20,7 @@
 
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GameEngine/GameEngine.h"
-
+#include "GraphicsEngine/renderer.h"
 
 int ENTRY(int argc, char **argv)
 {
@@ -37,9 +37,9 @@ int ENTRY(int argc, char **argv)
     "Test OpenGL",
     SDL_WINDOWPOS_CENTERED,
     SDL_WINDOWPOS_CENTERED,
-    SCR_WDTH,
-    SCR_HGHT,
-    SDL_WINDOW_OPENGL
+    renderer.SCR_width,
+    renderer.SCR_height,
+    SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
   );
 
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -68,9 +68,9 @@ int ENTRY(int argc, char **argv)
 
   Player player;
 
-  Model skybox;  skybox.load("assets/cube/skybox.obj");
-  Model cube;    cube.load("assets/cube/cube.obj");
-  Model ground;  ground.load("assets/cube/ground.obj");
+  Model skybox;  skybox.load("assets/model/skybox.obj");
+  Model cube;    cube.load("assets/model/cube.obj");
+  Model ground;  ground.load("assets/model/ground.obj");
   
 
   ModelContainer render_container;
@@ -103,12 +103,16 @@ int ENTRY(int argc, char **argv)
 
   // RENDER LOOP
   //----------------------------------------
-  cube.translate(glm::vec3(0.0f, -0.6f, 0.0f));
+  cube.translate(glm::vec3(2.0f, -5.8f, 0.0f));
+  renderer.lightsource.position = {0.0f, -5.8f, 0.0f};
+
   Uint64 start = SDL_GetPerformanceCounter(), end = SDL_GetPerformanceCounter();
   while (1)
   {
     start = end;
     end = SDL_GetPerformanceCounter();
+
+    SDL_GetWindowSize(window, &renderer.SCR_width, &renderer.SCR_height);
 
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
@@ -117,11 +121,8 @@ int ENTRY(int argc, char **argv)
 
 
 
-    static float f = 0.0f;
-    static int counter = 0;
-
-    ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-    ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+    ImGui::Begin("Hello, world!");
+    ImGui::Text("This is some useful text.");
 
     Model *modelptr = render_container.head;
     while (modelptr != NULL)
@@ -130,15 +131,14 @@ int ENTRY(int argc, char **argv)
       modelptr = modelptr->next;
     }
 
-    ImGui::SliderFloat("float", &renderer.fov, 45.0f, 110.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::ColorEdit3("ambient", (float*)&renderer.lightsource.ambient); // Edit 3 floats representing a color
-    ImGui::ColorEdit3("diffuse", (float*)&renderer.lightsource.diffuse); // Edit 3 floats representing a color
-    ImGui::ColorEdit3("specular", (float*)&renderer.lightsource.specular); // Edit 3 floats representing a color
-
-    if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-        counter++;
-    ImGui::SameLine();
-    ImGui::Text("counter = %d", counter);
+    ImGui::SliderFloat("FOV", &renderer.fov, 45.0f, 110.0f);
+    ImGui::ColorEdit3("ambient", (float*)&renderer.lightsource.ambient);
+    ImGui::ColorEdit3("diffuse", (float*)&renderer.lightsource.diffuse);
+    ImGui::ColorEdit3("specular", (float*)&renderer.lightsource.specular);
+    // if (ImGui::Button("Button"))
+    //     counter++;
+    // ImGui::SameLine();
+    // ImGui::Text("counter = %d", counter);
 
     ImGui::Text("P(x, y, z): %.2f, %.2f, %.2f", player.pos->x, player.pos->y, player.pos->z);
     ImGui::Text("V(x, y, z): %.2f, %.2f, %.2f", player.vel.x, player.vel.y, player.vel.z);
@@ -147,7 +147,7 @@ int ENTRY(int argc, char **argv)
 
 
     ImGui::Render();
-
+    glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -170,6 +170,8 @@ int ENTRY(int argc, char **argv)
 
     glClear(GL_DEPTH_BUFFER_BIT);
     player.draw();
+
+    cube.rot_y(0.2f);
 
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

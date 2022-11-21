@@ -9,11 +9,6 @@
 #include <sstream>
 #include "renderer.h"
 
-// float REN_fov = 65.0f;
-// float REN_deltaTime = 0.0f;
-// Camera REN_active_cam;
-// GLuint REN_active_shader;
-
 Renderer renderer;
 
 Renderer::Renderer()
@@ -99,6 +94,13 @@ void Shader::setMat4(const char *uniform_name, glm::mat4 mat)
 {
   int uniform_loc = glGetUniformLocation(this->id, uniform_name);
   glUniformMatrix4fv(uniform_loc, 1, GL_FALSE, glm::value_ptr(mat));
+}
+
+
+void Shader::setInt(const char *uniform_name, GLuint value)
+{
+  int uniform_loc = glGetUniformLocation(this->id, uniform_name);
+  glUniform1i(uniform_loc, value);
 }
 
 void Shader::setFloat(const char *uniform_name, float value)

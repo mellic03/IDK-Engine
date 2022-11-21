@@ -17,16 +17,8 @@
 #include "camera.h"
 #include "model.h"
 
-#define SCR_WDTH 1200
-#define SCR_HGHT 700
-
 #define RENDER_DISTANCE 10000.0f
 #define NEAR_PLANE_DIST 0.1f
-
-extern float REN_fov;
-extern float REN_deltaTime;
-extern Camera REN_active_cam;
-extern GLuint REN_active_shader;
 
 enum ShaderType { SHADER_NONE=-1, SHADER_VERTEX, SHADER_FRAGMENT };
 
@@ -36,7 +28,6 @@ struct ShaderSource {
   std::string fragment_source;
 
 };
-
 
 ShaderSource parse_shader(const std::string &filepath);
 unsigned int compile_shader(unsigned int type, const std::string &source);
@@ -54,10 +45,10 @@ class Shader {
     void use(void) { glUseProgram(this->id); };
     void setVec3(const char *uniform_name, glm::vec3 vec);
     void setMat4(const char *uniform_name, glm::mat4 mat);
+    void setInt(const char *uniform_name, GLuint value);
     void setFloat(const char *uniform_name, float value);
 
 };
-
 
 class Renderer {
   
@@ -70,8 +61,10 @@ class Renderer {
     float deltaTime = 0.0f;
     float fov = 90.0f;
 
+    int SCR_width = 1920;
+    int SCR_height = 1080;
+
     Renderer();
 
 };
-
 extern Renderer renderer;

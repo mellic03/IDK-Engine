@@ -1,11 +1,12 @@
 #include "weapon.h"
 
-void lerp(glm::vec3 *from, glm::vec3 to, float alpha)
+glm::vec4 lerp(glm::vec3 from, glm::vec3 to, float alpha)
 {
-  glm::vec3 direc = to - *from;
+  glm::vec3 direc = to - from;
   float dist = glm::length(direc);
   direc *= alpha;
-  *from += direc;
+  glm::vec3 result = from + direc;
+  return glm::vec4(result.x, result.y, result.z, 1.0f);
 }
 
 void Weapon::load_model(const char *filepath)
@@ -15,7 +16,7 @@ void Weapon::load_model(const char *filepath)
 
 void Weapon::draw(void)
 {
-  renderer.cam.projection = glm::perspective(glm::radians(renderer.fov), (float)SCR_WDTH / (float)SCR_HGHT, 0.001f, RENDER_DISTANCE);
+  renderer.cam.projection = glm::perspective(glm::radians(renderer.fov), (float)renderer.SCR_width/(float)renderer.SCR_height, 0.001f, RENDER_DISTANCE);
   glm::mat4 backup_view = renderer.cam.view;
   renderer.cam.view = glm::mat4(1.0f);
 
@@ -27,13 +28,13 @@ void Weapon::draw(void)
 
 
   if (this->aiming)
-    lerp(&this->model.pos, this->aim_pos + this->movement_offset, 0.055f);
+    this->model.pos = lerp(glm::vec3(this->model.pos), this->aim_pos + this->movement_offset, 0.055f);
   else
-    lerp(&this->model.pos, this->hip_pos + this->movement_offset, 0.055f);
+    this->model.pos = lerp(glm::vec3(this->model.pos), this->hip_pos + this->movement_offset, 0.055f);
 
   this->model.draw();
 
   renderer.cam.view = backup_view;
-  renderer.cam.projection = glm::perspective(glm::radians(renderer.fov), (float)SCR_WDTH / (float)SCR_HGHT, NEAR_PLANE_DIST, RENDER_DISTANCE);
+  renderer.cam.projection = glm::perspective(glm::radians(renderer.fov), (float)renderer.SCR_width/(float)renderer.SCR_height, NEAR_PLANE_DIST, RENDER_DISTANCE);
 }
 

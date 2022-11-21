@@ -173,7 +173,7 @@ void Model::load(const char *filepath)
   }
 
   char image_path[64];
-  char asset_path[128] = "assets/cube/";
+  char asset_path[128] = "assets/model/";
   
   while (fgets(buffer, 64, fh) != NULL)
   {
@@ -260,11 +260,12 @@ void Model::draw()
   this->model_mat = glm::translate(this->model_mat, this->pos);
 
   // Model material
+  renderer.shader.setInt("material.diffuse", GL_TEXTURE0);
   renderer.shader.setVec3("material.ambient", this->material.ambient);
-  renderer.shader.setVec3("material.diffuse", this->material.diffuse);
   renderer.shader.setVec3("material.specular", this->material.specular);
   renderer.shader.setFloat("material.spec_exponent", this->material.spec_exponent);
 
+  renderer.shader.setVec3("light.position",  renderer.lightsource.position);
   renderer.shader.setVec3("light.ambient",  renderer.lightsource.ambient);
   renderer.shader.setVec3("light.diffuse",  renderer.lightsource.diffuse); // darken diffuse light a bit
   renderer.shader.setVec3("light.specular", renderer.lightsource.specular); 
@@ -317,13 +318,6 @@ void Model::rot_z(float theta)
 {
   this->rot.z += theta;
   this->transform_mat = glm::rotate(this->transform_mat, glm::radians(theta), glm::vec3(0.0, 0.0, 1.0));
-}
-
-
-
-void Model::set_parent(glm::mat4 model_matrix)
-{
-  this->parent_model_mat = model_matrix;
 }
 
 

@@ -23,7 +23,8 @@ Camera::Camera()
   ); 
   this->pos = glm::vec3(0.0f, 1.0f, 3.0f);
 
-  this->projection = glm::perspective(glm::radians(renderer.fov), (float)SCR_WDTH / (float)SCR_HGHT, 0.1f, RENDER_DISTANCE);
+
+  this->projection = glm::perspective(glm::radians(renderer.fov), 1.0f, 0.1f, RENDER_DISTANCE);
 }
 
 
