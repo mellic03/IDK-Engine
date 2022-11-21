@@ -247,15 +247,15 @@ void Model::load(const char *filepath)
 }
 
 
-void Model::draw()
+void Model::draw(Camera *cam)
 {
-
+  this->shader.use();
   // Get the uniform variables location. You've probably already done that before...
-  GLuint diffloc = glGetUniformLocation(renderer.shader.get(), "material.diffuse");
-  GLuint specloc  = glGetUniformLocation(renderer.shader.get(), "material.specular");
+  GLuint diffloc = glGetUniformLocation(this->shader.get(), "material.diffuse");
+  GLuint specloc  = glGetUniformLocation(this->shader.get(), "material.specular");
 
   // Then bind the uniform samplers to texture units:
-  glUseProgram(renderer.shader.get());
+  glUseProgram(this->shader.get());
   glUniform1i(diffloc, 0);
   glUniform1i(specloc, 1);
 
@@ -266,22 +266,22 @@ void Model::draw()
   glBindVertexArray(this->VAO);
 
 
-  renderer.shader.setFloat("material.spec_exponent", this->material.spec_exponent);
+  this->shader.setFloat("material.spec_exponent", this->material.spec_exponent);
 
-  renderer.shader.setVec3("light.position",  renderer.lightsource.position);
-  renderer.shader.setVec3("light.ambient",  renderer.lightsource.ambient);
-  renderer.shader.setVec3("light.diffuse",  renderer.lightsource.diffuse); // darken diffuse light a bit
-  renderer.shader.setVec3("light.specular", renderer.lightsource.specular); 
+  this->shader.setVec3("light.position",  cam->lightsource.position);
+  this->shader.setVec3("light.ambient",  cam->lightsource.ambient);
+  this->shader.setVec3("light.diffuse",  cam->lightsource.diffuse); // darken diffuse light a bit
+  this->shader.setVec3("light.specular", cam->lightsource.specular); 
 
 
-  renderer.shader.setVec3("light_pos", glm::vec3(0, 0, 0));
-  renderer.shader.setVec3("view_pos", renderer.cam.pos);
+  this->shader.setVec3("light_pos", glm::vec3(0, 0, 0));
+  this->shader.setVec3("view_pos", cam->pos);
   
-  renderer.shader.setMat4("transform", this->transform_mat);
-  renderer.shader.setMat4("model", this->model_mat);
-  renderer.shader.setMat4("parent_model", this->parent_model_mat);
-  renderer.shader.setMat4("view", renderer.cam.view);
-  renderer.shader.setMat4("projection", renderer.cam.projection);
+  this->shader.setMat4("transform", this->transform_mat);
+  this->shader.setMat4("model", this->model_mat);
+  this->shader.setMat4("parent_model", this->parent_model_mat);
+  this->shader.setMat4("view", cam->view);
+  this->shader.setMat4("projection", cam->projection);
 
   glDrawElements(GL_TRIANGLES, this->num_indices, GL_UNSIGNED_INT, (void *)0);
   glBindVertexArray(0);
@@ -298,6 +298,12 @@ void Model::setName(const char *name_str)
 {
   strcpy(this->name, name_str);
 }
+
+void Model::setShader(Shader shader_obj)
+{
+  this->shader = shader_obj;
+}
+
 
 void Model::translate(glm::vec3 translation)
 {

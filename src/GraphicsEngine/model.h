@@ -13,6 +13,8 @@
 #include "../include/glm/gtc/type_ptr.hpp"
 
 #include "camera.h"
+#include "material.h"
+
 
 #define ELEMENTS_PER_VERTEX (3 + 3 + 2)
 
@@ -24,40 +26,12 @@ struct Vertex {
 };
 
 
-class Texture {
-
-  public:
-    std::string m_filename;
-    GLenum m_texture_obj;
-
-    Texture() {};
-
-    bool load(const char *filepath);
-    void bind(GLenum texture_unit);
-
-};
-
-
-struct Material {
-  glm::vec3 ambient = glm::vec3(0.0f);
-  Texture diffuse;
-  Texture specular;
-  float spec_exponent = 0.5f;
-};
-
-struct Light {
-  glm::vec3 position = glm::vec3(0.0f);
-  glm::vec3 ambient = glm::vec3(0.3f);
-  glm::vec3 diffuse = glm::vec3(1.0f);
-  glm::vec3 specular = glm::vec3(1.0f);
-};
-
-
 class Model {
 
   public:
 
     GLuint VAO, VBO, IBO;
+    Shader shader;
     float *positions;
     float *normals;
     int num_polygons;
@@ -83,9 +57,10 @@ class Model {
     Model();
 
     void load(const char *filepath);
-    void draw();
+    void draw(Camera *cam);
 
     void setName(const char *name_str);
+    void setShader(Shader shader_obj);
 
     void set_pos(glm::vec3 position);
     void translate(glm::vec3 translation);

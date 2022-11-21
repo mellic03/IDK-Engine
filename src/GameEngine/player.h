@@ -25,11 +25,10 @@ class Player {
     float move_speed = 8.0f;
     float jump_force = 8.0f;
 
-    Player();
+    Player(Camera *cam);
+    void key_input(Camera *cam);
+    void mouse_input(Camera *cam, SDL_Event *event);
 
-    void key_input(void);
-    void mouse_input(SDL_Event *event);
-
-    void draw(void);
+    void draw(Camera *cam);
 
 };

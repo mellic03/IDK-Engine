@@ -23,12 +23,12 @@ void ModelContainer::add(Model *model)
   }
 }
 
-void ModelContainer::draw()
+void ModelContainer::draw(Camera *cam)
 {
   Model *modelptr = this->head;
   while (modelptr != NULL)
   {
-    modelptr->draw();
+    modelptr->draw(cam);
     modelptr = modelptr->next;
   }
 }

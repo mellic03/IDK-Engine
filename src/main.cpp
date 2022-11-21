@@ -20,7 +20,10 @@
 
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GameEngine/GameEngine.h"
-#include "GraphicsEngine/renderer.h"
+
+
+Camera cam;
+
 
 int ENTRY(int argc, char **argv)
 {
@@ -37,8 +40,8 @@ int ENTRY(int argc, char **argv)
     "Test OpenGL",
     SDL_WINDOWPOS_CENTERED,
     SDL_WINDOWPOS_CENTERED,
-    renderer.SCR_width,
-    renderer.SCR_height,
+    cam.SCR_width,
+    cam.SCR_height,
     SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
   );
 
@@ -62,16 +65,12 @@ int ENTRY(int argc, char **argv)
 
   SDL_Event event;
 
-  ShaderSource basic = parse_shader("assets/shaders/basic.glsl");
-  renderer.mat_shader = create_shader(basic.vertex_source, basic.fragment_source);
-  renderer.shader.set(create_shader(basic.vertex_source, basic.fragment_source));
-  renderer.shader.use();
+  cam.init();
+  Player player(&cam);
 
-  Player player;
-
-  Model skybox;  skybox.load("assets/model/skybox.obj");
-  Model cube;    cube.load("assets/model/cube.obj");
-  Model ground;  ground.load("assets/model/ground.obj");
+  Model skybox;  skybox.load("assets/model/skybox.obj");  skybox.setShader(cam.shaders[SHADER_WORLDSPACE]);
+  Model cube;    cube.load("assets/model/cube.obj");      cube.setShader(cam.shaders[SHADER_WORLDSPACE]);
+  Model ground;  ground.load("assets/model/ground.obj");  ground.setShader(cam.shaders[SHADER_WORLDSPACE]);
   
 
   ModelContainer render_container;
@@ -104,7 +103,7 @@ int ENTRY(int argc, char **argv)
   // RENDER LOOP
   //----------------------------------------
   cube.translate(glm::vec3(2.0f, -5.8f, 0.0f));
-  renderer.lightsource.position = {0.0f, -5.8f, 0.0f};
+  cam.lightsource.position = {0.0f, -5.8f, 0.0f};
 
   Uint64 start = SDL_GetPerformanceCounter(), end = SDL_GetPerformanceCounter();
   while (1)
@@ -112,7 +111,7 @@ int ENTRY(int argc, char **argv)
     start = end;
     end = SDL_GetPerformanceCounter();
 
-    SDL_GetWindowSize(window, &renderer.SCR_width, &renderer.SCR_height);
+    SDL_GetWindowSize(window, &cam.SCR_width, &cam.SCR_height);
 
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
@@ -131,10 +130,10 @@ int ENTRY(int argc, char **argv)
       modelptr = modelptr->next;
     }
 
-    ImGui::SliderFloat("FOV", &renderer.fov, 45.0f, 110.0f);
-    ImGui::ColorEdit3("ambient", (float*)&renderer.lightsource.ambient);
-    ImGui::ColorEdit3("diffuse", (float*)&renderer.lightsource.diffuse);
-    ImGui::ColorEdit3("specular", (float*)&renderer.lightsource.specular);
+    ImGui::SliderFloat("FOV", &cam.fov, 45.0f, 110.0f);
+    ImGui::ColorEdit3("ambient", (float*)&cam.lightsource.ambient);
+    ImGui::ColorEdit3("diffuse", (float*)&cam.lightsource.diffuse);
+    ImGui::ColorEdit3("specular", (float*)&cam.lightsource.specular);
     // if (ImGui::Button("Button"))
     //     counter++;
     // ImGui::SameLine();
@@ -159,26 +158,24 @@ int ENTRY(int argc, char **argv)
         ImGui_ImplSDL2_ProcessEvent(&event);
       if (event.type == SDL_QUIT)
         exit(0);
-      player.mouse_input(&event);
+      player.mouse_input(&cam, &event);
     }
     
 
     physics_container.collide(&player);
-    render_container.draw();
-    player.key_input();
+    render_container.draw(&cam);
+    player.key_input(&cam);
 
 
     glClear(GL_DEPTH_BUFFER_BIT);
-    player.draw();
+    player.draw(&cam);
 
-    cube.rot_y(0.2f);
-    cube.rot_x(0.4f);
 
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     SDL_GL_SwapWindow(window);
     double dtime_milliseconds = ((end - start)*1000 / (double)SDL_GetPerformanceFrequency() );
-    renderer.deltaTime = dtime_milliseconds / 1000;
+    cam.deltaTime = dtime_milliseconds / 1000;
   }
   //----------------------------------------
 

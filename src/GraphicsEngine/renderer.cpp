@@ -9,10 +9,13 @@
 #include <sstream>
 #include "renderer.h"
 
-Renderer renderer;
-
 Renderer::Renderer()
 {
+  ShaderSource worldspace_src = parse_shader("assets/shaders/basic.glsl");
+  Shader worldspace;
+  worldspace.set(create_shader(worldspace_src.vertex_source, worldspace_src.fragment_source));
+  this->shaders[SHADER_WORLDSPACE] = worldspace;
+  
 }
 
 ShaderSource parse_shader(const std::string &filepath)

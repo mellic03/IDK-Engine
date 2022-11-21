@@ -8,22 +8,21 @@ glm::vec3 lerp(glm::vec3 from, glm::vec3 to, float alpha)
   return from + direc;
 }
 
-void Weapon::load_model(const char *filepath)
+void Weapon::load_model(const char *filepath, Camera *cam)
 {
   this->model.load(filepath);
+  this->model.setShader(cam->shaders[SHADER_VIEWSPACE]);
 }
 
-void Weapon::draw(void)
+void Weapon::draw(Camera *cam)
 {
-  renderer.cam.projection = glm::perspective(glm::radians(renderer.fov), (float)renderer.SCR_width/(float)renderer.SCR_height, 0.001f, RENDER_DISTANCE);
-  glm::mat4 backup_view = renderer.cam.view;
-  renderer.cam.view = glm::mat4(1.0f);
+  cam->projection = glm::perspective(glm::radians(cam->fov), (float)cam->SCR_width/(float)cam->SCR_height, 0.001f, RENDER_DISTANCE);
 
   this->movement_offset -= (1.0f / this->sway) * this->movement_offset; 
 
 
-  float x_offset = 0.001f * sin(renderer.cam.headbob_value);
-  float y_offset = 0.001f * cos(renderer.cam.headbob_value);
+  float x_offset = 0.001f * sin(cam->headbob_value);
+  float y_offset = 0.001f * cos(cam->headbob_value);
 
 
   if (this->aiming)
@@ -33,9 +32,8 @@ void Weapon::draw(void)
   
   this->model.set_pos(this->model.pos);
 
-  this->model.draw();
+  this->model.draw(cam);
 
-  renderer.cam.view = backup_view;
-  renderer.cam.projection = glm::perspective(glm::radians(renderer.fov), (float)renderer.SCR_width/(float)renderer.SCR_height, NEAR_PLANE_DIST, RENDER_DISTANCE);
+  cam->projection = glm::perspective(glm::radians(cam->fov), (float)cam->SCR_width/(float)cam->SCR_height, NEAR_PLANE_DIST, RENDER_DISTANCE);
 }
 

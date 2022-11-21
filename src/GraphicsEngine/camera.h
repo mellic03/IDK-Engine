@@ -16,6 +16,8 @@
 #include "../include/glm/gtc/matrix_transform.hpp"
 #include "../include/glm/gtc/type_ptr.hpp"
 
+#include "material.h"
+
 
 class Camera {
 
@@ -36,6 +38,17 @@ class Camera {
     float pitch = 0, roll = 0, yaw = -90;
     float rot_speed = 5.0f;
 
+
+    Shader shaders[1];
+    Light lightsource;
+    float deltaTime = 0.0f;
+    float fov = 90.0f;
+
+    int SCR_width = 1500;
+    int SCR_height = 900;
+
+
+    void init(void);
     void input();
 
 };
