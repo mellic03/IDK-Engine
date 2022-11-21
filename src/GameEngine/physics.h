@@ -8,10 +8,8 @@
 
 class ModelContainer {
 
-  private:
-    Model *head = NULL;
-
   public:
+    Model *head = NULL;
     ModelContainer(void) {};
 
     void add(Model *model);

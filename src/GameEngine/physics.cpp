@@ -116,7 +116,8 @@ void ModelContainer::collide(Player *player)
       glm::vec3 v0 = modelptr->vertices[i+0].position + modelptr->pos;
       glm::vec3 v1 = modelptr->vertices[i+1].position + modelptr->pos;
       glm::vec3 v2 = modelptr->vertices[i+2].position + modelptr->pos;
-      glm::vec3 normal = modelptr->vertices[i+2].normal;
+      glm::vec3 normal = modelptr->vertices[i+2].face_normal;
+
       // glm::vec4 tnorm = glm::vec4(normal.x, normal.y, normal.z, 0.0f) * modelptr->transform_mat;
       // normal = glm::vec3(tnorm.x, tnorm.y, tnorm.z);
 

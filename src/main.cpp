@@ -4,6 +4,9 @@
   #define ENTRY WinMain
 #endif
 
+#include "include/imgui/imgui.h"
+#include "include/imgui/imgui_impl_sdl.h"
+#include "include/imgui/imgui_impl_opengl3.h"
 
 #include <iostream>
 #include <GL/glew.h>
@@ -18,9 +21,7 @@
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GameEngine/GameEngine.h"
 
-#include "include/imgui/imgui.h"
-#include "include/imgui/imgui_impl_sdl.h"
-#include "include/imgui/imgui_impl_opengl3.h"
+
 
 int ENTRY(int argc, char **argv)
 {
@@ -47,8 +48,10 @@ int ENTRY(int argc, char **argv)
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
 
+
   gl_context = SDL_GL_CreateContext(window);
   SDL_GL_MakeCurrent(window, gl_context);
+  SDL_GL_SetSwapInterval(1); // vsync
   SDL_SetRelativeMouseMode(SDL_TRUE);
 
   if (glewInit() != GLEW_OK)
@@ -60,13 +63,9 @@ int ENTRY(int argc, char **argv)
 
   SDL_Event event;
 
-  ShaderSource material = parse_shader("assets/shaders/basic.glsl");
-  renderer.mat_shader = create_shader(material.vertex_source, material.fragment_source);
-
-  // ShaderSource lightsource = parse_shader("assets/shaders/lightsource.glsl");
-  // renderer.light_shader = create_shader(lightsource.vertex_source, lightsource.fragment_source);
-
-
+  ShaderSource basic = parse_shader("assets/shaders/basic.glsl");
+  renderer.mat_shader = create_shader(basic.vertex_source, basic.fragment_source);
+  renderer.shader.set(create_shader(basic.vertex_source, basic.fragment_source));
 
   Player player;
 
@@ -74,8 +73,6 @@ int ENTRY(int argc, char **argv)
   Model cube;    cube.load("assets/cube/cube.obj");
   Model ground;  ground.load("assets/cube/ground.obj");
   
-  cube.set_emmission(glm::vec4(0.1, 0.1, 0.1, 1.0));
-  ground.set_emmission(glm::vec4(0.1, 0.1, 0.1, 1.0));
 
   ModelContainer render_container;
   render_container.add(&cube);
@@ -86,36 +83,100 @@ int ENTRY(int argc, char **argv)
   physics_container.add(&cube);
   physics_container.add(&ground);
 
+
+
+
+  // IMGUI
+  //----------------------------------------
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGuiIO& io = ImGui::GetIO(); (void)io;
+  ImGui::StyleColorsDark();
+  //ImGui::StyleColorsLight();
+  ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
+  ImGui_ImplOpenGL3_Init("#version 330");
+  //----------------------------------------
+
+
+
+
+
+
   // RENDER LOOP
   //----------------------------------------
-  cube.translate(glm::vec3(0.0f, -7.0f, 0.0f));
+  bool show_demo_window = true;
+  glm::vec3 color;
+  cube.translate(glm::vec3(0.0f, -0.6f, 0.0f));
   Uint64 start = SDL_GetPerformanceCounter(), end = SDL_GetPerformanceCounter();
   while (1)
   {
     start = end;
     end = SDL_GetPerformanceCounter();
 
+    // Start the Dear ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+    ImGui::NewFrame();
+
+
+
+    static float f = 0.0f;
+    static int counter = 0;
+
+    ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+    ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+
+    Model *modelptr = render_container.head;
+    while (modelptr != NULL)
+    {
+      ImGui::Text("name: %s", modelptr->name);
+      modelptr = modelptr->next;
+    }
+
+    ImGui::SliderFloat("float", &renderer.fov, 45.0f, 110.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::ColorEdit3("ambient", (float*)&renderer.lightsource.ambient); // Edit 3 floats representing a color
+    ImGui::ColorEdit3("diffuse", (float*)&renderer.lightsource.diffuse); // Edit 3 floats representing a color
+    ImGui::ColorEdit3("specular", (float*)&renderer.lightsource.specular); // Edit 3 floats representing a color
+
+    if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+        counter++;
+    ImGui::SameLine();
+    ImGui::Text("counter = %d", counter);
+
+    ImGui::Text("P(x, y, z): %.2f, %.2f, %.2f", player.pos->x, player.pos->y, player.pos->z);
+    ImGui::Text("V(x, y, z): %.2f, %.2f, %.2f", player.vel.x, player.vel.y, player.vel.z);
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    ImGui::End();
+
+
+    ImGui::Render();
+
+
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
 
-
+    while (SDL_PollEvent(&event))
+    {
+      if (!SDL_GetRelativeMouseMode())
+        ImGui_ImplSDL2_ProcessEvent(&event);
+      if (event.type == SDL_QUIT)
+        exit(0);
+      player.mouse_input(&event);
+    }
     
 
     physics_container.collide(&player);
     render_container.draw();
+    player.key_input();
+
 
     glClear(GL_DEPTH_BUFFER_BIT);
-    player.input(&event);
-
-    cube.translate(glm::vec3(0.0f, 0.003f, 0.0f));
+    player.draw();
 
 
-
-
-
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     SDL_GL_SwapWindow(window);
-
     double dtime_milliseconds = ((end - start)*1000 / (double)SDL_GetPerformanceFrequency() );
     renderer.deltaTime = dtime_milliseconds / 1000;
   }

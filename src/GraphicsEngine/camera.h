@@ -41,6 +41,6 @@ class Camera {
       float rot_speed = 55.0f;
     #endif
 
-    void input(SDL_Event *event);
+    void input();
 
 };

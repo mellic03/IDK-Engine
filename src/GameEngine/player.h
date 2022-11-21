@@ -27,6 +27,9 @@ class Player {
 
     Player();
 
-    void input(SDL_Event *event);
+    void key_input(void);
+    void mouse_input(SDL_Event *event);
+
+    void draw(void);
 
 };

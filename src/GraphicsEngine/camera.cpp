@@ -27,7 +27,7 @@ Camera::Camera()
 }
 
 
-void Camera::input(SDL_Event *event)
+void Camera::input()
 {
   const Uint8 *state = SDL_GetKeyboardState(NULL);
 
@@ -35,8 +35,6 @@ void Camera::input(SDL_Event *event)
   temp_front = glm::normalize(temp_front);
 
   // this->vel.y = (this->vel.y < -0.1) ? -0.1 : this->vel.y;
-
-
 
   bool headbob = false;
 

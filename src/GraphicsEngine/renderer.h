@@ -15,6 +15,7 @@
 #include "../include/glm/gtc/type_ptr.hpp"
 
 #include "camera.h"
+#include "model.h"
 
 #define SCR_WDTH 1920
 #define SCR_HGHT 1080
@@ -27,19 +28,35 @@ extern float REN_deltaTime;
 extern Camera REN_active_cam;
 extern GLuint REN_active_shader;
 
-typedef enum { SHADER_NONE=-1, SHADER_VERTEX, SHADER_FRAGMENT } ShaderType;
+enum ShaderType { SHADER_NONE=-1, SHADER_VERTEX, SHADER_FRAGMENT };
 
-typedef struct {
+struct ShaderSource {
   
   std::string vertex_source;
   std::string fragment_source;
 
-} ShaderSource;
+};
 
 
 ShaderSource parse_shader(const std::string &filepath);
 unsigned int compile_shader(unsigned int type, const std::string &source);
 unsigned int create_shader(const std::string &vertex_shader, const std::string &fragment_shader);
+
+
+class Shader {
+  private:
+    GLuint id;
+
+  public:
+    Shader() { };
+    void set(GLuint shader_id) { this->id = shader_id; };
+    GLuint get(void) { return this->id; };
+    void use(void) { glUseProgram(this->id); };
+    void setVec3(const char *uniform_name, glm::vec3 vec);
+    void setMat4(const char *uniform_name, glm::mat4 mat);
+    void setFloat(const char *uniform_name, float value);
+
+};
 
 
 class Renderer {
@@ -48,10 +65,12 @@ class Renderer {
     Camera cam;
     GLuint light_shader;
     GLuint mat_shader;
+    Shader shader;
+    Light lightsource;
     float deltaTime = 0.0f;
     float fov = 90.0f;
 
-    Renderer() { };
+    Renderer();
 
 };
 

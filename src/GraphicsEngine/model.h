@@ -19,7 +19,22 @@
 struct Vertex {
   glm::vec3 position;
   glm::vec3 normal;
+  glm::vec3 face_normal;
   glm::vec2 texture;
+};
+
+struct Material {
+  glm::vec3 ambient = glm::vec3(0.0f);
+  glm::vec3 diffuse = glm::vec3(0.0f);
+  glm::vec3 specular = glm::vec3(0.0f);
+  float spec_exponent = 0.5f;
+};
+
+struct Light {
+  glm::vec3 position = glm::vec3(0.0f);
+  glm::vec3 ambient = glm::vec3(0.0f);
+  glm::vec3 diffuse = glm::vec3(0.0f);
+  glm::vec3 specular = glm::vec3(0.0f);
 };
 
 class Texture {
@@ -47,10 +62,11 @@ class Model {
     Vertex *vertices; int num_vertices;
     int *indices; int num_indices;
 
-    Texture texture; 
+    char name[64] = "empty";
 
-    glm::vec4 emmission = {1.0f, 1.0f, 1.0f, 1.0f};
-
+    Texture texture;
+    Material material;
+    
     glm::mat4 *view_mat;
     glm::mat4 model_mat;
     glm::mat4 parent_model_mat = glm::mat4(1.0f);
@@ -68,7 +84,7 @@ class Model {
     void load(const char *filepath);
     void draw();
 
-    void set_emmission(glm::vec4 emission_v);
+    void setName(const char *name_str);
 
     void set_pos(glm::vec3 position);
     void translate(glm::vec3 translation);

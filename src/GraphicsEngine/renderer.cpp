@@ -16,6 +16,9 @@
 
 Renderer renderer;
 
+Renderer::Renderer()
+{
+}
 
 ShaderSource parse_shader(const std::string &filepath)
 {
@@ -85,3 +88,22 @@ unsigned int create_shader(const std::string &vertex_shader, const std::string &
   return program;
 }
 
+
+void Shader::setVec3(const char *uniform_name, glm::vec3 vec)
+{
+  int uniform_loc = glGetUniformLocation(this->id, uniform_name);
+  glUniform3fv(uniform_loc, 1, glm::value_ptr(vec));
+}
+
+void Shader::setMat4(const char *uniform_name, glm::mat4 mat)
+{
+  int uniform_loc = glGetUniformLocation(this->id, uniform_name);
+  glUniformMatrix4fv(uniform_loc, 1, GL_FALSE, glm::value_ptr(mat));
+}
+
+void Shader::setFloat(const char *uniform_name, float value)
+{
+  int uniform_loc = glGetUniformLocation(this->id, uniform_name);
+  glUniform1f(uniform_loc, value);
+
+}

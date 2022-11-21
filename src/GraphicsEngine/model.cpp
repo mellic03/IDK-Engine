@@ -52,9 +52,6 @@ void Texture::bind(GLenum texture_unit)
 
 
 
-
-
-
 Model::Model(void)
 {
   glGenVertexArrays(1, &this->VAO);
@@ -66,6 +63,8 @@ Model::Model(void)
 
 void Model::load(const char *filepath)
 {
+  this->setName(filepath);
+
   FILE *fh = fopen(filepath, "r");
   if (fh == NULL)
   {
@@ -127,17 +126,23 @@ void Model::load(const char *filepath)
     else if (buffer[0] == 'f' && buffer[1] == ' ')
     {
       sscanf(buffer, "f %d/%d/%d %d/%d/%d %d/%d/%d", &p1, &t1, &n1, &p2, &t2, &n2, &p3, &t3, &n3);
-      this->vertices[poly_count+0].position = positions[p1-1];
-      this->vertices[poly_count+0].normal   = normals[n1-1];
-      this->vertices[poly_count+0].texture  = uvs[t1-1];
 
-      this->vertices[poly_count+1].position = positions[p2-1];
-      this->vertices[poly_count+1].normal   = normals[n2-1];
-      this->vertices[poly_count+1].texture  = uvs[t2-1];
+      glm::vec3 face_normal = glm::normalize(glm::cross(positions[p2-1] - positions[p1-1], positions[p3-1] - positions[p1-1]));
 
-      this->vertices[poly_count+2].position = positions[p3-1];
-      this->vertices[poly_count+2].normal   = normals[n3-1];
-      this->vertices[poly_count+2].texture  = uvs[t3-1];
+      this->vertices[poly_count+0].position     = positions[p1-1];
+      this->vertices[poly_count+0].normal       = normals[n1-1];
+      this->vertices[poly_count+0].face_normal  = face_normal;
+      this->vertices[poly_count+0].texture      = uvs[t1-1];
+
+      this->vertices[poly_count+1].position     = positions[p2-1];
+      this->vertices[poly_count+1].normal       = normals[n2-1];
+      this->vertices[poly_count+1].face_normal  = face_normal;
+      this->vertices[poly_count+1].texture      = uvs[t2-1];
+
+      this->vertices[poly_count+2].position     = positions[p3-1];
+      this->vertices[poly_count+2].normal       = normals[n3-1];
+      this->vertices[poly_count+2].face_normal  = face_normal;
+      this->vertices[poly_count+2].texture      = uvs[t3-1];
 
       poly_count += 3;
     }
@@ -172,7 +177,31 @@ void Model::load(const char *filepath)
   
   while (fgets(buffer, 64, fh) != NULL)
   {
-    if (buffer[0] == 'm' && buffer[1] == 'a')
+    if (buffer[0] == 'N' && buffer[1] == 's')
+    {
+      sscanf(buffer, "Ns %f", &x);
+      this->material.spec_exponent = x;
+    }
+
+    else if (buffer[0] == 'K' && buffer[1] == 'a')
+    {
+      sscanf(buffer, "Ka %f %f %f", &x, &y, &z);
+      this->material.ambient = {x, y, z};
+    }
+
+    else if (buffer[0] == 'K' && buffer[1] == 's')
+    {
+      sscanf(buffer, "Ks %f %f %f", &x, &y, &z);
+      this->material.specular = {x, y, z};
+    }
+
+    else if (buffer[0] == 'K' && buffer[1] == 'd')
+    {
+      sscanf(buffer, "Kd %f %f %f", &x, &y, &z);
+      this->material.diffuse = {x, y, z};
+    }
+
+    else if (buffer[0] == 'm' && buffer[1] == 'a')
     {
       char *token = strtok(buffer, " ");
       token = strtok(NULL, " ");
@@ -192,31 +221,27 @@ void Model::load(const char *filepath)
     }
   }
 
-
-  glUseProgram(renderer.mat_shader);
-
   glBindVertexArray(this->VAO);
 
   glBindBuffer(GL_ARRAY_BUFFER, this->VBO); 
   glBufferData(GL_ARRAY_BUFFER, this->num_vertices * sizeof(Vertex), this->vertices, GL_STATIC_DRAW);
 
-  // Positions
+  // Position
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)0);
   glEnableVertexAttribArray(0);
 
-  // Normals
+  // Vertex normal
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(3*sizeof(float)));
   glEnableVertexAttribArray(1);
 
-  // UVs
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(6*sizeof(float)));
+  // Face normal
+  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(6*sizeof(float)));
   glEnableVertexAttribArray(2);
+
+  // UV
+  glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(9*sizeof(float)));
+  glEnableVertexAttribArray(3);
   
-
-  this->texture.bind(GL_TEXTURE0);
-  glUniform1i(glGetUniformLocation(renderer.mat_shader, "gSampler"), 0);
-
-
   // Indexing
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->IBO);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->num_indices * sizeof(GLuint), this->indices, GL_STATIC_DRAW);
@@ -227,49 +252,41 @@ void Model::draw()
 {
   glBindVertexArray(this->VAO);
 
-  glUseProgram(renderer.mat_shader);
+  renderer.shader.use();
+
   this->texture.bind(GL_TEXTURE0);
-  glUniform1i(glGetUniformLocation(renderer.mat_shader, "gSampler"), 0);
 
   this->model_mat = glm::mat4(1.0f);
   this->model_mat = glm::translate(this->model_mat, this->pos);
 
-  int emmission_loc = glGetUniformLocation(renderer.mat_shader, "emmission");
-  glUniform4f(emmission_loc, this->emmission.x, this->emmission.y, this->emmission.z, this->emmission.w);
+  // Model material
+  renderer.shader.setVec3("material.ambient", this->material.ambient);
+  renderer.shader.setVec3("material.diffuse", this->material.diffuse);
+  renderer.shader.setVec3("material.specular", this->material.specular);
+  renderer.shader.setFloat("material.spec_exponent", this->material.spec_exponent);
 
-  int lightpos_loc = glGetUniformLocation(renderer.mat_shader, "light_pos");
-  glUniform3f(lightpos_loc, 0, 0, 0);
+  renderer.shader.setVec3("light.ambient",  renderer.lightsource.ambient);
+  renderer.shader.setVec3("light.diffuse",  renderer.lightsource.diffuse); // darken diffuse light a bit
+  renderer.shader.setVec3("light.specular", renderer.lightsource.specular); 
 
-  // int view_loc = glGetUniformLocation(renderer.mat_shader, "view_pos");
-  // glUniform3f(emmission_loc, 0, 0, 0);
 
-  int transform_loc = glGetUniformLocation(renderer.mat_shader, "transform");
-  glUniformMatrix4fv(transform_loc, 1, GL_FALSE, glm::value_ptr(this->transform_mat));
-
-  int model_loc = glGetUniformLocation(renderer.mat_shader, "model");
-  glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(this->model_mat));
-
-  int parent_model_loc = glGetUniformLocation(renderer.mat_shader, "parent_model");
-  glUniformMatrix4fv(parent_model_loc, 1, GL_FALSE, glm::value_ptr(this->parent_model_mat));
-
-  int view_loc = glGetUniformLocation(renderer.mat_shader, "view");
-  glUniformMatrix4fv(view_loc, 1, GL_FALSE, glm::value_ptr(renderer.cam.view));
-
-  int projection_loc = glGetUniformLocation(renderer.mat_shader, "projection");
-  glUniformMatrix4fv(projection_loc, 1, GL_FALSE, glm::value_ptr(renderer.cam.projection));
-
+  renderer.shader.setVec3("light_pos", glm::vec3(0, 0, 0));
+  renderer.shader.setVec3("view_pos", renderer.cam.pos);
+  
+  renderer.shader.setMat4("transform", this->transform_mat);
+  renderer.shader.setMat4("model", this->model_mat);
+  renderer.shader.setMat4("parent_model", this->parent_model_mat);
+  renderer.shader.setMat4("view", renderer.cam.view);
+  renderer.shader.setMat4("projection", renderer.cam.projection);
 
   glDrawElements(GL_TRIANGLES, this->num_indices, GL_UNSIGNED_INT, (void *)0);
   glBindVertexArray(0);
 }
 
-
-void Model::set_emmission(glm::vec4 emmission_v)
+void Model::setName(const char *name_str)
 {
-  this->emmission = emmission_v;
+  strcpy(this->name, name_str);
 }
-
-
 
 void Model::translate(glm::vec3 translation)
 {
