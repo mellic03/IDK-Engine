@@ -172,6 +172,7 @@ int ENTRY(int argc, char **argv)
     player.draw();
 
     cube.rot_y(0.2f);
+    cube.rot_x(0.4f);
 
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

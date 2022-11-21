@@ -256,14 +256,11 @@ void Model::draw()
 
   // Then bind the uniform samplers to texture units:
   glUseProgram(renderer.shader.get());
-  glUniform1i(diffloc, 1);
-  glUniform1i(specloc, 0);
+  glUniform1i(diffloc, 0);
+  glUniform1i(specloc, 1);
 
-  glActiveTexture(GL_TEXTURE0); // Texture unit 0
-  glBindTexture(GL_TEXTURE_2D, diffloc);
-
-  glActiveTexture(GL_TEXTURE1); // Texture unit 1
-  glBindTexture(GL_TEXTURE_2D, specloc);
+ this->material.diffuse.bind(GL_TEXTURE0);
+ this->material.specular.bind(GL_TEXTURE1);
 
 
   glBindVertexArray(this->VAO);
