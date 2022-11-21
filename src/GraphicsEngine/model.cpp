@@ -14,7 +14,7 @@ bool Texture::load(const char *filepath)
 
   // stbi_set_flip_vertically_on_load(1);
   int width, height, bpp;
-  unsigned char *data = stbi_load(this->m_filename.c_str(), &width, &height, &bpp, 3);
+  unsigned char *data = stbi_load(this->m_filename.c_str(), &width, &height, &bpp, STBI_rgb);
   if (!data)
   {
     printf("Error loading texture from \"%s\" --%s\n", this->m_filename.c_str(), stbi_failure_reason());
@@ -45,10 +45,6 @@ void Texture::bind(GLenum texture_unit)
   glActiveTexture(texture_unit);
   glBindTexture(GL_TEXTURE_2D, this->m_texture_obj);
 }
-
-
-
-
 
 
 
@@ -192,13 +188,13 @@ void Model::load(const char *filepath)
     else if (buffer[0] == 'K' && buffer[1] == 's')
     {
       sscanf(buffer, "Ks %f %f %f", &x, &y, &z);
-      this->material.specular = {x, y, z};
+      // this->material.specular = {x, y, z};
     }
 
     else if (buffer[0] == 'K' && buffer[1] == 'd')
     {
       sscanf(buffer, "Kd %f %f %f", &x, &y, &z);
-      this->material.diffuse = {x, y, z};
+      // this->material.diffuse = {x, y, z};
     }
 
     else if (buffer[0] == 'm' && buffer[1] == 'a')
@@ -215,7 +211,8 @@ void Model::load(const char *filepath)
       len = strlen(asset_path);
       asset_path[len] = '\0';
 
-      this->texture.load(asset_path);
+      this->material.diffuse.load(asset_path);
+      this->material.specular.load("assets/model/container_specular.png");
 
       break;
     }
@@ -245,21 +242,33 @@ void Model::load(const char *filepath)
   // Indexing
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->IBO);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->num_indices * sizeof(GLuint), this->indices, GL_STATIC_DRAW);
+
+
 }
 
 
 void Model::draw()
 {
+
+  // Get the uniform variables location. You've probably already done that before...
+  GLuint diffloc = glGetUniformLocation(renderer.shader.get(), "material.diffuse");
+  GLuint specloc  = glGetUniformLocation(renderer.shader.get(), "material.specular");
+
+  // Then bind the uniform samplers to texture units:
+  glUseProgram(renderer.shader.get());
+  glUniform1i(diffloc, 1);
+  glUniform1i(specloc, 0);
+
+  glActiveTexture(GL_TEXTURE0); // Texture unit 0
+  glBindTexture(GL_TEXTURE_2D, diffloc);
+
+  glActiveTexture(GL_TEXTURE1); // Texture unit 1
+  glBindTexture(GL_TEXTURE_2D, specloc);
+
+
   glBindVertexArray(this->VAO);
 
-  renderer.shader.use();
 
-  this->texture.bind(GL_TEXTURE0);
-
-  // Model material
-  renderer.shader.setInt("material.diffuse", GL_TEXTURE0);
-  renderer.shader.setVec3("material.ambient", this->material.ambient);
-  renderer.shader.setVec3("material.specular", this->material.specular);
   renderer.shader.setFloat("material.spec_exponent", this->material.spec_exponent);
 
   renderer.shader.setVec3("light.position",  renderer.lightsource.position);
@@ -279,6 +288,13 @@ void Model::draw()
 
   glDrawElements(GL_TRIANGLES, this->num_indices, GL_UNSIGNED_INT, (void *)0);
   glBindVertexArray(0);
+}
+
+void Model::set_pos(glm::vec3 point)
+{
+  this->pos = point;
+  this->model_mat = glm::mat4(1.0f);
+  this->model_mat = glm::translate(this->transform_mat, point);
 }
 
 void Model::setName(const char *name_str)

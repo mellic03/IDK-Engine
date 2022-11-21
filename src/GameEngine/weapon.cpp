@@ -1,12 +1,11 @@
 #include "weapon.h"
 
-glm::vec4 lerp(glm::vec3 from, glm::vec3 to, float alpha)
+glm::vec3 lerp(glm::vec3 from, glm::vec3 to, float alpha)
 {
   glm::vec3 direc = to - from;
   float dist = glm::length(direc);
   direc *= alpha;
-  glm::vec3 result = from + direc;
-  return glm::vec4(result.x, result.y, result.z, 1.0f);
+  return from + direc;
 }
 
 void Weapon::load_model(const char *filepath)
@@ -31,6 +30,8 @@ void Weapon::draw(void)
     this->model.pos = lerp(glm::vec3(this->model.pos), this->aim_pos + this->movement_offset, 0.055f);
   else
     this->model.pos = lerp(glm::vec3(this->model.pos), this->hip_pos + this->movement_offset, 0.055f);
+  
+  this->model.set_pos(this->model.pos);
 
   this->model.draw();
 

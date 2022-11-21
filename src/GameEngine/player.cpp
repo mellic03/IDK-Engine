@@ -121,5 +121,5 @@ void Player::mouse_input(SDL_Event *event)
 
 void Player::draw(void)
 {
-  // this->active_weapon->draw();
+  this->active_weapon->draw();
 }

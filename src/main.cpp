@@ -65,6 +65,7 @@ int ENTRY(int argc, char **argv)
   ShaderSource basic = parse_shader("assets/shaders/basic.glsl");
   renderer.mat_shader = create_shader(basic.vertex_source, basic.fragment_source);
   renderer.shader.set(create_shader(basic.vertex_source, basic.fragment_source));
+  renderer.shader.use();
 
   Player player;
 
@@ -95,7 +96,6 @@ int ENTRY(int argc, char **argv)
   ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
   ImGui_ImplOpenGL3_Init("#version 330");
   //----------------------------------------
-
 
 
 

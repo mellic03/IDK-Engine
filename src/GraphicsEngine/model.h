@@ -23,19 +23,6 @@ struct Vertex {
   glm::vec2 texture;
 };
 
-struct Material {
-  glm::vec3 ambient = glm::vec3(0.0f);
-  glm::vec3 diffuse = glm::vec3(0.0f);
-  glm::vec3 specular = glm::vec3(0.0f);
-  float spec_exponent = 0.5f;
-};
-
-struct Light {
-  glm::vec3 position = glm::vec3(0.0f);
-  glm::vec3 ambient = glm::vec3(0.3f);
-  glm::vec3 diffuse = glm::vec3(1.0f);
-  glm::vec3 specular = glm::vec3(1.0f);
-};
 
 class Texture {
 
@@ -50,6 +37,22 @@ class Texture {
 
 };
 
+
+struct Material {
+  glm::vec3 ambient = glm::vec3(0.0f);
+  Texture diffuse;
+  Texture specular;
+  float spec_exponent = 0.5f;
+};
+
+struct Light {
+  glm::vec3 position = glm::vec3(0.0f);
+  glm::vec3 ambient = glm::vec3(0.3f);
+  glm::vec3 diffuse = glm::vec3(1.0f);
+  glm::vec3 specular = glm::vec3(1.0f);
+};
+
+
 class Model {
 
   public:
@@ -63,7 +66,6 @@ class Model {
 
     char name[64] = "empty";
 
-    Texture texture;
     Material material;
     
     glm::mat4 *view_mat;
