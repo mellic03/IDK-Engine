@@ -314,9 +314,12 @@ void Model::draw(Camera *cam)
 
 
   this->shader.setVec3("light.position",  cam->lightsource.position);
-  this->shader.setVec3("light.ambient",  cam->lightsource.ambient);
-  this->shader.setVec3("light.diffuse",  cam->lightsource.diffuse);
-  this->shader.setVec3("light.specular", cam->lightsource.specular); 
+  this->shader.setVec3("light.ambient",   cam->lightsource.ambient);
+  this->shader.setVec3("light.diffuse",   cam->lightsource.diffuse);
+  this->shader.setVec3("light.specular",  cam->lightsource.specular); 
+  this->shader.setFloat("light.constant",  cam->lightsource.constant); 
+  this->shader.setFloat("light.linear",    cam->lightsource.linear); 
+  this->shader.setFloat("light.quadratic", cam->lightsource.quadratic); 
 
 
   this->shader.setVec3("viewPos", cam->pos);
