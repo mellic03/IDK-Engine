@@ -312,14 +312,38 @@ void Model::draw(Camera *cam)
 
   glBindVertexArray(this->VAO);
 
+  char buffer[64];
+  for (int i=0; i<1; i++)
+  {
+    sprintf(buffer, "lights[%d].position", i);
+    this->shader.setVec3(buffer,  cam->lightsource.position);
 
-  this->shader.setVec3("light.position",  cam->lightsource.position);
-  this->shader.setVec3("light.ambient",   cam->lightsource.ambient);
-  this->shader.setVec3("light.diffuse",   cam->lightsource.diffuse);
-  this->shader.setVec3("light.specular",  cam->lightsource.specular); 
-  this->shader.setFloat("light.constant",  cam->lightsource.constant); 
-  this->shader.setFloat("light.linear",    cam->lightsource.linear); 
-  this->shader.setFloat("light.quadratic", cam->lightsource.quadratic); 
+    sprintf(buffer, "lights[%d].ambient", i);
+    this->shader.setVec3(buffer,  cam->lightsource.ambient);
+
+    sprintf(buffer, "lights[%d].diffuse", i);
+    this->shader.setVec3(buffer,  cam->lightsource.diffuse);
+
+    sprintf(buffer, "lights[%d].specular", i);
+    this->shader.setVec3(buffer,  cam->lightsource.specular);
+
+    sprintf(buffer, "lights[%d].constant", i);
+    this->shader.setFloat(buffer,  cam->lightsource.constant); 
+
+    sprintf(buffer, "lights[%d].linear", i);
+    this->shader.setFloat(buffer,  cam->lightsource.linear); 
+
+    sprintf(buffer, "lights[%d].quadratic", i);
+    this->shader.setFloat(buffer,  cam->lightsource.quadratic); 
+  }
+
+  // this->shader.setVec3("light.position",  cam->lightsource.position);
+  // this->shader.setVec3("light.ambient",   cam->lightsource.ambient);
+  // this->shader.setVec3("light.diffuse",   cam->lightsource.diffuse);
+  // this->shader.setVec3("light.specular",  cam->lightsource.specular); 
+  // this->shader.setFloat("light.constant",  cam->lightsource.constant); 
+  // this->shader.setFloat("light.linear",    cam->lightsource.linear); 
+  // this->shader.setFloat("light.quadratic", cam->lightsource.quadratic); 
 
 
   this->shader.setVec3("viewPos", cam->pos);

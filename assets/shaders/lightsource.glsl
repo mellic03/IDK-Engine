@@ -1,25 +1,30 @@
 #shader vertex
+#version 330 core
+layout (location = 0) in vec3 aPos;
 
-out vec4 FragColor;
-uniform vec4 objectColor;
-uniform vec4 lightColor;
+
+uniform vec3 diffuse;
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+out vec3 fragColor;
 
 void main()
 {
-  FragColor = vec4(lightColor * objectColor, 1.0);
+  gl_Position = projection * view * model * vec4(aPos, 1.0);
+  fragColor = diffuse;
 }
 
 
 #shader fragment
 
 #version 330 core
+
+in vec3 fragColor;
 out vec4 FragColor;
   
-uniform sampler2D gSampler;
-in vec3 color;
-
 void main()
 {
-  float ambient_strength = 0.2;
-  FragColor = vec4(color.xyz, 1);
+  FragColor = vec4(fragColor.xyz, 1);
 }

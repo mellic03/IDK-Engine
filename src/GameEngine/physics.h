@@ -1,3 +1,4 @@
+#pragma once
 
 #include "../GraphicsEngine/GraphicsEngine.h"
 #include "player.h"
