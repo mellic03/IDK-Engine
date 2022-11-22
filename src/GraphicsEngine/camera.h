@@ -17,7 +17,8 @@
 #include "../include/glm/gtc/type_ptr.hpp"
 
 #include "material.h"
-
+#include "shader.h"
+#include "lightsource.h"
 
 class Camera {
 
@@ -40,7 +41,7 @@ class Camera {
 
 
     Shader shaders[1];
-    Light lightsource;
+    LightSource lightsource;
     float deltaTime = 0.0f;
     float fov = 90.0f;
 

@@ -9,13 +9,16 @@
 #include "../include/glm/gtc/matrix_transform.hpp"
 #include "../include/glm/gtc/type_ptr.hpp"
 
-#include "texture.h"
 
+class Texture {
 
-struct Material {
-  glm::vec3 ambient = glm::vec3(0.0f);
-  Texture diffuse, specular, emission, normal;
-  float spec_exponent = 0.5f;
+  public:
+    std::string m_filename;
+    GLenum m_texture_obj;
+
+    Texture() {};
+
+    bool load(const char *filepath);
+    void bind(GLenum texture_unit);
+
 };
-
-
