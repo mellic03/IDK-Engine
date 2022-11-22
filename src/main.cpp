@@ -18,6 +18,8 @@
 #include <string>
 #include <sstream>
 
+#include <stdio.h>
+
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GameEngine/GameEngine.h"
 
@@ -134,7 +136,22 @@ int ENTRY(int argc, char **argv)
     ImGui::ColorEdit3("ambient", (float*)&cam.lightsource.ambient);
     ImGui::ColorEdit3("diffuse", (float*)&cam.lightsource.diffuse);
     ImGui::ColorEdit3("specular", (float*)&cam.lightsource.specular);
-    // if (ImGui::Button("Button"))
+    if (ImGui::Button("Import"))
+    {
+      FILE *fh = fopen("export.txt", "r");
+      fscanf(fh, "%f %f %f\n", &cam.lightsource.ambient.x, &cam.lightsource.ambient.y, &cam.lightsource.ambient.z);
+      fscanf(fh, "%f %f %f\n", &cam.lightsource.diffuse.x,  &cam.lightsource.diffuse.y,  &cam.lightsource.diffuse.z);
+      fscanf(fh, "%f %f %f\n", &cam.lightsource.specular.x, &cam.lightsource.specular.y, &cam.lightsource.specular.z);
+      fclose(fh);
+    }
+    if (ImGui::Button("Export"))
+    {
+      FILE *fh = fopen("export.txt", "w");
+      fprintf(fh, "%f %f %f\n", cam.lightsource.ambient.x, cam.lightsource.ambient.y, cam.lightsource.ambient.z);
+      fprintf(fh, "%f %f %f\n", cam.lightsource.diffuse.x, cam.lightsource.diffuse.y, cam.lightsource.diffuse.z);
+      fprintf(fh, "%f %f %f\n", cam.lightsource.specular.x, cam.lightsource.specular.y, cam.lightsource.specular.z);
+      fclose(fh);
+    }
     //     counter++;
     // ImGui::SameLine();
     // ImGui::Text("counter = %d", counter);

@@ -96,9 +96,9 @@ void player_collide(Player *player, glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, g
     float dist = glm::distance(player->temp_pos, intersect_point);
     if (0 < dist && dist < d)
     {
-      float impulse_1d = calculate_impulse(player->vel, normal, 0.1);
+      float impulse_1d = calculate_impulse(player->vel, normal, 0.05);
       glm::vec3 impulse = impulse_1d * normal;
-      player->vel += (1.0f/0.2f) * impulse;
+      player->vel += (1.0f/0.05f) * impulse;
 
       *player->pos = *player->pos - (d-dist)*ray;
     }
