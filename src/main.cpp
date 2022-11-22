@@ -69,7 +69,7 @@ int ENTRY(int argc, char **argv)
   Player player(&cam);
 
   // Model skybox;  skybox.load("assets/model/", "skybox");  skybox.setShader(cam.shaders[SHADER_WORLDSPACE]);
-  Model cube;    cube.load("assets/crate/", "crate");      cube.setShader(cam.shaders[SHADER_WORLDSPACE]);
+  Model cube;    cube.load("assets/block/", "block");      cube.setShader(cam.shaders[SHADER_WORLDSPACE]);
   Model ground;  ground.load("assets/ground/", "ground");  ground.setShader(cam.shaders[SHADER_WORLDSPACE]);
   
 

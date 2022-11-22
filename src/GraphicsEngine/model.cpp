@@ -57,7 +57,7 @@ Model::Model(void)
   this->model_mat = glm::mat4(1.0f);
 }
 
-void Model::load(const char *filepath, const char *name)
+void Model::load(const char *filepath, std::string name)
 {
   this->setName(filepath);
 
@@ -72,12 +72,11 @@ void Model::load(const char *filepath, const char *name)
   std::string diffuse_path(filepath);
   std::string specular_path(filepath);
   std::string emission_path(filepath);
-  diffuse_path.append(name);
-  diffuse_path.append("_diffuse.png");
-  specular_path.append(name);
-  specular_path.append("_specular.png");
-  emission_path.append(name);
-  emission_path.append("_emission.png");
+  std::string normal_path(filepath);
+  diffuse_path.append(name + "_diffuse.png");
+  specular_path.append(name + "_specular.png");
+  emission_path.append(name + "_emission.png");
+  normal_path.append(name + "_normal.png");
 
 
 
@@ -144,6 +143,32 @@ void Model::load(const char *filepath, const char *name)
       sscanf(buffer, "f %d/%d/%d %d/%d/%d %d/%d/%d", &p1, &t1, &n1, &p2, &t2, &n2, &p3, &t3, &n3);
 
       glm::vec3 face_normal = glm::normalize(glm::cross(positions[p2-1] - positions[p1-1], positions[p3-1] - positions[p1-1]));
+
+      // tangent/bitangent calculation
+      //----------------------------------------------------
+      glm::vec3 edge1 = positions[p2-1] - positions[p1-1];
+      glm::vec3 edge2 = positions[p3-1] - positions[p1-1];
+      glm::vec2 deltaUV1 = uvs[t2-1] - uvs[t1-1];
+      glm::vec2 deltaUV2 = uvs[t3-1] - uvs[t1-1];
+
+      float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+      this->vertices[poly_count+0].tangent = {
+        f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x),
+        f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y),
+        f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z)
+      };
+      this->vertices[poly_count+1].tangent = this->vertices[poly_count].tangent;
+      this->vertices[poly_count+2].tangent = this->vertices[poly_count].tangent;
+
+      this->vertices[poly_count+0].bitangent = {
+        f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x),
+        f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y),
+        f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z)
+      };
+      this->vertices[poly_count+1].bitangent = this->vertices[poly_count].bitangent;
+      this->vertices[poly_count+2].bitangent = this->vertices[poly_count].bitangent;
+      //----------------------------------------------------
+
 
       this->vertices[poly_count+0].position     = positions[p1-1];
       this->vertices[poly_count+0].normal       = normals[n1-1];
@@ -227,6 +252,7 @@ void Model::load(const char *filepath, const char *name)
       this->material.diffuse.load(diffuse_path.c_str());
       this->material.specular.load(specular_path.c_str());
       this->material.emission.load(emission_path.c_str());
+      this->material.normal.load(normal_path.c_str());
 
       break;
     }
@@ -253,10 +279,17 @@ void Model::load(const char *filepath, const char *name)
   glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(9*sizeof(float)));
   glEnableVertexAttribArray(3);
   
+  // Tangent
+  glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(11*sizeof(float)));
+  glEnableVertexAttribArray(4);
+
+  // Bitangent
+  glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(14*sizeof(float)));
+  glEnableVertexAttribArray(5);
+
   // Indexing
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->IBO);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->num_indices * sizeof(GLuint), this->indices, GL_STATIC_DRAW);
-
 
 }
 
@@ -264,35 +297,30 @@ void Model::load(const char *filepath, const char *name)
 void Model::draw(Camera *cam)
 {
   this->shader.use();
-  // Get the uniform variables location. You've probably already done that before...
-  GLuint diffloc = glGetUniformLocation(this->shader.get(), "material.diffuse");
-  GLuint specloc  = glGetUniformLocation(this->shader.get(), "material.specular");
-  GLuint emmloc  = glGetUniformLocation(this->shader.get(), "material.emission");
 
-  // Then bind the uniform samplers to texture units:
-  glUseProgram(this->shader.get());
-  this->shader.setInt("material.diffuse", 0);
-  this->shader.setInt("material.specular", 1);
-  this->shader.setInt("material.emission", 2);
+  this->shader.setInt("material.diffuseMap", 0);
+  this->shader.setInt("material.specularMap", 2);
+  this->shader.setInt("material.emissionMap", 1);
+  this->shader.setInt("material.normalMap", 3);
+  this->shader.setFloat("material.spec_exponent", this->material.spec_exponent);
 
  this->material.diffuse.bind(GL_TEXTURE0);
  this->material.specular.bind(GL_TEXTURE1);
  this->material.emission.bind(GL_TEXTURE2);
+ this->material.normal.bind(GL_TEXTURE3);
 
 
   glBindVertexArray(this->VAO);
 
 
-  this->shader.setFloat("material.spec_exponent", this->material.spec_exponent);
-
   this->shader.setVec3("light.position",  cam->lightsource.position);
   this->shader.setVec3("light.ambient",  cam->lightsource.ambient);
-  this->shader.setVec3("light.diffuse",  cam->lightsource.diffuse); // darken diffuse light a bit
+  this->shader.setVec3("light.diffuse",  cam->lightsource.diffuse);
   this->shader.setVec3("light.specular", cam->lightsource.specular); 
 
 
-  this->shader.setVec3("light_pos", glm::vec3(0, 0, 0));
-  this->shader.setVec3("view_pos", cam->pos);
+  this->shader.setVec3("viewPos", cam->pos);
+  this->shader.setVec3("lightPos", cam->lightsource.position);
   
   this->shader.setMat4("transform", this->transform_mat);
   this->shader.setMat4("model", this->model_mat);

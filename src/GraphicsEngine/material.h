@@ -27,9 +27,7 @@ class Texture {
 
 struct Material {
   glm::vec3 ambient = glm::vec3(0.0f);
-  Texture diffuse;
-  Texture specular;
-  Texture emission;
+  Texture diffuse, specular, emission, normal;
   float spec_exponent = 0.5f;
 };
 

@@ -16,13 +16,15 @@
 #include "material.h"
 
 
-#define ELEMENTS_PER_VERTEX (3 + 3 + 2)
+#define ELEMENTS_PER_VERTEX (3 + 3 + 2 + 3 + 3)
 
 struct Vertex {
   glm::vec3 position;
   glm::vec3 normal;
   glm::vec3 face_normal;
   glm::vec2 texture;
+  glm::vec3 tangent;
+  glm::vec3 bitangent;
 };
 
 
@@ -56,7 +58,7 @@ class Model {
 
     Model();
 
-    void load(const char *filepath, const char *name);
+    void load(const char *filepath, std::string name);
     void draw(Camera *cam);
 
     void setName(const char *name_str);
