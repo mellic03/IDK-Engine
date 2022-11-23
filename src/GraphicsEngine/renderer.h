@@ -26,7 +26,9 @@
 #define RENDER_DISTANCE 10000.0f
 #define NEAR_PLANE_DIST 0.1f
 
-#define MAX_LIGHTSOURCES 8
+#define NUM_DIRLIGHTS 1
+#define NUM_POINTLIGHTS 5
+#define NUM_SPOTLIGHTS 2
 
 
 class Renderer {
@@ -42,18 +44,13 @@ class Renderer {
     int SCR_height = DEFAULT_SCREEN_HEIGHT;
     
     Shader shaders[5];
-    std::vector<LightSource> lightsources;
-    std::vector<PointLight> pointlights;
-    std::vector<SpotLight>  spotlights;
+    std::vector<DirLight>    dirlights;
+    std::vector<PointLight>  pointlights;
+    std::vector<SpotLight>   spotlights;
     glm::vec3 ambient_light = {0.0, 0.0, 0.0};
 
     float gravity = 5.0f;
 
     Renderer();
 
-    void createLightSource(void)
-    {
-      if (this->lightsources.size() < 8)
-        this->lightsources.push_back(LightSource());
-    }
 };

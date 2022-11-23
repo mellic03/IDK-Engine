@@ -270,40 +270,59 @@ void Model::draw(Renderer *ren)
 
   glBindVertexArray(this->VAO);
 
-  this->shader.setInt("num_lightsources", ren->lightsources.size());
+  this->shader.setInt("num_dirlights",   NUM_DIRLIGHTS);
+  this->shader.setInt("num_pointlights", NUM_POINTLIGHTS);
+  this->shader.setInt("num_spotlights",  NUM_SPOTLIGHTS);
 
   char buffer[64];
-  for (int i=0; i<ren->lightsources.size(); i++)
+  for (int i=0; i<NUM_POINTLIGHTS; i++)
   {
     sprintf(buffer, "lights[%d].position", i);
-    this->shader.setVec3(buffer,  ren->lightsources[i].position);
+    this->shader.setVec3(buffer,  ren->pointlights[i].position);
 
     sprintf(buffer, "lights[%d].ambient", i);
-    this->shader.setVec3(buffer,  ren->lightsources[i].ambient);
+    this->shader.setVec3(buffer,  ren->pointlights[i].ambient);
 
     sprintf(buffer, "lights[%d].diffuse", i);
-    this->shader.setVec3(buffer,  ren->lightsources[i].diffuse);
+    this->shader.setVec3(buffer,  ren->pointlights[i].diffuse);
 
     sprintf(buffer, "lights[%d].specular", i);
-    this->shader.setVec3(buffer,  ren->lightsources[i].specular);
+    this->shader.setVec3(buffer,  ren->pointlights[i].specular);
 
     sprintf(buffer, "lights[%d].constant", i);
-    this->shader.setFloat(buffer,  ren->lightsources[i].constant); 
+    this->shader.setFloat(buffer,  ren->pointlights[i].constant); 
 
     sprintf(buffer, "lights[%d].linear", i);
-    this->shader.setFloat(buffer,  ren->lightsources[i].linear); 
+    this->shader.setFloat(buffer,  ren->pointlights[i].linear); 
 
     sprintf(buffer, "lights[%d].quadratic", i);
-    this->shader.setFloat(buffer,  ren->lightsources[i].quadratic); 
+    this->shader.setFloat(buffer,  ren->pointlights[i].quadratic); 
   }
 
-  // this->shader.setVec3("light.position",  ren->lightsource.position);
-  // this->shader.setVec3("light.ambient",   ren->lightsource.ambient);
-  // this->shader.setVec3("light.diffuse",   ren->lightsource.diffuse);
-  // this->shader.setVec3("light.specular",  ren->lightsource.specular); 
-  // this->shader.setFloat("light.constant",  ren->lightsource.constant); 
-  // this->shader.setFloat("light.linear",    ren->lightsource.linear); 
-  // this->shader.setFloat("light.quadratic", ren->lightsource.quadratic); 
+  // for (int i=0; i<NUM_SPOTLIGHTS; i++)
+  // {
+  //   sprintf(buffer, "lights[%d].position", i);
+  //   this->shader.setVec3(buffer,  ren->pointlights[i].position);
+
+  //   sprintf(buffer, "lights[%d].ambient", i);
+  //   this->shader.setVec3(buffer,  ren->pointlights[i].ambient);
+
+  //   sprintf(buffer, "lights[%d].diffuse", i);
+  //   this->shader.setVec3(buffer,  ren->pointlights[i].diffuse);
+
+  //   sprintf(buffer, "lights[%d].specular", i);
+  //   this->shader.setVec3(buffer,  ren->pointlights[i].specular);
+
+  //   sprintf(buffer, "lights[%d].constant", i);
+  //   this->shader.setFloat(buffer,  ren->pointlights[i].constant); 
+
+  //   sprintf(buffer, "lights[%d].linear", i);
+  //   this->shader.setFloat(buffer,  ren->pointlights[i].linear); 
+
+  //   sprintf(buffer, "lights[%d].quadratic", i);
+  //   this->shader.setFloat(buffer,  ren->pointlights[i].quadratic); 
+  // }
+
 
 
   this->shader.setVec3("viewPos", ren->cam.pos);

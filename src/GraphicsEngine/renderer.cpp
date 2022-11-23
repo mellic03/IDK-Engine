@@ -26,8 +26,15 @@ Renderer::Renderer()
   lightsource.set(create_shader(lightsource_src.vertex_source, lightsource_src.fragment_source));
   this->shaders[SHADER_LIGHTSOURCE] = lightsource;
 
-  for (int i=0; i<8; i++)
-    this->createLightSource();  
+
+  for (int i=0; i<NUM_DIRLIGHTS; i++)
+    this->dirlights.push_back(DirLight());
+
+  for (int i=0; i<NUM_POINTLIGHTS; i++)
+    this->pointlights.push_back(PointLight());
+
+  for (int i=0; i<NUM_SPOTLIGHTS; i++)
+    this->spotlights.push_back(SpotLight());
 }
 
 

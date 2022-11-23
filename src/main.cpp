@@ -132,10 +132,10 @@ int ENTRY(int argc, char **argv)
     render_container.draw(&ren);
 
 
-    for (int i=0; i<8; i++)
+    for (int i=0; i<NUM_POINTLIGHTS; i++)
     {
-      sphere.set_pos(ren.lightsources[i].position);
-      sphere.material.diffuse_color = ren.lightsources[i].diffuse;
+      sphere.set_pos(ren.pointlights[i].position);
+      sphere.material.diffuse_color = ren.pointlights[i].diffuse;
       sphere.draw(&ren);
     }
 

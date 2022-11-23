@@ -90,7 +90,9 @@ in VS_OUT {
   vec3 TangentFragPos;
 } fs_in[8];
 
-uniform int num_lightsources;
+uniform int num_dirlights;
+uniform int num_pointlights;
+uniform int num_spotlights;
 out vec4 FragColor;
 
 void main()
@@ -100,7 +102,7 @@ void main()
   vec3 color = texture(material.diffuseMap, fs_in[0].TexCoords).rgb;
   FragColor = vec4(emission, 1.0);
 
-  for (int i=0; i<num_lightsources; i++)
+  for (int i=0; i<num_pointlights; i++)
   {
     float distance = length(lights[i].position - fs_in[i].FragPos);
     float attenuation = 1.0 / (lights[i].constant + lights[i].linear*distance + lights[i].quadratic*distance*distance);

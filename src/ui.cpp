@@ -1,6 +1,7 @@
 #include "ui.h"
 
-int selected_lightsource = 0;
+int selected_pointlight = 0;
+int selected_spotlight = 0;
 bool show = false;
 
 
@@ -11,42 +12,48 @@ void draw_lighting_tab(Renderer *ren)
 
   if (ImGui::TreeNode("Point Lights"))
   {
-    for (int n = 0; n < 8; n++)
+    for (int n = 0; n < NUM_POINTLIGHTS; n++)
     {
       sprintf(buffer, "point light %d", n);
-      if (ImGui::Selectable(buffer, selected_lightsource == n))
-          selected_lightsource = n;
+      if (ImGui::Selectable(buffer, selected_pointlight == n))
+          selected_pointlight = n;
     }
     ImGui::TreePop();
   }
 
-  ImGui::ColorEdit3("ambient", (float*)&ren->lightsources[selected_lightsource].ambient);
-  ImGui::ColorEdit3("diffuse", (float*)&ren->lightsources[selected_lightsource].diffuse);
-  ImGui::ColorEdit3("specular", (float*)&ren->lightsources[selected_lightsource].specular);
+  ImGui::ColorEdit3("ambient", (float*)&ren->pointlights[selected_pointlight].ambient);
+  ImGui::ColorEdit3("diffuse", (float*)&ren->pointlights[selected_pointlight].diffuse);
+  ImGui::ColorEdit3("specular", (float*)&ren->pointlights[selected_pointlight].specular);
 
-  ImGui::DragScalar("x", ImGuiDataType_Float, &ren->lightsources[selected_lightsource].position.x, 0.05f, NULL);
-  ImGui::DragScalar("y", ImGuiDataType_Float, &ren->lightsources[selected_lightsource].position.y, 0.05f, NULL);
-  ImGui::DragScalar("z", ImGuiDataType_Float, &ren->lightsources[selected_lightsource].position.z, 0.05f, NULL);
+  ImGui::DragScalar("x", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.x, 0.05f, NULL);
+  ImGui::DragScalar("y", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.y, 0.05f, NULL);
+  ImGui::DragScalar("z", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.z, 0.05f, NULL);
 
 
   if (ImGui::TreeNode("Spot Lights"))
   {
-    for (int n = 0; n < 8; n++)
+    for (int n = 0; n < NUM_SPOTLIGHTS; n++)
     {
       sprintf(buffer, "spot light %d", n);
-      if (ImGui::Selectable(buffer, selected_lightsource == n))
-          selected_lightsource = n;
+      if (ImGui::Selectable(buffer, selected_spotlight == n))
+          selected_spotlight = n;
     }
     ImGui::TreePop();
   }
 
-  ImGui::ColorEdit3("ambient", (float*)&ren->lightsources[selected_lightsource].ambient);
-  ImGui::ColorEdit3("diffuse", (float*)&ren->lightsources[selected_lightsource].diffuse);
-  ImGui::ColorEdit3("specular", (float*)&ren->lightsources[selected_lightsource].specular);
+  ImGui::ColorEdit3("ambient", (float*)&ren->spotlights[selected_spotlight].ambient);
+  ImGui::ColorEdit3("diffuse", (float*)&ren->spotlights[selected_spotlight].diffuse);
+  ImGui::ColorEdit3("specular", (float*)&ren->spotlights[selected_spotlight].specular);
 
-  ImGui::DragScalar("x", ImGuiDataType_Float, &ren->lightsources[selected_lightsource].position.x, 0.05f, NULL);
-  ImGui::DragScalar("y", ImGuiDataType_Float, &ren->lightsources[selected_lightsource].position.y, 0.05f, NULL);
-  ImGui::DragScalar("z", ImGuiDataType_Float, &ren->lightsources[selected_lightsource].position.z, 0.05f, NULL);
+  ImGui::Text("Position");
+  ImGui::DragScalar("x", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].position.x, 0.05f, NULL);
+  ImGui::DragScalar("y", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].position.y, 0.05f, NULL);
+  ImGui::DragScalar("z", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].position.z, 0.05f, NULL);
+
+  ImGui::Text("Direction");
+  ImGui::DragScalar("x", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].direction.x, 0.05f, NULL);
+  ImGui::DragScalar("y", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].direction.y, 0.05f, NULL);
+  ImGui::DragScalar("z", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].direction.z, 0.05f, NULL);
 
 
 }
