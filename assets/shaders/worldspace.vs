@@ -43,7 +43,6 @@ uniform vec3 viewPos;
 
 out VS_OUT {
   vec3 FragPos;
-  vec3 Normal;
   vec2 TexCoords;
   
   vec3 DIR_TangentLightPositions[NUM_DIRLIGHTS];
@@ -64,7 +63,6 @@ out VS_OUT {
 void main()
 {
   vs_out.FragPos = vec3(model * transform * vec4(aPos, 1.0));
-  vs_out.Normal = mat3(transpose(inverse(model))) * aNormal;  
   vs_out.TexCoords = aTexCoords;
   
   vec3 T = normalize(vec3(model * vec4(aTangent, 0.0)));
@@ -81,21 +79,21 @@ void main()
   {
     vs_out.DIR_TangentLightPositions[i] = TBN * dirlights[i].direction;
     vs_out.DIR_TangentViewPositions[i]  = TBN * viewPos;
-    vs_out.DIR_TangentFragPositions[i]  = TBN * vec3(model * vec4(aPos, 1.0));
+    vs_out.DIR_TangentFragPositions[i]  = TBN * vs_out.FragPos;
   }
 
   for (int i=0; i<NUM_POINTLIGHTS; i++)
   {
     vs_out.POINT_TangentLightPositions[i] = TBN * pointlights[i].position;
     vs_out.POINT_TangentViewPositions[i]  = TBN * viewPos;
-    vs_out.POINT_TangentFragPositions[i]  = TBN * vec3(model * vec4(aPos, 1.0));
+    vs_out.POINT_TangentFragPositions[i]  = TBN * vs_out.FragPos;
   }
   
   for (int i=0; i<NUM_SPOTLIGHTS; i++)
   {
     vs_out.SPOT_TangentLightPositions[i] = TBN * spotlights[i].position;
     vs_out.SPOT_TangentViewPositions[i]  = TBN * viewPos;
-    vs_out.SPOT_TangentFragPositions[i]  = TBN * vec3(model * vec4(aPos, 1.0));
+    vs_out.SPOT_TangentFragPositions[i]  = TBN * vs_out.FragPos;
   }
   
 

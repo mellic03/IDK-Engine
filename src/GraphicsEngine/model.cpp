@@ -353,9 +353,7 @@ void Model::draw(Renderer *ren)
   }
 
 
-
-
-  this->shader.setVec3("viewPosition", ren->cam.pos);
+  this->shader.setVec3("viewPos", ren->cam.pos);
   this->shader.setVec3("viewDirection", ren->cam.dir);
   this->shader.setVec3("diffuse", this->material.diffuse_color);
   
