@@ -13,3 +13,15 @@ struct LightSource {
   float linear = 0.09f;
   float quadratic = 0.032f;
 };
+
+struct DirLight {
+
+};
+
+struct PointLight {
+
+};
+
+struct SpotLight {
+
+};

@@ -45,8 +45,7 @@ class Model {
     Material material;
     
     glm::mat4 *view_mat;
-    glm::mat4 model_mat;
-    glm::mat4 parent_model_mat = glm::mat4(1.0f);
+    glm::mat4 model_mat = glm::mat4(1.0f);
     glm::mat4 transform_mat = glm::mat4(1.0f);
 
     glm::vec3 dir = {0, 0, 1.0f};

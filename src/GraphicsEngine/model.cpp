@@ -13,8 +13,6 @@ Model::Model(void)
   glGenVertexArrays(1, &this->VAO);
   glGenBuffers(1, &this->VBO);
   glGenBuffers(1, &this->IBO);
-
-  this->model_mat = glm::mat4(1.0f);
 }
 
 void Model::load(const char *filepath, std::string name)
@@ -264,10 +262,10 @@ void Model::draw(Renderer *ren)
   this->shader.setInt("material.normalMap", 3);
   this->shader.setFloat("material.spec_exponent", this->material.spec_exponent);
 
- this->material.diffuse.bind(GL_TEXTURE0);
- this->material.specular.bind(GL_TEXTURE1);
- this->material.emission.bind(GL_TEXTURE2);
- this->material.normal.bind(GL_TEXTURE3);
+  this->material.diffuse.bind(GL_TEXTURE0);
+  this->material.specular.bind(GL_TEXTURE1);
+  this->material.emission.bind(GL_TEXTURE2);
+  this->material.normal.bind(GL_TEXTURE3);
 
 
   glBindVertexArray(this->VAO);
@@ -309,10 +307,10 @@ void Model::draw(Renderer *ren)
 
 
   this->shader.setVec3("viewPos", ren->cam.pos);
+  this->shader.setVec3("diffuse", this->material.diffuse_color);
   
   this->shader.setMat4("transform", this->transform_mat);
   this->shader.setMat4("model", this->model_mat);
-  this->shader.setMat4("parent_model", this->parent_model_mat);
   this->shader.setMat4("view", ren->cam.view);
   this->shader.setMat4("projection", ren->cam.projection);
 
@@ -324,7 +322,7 @@ void Model::set_pos(glm::vec3 point)
 {
   this->pos = point;
   this->model_mat = glm::mat4(1.0f);
-  this->model_mat = glm::translate(this->transform_mat, point);
+  this->model_mat = glm::translate(this->model_mat, this->pos);
 }
 
 void Model::setName(const char *name_str)

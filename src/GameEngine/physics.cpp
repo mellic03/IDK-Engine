@@ -6,26 +6,14 @@
 
 void ModelContainer::add(Model *model)
 {
-  if (this->head == NULL)
-  {
-    this->head = model;
-    this->head->next = NULL;
-  }
-  else
-  {
-    Model *modelptr = model;
-    modelptr->next = this->head;
-    this->head = modelptr;
-  }
+  this->models.push_back(model);
 }
 
 void ModelContainer::draw(Renderer *ren)
 {
-  Model *modelptr = this->head;
-  while (modelptr != NULL)
+  for (int i=0; i<this->models.size(); i++)
   {
-    modelptr->draw(ren);
-    modelptr = modelptr->next;
+    this->models[i]->draw(ren);
   }
 }
 
@@ -104,15 +92,15 @@ void player_collide(Player *player, glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, g
 
 void ModelContainer::collide(Player *player)
 {
-  Model *modelptr = this->head;
-  while (modelptr != NULL)
+
+  for (int i=0; i<this->models.size(); i++)
   {
-    for (int i=0; i<modelptr->num_vertices; i+=3)
+    for (int j=0; j<this->models[i]->num_vertices; j+=3)
     {
-      glm::vec3 v0 = modelptr->vertices[i+0].position + modelptr->pos;
-      glm::vec3 v1 = modelptr->vertices[i+1].position + modelptr->pos;
-      glm::vec3 v2 = modelptr->vertices[i+2].position + modelptr->pos;
-      glm::vec3 normal = modelptr->vertices[i+2].face_normal;
+      glm::vec3 v0 = this->models[i]->vertices[j+0].position + this->models[i]->pos;
+      glm::vec3 v1 = this->models[i]->vertices[j+1].position + this->models[i]->pos;
+      glm::vec3 v2 = this->models[i]->vertices[j+2].position + this->models[i]->pos;
+      glm::vec3 normal = this->models[i]->vertices[j+2].face_normal;
       // glm::vec4 tnorm = glm::vec4(normal.x, normal.y, normal.z, 0.0f);
       // normal = glm::vec3(tnorm.x, tnorm.y, tnorm.z);
 
@@ -132,8 +120,6 @@ void ModelContainer::collide(Player *player)
       player_collide(player, ray_front, v0, v1, v2, normal, player->height/2);
       player_collide(player, ray_back , v0, v1, v2, normal, player->height/2);
     }
-
-    modelptr = modelptr->next;
   }
 }
 

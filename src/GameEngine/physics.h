@@ -10,7 +10,7 @@
 class ModelContainer {
 
   public:
-    Model *head = NULL;
+    std::vector<Model *> models;
     ModelContainer(void) {};
 
     void add(Model *model);

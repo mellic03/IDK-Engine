@@ -41,9 +41,10 @@ class Renderer {
     int SCR_width = DEFAULT_SCREEN_WIDTH;
     int SCR_height = DEFAULT_SCREEN_HEIGHT;
     
-    Shader shaders[3];
-    LightSource lightsource;
+    Shader shaders[5];
     std::vector<LightSource> lightsources;
+    std::vector<PointLight> pointlights;
+    std::vector<SpotLight>  spotlights;
     glm::vec3 ambient_light = {0.0, 0.0, 0.0};
 
     float gravity = 5.0f;

@@ -1,7 +1,7 @@
 #include "ui.h"
 
 int selected_lightsource = 0;
-bool show = true;
+bool show = false;
 
 
 void draw_lighting_tab(Renderer *ren)
@@ -9,11 +9,11 @@ void draw_lighting_tab(Renderer *ren)
   char buffer[64];
 
 
-  if (ImGui::TreeNode("Lightsource"))
+  if (ImGui::TreeNode("Point Lights"))
   {
     for (int n = 0; n < 8; n++)
     {
-      sprintf(buffer, "lightsource %d", n);
+      sprintf(buffer, "point light %d", n);
       if (ImGui::Selectable(buffer, selected_lightsource == n))
           selected_lightsource = n;
     }
@@ -27,6 +27,28 @@ void draw_lighting_tab(Renderer *ren)
   ImGui::DragScalar("x", ImGuiDataType_Float, &ren->lightsources[selected_lightsource].position.x, 0.05f, NULL);
   ImGui::DragScalar("y", ImGuiDataType_Float, &ren->lightsources[selected_lightsource].position.y, 0.05f, NULL);
   ImGui::DragScalar("z", ImGuiDataType_Float, &ren->lightsources[selected_lightsource].position.z, 0.05f, NULL);
+
+
+  if (ImGui::TreeNode("Spot Lights"))
+  {
+    for (int n = 0; n < 8; n++)
+    {
+      sprintf(buffer, "spot light %d", n);
+      if (ImGui::Selectable(buffer, selected_lightsource == n))
+          selected_lightsource = n;
+    }
+    ImGui::TreePop();
+  }
+
+  ImGui::ColorEdit3("ambient", (float*)&ren->lightsources[selected_lightsource].ambient);
+  ImGui::ColorEdit3("diffuse", (float*)&ren->lightsources[selected_lightsource].diffuse);
+  ImGui::ColorEdit3("specular", (float*)&ren->lightsources[selected_lightsource].specular);
+
+  ImGui::DragScalar("x", ImGuiDataType_Float, &ren->lightsources[selected_lightsource].position.x, 0.05f, NULL);
+  ImGui::DragScalar("y", ImGuiDataType_Float, &ren->lightsources[selected_lightsource].position.y, 0.05f, NULL);
+  ImGui::DragScalar("z", ImGuiDataType_Float, &ren->lightsources[selected_lightsource].position.z, 0.05f, NULL);
+
+
 }
 
 void draw_render_tab(Renderer *ren)

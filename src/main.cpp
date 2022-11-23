@@ -72,14 +72,13 @@ int ENTRY(int argc, char **argv)
   Renderer ren;
   Player player(&ren);
   // Model skybox;  skybox.load("assets/model/", "skybox");  skybox.setShader(cam.shaders[SHADER_WORLDSPACE]);
-  Model cube;    cube.load("assets/block/", "block");      cube.setShader(ren.shaders[SHADER_WORLDSPACE]);
-  Model ground;  ground.load("assets/ground/", "ground");  ground.setShader(ren.shaders[SHADER_WORLDSPACE]);
+  Model cube;    cube.load("assets/block/", "block");       cube.setShader(ren.shaders[SHADER_WORLDSPACE]);
+  Model ground;  ground.load("assets/ground/", "ground");   ground.setShader(ren.shaders[SHADER_WORLDSPACE]);
   Model sphere;  sphere.load("assets/sphere/", "sphere");   sphere.setShader(ren.shaders[SHADER_LIGHTSOURCE]);
 
   ModelContainer render_container;
   render_container.add(&cube);
   render_container.add(&ground);
-  render_container.add(&sphere);
   // render_container.add(&skybox);
 
   ModelContainer physics_container;
@@ -103,7 +102,6 @@ int ENTRY(int argc, char **argv)
   // RENDER LOOP
   //----------------------------------------
   cube.translate(glm::vec3(2.0f, -5.8f, 0.0f));
-  ren.lightsource.position = {0.0f, -5.8f, 0.0f};
 
   Uint64 start = SDL_GetPerformanceCounter(), end = SDL_GetPerformanceCounter();
   while (1)
@@ -132,7 +130,17 @@ int ENTRY(int argc, char **argv)
 
     physics_container.collide(&player);
     render_container.draw(&ren);
+
+
+    for (int i=0; i<8; i++)
+    {
+      sphere.set_pos(ren.lightsources[i].position);
+      sphere.material.diffuse_color = ren.lightsources[i].diffuse;
+      sphere.draw(&ren);
+    }
+
     player.key_input(&ren);
+
 
 
     glClear(GL_DEPTH_BUFFER_BIT);
@@ -141,10 +149,19 @@ int ENTRY(int argc, char **argv)
     cube.rot_y(0.05f);
 
 
+    int err = glGetError();
+    if (err)
+    {
+      printf("OpenGL Error: %d\n", err);
+      exit(1);
+    }
+
+
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     SDL_GL_SwapWindow(window);
     double dtime_milliseconds = ((end - start)*1000 / (double)SDL_GetPerformanceFrequency() );
     ren.deltaTime = dtime_milliseconds / 1000;
+
   }
   //----------------------------------------
 

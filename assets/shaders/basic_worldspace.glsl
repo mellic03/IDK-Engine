@@ -98,7 +98,7 @@ void main()
   vec3 aSpecular = texture(material.specularMap, fs_in[0].TexCoords).rgb;
   vec3 emission = texture(material.emissionMap, fs_in[0].TexCoords).rgb;
   vec3 color = texture(material.diffuseMap, fs_in[0].TexCoords).rgb;
-  FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+  FragColor = vec4(emission, 1.0);
 
   for (int i=0; i<num_lightsources; i++)
   {

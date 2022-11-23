@@ -11,7 +11,7 @@
 
 Renderer::Renderer()
 {
-  ShaderSource worldspace_src = parse_shader("assets/shaders/basic.glsl");
+  ShaderSource worldspace_src = parse_shader("assets/shaders/basic_worldspace.glsl");
   Shader worldspace;
   worldspace.set(create_shader(worldspace_src.vertex_source, worldspace_src.fragment_source));
   this->shaders[SHADER_WORLDSPACE] = worldspace;
@@ -21,15 +21,14 @@ Renderer::Renderer()
   viewspace.set(create_shader(viewspace_src.vertex_source, viewspace_src.fragment_source));
   this->shaders[SHADER_VIEWSPACE] = viewspace;
 
-  ShaderSource lightsource_src = parse_shader("assets/shaders/basic_viewspace.glsl");
+  ShaderSource lightsource_src = parse_shader("assets/shaders/lightsource.glsl");
   Shader lightsource;
   lightsource.set(create_shader(lightsource_src.vertex_source, lightsource_src.fragment_source));
   this->shaders[SHADER_LIGHTSOURCE] = lightsource;
 
-
   for (int i=0; i<8; i++)
-    this->createLightSource();
-  
+    this->createLightSource();  
 }
+
 
 
