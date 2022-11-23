@@ -1,28 +1,18 @@
 
 #include "shader.h"
 
-ShaderSource parse_shader(const std::string &filepath)
+ShaderSource parse_shader(const std::string &vertex_shader, const std::string &fragment_shader)
 {
-  std::ifstream stream(filepath);
-  
-  ShaderType mode;
-
+  std::ifstream vs_stream(vertex_shader);
+  std::ifstream fs_stream(fragment_shader);
   std::string line;
   std::stringstream ss[2];
-  while (getline(stream, line))
-  {
-    if (line.find("#shader") != std::string::npos)
-    {
-      if (line.find("vertex") != std::string::npos)
-        mode = SHADER_VERTEX;
-      else if (line.find("fragment") != std::string::npos)
-        mode = SHADER_FRAGMENT;
-    }
-    else
-    {
-      ss[mode] << line << '\n';
-    }
-  }
+
+  while (getline(vs_stream, line))
+    ss[0] << line << '\n';
+
+  while (getline(fs_stream, line))
+    ss[1] << line << '\n';
 
   return (ShaderSource){ss[0].str(), ss[1].str()};
 }

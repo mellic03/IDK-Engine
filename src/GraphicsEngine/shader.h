@@ -20,7 +20,7 @@ struct ShaderSource {
   std::string fragment_source;
 };
 
-ShaderSource parse_shader(const std::string &filepath);
+ShaderSource parse_shader(const std::string &vertex_shader, const std::string &fragment_shader);
 unsigned int compile_shader(unsigned int type, const std::string &source);
 unsigned int create_shader(const std::string &vertex_shader, const std::string &fragment_shader);
 

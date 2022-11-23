@@ -43,7 +43,7 @@ int ENTRY(int argc, char **argv)
     SDL_WINDOWPOS_CENTERED,
     DEFAULT_SCREEN_WIDTH,
     DEFAULT_SCREEN_HEIGHT,
-    SDL_WINDOW_OPENGL
+    SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
   );
 
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -54,7 +54,7 @@ int ENTRY(int argc, char **argv)
 
   gl_context = SDL_GL_CreateContext(window);
   SDL_GL_MakeCurrent(window, gl_context);
-  // SDL_GL_SetSwapInterval(1); // vsync
+  SDL_GL_SetSwapInterval(1); // vsync
   SDL_SetRelativeMouseMode(SDL_TRUE);
 
   if (glewInit() != GLEW_OK)
@@ -136,6 +136,13 @@ int ENTRY(int argc, char **argv)
     physics_container.collide(&player);
     render_container.draw(&ren);
 
+
+    for (int i=0; i<NUM_DIRLIGHTS; i++)
+    {
+      sphere.set_pos(ren.dirlights[i].direction);
+      sphere.material.diffuse_color = ren.dirlights[i].diffuse;
+      sphere.draw(&ren);
+    }
 
     for (int i=0; i<NUM_POINTLIGHTS; i++)
     {

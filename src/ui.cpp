@@ -1,5 +1,6 @@
 #include "ui.h"
 
+int selected_dirlight = 0;
 int selected_pointlight = 0;
 int selected_spotlight = 0;
 bool show = false;
@@ -7,7 +8,36 @@ bool show = false;
 
 void draw_lighting_tab(Renderer *ren)
 {
+
+  ImGui::Dummy(ImVec2(0.0f, 20.0f));
+
+
   char buffer[64];
+
+  if (ImGui::TreeNode("Directional Lights"))
+  {
+    for (int n = 0; n < NUM_DIRLIGHTS; n++)
+    {
+      sprintf(buffer, "directional light %d", n);
+      if (ImGui::Selectable(buffer, selected_dirlight == n))
+          selected_dirlight = n;
+    }
+    ImGui::TreePop();
+  }
+  ImGui::PushID(1);
+  ImGui::ColorEdit3("ambient", (float*)&ren->dirlights[selected_dirlight].ambient);
+  ImGui::ColorEdit3("diffuse", (float*)&ren->dirlights[selected_dirlight].diffuse);
+  ImGui::ColorEdit3("specular", (float*)&ren->dirlights[selected_dirlight].specular);
+  
+  ImGui::Text("Direction");
+  ImGui::DragScalar("x", ImGuiDataType_Float, &ren->dirlights[selected_dirlight].direction.x, 0.05f, NULL);
+  ImGui::DragScalar("y", ImGuiDataType_Float, &ren->dirlights[selected_dirlight].direction.y, 0.05f, NULL);
+  ImGui::DragScalar("z", ImGuiDataType_Float, &ren->dirlights[selected_dirlight].direction.z, 0.05f, NULL);
+  ImGui::PopID();
+
+
+  ImGui::Dummy(ImVec2(0.0f, 20.0f));
+
 
 
   if (ImGui::TreeNode("Point Lights"))
@@ -20,14 +50,21 @@ void draw_lighting_tab(Renderer *ren)
     }
     ImGui::TreePop();
   }
+  
 
+  ImGui::PushID(2);
   ImGui::ColorEdit3("ambient", (float*)&ren->pointlights[selected_pointlight].ambient);
   ImGui::ColorEdit3("diffuse", (float*)&ren->pointlights[selected_pointlight].diffuse);
   ImGui::ColorEdit3("specular", (float*)&ren->pointlights[selected_pointlight].specular);
-
+  
+  ImGui::Text("Position");
   ImGui::DragScalar("x", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.x, 0.05f, NULL);
   ImGui::DragScalar("y", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.y, 0.05f, NULL);
   ImGui::DragScalar("z", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.z, 0.05f, NULL);
+  ImGui::PopID();
+
+
+  ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
 
   if (ImGui::TreeNode("Spot Lights"))
@@ -41,19 +78,25 @@ void draw_lighting_tab(Renderer *ren)
     ImGui::TreePop();
   }
 
+  ImGui::PushID(3);
   ImGui::ColorEdit3("ambient", (float*)&ren->spotlights[selected_spotlight].ambient);
   ImGui::ColorEdit3("diffuse", (float*)&ren->spotlights[selected_spotlight].diffuse);
   ImGui::ColorEdit3("specular", (float*)&ren->spotlights[selected_spotlight].specular);
-
+  
+  ImGui::PushID(4);
   ImGui::Text("Position");
   ImGui::DragScalar("x", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].position.x, 0.05f, NULL);
   ImGui::DragScalar("y", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].position.y, 0.05f, NULL);
   ImGui::DragScalar("z", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].position.z, 0.05f, NULL);
-
+  ImGui::PopID();
+  
+  ImGui::PushID(5);
   ImGui::Text("Direction");
   ImGui::DragScalar("x", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].direction.x, 0.05f, NULL);
   ImGui::DragScalar("y", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].direction.y, 0.05f, NULL);
   ImGui::DragScalar("z", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].direction.z, 0.05f, NULL);
+  ImGui::PopID();
+  ImGui::PopID();
 
 
 }
@@ -61,7 +104,7 @@ void draw_lighting_tab(Renderer *ren)
 void draw_render_tab(Renderer *ren)
 {
   ImGui::SliderFloat("FOV", &ren->cam.fov, 45.0f, 110.0f);
-  ImGui::Text("Frame time: %f\nFramerate: %f", ImGui::GetIO().DeltaTime, ImGui::GetIO().Framerate);
+  ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 }
 
 void draw_physics_tab(Renderer *ren)

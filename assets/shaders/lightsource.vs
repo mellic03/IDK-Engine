@@ -1,4 +1,3 @@
-#shader vertex
 #version 330 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
@@ -19,17 +18,4 @@ void main()
 {
   gl_Position = projection * view * model * transform * vec4(aPos, 1.0);
   fragColor = 2 * diffuse;
-}
-
-
-#shader fragment
-
-#version 330 core
-
-in vec3 fragColor;
-out vec4 FragColor;
-  
-void main()
-{
-  FragColor = vec4(fragColor, 1);
 }
