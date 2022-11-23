@@ -29,7 +29,7 @@ struct SpotLight {
   vec3 position, direction;
   vec3 ambient, diffuse, specular;
   float constant, linear, quadratic;
-  float inner_cutoff, outer_cutoff;
+  float inner_cutoff, outer_cutoff, intensity;
 };
 uniform SpotLight spotlights[NUM_POINTLIGHTS];
 
@@ -65,15 +65,12 @@ void main()
   vs_out.FragPos = vec3(model * transform * vec4(aPos, 1.0));
   vs_out.TexCoords = aTexCoords;
   
-  vec3 T = normalize(vec3(model * vec4(aTangent, 0.0)));
-  vec3 N = normalize(vec3(model * vec4(aNormal, 0.0)));
-  
-  // re-orthogonalize T with respect to N
-  T = normalize(T - dot(T, N) * N);
-
-  // then retrieve perpendicular vector B with the cross product of T and N
-  vec3 B = cross(N, T);
-  mat3 TBN = mat3(T, B, N);
+    mat3 normalMatrix = transpose(inverse(mat3(model * transform)));
+    vec3 T = normalize(normalMatrix * aBitangent);
+    vec3 N = normalize(normalMatrix * aNormal);
+    T = normalize(T - dot(T, N) * N);
+    vec3 B = cross(N, T);
+    mat3 TBN = transpose(mat3(T, B, N));      
 
   for (int i=0; i<NUM_DIRLIGHTS; i++)
   {

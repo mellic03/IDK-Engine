@@ -46,4 +46,5 @@ struct SpotLight {
   float quadratic = 0.032f;
   float inner_cutoff = glm::cos(glm::radians(12.5f));
   float outer_cutoff = glm::cos(glm::radians(20.5f));
+  float intensity = 1.0f;
 };

@@ -136,6 +136,8 @@ int ENTRY(int argc, char **argv)
     physics_container.collide(&player);
     render_container.draw(&ren);
 
+    ren.spotlights[0].position = *player.pos;
+    ren.spotlights[0].direction = ren.cam.front;
 
     for (int i=0; i<NUM_DIRLIGHTS; i++)
     {

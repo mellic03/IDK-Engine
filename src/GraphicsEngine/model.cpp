@@ -350,11 +350,13 @@ void Model::draw(Renderer *ren)
 
     sprintf(buffer, "spotlights[%d].outer_cutoff", i);
     this->shader.setFloat(buffer,  ren->spotlights[i].outer_cutoff);
+
+    sprintf(buffer, "spotlights[%d].intensity", i);
+    this->shader.setFloat(buffer,  ren->spotlights[i].intensity);
   }
 
 
   this->shader.setVec3("viewPos", ren->cam.pos);
-  this->shader.setVec3("viewDirection", ren->cam.dir);
   this->shader.setVec3("diffuse", this->material.diffuse_color);
   
   this->shader.setMat4("transform", this->transform_mat);

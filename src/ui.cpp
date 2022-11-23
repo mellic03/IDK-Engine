@@ -82,7 +82,11 @@ void draw_lighting_tab(Renderer *ren)
   ImGui::ColorEdit3("ambient", (float*)&ren->spotlights[selected_spotlight].ambient);
   ImGui::ColorEdit3("diffuse", (float*)&ren->spotlights[selected_spotlight].diffuse);
   ImGui::ColorEdit3("specular", (float*)&ren->spotlights[selected_spotlight].specular);
-  
+
+  ImGui::DragScalar("intensity", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].intensity, 0.05f, NULL);
+  ImGui::DragScalar("inner cutoff", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].inner_cutoff, 0.05f, NULL);
+  ImGui::DragScalar("outer cutoff", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].outer_cutoff, 0.05f, NULL);
+
   ImGui::PushID(4);
   ImGui::Text("Position");
   ImGui::DragScalar("x", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].position.x, 0.05f, NULL);
