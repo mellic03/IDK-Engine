@@ -43,7 +43,7 @@ int ENTRY(int argc, char **argv)
     SDL_WINDOWPOS_CENTERED,
     DEFAULT_SCREEN_WIDTH,
     DEFAULT_SCREEN_HEIGHT,
-    SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
+    SDL_WINDOW_OPENGL
   );
 
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -54,7 +54,7 @@ int ENTRY(int argc, char **argv)
 
   gl_context = SDL_GL_CreateContext(window);
   SDL_GL_MakeCurrent(window, gl_context);
-  SDL_GL_SetSwapInterval(1); // vsync
+  // SDL_GL_SetSwapInterval(1); // vsync
   SDL_SetRelativeMouseMode(SDL_TRUE);
 
   if (glewInit() != GLEW_OK)
@@ -98,7 +98,12 @@ int ENTRY(int argc, char **argv)
   ImGui_ImplOpenGL3_Init("#version 330");
   //----------------------------------------
 
-
+    int err = glGetError();
+    if (err)
+    {
+      printf("OpenGL Error: %d\n", err);
+      exit(1);
+    }
   // RENDER LOOP
   //----------------------------------------
   cube.translate(glm::vec3(2.0f, -5.8f, 0.0f));
@@ -149,12 +154,7 @@ int ENTRY(int argc, char **argv)
     cube.rot_y(0.05f);
 
 
-    int err = glGetError();
-    if (err)
-    {
-      printf("OpenGL Error: %d\n", err);
-      exit(1);
-    }
+
 
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

@@ -61,6 +61,7 @@ void draw_lighting_tab(Renderer *ren)
 void draw_render_tab(Renderer *ren)
 {
   ImGui::SliderFloat("FOV", &ren->cam.fov, 45.0f, 110.0f);
+  ImGui::Text("Frame time: %f\nFramerate: %f", ImGui::GetIO().DeltaTime, ImGui::GetIO().Framerate);
 }
 
 void draw_physics_tab(Renderer *ren)

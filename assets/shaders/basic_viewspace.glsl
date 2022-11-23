@@ -1,6 +1,12 @@
 #shader vertex
 
 #version 330 core
+
+#define NUM_DIRLIGHTS 1
+#define NUM_POINTLIGHTS 5
+#define NUM_SPOTLIGHTS 2
+
+
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec3 aFaceNormal;
@@ -9,27 +15,27 @@ layout (location = 4) in vec3 aTangent;
 layout (location = 5) in vec3 aBitangent;
 
 
-out VS_OUT {
+out VS_OUT_POINTLIGHTS {
     vec3 FragPos;
     vec2 TexCoords;
     vec3 TangentLightPos;
     vec3 TangentViewPos;
     vec3 TangentFragPos;
-} vs_out[8];
+} vs_out_pointlights[NUM_POINTLIGHTS];
 
 uniform mat4 transform;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
-struct Light {
+struct PointLight {
   vec3 position;
   vec3 ambient;
   vec3 diffuse;
   vec3 specular;
   float constant, linear, quadratic;
 };
-uniform Light lights[8];
+uniform PointLight pointlights[NUM_POINTLIGHTS];
 
 uniform vec3 viewPos;
 
@@ -37,8 +43,8 @@ void main()
 {
   for (int i=0; i<8; i++)
   {
-    vs_out[i].FragPos = vec3(model * transform * vec4(aPos, 1.0));
-    vs_out[i].TexCoords = aTexCoords;
+    vs_out_pointlights[i].FragPos = vec3(model * transform * vec4(aPos, 1.0));
+    vs_out_pointlights[i].TexCoords = aTexCoords;
 
     mat3 normalMatrix = transpose(inverse(mat3(model * transform)));
     vec3 T = normalize(normalMatrix * aTangent);
@@ -47,9 +53,9 @@ void main()
     vec3 B = cross(N, T);
     
     mat3 TBN = transpose(mat3(T, B, N));    
-    vs_out[i].TangentLightPos = TBN * vec3(view * vec4(lights[i].position, 1.0));
-    vs_out[i].TangentViewPos  = TBN * viewPos;
-    vs_out[i].TangentFragPos  = TBN * vs_out[i].FragPos;
+    vs_out_pointlights[i].TangentLightPos = TBN * vec3(view * vec4(pointlights[i].position, 1.0));
+    vs_out_pointlights[i].TangentViewPos  = TBN * viewPos;
+    vs_out_pointlights[i].TangentFragPos  = TBN * vs_out_pointlights[i].FragPos;
 
   }
   gl_Position = projection * model * transform * vec4(aPos, 1.0);
@@ -59,9 +65,21 @@ void main()
 
 
 
+
+
+
+
+
+
+
 #shader fragment
 
 #version 330 core
+
+#define NUM_DIRLIGHTS 1
+#define NUM_POINTLIGHTS 5
+#define NUM_SPOTLIGHTS 2
+
 
 struct Material {
   sampler2D diffuseMap;
@@ -73,26 +91,33 @@ struct Material {
 };
 uniform Material material;
 
-struct Light {
+struct DirLight {
+  vec3 position;
+  vec3 direction;
+  vec3 ambient;
+  vec3 diffuse;
+  vec3 specular;
+  float constant, linear, quadratic;
+};
+uniform DirLight dirlights[NUM_DIRLIGHTS];
+
+struct PointLight {
   vec3 position;
   vec3 ambient;
   vec3 diffuse;
   vec3 specular;
   float constant, linear, quadratic;
 };
-uniform Light lights[8];
+uniform PointLight pointlights[NUM_POINTLIGHTS];
 
-in VS_OUT {
+in VS_OUT_POINTLIGHTS {
   vec3 FragPos;
   vec2 TexCoords;
   vec3 TangentLightPos;
   vec3 TangentViewPos;
   vec3 TangentFragPos;
-} fs_in[8];
+} fs_in[NUM_POINTLIGHTS];
 
-uniform int num_dirlights;
-uniform int num_pointlights;
-uniform int num_spotlights;
 out vec4 FragColor;
 
 void main()
@@ -102,16 +127,16 @@ void main()
   vec3 color = texture(material.diffuseMap, fs_in[0].TexCoords).rgb;
   FragColor = vec4(emission, 1.0);
 
-  for (int i=0; i<num_pointlights; i++)
+  for (int i=0; i<NUM_POINTLIGHTS; i++)
   {
-    float distance = length(lights[i].position - fs_in[i].FragPos);
-    float attenuation = 1.0 / (lights[i].constant + lights[i].linear*distance + lights[i].quadratic*distance*distance);
+    float distance = length(pointlights[i].position - fs_in[i].FragPos);
+    float attenuation = 1.0 / (pointlights[i].constant + pointlights[i].linear*distance + pointlights[i].quadratic*distance*distance);
 
     vec3 normal = texture(material.normalMap, fs_in[i].TexCoords).rgb;
     // transform normal vector to range [-1,1]
     normal = normalize(normal * 2.0 - 1.0);  // this normal is in tangent space
 
-    vec3 lightDir = normalize(fs_in[i].TangentLightPos -fs_in[i].TangentFragPos);
+    vec3 lightDir = normalize(fs_in[i].TangentLightPos - fs_in[i].TangentFragPos);
     vec3 viewDir = normalize(-fs_in[i].TangentFragPos);
     vec3 reflectDir = reflect(-lightDir, normal);
     vec3 halfwayDir = normalize(lightDir + viewDir);  
@@ -120,9 +145,9 @@ void main()
     
     float diff = max(dot(lightDir, normal), 0.0);
 
-    vec3 diffuse  = diff * lights[i].diffuse * color;
-    vec3 ambient  = lights[i].ambient * color;
-    vec3 specular = lights[i].specular * spec;
+    vec3 diffuse  = diff * pointlights[i].diffuse * color;
+    vec3 ambient  = pointlights[i].ambient * color;
+    vec3 specular = pointlights[i].specular * spec;
     diffuse *= attenuation;
     ambient *= attenuation;
     specular *= attenuation;
