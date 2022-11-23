@@ -40,13 +40,9 @@ class Camera {
     float rot_speed = 5.0f;
 
 
-    Shader shaders[1];
-    LightSource lightsource;
-    float deltaTime = 0.0f;
     float fov = 90.0f;
 
-    int SCR_width = 1500;
-    int SCR_height = 900;
+
 
 
     void init(void);

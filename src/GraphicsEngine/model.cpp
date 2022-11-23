@@ -8,47 +8,6 @@
 #include "model.h"
 
 
-bool Texture::load(const char *filepath)
-{
-  this->m_filename = std::string(filepath);
-
-  // stbi_set_flip_vertically_on_load(1);
-  int width, height, bpp;
-  unsigned char *data = stbi_load(this->m_filename.c_str(), &width, &height, &bpp, STBI_rgb);
-  if (!data)
-  {
-    printf("Error loading texture from \"%s\" --%s\n", this->m_filename.c_str(), stbi_failure_reason());
-    exit(1);
-  }
-  // printf("Width: %d, height: %d, bpp: %d\n", width, height, bpp);
-
-  glGenTextures(1, &this->m_texture_obj);
-  glBindTexture(GL_TEXTURE_2D, this->m_texture_obj);
-
-  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-  glGenerateMipmap(GL_TEXTURE_2D);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR  );
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-  glBindTexture(GL_TEXTURE_2D, 0);
-
-  stbi_image_free(data);
-
-  return true;
-}
-
-void Texture::bind(GLenum texture_unit)
-{
-  glActiveTexture(texture_unit);
-  glBindTexture(GL_TEXTURE_2D, this->m_texture_obj);
-}
-
-
-
 Model::Model(void)
 {
   glGenVertexArrays(1, &this->VAO);
@@ -295,13 +254,13 @@ void Model::load(const char *filepath, std::string name)
 }
 
 
-void Model::draw(Camera *cam)
+void Model::draw(Renderer *ren)
 {
   this->shader.use();
 
   this->shader.setInt("material.diffuseMap", 0);
-  this->shader.setInt("material.specularMap", 2);
-  this->shader.setInt("material.emissionMap", 1);
+  this->shader.setInt("material.specularMap", 1);
+  this->shader.setInt("material.emissionMap", 2);
   this->shader.setInt("material.normalMap", 3);
   this->shader.setFloat("material.spec_exponent", this->material.spec_exponent);
 
@@ -313,48 +272,49 @@ void Model::draw(Camera *cam)
 
   glBindVertexArray(this->VAO);
 
+  this->shader.setInt("num_lightsources", ren->lightsources.size());
+
   char buffer[64];
-  for (int i=0; i<1; i++)
+  for (int i=0; i<ren->lightsources.size(); i++)
   {
     sprintf(buffer, "lights[%d].position", i);
-    this->shader.setVec3(buffer,  cam->lightsource.position);
+    this->shader.setVec3(buffer,  ren->lightsources[i].position);
 
     sprintf(buffer, "lights[%d].ambient", i);
-    this->shader.setVec3(buffer,  cam->lightsource.ambient);
+    this->shader.setVec3(buffer,  ren->lightsources[i].ambient);
 
     sprintf(buffer, "lights[%d].diffuse", i);
-    this->shader.setVec3(buffer,  cam->lightsource.diffuse);
+    this->shader.setVec3(buffer,  ren->lightsources[i].diffuse);
 
     sprintf(buffer, "lights[%d].specular", i);
-    this->shader.setVec3(buffer,  cam->lightsource.specular);
+    this->shader.setVec3(buffer,  ren->lightsources[i].specular);
 
     sprintf(buffer, "lights[%d].constant", i);
-    this->shader.setFloat(buffer,  cam->lightsource.constant); 
+    this->shader.setFloat(buffer,  ren->lightsources[i].constant); 
 
     sprintf(buffer, "lights[%d].linear", i);
-    this->shader.setFloat(buffer,  cam->lightsource.linear); 
+    this->shader.setFloat(buffer,  ren->lightsources[i].linear); 
 
     sprintf(buffer, "lights[%d].quadratic", i);
-    this->shader.setFloat(buffer,  cam->lightsource.quadratic); 
+    this->shader.setFloat(buffer,  ren->lightsources[i].quadratic); 
   }
 
-  this->shader.setVec3("light.position",  cam->lightsource.position);
-  this->shader.setVec3("light.ambient",   cam->lightsource.ambient);
-  this->shader.setVec3("light.diffuse",   cam->lightsource.diffuse);
-  this->shader.setVec3("light.specular",  cam->lightsource.specular); 
-  this->shader.setFloat("light.constant",  cam->lightsource.constant); 
-  this->shader.setFloat("light.linear",    cam->lightsource.linear); 
-  this->shader.setFloat("light.quadratic", cam->lightsource.quadratic); 
+  // this->shader.setVec3("light.position",  ren->lightsource.position);
+  // this->shader.setVec3("light.ambient",   ren->lightsource.ambient);
+  // this->shader.setVec3("light.diffuse",   ren->lightsource.diffuse);
+  // this->shader.setVec3("light.specular",  ren->lightsource.specular); 
+  // this->shader.setFloat("light.constant",  ren->lightsource.constant); 
+  // this->shader.setFloat("light.linear",    ren->lightsource.linear); 
+  // this->shader.setFloat("light.quadratic", ren->lightsource.quadratic); 
 
 
-  this->shader.setVec3("viewPos", cam->pos);
-  this->shader.setVec3("lightPos", cam->lightsource.position);
+  this->shader.setVec3("viewPos", ren->cam.pos);
   
   this->shader.setMat4("transform", this->transform_mat);
   this->shader.setMat4("model", this->model_mat);
   this->shader.setMat4("parent_model", this->parent_model_mat);
-  this->shader.setMat4("view", cam->view);
-  this->shader.setMat4("projection", cam->projection);
+  this->shader.setMat4("view", ren->cam.view);
+  this->shader.setMat4("projection", ren->cam.projection);
 
   glDrawElements(GL_TRIANGLES, this->num_indices, GL_UNSIGNED_INT, (void *)0);
   glBindVertexArray(0);

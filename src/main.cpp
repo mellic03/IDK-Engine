@@ -19,12 +19,11 @@
 #include <sstream>
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GameEngine/GameEngine.h"
-
-
-Camera cam;
+#include "ui.h"
 
 
 int ENTRY(int argc, char **argv)
@@ -42,8 +41,8 @@ int ENTRY(int argc, char **argv)
     "Test OpenGL",
     SDL_WINDOWPOS_CENTERED,
     SDL_WINDOWPOS_CENTERED,
-    cam.SCR_width,
-    cam.SCR_height,
+    DEFAULT_SCREEN_WIDTH,
+    DEFAULT_SCREEN_HEIGHT,
     SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
   );
 
@@ -66,105 +65,57 @@ int ENTRY(int argc, char **argv)
   glEnable(GL_MULTISAMPLE);  
 
   SDL_Event event;
-
-  cam.init();
-  Player player(&cam);
-
-  // Model skybox;  skybox.load("assets/model/", "skybox");  skybox.setShader(cam.shaders[SHADER_WORLDSPACE]);
-  Model cube;    cube.load("assets/block/", "block");      cube.setShader(cam.shaders[SHADER_WORLDSPACE]);
-  Model ground;  ground.load("assets/ground/", "ground");  ground.setShader(cam.shaders[SHADER_WORLDSPACE]);
   
+
+  // RENDERER SETUP
+  //----------------------------------------
+  Renderer ren;
+  Player player(&ren);
+  // Model skybox;  skybox.load("assets/model/", "skybox");  skybox.setShader(cam.shaders[SHADER_WORLDSPACE]);
+  Model cube;    cube.load("assets/block/", "block");      cube.setShader(ren.shaders[SHADER_WORLDSPACE]);
+  Model ground;  ground.load("assets/ground/", "ground");  ground.setShader(ren.shaders[SHADER_WORLDSPACE]);
+  Model sphere;  sphere.load("assets/sphere/", "sphere");   sphere.setShader(ren.shaders[SHADER_LIGHTSOURCE]);
 
   ModelContainer render_container;
   render_container.add(&cube);
   render_container.add(&ground);
+  render_container.add(&sphere);
   // render_container.add(&skybox);
 
   ModelContainer physics_container;
   physics_container.add(&cube);
   physics_container.add(&ground);
+  //----------------------------------------
 
 
 
-
-  // IMGUI
+  // IMGUI SETUP
   //----------------------------------------
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO& io = ImGui::GetIO(); (void)io;
   ImGui::StyleColorsDark();
-  //ImGui::StyleColorsLight();
   ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
   ImGui_ImplOpenGL3_Init("#version 330");
   //----------------------------------------
 
 
-
-
-
   // RENDER LOOP
   //----------------------------------------
   cube.translate(glm::vec3(2.0f, -5.8f, 0.0f));
-  cam.lightsource.position = {0.0f, -5.8f, 0.0f};
+  ren.lightsource.position = {0.0f, -5.8f, 0.0f};
 
   Uint64 start = SDL_GetPerformanceCounter(), end = SDL_GetPerformanceCounter();
   while (1)
   {
     start = end;
     end = SDL_GetPerformanceCounter();
+    SDL_GetWindowSize(window, &ren.SCR_width, &ren.SCR_height);
 
-    SDL_GetWindowSize(window, &cam.SCR_width, &cam.SCR_height);
+    draw_dev_ui(&ren);
 
-    // Start the Dear ImGui frame
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame();
-    ImGui::NewFrame();
-
-
-
-    ImGui::Begin("Hello, world!");
-    ImGui::Text("This is some useful text.");
-
-    Model *modelptr = render_container.head;
-    while (modelptr != NULL)
-    {
-      ImGui::Text("name: %s: pos: %f %f %f", modelptr->name, modelptr->pos.x, modelptr->pos.y, modelptr->pos.z);
-      modelptr = modelptr->next;
-    }
-
-    ImGui::SliderFloat("FOV", &cam.fov, 45.0f, 110.0f);
-    ImGui::ColorEdit3("ambient", (float*)&cam.lightsource.ambient);
-    ImGui::ColorEdit3("diffuse", (float*)&cam.lightsource.diffuse);
-    ImGui::ColorEdit3("specular", (float*)&cam.lightsource.specular);
-    if (ImGui::Button("Import"))
-    {
-      FILE *fh = fopen("export.txt", "r");
-      fscanf(fh, "%f %f %f\n", &cam.lightsource.ambient.x, &cam.lightsource.ambient.y, &cam.lightsource.ambient.z);
-      fscanf(fh, "%f %f %f\n", &cam.lightsource.diffuse.x,  &cam.lightsource.diffuse.y,  &cam.lightsource.diffuse.z);
-      fscanf(fh, "%f %f %f\n", &cam.lightsource.specular.x, &cam.lightsource.specular.y, &cam.lightsource.specular.z);
-      fclose(fh);
-    }
-    if (ImGui::Button("Export"))
-    {
-      FILE *fh = fopen("export.txt", "w");
-      fprintf(fh, "%f %f %f\n", cam.lightsource.ambient.x, cam.lightsource.ambient.y, cam.lightsource.ambient.z);
-      fprintf(fh, "%f %f %f\n", cam.lightsource.diffuse.x, cam.lightsource.diffuse.y, cam.lightsource.diffuse.z);
-      fprintf(fh, "%f %f %f\n", cam.lightsource.specular.x, cam.lightsource.specular.y, cam.lightsource.specular.z);
-      fclose(fh);
-    }
-    //     counter++;
-    // ImGui::SameLine();
-    // ImGui::Text("counter = %d", counter);
-
-    ImGui::Text("P(x, y, z): %.2f, %.2f, %.2f", player.pos->x, player.pos->y, player.pos->z);
-    ImGui::Text("V(x, y, z): %.2f, %.2f, %.2f", player.vel.x, player.vel.y, player.vel.z);
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    ImGui::End();
-
-
-    ImGui::Render();
+ 
     glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
@@ -175,17 +126,17 @@ int ENTRY(int argc, char **argv)
         ImGui_ImplSDL2_ProcessEvent(&event);
       if (event.type == SDL_QUIT)
         exit(0);
-      player.mouse_input(&cam, &event);
+      player.mouse_input(&ren, &event);
     }
     
 
     physics_container.collide(&player);
-    render_container.draw(&cam);
-    player.key_input(&cam);
+    render_container.draw(&ren);
+    player.key_input(&ren);
 
 
     glClear(GL_DEPTH_BUFFER_BIT);
-    player.draw(&cam);
+    player.draw(&ren);
 
     cube.rot_y(0.05f);
 
@@ -193,7 +144,7 @@ int ENTRY(int argc, char **argv)
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     SDL_GL_SwapWindow(window);
     double dtime_milliseconds = ((end - start)*1000 / (double)SDL_GetPerformanceFrequency() );
-    cam.deltaTime = dtime_milliseconds / 1000;
+    ren.deltaTime = dtime_milliseconds / 1000;
   }
   //----------------------------------------
 

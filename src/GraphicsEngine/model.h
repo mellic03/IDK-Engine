@@ -12,7 +12,7 @@
 #include "../include/glm/gtc/matrix_transform.hpp"
 #include "../include/glm/gtc/type_ptr.hpp"
 
-#include "camera.h"
+#include "renderer.h"
 #include "material.h"
 
 
@@ -59,7 +59,7 @@ class Model {
     Model();
 
     void load(const char *filepath, std::string name);
-    void draw(Camera *cam);
+    void draw(Renderer *ren);
 
     void setName(const char *name_str);
     void setShader(Shader shader_obj);

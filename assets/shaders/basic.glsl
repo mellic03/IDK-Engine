@@ -15,32 +15,43 @@ out VS_OUT {
     vec3 TangentLightPos;
     vec3 TangentViewPos;
     vec3 TangentFragPos;
-} vs_out;
+} vs_out[8];
 
 uniform mat4 transform;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
-uniform vec3 lightPos;
+struct Light {
+  vec3 position;
+  vec3 ambient;
+  vec3 diffuse;
+  vec3 specular;
+  float constant, linear, quadratic;
+};
+uniform Light lights[8];
+
 uniform vec3 viewPos;
 
 void main()
 {
-  vs_out.FragPos = vec3(model * transform * vec4(aPos, 1.0));
-  vs_out.TexCoords = aTexCoords;
+  for (int i=0; i<8; i++)
+  {
+    vs_out[i].FragPos = vec3(model * transform * vec4(aPos, 1.0));
+    vs_out[i].TexCoords = aTexCoords;
 
-  mat3 normalMatrix = transpose(inverse(mat3(model * transform)));
-  vec3 T = normalize(normalMatrix * aTangent);
-  vec3 N = normalize(normalMatrix * aNormal);
-  T = normalize(T - dot(T, N) * N);
-  vec3 B = cross(N, T);
-  
-  mat3 TBN = transpose(mat3(T, B, N));    
-  vs_out.TangentLightPos = TBN * lightPos;
-  vs_out.TangentViewPos  = TBN * viewPos;
-  vs_out.TangentFragPos  = TBN * vs_out.FragPos;
+    mat3 normalMatrix = transpose(inverse(mat3(model * transform)));
+    vec3 T = normalize(normalMatrix * aTangent);
+    vec3 N = normalize(normalMatrix * aNormal);
+    T = normalize(T - dot(T, N) * N);
+    vec3 B = cross(N, T);
+    
+    mat3 TBN = transpose(mat3(T, B, N));    
+    vs_out[i].TangentLightPos = TBN * lights[i].position;
+    vs_out[i].TangentViewPos  = TBN * viewPos;
+    vs_out[i].TangentFragPos  = TBN * vs_out[i].FragPos;
 
+  }
   gl_Position = projection * view * model * transform * vec4(aPos, 1.0);
 }
 
@@ -57,6 +68,7 @@ struct Material {
   sampler2D specularMap;
   sampler2D emissionMap;
   sampler2D normalMap;
+  vec3 specularity;
   float spec_exponent;
 };
 uniform Material material;
@@ -76,31 +88,34 @@ in VS_OUT {
   vec3 TangentLightPos;
   vec3 TangentViewPos;
   vec3 TangentFragPos;
-} fs_in;
+} fs_in[8];
 
-
+uniform int num_lightsources;
 out vec4 FragColor;
 
 void main()
 {
+  vec3 aSpecular = texture(material.specularMap, fs_in[0].TexCoords).rgb;
+  vec3 emission = texture(material.emissionMap, fs_in[0].TexCoords).rgb;
+  vec3 color = texture(material.diffuseMap, fs_in[0].TexCoords).rgb;
   FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-  
-  for (int i=0; i<1; i++)
-  {
-    float distance = length(lights[i].position - fs_in.FragPos);
-    float attenuation = 1.0 / (lights[i].constant + lights[i].linear*distance + lights[i].quadratic*(distance*distance));
 
-    vec3 normal = texture(material.normalMap, fs_in.TexCoords).rgb;
+  for (int i=0; i<num_lightsources; i++)
+  {
+    float distance = length(lights[i].position - fs_in[i].FragPos);
+    float attenuation = 1.0 / (lights[i].constant + lights[i].linear*distance + lights[i].quadratic*distance*distance);
+
+    vec3 normal = texture(material.normalMap, fs_in[i].TexCoords).rgb;
     // transform normal vector to range [-1,1]
     normal = normalize(normal * 2.0 - 1.0);  // this normal is in tangent space
 
-    vec3 lightDir = normalize(fs_in.TangentLightPos - fs_in.TangentFragPos);
-    vec3 viewDir = normalize(fs_in.TangentViewPos - fs_in.TangentFragPos);
+    vec3 lightDir = normalize(fs_in[i].TangentLightPos - fs_in[i].TangentFragPos);
+    vec3 viewDir = normalize(fs_in[i].TangentViewPos - fs_in[i].TangentFragPos);
     vec3 reflectDir = reflect(-lightDir, normal);
     vec3 halfwayDir = normalize(lightDir + viewDir);  
     float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
 
-    vec3 color = texture(material.diffuseMap, fs_in.TexCoords).rgb;
+    
     float diff = max(dot(lightDir, normal), 0.0);
 
     vec3 diffuse  = diff * lights[i].diffuse * color;
@@ -109,9 +124,11 @@ void main()
     diffuse *= attenuation;
     ambient *= attenuation;
     specular *= attenuation;
-    vec3 emission = texture(material.emissionMap, fs_in.TexCoords).rgb;
 
-    FragColor += vec4(ambient + diffuse + specular + emission, 0.0);
+    FragColor += vec4(ambient + diffuse + specular, 0.0);
   }
+
+  float gamma = 1.2;
+  FragColor.rgb = pow(FragColor.rgb, vec3(1.0/gamma));
 
 }

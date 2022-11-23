@@ -4,6 +4,8 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(CMAKE_CXX_FLAGS_RELEASE "-static-libgcc -static-libstdc++")
 
+set(CMAKE_BUILD_TYPE "Release")
+
 project(game)
 
 

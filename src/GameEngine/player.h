@@ -5,7 +5,6 @@
 #include "weapon.h"
 
 
-
 class Player {
 
   public:
@@ -25,10 +24,10 @@ class Player {
     float move_speed = 8.0f;
     float jump_force = 8.0f;
 
-    Player(Camera *cam);
-    void key_input(Camera *cam);
-    void mouse_input(Camera *cam, SDL_Event *event);
+    Player(Renderer *ren);
+    void key_input(Renderer *ren);
+    void mouse_input(Renderer *ren, SDL_Event *event);
 
-    void draw(Camera *cam);
+    void draw(Renderer *ren);
 
 };

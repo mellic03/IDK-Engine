@@ -1,7 +1,3 @@
-
-
-
-
 #include "physics.h"
 
 
@@ -23,12 +19,12 @@ void ModelContainer::add(Model *model)
   }
 }
 
-void ModelContainer::draw(Camera *cam)
+void ModelContainer::draw(Renderer *ren)
 {
   Model *modelptr = this->head;
   while (modelptr != NULL)
   {
-    modelptr->draw(cam);
+    modelptr->draw(ren);
     modelptr = modelptr->next;
   }
 }
@@ -141,84 +137,3 @@ void ModelContainer::collide(Player *player)
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-// bool AABB::intersects(glm::vec3 point)
-// {
-//   glm::vec4 trans = glm::vec4(point.x, point.y, point.z, 1.0f) * (this->parent_model->transform_mat);
-
-//   bool x_cond = this->xmin <= trans.x && trans.x <= this->xmax;
-//   bool y_cond = this->ymin <= trans.y && trans.y <= this->ymax;
-//   bool z_cond = this->zmin <= trans.z && trans.z <= this->zmax;
-
-//   return x_cond & y_cond & z_cond;
-// }
-
-
-
-// void PhysicsWorld::add(Model *object)
-// {
-//   float xmin = object->vertices[0].position.x, xmax = object->vertices[0].position.x;
-//   float ymin = object->vertices[0].position.y, ymax = object->vertices[0].position.y;
-//   float zmin = object->vertices[0].position.z, zmax = object->vertices[0].position.z;
-
-//   for (int i=0; i<object->num_vertices; i++)
-//   {
-//     xmin = (xmin <  object->vertices[i].position.x) ? xmin : object->vertices[i].position.x;
-//     xmax = (xmax >= object->vertices[i].position.x) ? xmax : object->vertices[i].position.x;
-
-//     ymin = (ymin <  object->vertices[i].position.y) ? ymin : object->vertices[i].position.y;
-//     ymax = (ymax >= object->vertices[i].position.y) ? ymax : object->vertices[i].position.y;
-
-//     zmin = (zmin <  object->vertices[i].position.z) ? zmin : object->vertices[i].position.z;
-//     zmax = (zmax >= object->vertices[i].position.z) ? zmax : object->vertices[i].position.z;
-//   }
-
-//   this->objects[this->num_objects].xmin = xmin;
-//   this->objects[this->num_objects].xmax = xmax;
-//   this->objects[this->num_objects].ymin = ymin;
-//   this->objects[this->num_objects].ymax = ymax;
-//   this->objects[this->num_objects].zmin = zmin;
-//   this->objects[this->num_objects].zmax = zmax;
-//   this->objects[this->num_objects].parent_model = object;
-//   this->objects[this->num_objects].pos = &object->pos;
-//   this->num_objects += 1;
-//   printf("x: %f %f\ny: %f %f\nz: %f %f\n", xmin, xmax, ymin, ymax, zmin, zmax);
-
-// }
-
-
-// void PhysicsWorld::tick(Player *player)
-// {
-  // player->vel->y -= 0.0005f;
-
-  // for (int i=0; i<this->num_objects; i++)
-  // {
-  //   AABB *box = &this->objects[i];
-
-  //   glm::vec3 point = glm::vec3(*player->pos - glm::vec3(0.0f, player->height, 0.0f));
-  //   glm::vec4 trans = glm::vec4(point.x, point.y, point.z, 1.0f) * (box->parent_model->transform_mat);
-
-  //   bool x_cond = box->xmin <= trans.x && trans.x <= box->xmax;
-  //   bool y_cond = box->ymin <= trans.y && trans.y <= box->ymax;
-  //   bool z_cond = box->zmin <= trans.z && trans.z <= box->zmax;
-
-  //   if (x_cond & y_cond & z_cond)
-  //   {
-  //     float y_overlap = box->ymax - trans.y;
-  //     player->pos->y += y_overlap/2;
-  //     player->vel->y /= 2;
-  //   }
-  // }
-// }
