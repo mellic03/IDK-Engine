@@ -267,15 +267,35 @@ void Model::draw(Renderer *ren)
   this->material.emission.bind(GL_TEXTURE2);
   this->material.normal.bind(GL_TEXTURE3);
 
-
   glBindVertexArray(this->VAO);
 
-  this->shader.setInt("num_dirlights",   NUM_DIRLIGHTS);
-  this->shader.setInt("num_pointlights", NUM_POINTLIGHTS);
-  this->shader.setInt("num_spotlights",  NUM_SPOTLIGHTS);
 
   char buffer[64];
   for (int i=0; i<NUM_POINTLIGHTS; i++)
+  {
+    sprintf(buffer, "pointlights[%d].position", i);
+    this->shader.setVec3(buffer,  ren->pointlights[i].position);
+
+    sprintf(buffer, "pointlights[%d].ambient", i);
+    this->shader.setVec3(buffer,  ren->pointlights[i].ambient);
+
+    sprintf(buffer, "pointlights[%d].diffuse", i);
+    this->shader.setVec3(buffer,  ren->pointlights[i].diffuse);
+
+    sprintf(buffer, "pointlights[%d].specular", i);
+    this->shader.setVec3(buffer,  ren->pointlights[i].specular);
+
+    sprintf(buffer, "pointlights[%d].constant", i);
+    this->shader.setFloat(buffer,  ren->pointlights[i].constant); 
+
+    sprintf(buffer, "pointlights[%d].linear", i);
+    this->shader.setFloat(buffer,  ren->pointlights[i].linear); 
+
+    sprintf(buffer, "pointlights[%d].quadratic", i);
+    this->shader.setFloat(buffer,  ren->pointlights[i].quadratic); 
+  }
+
+  for (int i=0; i<NUM_SPOTLIGHTS; i++)
   {
     sprintf(buffer, "lights[%d].position", i);
     this->shader.setVec3(buffer,  ren->pointlights[i].position);
@@ -298,30 +318,6 @@ void Model::draw(Renderer *ren)
     sprintf(buffer, "lights[%d].quadratic", i);
     this->shader.setFloat(buffer,  ren->pointlights[i].quadratic); 
   }
-
-  // for (int i=0; i<NUM_SPOTLIGHTS; i++)
-  // {
-  //   sprintf(buffer, "lights[%d].position", i);
-  //   this->shader.setVec3(buffer,  ren->pointlights[i].position);
-
-  //   sprintf(buffer, "lights[%d].ambient", i);
-  //   this->shader.setVec3(buffer,  ren->pointlights[i].ambient);
-
-  //   sprintf(buffer, "lights[%d].diffuse", i);
-  //   this->shader.setVec3(buffer,  ren->pointlights[i].diffuse);
-
-  //   sprintf(buffer, "lights[%d].specular", i);
-  //   this->shader.setVec3(buffer,  ren->pointlights[i].specular);
-
-  //   sprintf(buffer, "lights[%d].constant", i);
-  //   this->shader.setFloat(buffer,  ren->pointlights[i].constant); 
-
-  //   sprintf(buffer, "lights[%d].linear", i);
-  //   this->shader.setFloat(buffer,  ren->pointlights[i].linear); 
-
-  //   sprintf(buffer, "lights[%d].quadratic", i);
-  //   this->shader.setFloat(buffer,  ren->pointlights[i].quadratic); 
-  // }
 
 
 
