@@ -50,7 +50,6 @@ in VS_OUT {
   vec3 SPOT_TangentLightPositions[NUM_SPOTLIGHTS];
   vec3 SPOT_TangentViewPositions[NUM_SPOTLIGHTS];
   vec3 SPOT_TangentFragPositions[NUM_SPOTLIGHTS];
-
 } fs_in;
 
 uniform vec3 viewDirection;
@@ -129,8 +128,8 @@ vec3 calculate_spotlight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDi
     specular *= intensity * attenuation;
     return (ambient + diffuse + specular);
   } 
-  // else  // else, use ambient light so scene isn't completely dark outside the spotlight.
-  //   return light.ambient * texture(material.diffuseMap, fs_in.TexCoords).rgb;
+  else  // else, use ambient light so scene isn't completely dark outside the spotlight.
+    return light.ambient * texture(material.diffuseMap, fs_in.TexCoords).rgb;
 }
 
 void main()

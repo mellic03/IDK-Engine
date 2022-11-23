@@ -67,17 +67,38 @@ void main()
   vs_out.Normal = mat3(transpose(inverse(model))) * aNormal;  
   vs_out.TexCoords = aTexCoords;
   
+  vec3 T = normalize(vec3(model * vec4(aTangent, 0.0)));
+  vec3 N = normalize(vec3(model * vec4(aNormal, 0.0)));
+  
+  // re-orthogonalize T with respect to N
+  T = normalize(T - dot(T, N) * N);
+
+  // then retrieve perpendicular vector B with the cross product of T and N
+  vec3 B = cross(N, T);
+  mat3 TBN = mat3(T, B, N);
 
   for (int i=0; i<NUM_DIRLIGHTS; i++)
   {
-    mat3 TBN = transpose(mat3(T, B, N));
-    vs_out.DIR_TangentLightPositions[i] = TBN * dirlights[i];
+    vs_out.DIR_TangentLightPositions[i] = TBN * dirlights[i].direction;
     vs_out.DIR_TangentViewPositions[i]  = TBN * viewPos;
     vs_out.DIR_TangentFragPositions[i]  = TBN * vec3(model * vec4(aPos, 1.0));
   }
 
-
+  for (int i=0; i<NUM_POINTLIGHTS; i++)
+  {
+    vs_out.POINT_TangentLightPositions[i] = TBN * pointlights[i].position;
+    vs_out.POINT_TangentViewPositions[i]  = TBN * viewPos;
+    vs_out.POINT_TangentFragPositions[i]  = TBN * vec3(model * vec4(aPos, 1.0));
+  }
   
+  for (int i=0; i<NUM_SPOTLIGHTS; i++)
+  {
+    vs_out.SPOT_TangentLightPositions[i] = TBN * spotlights[i].position;
+    vs_out.SPOT_TangentViewPositions[i]  = TBN * viewPos;
+    vs_out.SPOT_TangentFragPositions[i]  = TBN * vec3(model * vec4(aPos, 1.0));
+  }
+  
+
   gl_Position = projection * view * vec4(vs_out.FragPos, 1.0);
 }
 
