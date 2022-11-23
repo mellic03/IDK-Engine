@@ -72,7 +72,7 @@ vec3 calculate_dirlight(DirLight light, vec3 normal, vec3 viewDir)
   return (ambient + diffuse + specular);
 }
 
-vec3 calculate_pointlight(PointLight light, vec3 normal, int index)
+vec3 calculate_pointlight(PointLight light, vec3 normal, vec3 fragPos, int index)
 {
   vec3 lightDir = normalize(fs_in.POINT_TangentLightPositions[index] - fs_in.POINT_TangentFragPositions[index]);
   vec3 viewDir = normalize(fs_in.POINT_TangentViewPositions[index] - fs_in.POINT_TangentFragPositions[index]);
@@ -85,7 +85,7 @@ vec3 calculate_pointlight(PointLight light, vec3 normal, int index)
   float spec = pow(max(dot(normal, halfwayDir), 0.0), material.spec_exponent);
 
   // attenuation
-  float distance    = length(light.position - fs_in.POINT_TangentFragPositions[index]);
+  float distance    = length(light.position - fragPos);
   float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
 
   // combine results
@@ -118,7 +118,7 @@ vec3 calculate_spotlight(SpotLight light, vec3 normal, vec3 fragPos, int index)
     float spec = pow(max(dot(normal, halfwayDir), 0.0), material.spec_exponent);
 
     // attenuation
-    float distance    = length(light.position - fs_in.SPOT_TangentFragPositions[index]);
+    float distance    = length(light.position - fragPos);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
 
     // combine results
@@ -149,7 +149,7 @@ void main()
     result += calculate_dirlight(dirlights[i], fragNormal, viewDir);
 
   for (int i=0; i<NUM_POINTLIGHTS; i++)
-    result += calculate_pointlight(pointlights[i], fragNormal, i);
+    result += calculate_pointlight(pointlights[i], fragNormal, fs_in.FragPos, i);
 
   for (int i=0; i<NUM_SPOTLIGHTS; i++)
     result += calculate_spotlight(spotlights[i], fragNormal, fs_in.FragPos, i);

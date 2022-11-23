@@ -65,12 +65,12 @@ void main()
   vs_out.FragPos = vec3(model * transform * vec4(aPos, 1.0));
   vs_out.TexCoords = aTexCoords;
   
-    mat3 normalMatrix = transpose(inverse(mat3(model * transform)));
-    vec3 T = normalize(normalMatrix * aBitangent);
-    vec3 N = normalize(normalMatrix * aNormal);
-    T = normalize(T - dot(T, N) * N);
-    vec3 B = cross(N, T);
-    mat3 TBN = transpose(mat3(T, B, N));      
+  mat3 normalMatrix = transpose(inverse(mat3(model * transform)));
+  vec3 T = normalize(normalMatrix * aBitangent);
+  vec3 N = normalize(normalMatrix * aNormal);
+  T = normalize(T - dot(T, N) * N);
+  vec3 B = cross(N, T);
+  mat3 TBN = transpose(mat3(T, B, N));      
 
   for (int i=0; i<NUM_DIRLIGHTS; i++)
   {
