@@ -133,10 +133,3 @@ void ModelContainer::bindRenderer(Renderer *ren)
   }
 }
 
-void ModelContainer::setShader(Shader *shader)
-{
-  for (int i=0; i<this->models.size(); i++)
-  {
-    this->models[i]->setShader(shader);
-  }
-}

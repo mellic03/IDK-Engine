@@ -28,9 +28,6 @@
 
 
 
-
-
-
 int ENTRY(int argc, char **argv)
 {
   SDL_Window *window = NULL;
@@ -55,6 +52,7 @@ int ENTRY(int argc, char **argv)
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
 
   gl_context = SDL_GL_CreateContext(window);
@@ -77,11 +75,16 @@ int ENTRY(int argc, char **argv)
   //----------------------------------------
   Renderer ren, shadowren;
   Player player(&ren);
-  // Model skybox;  skybox.load("assets/model/", "skybox");  skybox.setShader(cam.shaders[SHADER_WORLDSPACE]);
-  Model cube;    cube.load("assets/block/", "block");       cube.setShader(&ren.shaders[SHADER_WORLDSPACE]);
-  Model ground;  ground.load("assets/ground/", "ground");   ground.setShader(&ren.shaders[SHADER_WORLDSPACE]);
-  Model sphere;  sphere.load("assets/sphere/", "sphere");   sphere.setShader(&ren.shaders[SHADER_LIGHTSOURCE]);
+
+
+
+  // Model skybox;  skybox.load("assets/model/", "skybox");
+  Model cube;    cube.load("assets/block/", "block");
+  Model ground;  ground.load("assets/ground/", "ground");
+  Model sphere;  sphere.load("assets/sphere/", "sphere");
   sphere.bindRenderer(&ren);
+
+
 
   ModelContainer render_container;
   render_container.add(&cube);
@@ -89,10 +92,11 @@ int ENTRY(int argc, char **argv)
   // render_container.add(&skybox);
   render_container.bindRenderer(&ren);
 
-
   ModelContainer physics_container;
   physics_container.add(&cube);
   physics_container.add(&ground);
+
+
 
 
   Scene scene_1;
@@ -102,8 +106,6 @@ int ENTRY(int argc, char **argv)
   scene_1.bindPlayer(&player);
 
   //----------------------------------------
-
-
 
   // IMGUI SETUP
   //----------------------------------------
@@ -115,17 +117,17 @@ int ENTRY(int argc, char **argv)
   ImGui_ImplOpenGL3_Init("#version 330");
   //----------------------------------------
 
+
+  // RENDER LOOP
+  //----------------------------------------
+  cube.translate(glm::vec3(2.0f, -5.8f, 0.0f));
+
   int err = glGetError();
   if (err)
   {
     printf("OpenGL Error: %d\n", err);
     exit(1);
   }
-  // RENDER LOOP
-  //----------------------------------------
-  cube.translate(glm::vec3(2.0f, -5.8f, 0.0f));
-
-
   
 
   if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -136,7 +138,18 @@ int ENTRY(int argc, char **argv)
   Uint64 start = SDL_GetPerformanceCounter(), end = SDL_GetPerformanceCounter();
   while (1)
   {
-    ren.frameStart((int)io.DisplaySize.x, (int)io.DisplaySize.y);
+    glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, ren.FBO);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // we're not using the stencil buffer now
+    glEnable(GL_DEPTH_TEST);
+
+    glBindTexture(GL_TEXTURE_2D, ren.textureColorbuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, (int)io.DisplaySize.x, (int)io.DisplaySize.y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glBindRenderbuffer(GL_RENDERBUFFER, ren.rbo); 
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, (int)io.DisplaySize.x, (int)io.DisplaySize.y);  
+
 
 
     start = end;
@@ -155,24 +168,17 @@ int ENTRY(int argc, char **argv)
     }
     
 
-    // first pass
-
-
-    // physics_container.collide(&player);
-    // render_container.draw(&ren);
-
-    // ren.spotlights[0].position = *player.pos;
-    // ren.spotlights[0].direction = ren.cam.front;
-
-
+    ren.usePerspective();
+    
+    ren.useShader(SHADER_WORLDSPACE);
     scene_1.draw(&event);
 
 
     player.key_input(&ren);
 
     glClear(GL_DEPTH_BUFFER_BIT);
+    ren.useShader(SHADER_VIEWSPACE);
     player.draw(&ren);
-
 
       
     // second pass
@@ -181,10 +187,18 @@ int ENTRY(int argc, char **argv)
     glClear(GL_COLOR_BUFFER_BIT);
  
 
+    ren.useShader(SHADER_RENDERQUAD);
+    ren.active_shader.setInt("screenTexture", 0);
+    ren.active_shader.setFloatVector("kernel", 9, ren.image_kernel);
+    ren.active_shader.setFloat("kernelDivisor", ren.kernel_divisor);
+    ren.active_shader.setFloat("kernelOffsetDivisor", ren.kernel_offset_divisor);
 
-    ren.frameEnd();
-
-
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE0, 0);
+    glBindVertexArray(ren.quadVAO);
+    glDisable(GL_DEPTH_TEST);
+    glBindTexture(GL_TEXTURE_2D, ren.textureColorbuffer);
+    glDrawArrays(GL_TRIANGLES, 0, 6); 
 
 
 

@@ -17,6 +17,5 @@ class ModelContainer {
     void draw(Renderer *ren);
     void collide(Player *player);
     void bindRenderer(Renderer *ren);
-    void setShader(Shader *shader);
 };
 

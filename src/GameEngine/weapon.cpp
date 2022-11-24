@@ -11,7 +11,6 @@ glm::vec3 lerp(glm::vec3 from, glm::vec3 to, float alpha)
 void Weapon::load_model(const char *filepath, const char *name, Renderer *ren)
 {
   this->model.load(filepath, name);
-  this->model.setShader(&ren->shaders[SHADER_VIEWSPACE]);
   this->model.bindRenderer(ren);
 }
 

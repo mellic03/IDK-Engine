@@ -33,7 +33,6 @@
 
 class Renderer {
   
-
   private:
     float quadVertices[24] = {
       -1.0f,  1.0f, 0.0f, 1.0f,
@@ -44,12 +43,12 @@ class Renderer {
        1.0f, -1.0f, 1.0f, 0.0f,
        1.0f,  1.0f, 1.0f, 1.0f
     };
-    GLuint quadVAO, quadVBO, rbo;
-    GLuint textureColorbuffer;
-
 
 
   public:
+    GLuint quadVAO, quadVBO, rbo;
+    GLuint textureColorbuffer;
+
 
     Camera cam;
 
@@ -72,6 +71,7 @@ class Renderer {
     float NM_SPOTLIGHTS = 2;
 
     Shader shaders[5];
+    Shader active_shader;
     std::vector<DirLight>    dirlights;
     std::vector<PointLight>  pointlights;
     std::vector<SpotLight>   spotlights;
@@ -83,5 +83,10 @@ class Renderer {
 
     void frameStart(int x, int y);
     void frameEnd();
+
+    void useShader(ShaderType shader);
+
+    void useOrthographic(void);
+    void usePerspective(void);
 
 };

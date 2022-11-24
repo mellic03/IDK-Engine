@@ -114,7 +114,6 @@ void draw_lighting_tab(Renderer *ren)
 void draw_render_tab(Renderer *ren)
 {
   ImGui::SliderFloat("FOV", &ren->cam.fov, 45.0f, 110.0f);
-  ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
@@ -141,13 +140,25 @@ void draw_render_tab(Renderer *ren)
       ImGui::PushID(3*row+2);
       ImGui::DragScalar("", ImGuiDataType_Float, &ren->image_kernel[3*row+2], 1.0f, NULL);
       ImGui::PopID();
-
     }
-    ImGui::EndTable();
-    ImGui::DragScalar("Divisor", ImGuiDataType_Float, &ren->kernel_divisor, 1.0f, NULL);
-    ImGui::DragScalar("Pixel offset divisor", ImGuiDataType_Float, &ren->kernel_offset_divisor, 1.0f, NULL);
+
+    ImGui::TableNextRow();
+    if (ImGui::Button("Reset"))
+    {
+      for (int i=0; i<9; i++)
+        ren->image_kernel[i] = 0.0f;
+      ren->image_kernel[4] = 1.0f;
+    }
   }
 
+
+  ImGui::EndTable();
+  ImGui::DragScalar("Divisor", ImGuiDataType_Float, &ren->kernel_divisor, 1.0f, NULL);
+  ImGui::DragScalar("Pixel offset divisor", ImGuiDataType_Float, &ren->kernel_offset_divisor, 1.0f, NULL);
+
+
+
+  ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 }
 
 void draw_physics_tab(Renderer *ren)

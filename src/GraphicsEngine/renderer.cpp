@@ -9,9 +9,6 @@
 #include <sstream>
 #include "renderer.h"
 
-#define SHADOW_WIDTH 1024
-#define SHADOW_HEIGHT 1024
-
 Renderer::Renderer()
 {
   glGenFramebuffers(1, &this->FBO);
@@ -31,12 +28,15 @@ Renderer::Renderer()
   lightsource.set(create_shader(lightsource_src.vertex_source, lightsource_src.fragment_source));
   this->shaders[SHADER_LIGHTSOURCE] = lightsource;
   
-  ShaderSource shadowmap_src = parse_shader("assets/shaders/renderquad.vs", "assets/shaders/renderquad.fs");
+  ShaderSource renderquad_src = parse_shader("assets/shaders/renderquad.vs", "assets/shaders/renderquad.fs");
+  Shader renderquad;
+  renderquad.set(create_shader(renderquad_src.vertex_source, renderquad_src.fragment_source));
+  this->shaders[SHADER_RENDERQUAD] = renderquad;
+
+  ShaderSource shadowmap_src = parse_shader("assets/shaders/shadowmap.vs", "assets/shaders/shadowmap.fs");
   Shader shadowmap;
   shadowmap.set(create_shader(shadowmap_src.vertex_source, shadowmap_src.fragment_source));
   this->shaders[SHADER_SHADOWMAP] = shadowmap;
-
-
 
   // Generate screen quad
   //------------------------------------------------------
@@ -69,7 +69,6 @@ Renderer::Renderer()
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->rbo);
 
 
-
   for (int i=0; i<NUM_DIRLIGHTS; i++)
   {
     this->dirlights.push_back(DirLight());
@@ -78,7 +77,7 @@ Renderer::Renderer()
 
     glGenTextures(1, &this->dirlights[i].depthMap);
     glBindTexture(GL_TEXTURE_2D, this->dirlights[i].depthMap);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
@@ -94,37 +93,54 @@ Renderer::Renderer()
 
   for (int i=0; i<NUM_SPOTLIGHTS; i++)
     this->spotlights.push_back(SpotLight());
-}
-
-
-
-void Renderer::frameStart(int x, int y)
-{
-  glViewport(0, 0, x, y);
-  glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
-  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // we're not using the stencil buffer now
-  glEnable(GL_DEPTH_TEST);
-
-  glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-  glBindRenderbuffer(GL_RENDERBUFFER, rbo); 
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, x, y);  
 
 }
+
 
 void Renderer::frameEnd()
 {
-  this->shaders[SHADER_SHADOWMAP].use();
-  this->shaders[SHADER_SHADOWMAP].setInt("screenTexture", 0);
-  this->shaders[SHADER_SHADOWMAP].setFloatVector("kernel", 9, this->image_kernel);
-  this->shaders[SHADER_SHADOWMAP].setFloat("kernelDivisor", this->kernel_divisor);
-  this->shaders[SHADER_SHADOWMAP].setFloat("kernelOffsetDivisor", this->kernel_offset_divisor);
+  // this->shaders[SHADER_RENDERQUAD].use();
+  // this->shaders[SHADER_RENDERQUAD].setInt("screenTexture", 0);
+  // this->shaders[SHADER_RENDERQUAD].setFloatVector("kernel", 9, this->image_kernel);
+  // this->shaders[SHADER_RENDERQUAD].setFloat("kernelDivisor", this->kernel_divisor);
+  // this->shaders[SHADER_RENDERQUAD].setFloat("kernelOffsetDivisor", this->kernel_offset_divisor);
 
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE0, 0);
-  glBindVertexArray(this->quadVAO);
-  glDisable(GL_DEPTH_TEST);
-  glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
-  glDrawArrays(GL_TRIANGLES, 0, 6); 
+  // glActiveTexture(GL_TEXTURE0);
+  // glBindTexture(GL_TEXTURE0, 0);
+  // glBindVertexArray(this->quadVAO);
+  // glDisable(GL_DEPTH_TEST);
+  // glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+  // glDrawArrays(GL_TRIANGLES, 0, 6); 
+}
+
+void Renderer::useShader(ShaderType shader)
+{
+  this->active_shader = this->shaders[shader];
+  glUseProgram(this->active_shader.id);
+}
+
+void Renderer::useOrthographic(void)
+{
+  float near_plane = 1.0f, far_plane = 70.5f;
+  glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+  glm::mat4 lightView = glm::lookAt(  glm::vec3(-2.0f, 4.0f, -1.0f), 
+                                      glm::vec3( 0.0f, 0.0f,  0.0f), 
+                                      glm::vec3( 0.0f, 1.0f,  0.0f));
+
+  this->cam.projection = lightProjection;
+  this->cam.view = lightView;
+  glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+  this->shaders[SHADER_SHADOWMAP].use();
+  this->shaders[SHADER_SHADOWMAP].setMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+}
+
+void Renderer::usePerspective(void)
+{
+  this->cam.projection = glm::perspective(glm::radians(this->fov), (float)this->SCR_width/(float)this->SCR_height, NEAR_PLANE_DIST, RENDER_DISTANCE);
+  this->cam.view = glm::lookAt(
+    this->cam.pos,
+    this->cam.pos + this->cam.front,
+    this->cam.up
+  ); 
 }

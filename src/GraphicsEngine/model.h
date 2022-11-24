@@ -60,9 +60,7 @@ class Model {
     void load(const char *filepath, std::string name);
     void draw(Renderer *ren);
 
-    void setName(const char *name_str);
     void bindRenderer(Renderer *ren);
-    void setShader(Shader *shader_obj);
 
     void set_pos(glm::vec3 position);
     void translate(glm::vec3 translation);
