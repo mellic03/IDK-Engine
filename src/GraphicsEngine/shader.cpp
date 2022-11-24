@@ -84,3 +84,9 @@ void Shader::setFloat(const char *uniform_name, float value)
   int uniform_loc = glGetUniformLocation(this->id, uniform_name);
   glUniform1f(uniform_loc, value);
 }
+
+void Shader::setFloatVector(const char *uniform_name, int size, float *ptr)
+{
+  int uniform_loc = glGetUniformLocation(this->id, uniform_name);
+  glUniform1fv(uniform_loc, size, ptr);
+}

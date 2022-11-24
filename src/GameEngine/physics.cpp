@@ -123,3 +123,20 @@ void ModelContainer::collide(Player *player)
   }
 }
 
+
+void ModelContainer::bindRenderer(Renderer *ren)
+{
+  for (int i=0; i<this->models.size(); i++)
+  {
+    this->models[i]->view_mat = &ren->cam.view;
+    this->models[i]->projection_mat = &ren->cam.projection;
+  }
+}
+
+void ModelContainer::setShader(Shader *shader)
+{
+  for (int i=0; i<this->models.size(); i++)
+  {
+    this->models[i]->setShader(shader);
+  }
+}

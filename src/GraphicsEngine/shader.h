@@ -12,7 +12,7 @@
 #include "../include/glm/gtc/matrix_transform.hpp"
 #include "../include/glm/gtc/type_ptr.hpp"
 
-enum ShaderStyle { SHADER_WORLDSPACE, SHADER_VIEWSPACE, SHADER_LIGHTSOURCE };
+enum ShaderStyle { SHADER_WORLDSPACE, SHADER_VIEWSPACE, SHADER_LIGHTSOURCE, SHADER_SHADOWMAP };
 enum ShaderType { SHADER_NONE=-1, SHADER_VERTEX, SHADER_FRAGMENT };
 
 struct ShaderSource {
@@ -27,9 +27,9 @@ unsigned int create_shader(const std::string &vertex_shader, const std::string &
 
 class Shader {
   private:
-    GLuint id;
 
   public:
+    GLuint id;
     Shader() { };
     void set(GLuint shader_id) { this->id = shader_id; };
     GLuint get(void) { return this->id; };
@@ -38,4 +38,5 @@ class Shader {
     void setMat4(const char *uniform_name, glm::mat4 mat);
     void setInt(const char *uniform_name, GLuint value);
     void setFloat(const char *uniform_name, float value);
+    void setFloatVector(const char *uniform_name, int size, float *ptr);
 };

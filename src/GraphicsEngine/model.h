@@ -33,7 +33,7 @@ class Model {
   public:
 
     GLuint VAO, VBO, IBO;
-    Shader shader;
+    Shader *shader;
     float *positions;
     float *normals;
     int num_polygons;
@@ -44,9 +44,9 @@ class Model {
 
     Material material;
     
-    glm::mat4 *view_mat;
-    glm::mat4 model_mat = glm::mat4(1.0f);
     glm::mat4 transform_mat = glm::mat4(1.0f);
+    glm::mat4 model_mat = glm::mat4(1.0f);
+    glm::mat4 *view_mat = &this->model_mat, *projection_mat = &this->model_mat;
 
     glm::vec3 dir = {0, 0, 1.0f};
     glm::vec3 pos = {0, 0, 0};
@@ -61,7 +61,8 @@ class Model {
     void draw(Renderer *ren);
 
     void setName(const char *name_str);
-    void setShader(Shader shader_obj);
+    void bindRenderer(Renderer *ren);
+    void setShader(Shader *shader_obj);
 
     void set_pos(glm::vec3 position);
     void translate(glm::vec3 translation);

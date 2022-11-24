@@ -43,6 +43,7 @@ uniform vec3 viewPos;
 
 out VS_OUT {
   vec3 FragPos;
+  vec3 SurfaceNormal;
   vec2 TexCoords;
   
   vec3 DIR_TangentLightPositions[NUM_DIRLIGHTS];
@@ -63,6 +64,7 @@ out VS_OUT {
 void main()
 {
   vs_out.FragPos = vec3(model * transform * vec4(aPos, 1.0));
+  vs_out.SurfaceNormal = aNormal;
   vs_out.TexCoords = aTexCoords;
   
   mat3 normalMatrix = transpose(inverse(mat3(model * transform)));

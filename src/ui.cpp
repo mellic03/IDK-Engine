@@ -33,6 +33,7 @@ void draw_lighting_tab(Renderer *ren)
   ImGui::DragScalar("x", ImGuiDataType_Float, &ren->dirlights[selected_dirlight].direction.x, 0.05f, NULL);
   ImGui::DragScalar("y", ImGuiDataType_Float, &ren->dirlights[selected_dirlight].direction.y, 0.05f, NULL);
   ImGui::DragScalar("z", ImGuiDataType_Float, &ren->dirlights[selected_dirlight].direction.z, 0.05f, NULL);
+  ren->dirlights[selected_dirlight].direction = glm::normalize(ren->dirlights[selected_dirlight].direction);
   ImGui::PopID();
 
 
@@ -83,6 +84,11 @@ void draw_lighting_tab(Renderer *ren)
   ImGui::ColorEdit3("diffuse", (float*)&ren->spotlights[selected_spotlight].diffuse);
   ImGui::ColorEdit3("specular", (float*)&ren->spotlights[selected_spotlight].specular);
 
+  // ImGui::DragScalar("constant", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].constant,   0.001f, NULL);
+  ImGui::SliderFloat("constant", &ren->spotlights[selected_spotlight].constant, 0.0f, 100.0f, "%0.4f", NULL);
+  ImGui::DragScalar("linear", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].linear,       0.001f, NULL);
+  ImGui::DragScalar("quadratic", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].quadratic, 0.001f, NULL);
+
   ImGui::DragScalar("intensity", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].intensity, 0.05f, NULL);
   ImGui::DragScalar("inner cutoff", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].inner_cutoff, 0.05f, NULL);
   ImGui::DragScalar("outer cutoff", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].outer_cutoff, 0.05f, NULL);
@@ -109,6 +115,39 @@ void draw_render_tab(Renderer *ren)
 {
   ImGui::SliderFloat("FOV", &ren->cam.fov, 45.0f, 110.0f);
   ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+  ImGui::Dummy(ImVec2(0.0f, 20.0f));
+
+  ImGui::Text("Image Kernel");
+
+  if (ImGui::BeginTable("Image Kernel", 3))
+  {
+    char buffer[32];
+
+    for (int row = 0; row < 3; row++)
+    {
+      ImGui::TableNextRow();
+      ImGui::TableNextColumn();
+      ImGui::PushID(3*row+0);
+      ImGui::DragScalar("", ImGuiDataType_Float, &ren->image_kernel[3*row+0], 1.0f, NULL);
+      ImGui::PopID();
+      
+      ImGui::TableNextColumn();
+      ImGui::PushID(3*row+1);
+      ImGui::DragScalar("", ImGuiDataType_Float, &ren->image_kernel[3*row+1], 1.0f, NULL);
+      ImGui::PopID();
+
+      ImGui::TableNextColumn();
+      ImGui::PushID(3*row+2);
+      ImGui::DragScalar("", ImGuiDataType_Float, &ren->image_kernel[3*row+2], 1.0f, NULL);
+      ImGui::PopID();
+
+    }
+    ImGui::EndTable();
+    ImGui::DragScalar("Divisor", ImGuiDataType_Float, &ren->kernel_divisor, 1.0f, NULL);
+    ImGui::DragScalar("Pixel offset divisor", ImGuiDataType_Float, &ren->kernel_offset_divisor, 1.0f, NULL);
+  }
+
 }
 
 void draw_physics_tab(Renderer *ren)

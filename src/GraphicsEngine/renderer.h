@@ -37,12 +37,20 @@ class Renderer {
 
     Camera cam;
 
+    GLuint FBO;
+
     float deltaTime = 0.0f;
     float fov = 90.0f;
+    float image_kernel[9] = { 0.0f };
+    float kernel_divisor = 1.0f, kernel_offset_divisor = 600.0f;
 
     int SCR_width = DEFAULT_SCREEN_WIDTH;
     int SCR_height = DEFAULT_SCREEN_HEIGHT;
     
+    float NM_DIRLIGHTS = 1;
+    float NM_POINTLIGHTS = 5;
+    float NM_SPOTLIGHTS = 2;
+
     Shader shaders[5];
     std::vector<DirLight>    dirlights;
     std::vector<PointLight>  pointlights;

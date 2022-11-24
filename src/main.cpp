@@ -24,6 +24,11 @@
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GameEngine/GameEngine.h"
 #include "ui.h"
+#include "scene.h"
+
+
+
+
 
 
 int ENTRY(int argc, char **argv)
@@ -65,25 +70,62 @@ int ENTRY(int argc, char **argv)
   glEnable(GL_MULTISAMPLE);  
 
   SDL_Event event;
-  
+
+
+
+
+
+  float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+      // positions   // texCoords
+      -1.0f,  1.0f,  0.0f, 1.0f,
+      -1.0f, -1.0f,  0.0f, 0.0f,
+        1.0f, -1.0f,  1.0f, 0.0f,
+
+      -1.0f,  1.0f,  0.0f, 1.0f,
+        1.0f, -1.0f,  1.0f, 0.0f,
+        1.0f,  1.0f,  1.0f, 1.0f
+  };
+
+  unsigned int quadVAO, quadVBO;
+  glGenVertexArrays(1, &quadVAO);
+  glGenBuffers(1, &quadVBO);
+  glBindVertexArray(quadVAO);
+  glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+
+
+
+
+
+
+
 
   // RENDERER SETUP
   //----------------------------------------
-  Renderer ren;
+  Renderer ren, shadowren;
   Player player(&ren);
   // Model skybox;  skybox.load("assets/model/", "skybox");  skybox.setShader(cam.shaders[SHADER_WORLDSPACE]);
-  Model cube;    cube.load("assets/block/", "block");       cube.setShader(ren.shaders[SHADER_WORLDSPACE]);
-  Model ground;  ground.load("assets/ground/", "ground");   ground.setShader(ren.shaders[SHADER_WORLDSPACE]);
-  Model sphere;  sphere.load("assets/sphere/", "sphere");   sphere.setShader(ren.shaders[SHADER_LIGHTSOURCE]);
+  Model cube;    cube.load("assets/block/", "block");       cube.setShader(&ren.shaders[SHADER_WORLDSPACE]);
+  Model ground;  ground.load("assets/ground/", "ground");   ground.setShader(&ren.shaders[SHADER_WORLDSPACE]);
+  Model sphere;  sphere.load("assets/sphere/", "sphere");   sphere.setShader(&ren.shaders[SHADER_LIGHTSOURCE]);
+  sphere.bindRenderer(&ren);
 
   ModelContainer render_container;
   render_container.add(&cube);
   render_container.add(&ground);
   // render_container.add(&skybox);
+  render_container.bindRenderer(&ren);
+
 
   ModelContainer physics_container;
   physics_container.add(&cube);
   physics_container.add(&ground);
+
   //----------------------------------------
 
 
@@ -108,6 +150,32 @@ int ENTRY(int argc, char **argv)
   //----------------------------------------
   cube.translate(glm::vec3(2.0f, -5.8f, 0.0f));
 
+
+  glBindFramebuffer(GL_FRAMEBUFFER, ren.FBO);
+ 
+  unsigned int textureColorbuffer;
+  glGenTextures(1, &textureColorbuffer);
+  glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
+
+
+  unsigned int rbo;
+  glGenRenderbuffers(1, &rbo);
+  glBindRenderbuffer(GL_RENDERBUFFER, rbo); 
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT);  
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+
+  if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);  
+
+
   Uint64 start = SDL_GetPerformanceCounter(), end = SDL_GetPerformanceCounter();
   while (1)
   {
@@ -116,12 +184,6 @@ int ENTRY(int argc, char **argv)
     SDL_GetWindowSize(window, &ren.SCR_width, &ren.SCR_height);
 
     draw_dev_ui(&ren);
-
- 
-    glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
 
     while (SDL_PollEvent(&event))
     {
@@ -132,6 +194,19 @@ int ENTRY(int argc, char **argv)
       player.mouse_input(&ren, &event);
     }
     
+
+    // first pass
+    glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+    glBindFramebuffer(GL_FRAMEBUFFER, ren.FBO);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // we're not using the stencil buffer now
+    glEnable(GL_DEPTH_TEST);
+
+    glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, (int)io.DisplaySize.x, (int)io.DisplaySize.y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo); 
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, (int)io.DisplaySize.x, (int)io.DisplaySize.y);  
+
 
     physics_container.collide(&player);
     render_container.draw(&ren);
@@ -156,11 +231,29 @@ int ENTRY(int argc, char **argv)
     player.key_input(&ren);
 
 
-
     glClear(GL_DEPTH_BUFFER_BIT);
     player.draw(&ren);
 
-    cube.rot_y(0.05f);
+
+      
+    // second pass
+    glBindFramebuffer(GL_FRAMEBUFFER, 0); // back to default
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f); 
+    glClear(GL_COLOR_BUFFER_BIT);
+      
+    ren.shaders[SHADER_SHADOWMAP].use();
+    ren.shaders[SHADER_SHADOWMAP].setInt("screenTexture", 0);
+    ren.shaders[SHADER_SHADOWMAP].setFloatVector("kernel", 9, ren.image_kernel);
+    ren.shaders[SHADER_SHADOWMAP].setFloat("kernelDivisor", ren.kernel_divisor);
+    ren.shaders[SHADER_SHADOWMAP].setFloat("kernelOffsetDivisor", ren.kernel_offset_divisor);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE0, 0);
+    glBindVertexArray(quadVAO);
+    glDisable(GL_DEPTH_TEST);
+    glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+    glDrawArrays(GL_TRIANGLES, 0, 6); 
+
 
 
 
