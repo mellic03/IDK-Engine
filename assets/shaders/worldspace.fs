@@ -160,5 +160,7 @@ void main()
     result += calculate_spotlight(spotlights[i], fragNormal, fs_in.FragPos, i);
 
   FragColor += vec4(result, 0.0);
+  float gamma = 2.2;
+  FragColor.rgb = pow(FragColor.rgb, vec3(1.0/gamma));
 }
 
