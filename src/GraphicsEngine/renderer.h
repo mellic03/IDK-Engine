@@ -41,7 +41,11 @@ class Renderer {
 
     float deltaTime = 0.0f;
     float fov = 90.0f;
-    float image_kernel[9] = { 0.0f };
+    float image_kernel[9] = {
+      0, 0, 0,
+      0, 1, 0,
+      0, 0, 0
+    };
     float kernel_divisor = 1.0f, kernel_offset_divisor = 600.0f;
 
     int SCR_width = DEFAULT_SCREEN_WIDTH;

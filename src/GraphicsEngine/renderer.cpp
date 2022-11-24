@@ -51,12 +51,14 @@ Renderer::Renderer()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-  
   }
 
   for (int i=0; i<NUM_POINTLIGHTS; i++)
     this->pointlights.push_back(PointLight());
+
+  this->pointlights[0].diffuse  = {1.0, 1.0, 1.0};
+  this->pointlights[0].specular = {0.15, 0.15, 0.15};
+  this->pointlights[0].position = {0.0, -5.0, 0.0};
 
   for (int i=0; i<NUM_SPOTLIGHTS; i++)
     this->spotlights.push_back(SpotLight());
