@@ -22,6 +22,10 @@ void Scene::addPhysicsContainer(ModelContainer *physics_container)
   this->physicsContainers.push_back(physics_container);
 }
 
+void Scene::addLightsourceModel(Model *lightsource_model)
+{
+  this->lightsource_model = lightsource_model;
+}
 
 void Scene::draw(SDL_Event *event)
 {
@@ -34,18 +38,19 @@ void Scene::draw(SDL_Event *event)
   this->ren->spotlights[0].position = *this->player->pos;
   this->ren->spotlights[0].direction = this->ren->cam.front;
 
-  for (int i=0; i<NUM_DIRLIGHTS; i++)
+  for (int i=0; i<1; i++)
   {
     // sphere.set_pos(this->ren->dirlights[i].direction);
     // sphere.material.diffuse_color = this->ren->dirlights[i].diffuse;
     // sphere.draw(&ren);
   }
 
-  for (int i=0; i<NUM_POINTLIGHTS; i++)
+  this->ren->useShader(SHADER_LIGHTSOURCE);
+  for (int i=0; i<5; i++)
   {
-    // sphere.set_pos(this->ren->pointlights[i].position);
-    // sphere.material.diffuse_color = this->ren->pointlights[i].diffuse;
-    // sphere.draw(&ren);
+    this->lightsource_model->set_pos(this->ren->pointlights[i].position);
+    this->lightsource_model->material.diffuse_color = this->ren->pointlights[i].diffuse;
+    this->lightsource_model->draw(this->ren);
   }
 
 }

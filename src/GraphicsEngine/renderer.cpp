@@ -96,27 +96,38 @@ Renderer::Renderer()
 
 }
 
-
-void Renderer::frameEnd()
+void Renderer::bindFrameBufferObject(GLuint buffer, int x, int y)
 {
-  // this->shaders[SHADER_RENDERQUAD].use();
-  // this->shaders[SHADER_RENDERQUAD].setInt("screenTexture", 0);
-  // this->shaders[SHADER_RENDERQUAD].setFloatVector("kernel", 9, this->image_kernel);
-  // this->shaders[SHADER_RENDERQUAD].setFloat("kernelDivisor", this->kernel_divisor);
-  // this->shaders[SHADER_RENDERQUAD].setFloat("kernelOffsetDivisor", this->kernel_offset_divisor);
-
-  // glActiveTexture(GL_TEXTURE0);
-  // glBindTexture(GL_TEXTURE0, 0);
-  // glBindVertexArray(this->quadVAO);
-  // glDisable(GL_DEPTH_TEST);
-  // glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
-  // glDrawArrays(GL_TRIANGLES, 0, 6); 
+  glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
+  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 }
+
+void Renderer::bindTexture(GLuint texture, int x, int y)
+{
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+}
+
+void Renderer::bindRenderBufferObject(GLuint render_buffer_object, int x, int y)
+{
+  glBindRenderbuffer(GL_RENDERBUFFER, render_buffer_object); 
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, x, y); 
+}
+
+
 
 void Renderer::useShader(ShaderType shader)
 {
   this->active_shader = this->shaders[shader];
   glUseProgram(this->active_shader.id);
+}
+
+void Renderer::postProcess(void)
+{
+  this->active_shader.setInt("screenTexture", 0);
+  this->active_shader.setFloatVector("kernel", 9, this->image_kernel);
+  this->active_shader.setFloat("kernelDivisor", this->kernel_divisor);
+  this->active_shader.setFloat("kernelOffsetDivisor", this->kernel_offset_divisor);
 }
 
 void Renderer::useOrthographic(void)

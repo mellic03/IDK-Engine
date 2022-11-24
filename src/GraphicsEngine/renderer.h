@@ -49,7 +49,6 @@ class Renderer {
     GLuint quadVAO, quadVBO, rbo;
     GLuint textureColorbuffer;
 
-
     Camera cam;
 
     GLuint FBO;
@@ -79,13 +78,16 @@ class Renderer {
 
     float gravity = 5.0f;
 
+
     Renderer();
 
-    void frameStart(int x, int y);
-    void frameEnd();
+    void bindFrameBufferObject(GLuint buffer, int x, int y);
+    void bindTexture(GLuint texture, int x, int y);
+    void bindRenderBufferObject(GLuint render_buffer_object, int x, int y);
+    void unbindFrameBufferObject(void) { glBindFramebuffer(GL_FRAMEBUFFER, 0); };
 
     void useShader(ShaderType shader);
-
+    void postProcess(void);
     void useOrthographic(void);
     void usePerspective(void);
 

@@ -13,6 +13,7 @@ class Scene {
 
     std::vector<ModelContainer *> renderContainers;
     std::vector<ModelContainer *> physicsContainers;
+    Model *lightsource_model;
 
 
   public:
@@ -22,6 +23,7 @@ class Scene {
     void bindPlayer(Player *playerptr);
     void addRenderContainer(ModelContainer *render_container);
     void addPhysicsContainer(ModelContainer *physics_container);
+    void addLightsourceModel(Model *lightsource_model);
     void draw(SDL_Event *event);    
     
 

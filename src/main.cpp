@@ -52,7 +52,6 @@ int ENTRY(int argc, char **argv)
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
 
   gl_context = SDL_GL_CreateContext(window);
@@ -65,7 +64,7 @@ int ENTRY(int argc, char **argv)
 
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
-  glEnable(GL_MULTISAMPLE);  
+  glEnable(GL_MULTISAMPLE);
 
   SDL_Event event;
 
@@ -104,6 +103,7 @@ int ENTRY(int argc, char **argv)
   scene_1.addPhysicsContainer(&physics_container);
   scene_1.bindRenderer(&ren);
   scene_1.bindPlayer(&player);
+  scene_1.addLightsourceModel(&sphere);
 
   //----------------------------------------
 
@@ -138,26 +138,14 @@ int ENTRY(int argc, char **argv)
   Uint64 start = SDL_GetPerformanceCounter(), end = SDL_GetPerformanceCounter();
   while (1)
   {
-    glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, ren.FBO);
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // we're not using the stencil buffer now
-    glEnable(GL_DEPTH_TEST);
-
-    glBindTexture(GL_TEXTURE_2D, ren.textureColorbuffer);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, (int)io.DisplaySize.x, (int)io.DisplaySize.y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glBindRenderbuffer(GL_RENDERBUFFER, ren.rbo); 
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, (int)io.DisplaySize.x, (int)io.DisplaySize.y);  
-
-
-
     start = end;
     end = SDL_GetPerformanceCounter();
     SDL_GetWindowSize(window, &ren.SCR_width, &ren.SCR_height);
-
     draw_dev_ui(&ren);
 
+
+    // Input
+    //---------------------------------
     while (SDL_PollEvent(&event))
     {
       if (!SDL_GetRelativeMouseMode())
@@ -166,32 +154,43 @@ int ENTRY(int argc, char **argv)
         exit(0);
       player.mouse_input(&ren, &event);
     }
-    
+    player.key_input(&ren);
+    //---------------------------------
 
+
+    ///////////////////////////////////////////////////////////////////////////////////////////// Render start
+    int x = (int)io.DisplaySize.x, y = (int)io.DisplaySize.y;
+    glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+    ren.bindFrameBufferObject(ren.FBO, x, y);
+    ren.bindRenderBufferObject(ren.rbo, x, y);
+    ren.bindTexture(ren.textureColorbuffer, x, y);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+
+
+
+    // Draw scene
+    //---------------------------------
     ren.usePerspective();
-    
     ren.useShader(SHADER_WORLDSPACE);
     scene_1.draw(&event);
+    glClear(GL_DEPTH_BUFFER_BIT); // clear depth buffer for weapon
+    ren.useShader(SHADER_VIEWSPACE); // switch to viewspace shader
+    player.draw(&ren); // draw weapon
+  
+    //---------------------------------
+    ren.unbindFrameBufferObject();
+    ren.usePerspective();
 
-
-    player.key_input(&ren);
-
-    glClear(GL_DEPTH_BUFFER_BIT);
-    ren.useShader(SHADER_VIEWSPACE);
-    player.draw(&ren);
-
-      
-    // second pass
-    glBindFramebuffer(GL_FRAMEBUFFER, 0); // back to default
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f); 
-    glClear(GL_COLOR_BUFFER_BIT);
  
 
+
+    // Draw to quad
+    //---------------------------------
     ren.useShader(SHADER_RENDERQUAD);
-    ren.active_shader.setInt("screenTexture", 0);
-    ren.active_shader.setFloatVector("kernel", 9, ren.image_kernel);
-    ren.active_shader.setFloat("kernelDivisor", ren.kernel_divisor);
-    ren.active_shader.setFloat("kernelOffsetDivisor", ren.kernel_offset_divisor);
+    ren.postProcess();
+
+    glDisable(GL_DEPTH_TEST);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE0, 0);
@@ -199,6 +198,15 @@ int ENTRY(int argc, char **argv)
     glDisable(GL_DEPTH_TEST);
     glBindTexture(GL_TEXTURE_2D, ren.textureColorbuffer);
     glDrawArrays(GL_TRIANGLES, 0, 6); 
+    //---------------------------------
+
+
+
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////// Render stop
+
+
 
 
 

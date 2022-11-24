@@ -46,25 +46,12 @@ void Camera::input()
 
   const Uint8 *state = SDL_GetKeyboardState(NULL);
 
-  glm::vec3 temp_front = { this->front.x, 0.0f, this->front.z };
-  temp_front = glm::normalize(temp_front);
-
-  // this->vel.y = (this->vel.y < -0.1) ? -0.1 : this->vel.y;
-
-  // bool headbob = false;
-
-
-  // if (headbob)
-    // this->headbob_value += 0.035f * this->deltaTime;
-  
   float y_offset = 0.02f * sin(this->headbob_value);
-
 
   if (this->pitch <= -85)
     this->pitch = -85;
   else if (this->pitch >= 85)
     this->pitch = 85;
-
 
   this->dir.x = cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
   this->dir.y = sin(glm::radians(this->pitch));
