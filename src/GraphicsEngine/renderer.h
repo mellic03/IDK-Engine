@@ -33,6 +33,22 @@
 
 class Renderer {
   
+
+  private:
+    float quadVertices[24] = {
+      -1.0f,  1.0f, 0.0f, 1.0f,
+      -1.0f, -1.0f, 0.0f, 0.0f,
+       1.0f, -1.0f, 1.0f, 0.0f,
+
+      -1.0f,  1.0f, 0.0f, 1.0f,
+       1.0f, -1.0f, 1.0f, 0.0f,
+       1.0f,  1.0f, 1.0f, 1.0f
+    };
+    GLuint quadVAO, quadVBO, rbo;
+    GLuint textureColorbuffer;
+
+
+
   public:
 
     Camera cam;
@@ -64,5 +80,8 @@ class Renderer {
     float gravity = 5.0f;
 
     Renderer();
+
+    void frameStart(int x, int y);
+    void frameEnd();
 
 };
