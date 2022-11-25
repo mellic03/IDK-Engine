@@ -47,7 +47,7 @@ class Renderer {
 
   public:
     GLuint quadVAO, quadVBO, rbo;
-    GLuint textureColorbuffer;
+    GLuint colorBuffers[2];
 
     Camera cam;
 

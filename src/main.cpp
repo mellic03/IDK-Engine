@@ -162,7 +162,7 @@ int ENTRY(int argc, char **argv)
     glViewport(0, 0, x, y);
     ren.bindFrameBufferObject(ren.FBO, x, y);
     ren.bindRenderBufferObject(ren.rbo, x, y);
-    ren.bindTexture(ren.textureColorbuffer, x, y);
+    ren.bindTexture(ren.colorBuffers[0], x, y);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
@@ -188,13 +188,16 @@ int ENTRY(int argc, char **argv)
     ren.postProcess();
 
     glDisable(GL_DEPTH_TEST);
-
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE0, 0);
     glBindVertexArray(ren.quadVAO);
-    glDisable(GL_DEPTH_TEST);
-    glBindTexture(GL_TEXTURE_2D, ren.textureColorbuffer);
-    glDrawArrays(GL_TRIANGLES, 0, 6); 
+    glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[0]);
+
+    GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+    glDrawBuffers(2, attachments);
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    
+
     //---------------------------------
 
 
