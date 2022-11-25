@@ -165,6 +165,7 @@ int ENTRY(int argc, char **argv)
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[0]);
+  
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[1]);
     
@@ -201,17 +202,17 @@ int ENTRY(int argc, char **argv)
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[1]);
  
-    ren.useShader(SHADER_TEST);
-    ren.postProcess();
-    ren.active_shader.setInt("image", ren.colorBuffers[0]);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    // ren.useShader(SHADER_TEST);
+    // ren.postProcess();
+    // ren.active_shader.setInt("image", ren.colorBuffers[1]);
+    // glDrawArrays(GL_TRIANGLES, 0, 6);
 
 
     ren.useShader(SHADER_FIN);
     ren.postProcess();
 
     ren.active_shader.setInt("screenTexture", ren.colorBuffers[0]);
-    ren.active_shader.setInt("bloomBlur", ren.colorBuffers[1]);
+    ren.active_shader.setInt("bloomBlur", ren.colorBuffers[0]);
     glDrawArrays(GL_TRIANGLES, 0, 6);
    
 

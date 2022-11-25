@@ -236,16 +236,16 @@ void Model::load(const char *filepath, std::string name)
 
 void Model::draw(Renderer *ren)
 {
-  ren->active_shader.setInt("material.diffuseMap", 0);
-  ren->active_shader.setInt("material.specularMap", 1);
-  ren->active_shader.setInt("material.emissionMap", 2);
-  ren->active_shader.setInt("material.normalMap", 3);
+  ren->active_shader.setInt("material.diffuseMap", 4);
+  ren->active_shader.setInt("material.specularMap", 5);
+  ren->active_shader.setInt("material.emissionMap", 6);
+  ren->active_shader.setInt("material.normalMap", 7);
   ren->active_shader.setFloat("material.spec_exponent", this->material.spec_exponent);
 
-  this->material.diffuse.bind(GL_TEXTURE0);
-  this->material.specular.bind(GL_TEXTURE1);
-  this->material.emission.bind(GL_TEXTURE2);
-  this->material.normal.bind(GL_TEXTURE3);
+  this->material.diffuse.bind(GL_TEXTURE4);
+  this->material.specular.bind(GL_TEXTURE5);
+  this->material.emission.bind(GL_TEXTURE6);
+  this->material.normal.bind(GL_TEXTURE7);
 
   glBindVertexArray(this->VAO);
 
