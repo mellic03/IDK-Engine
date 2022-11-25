@@ -69,10 +69,6 @@ Renderer::Renderer()
   glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
   glGenTextures(2, this->colorBuffers);
   
-  GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-  glDrawBuffers(2, attachments);
-
-
   for (GLuint i=0; i<2; i++)
   {
     glBindTexture(GL_TEXTURE_2D, this->colorBuffers[i]);
@@ -85,11 +81,17 @@ Renderer::Renderer()
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, this->colorBuffers[i], 0);
   }
 
+
+
   glGenRenderbuffers(1, &this->rbo);
   glBindRenderbuffer(GL_RENDERBUFFER, this->rbo); 
   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT);  
   glBindRenderbuffer(GL_RENDERBUFFER, 0);
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->rbo);
+
+  GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+  glDrawBuffers(2, attachments);
+
   //------------------------------------------------------
 
 
@@ -118,11 +120,18 @@ Renderer::Renderer()
   for (int i=0; i<NUM_SPOTLIGHTS; i++)
     this->spotlights.push_back(SpotLight());
 
+
 }
 
 void Renderer::bindFrameBufferObject(GLuint buffer, int x, int y)
 {
   glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
+
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->colorBuffers[0], 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, this->colorBuffers[1], 0);
+
+  GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+  glDrawBuffers(2, attachments);
 }
 
 void Renderer::bindTexture(GLuint texture, int x, int y)

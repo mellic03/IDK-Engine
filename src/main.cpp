@@ -180,7 +180,7 @@ int ENTRY(int argc, char **argv)
     ren.usePerspective();
     ren.useShader(SHADER_WORLDSPACE);
     scene_1.draw(&event);
-    glClear(GL_DEPTH_BUFFER_BIT); // clear depth buffer for weapon
+    // glClear(GL_DEPTH_BUFFER_BIT); // clear depth buffer for weapon
     // ren.useShader(SHADER_VIEWSPACE); // switch to viewspace shader
     // player.draw(&ren); // draw weapon
     //---------------------------------
@@ -195,27 +195,28 @@ int ENTRY(int argc, char **argv)
 
     glBindVertexArray(ren.quadVAO);
 
-
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[0]);
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[1]);
+
+    ren.useShader(SHADER_TEST);
+    ren.active_shader.setInt("image", ren.colorBuffers[0]);
+
+
  
-    // ren.useShader(SHADER_TEST);
-    // ren.postProcess();
-    // ren.active_shader.setInt("image", ren.colorBuffers[1]);
-    // glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 
 
     ren.useShader(SHADER_FIN);
     ren.postProcess();
 
-    ren.active_shader.setInt("screenTexture", ren.colorBuffers[0]);
+    ren.active_shader.setInt("screenTexture", ren.colorBuffers[1]);
     ren.active_shader.setInt("bloomBlur", ren.colorBuffers[0]);
     glDrawArrays(GL_TRIANGLES, 0, 6);
    
-
 
     //---------------------------------
 
