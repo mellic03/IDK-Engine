@@ -339,7 +339,6 @@ void Model::draw(Renderer *ren)
 
   glDrawElements(GL_TRIANGLES, this->num_indices, GL_UNSIGNED_INT, (void *)0);
   glBindVertexArray(0);
-
 }
 
 void Model::set_pos(glm::vec3 point)

@@ -162,10 +162,12 @@ int ENTRY(int argc, char **argv)
     glViewport(0, 0, x, y);
     ren.bindFrameBufferObject(ren.FBO, x, y);
     ren.bindRenderBufferObject(ren.rbo, x, y);
+
     glActiveTexture(GL_TEXTURE0);
-    ren.bindTexture(ren.colorBuffers[0], x, y);
+    glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[0]);
     glActiveTexture(GL_TEXTURE1);
-    ren.bindTexture(ren.colorBuffers[1], x, y);
+    glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[1]);
+    
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
@@ -178,8 +180,8 @@ int ENTRY(int argc, char **argv)
     ren.useShader(SHADER_WORLDSPACE);
     scene_1.draw(&event);
     glClear(GL_DEPTH_BUFFER_BIT); // clear depth buffer for weapon
-    ren.useShader(SHADER_VIEWSPACE); // switch to viewspace shader
-    player.draw(&ren); // draw weapon
+    // ren.useShader(SHADER_VIEWSPACE); // switch to viewspace shader
+    // player.draw(&ren); // draw weapon
     //---------------------------------
     ren.unbindFrameBufferObject();
 
@@ -188,24 +190,32 @@ int ENTRY(int argc, char **argv)
 
     // Draw to quad
     //---------------------------------
-
-
-
-    ren.useShader(SHADER_RENDERQUAD);
-    ren.postProcess();
-
     glDisable(GL_DEPTH_TEST);
+
     glBindVertexArray(ren.quadVAO);
 
-    
-    GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-    glDrawBuffers(2, attachments);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[0]);
 
     glActiveTexture(GL_TEXTURE1);
-    ren.bindTexture(ren.colorBuffers[1], x, y);
     glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[1]);
-    
+ 
+    ren.useShader(SHADER_TEST);
+    ren.postProcess();
+    ren.active_shader.setInt("image", ren.colorBuffers[0]);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+
+
+    ren.useShader(SHADER_FIN);
+    ren.postProcess();
+
+    ren.active_shader.setInt("screenTexture", ren.colorBuffers[0]);
+    ren.active_shader.setInt("bloomBlur", ren.colorBuffers[1]);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+   
+
+
     //---------------------------------
 
 

@@ -37,6 +37,18 @@ Renderer::Renderer()
   shadowmap.set(create_shader(shadowmap_src.vertex_source, shadowmap_src.fragment_source));
   this->shaders[SHADER_SHADOWMAP] = shadowmap;
 
+  ShaderSource testsrc = parse_shader("assets/shaders/renderquad.vs", "assets/shaders/guassianblur.fs");
+  Shader test;
+  test.set(create_shader(testsrc.vertex_source, testsrc.fragment_source));
+  this->shaders[SHADER_TEST] = test;
+
+
+  ShaderSource final = parse_shader("assets/shaders/renderquadfinal.vs", "assets/shaders/renderquad.fs");
+  Shader fin;
+  fin.set(create_shader(final.vertex_source, final.fragment_source));
+  this->shaders[SHADER_FIN] = fin;
+
+
   // Generate screen quad
   //------------------------------------------------------
   glGenVertexArrays(1, &this->quadVAO);
@@ -54,11 +66,13 @@ Renderer::Renderer()
   // Create and setup framebuffer
   //------------------------------------------------------
   glGenFramebuffers(1, &this->FBO);
-
   glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
-  
   glGenTextures(2, this->colorBuffers);
   
+  GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+  glDrawBuffers(2, attachments);
+
+
   for (GLuint i=0; i<2; i++)
   {
     glBindTexture(GL_TEXTURE_2D, this->colorBuffers[i]);
@@ -114,7 +128,7 @@ void Renderer::bindFrameBufferObject(GLuint buffer, int x, int y)
 void Renderer::bindTexture(GLuint texture, int x, int y)
 {
   glBindTexture(GL_TEXTURE_2D, texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 }
 
 void Renderer::bindRenderBufferObject(GLuint render_buffer_object, int x, int y)
@@ -133,13 +147,12 @@ void Renderer::useShader(ShaderType shader)
 
 void Renderer::postProcess(void)
 {
-  this->active_shader.setInt("screenTexture", 0);
+  // this->active_shader.setInt("screenTexture", 0);
   this->active_shader.setFloatVector("kernel", 9, this->image_kernel);
   this->active_shader.setFloat("kernelDivisor", this->kernel_divisor);
   this->active_shader.setFloat("kernelOffsetDivisor", this->kernel_offset_divisor);
   this->active_shader.setFloat("exposure", this->exposure);
   this->active_shader.setFloat("gamma", this->gamma);
-  
 }
 
 void Renderer::useOrthographic(void)

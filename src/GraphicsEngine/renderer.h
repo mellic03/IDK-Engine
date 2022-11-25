@@ -72,8 +72,8 @@ class Renderer {
     float NM_POINTLIGHTS = 5;
     float NM_SPOTLIGHTS = 2;
 
-    Shader shaders[5];
-    Shader active_shader;
+    Shader shaders[10];
+   Shader active_shader;
     std::vector<DirLight>    dirlights;
     std::vector<PointLight>  pointlights;
     std::vector<SpotLight>   spotlights;

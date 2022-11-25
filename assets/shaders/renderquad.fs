@@ -1,15 +1,15 @@
 #version 330 core
 
-layout (location = 0) out vec4 FragColor;
-layout (location = 1) out vec4 BrightColor; 
-
 in vec2 TexCoords;
+out vec4 FragColor;
 
 uniform float kernel[9];
 uniform float kernelDivisor;
 uniform float kernelOffsetDivisor;
 
 uniform sampler2D screenTexture;
+uniform sampler2D bloomBlur;
+
 
 uniform float gamma;
 uniform float exposure;
@@ -48,17 +48,13 @@ void main()
   
 
   vec3 hdrColor = RenderWithKernel;
+  vec3 bloomColor = texture(bloomBlur, TexCoords).rgb;
+  hdrColor += bloomColor; // additive blending
+  // tone mapping
+  vec3 result = vec3(1.0) - exp(-hdrColor * exposure);
+  // also gamma correct while we're at it       
+  result = pow(result, vec3(1.0 / gamma));
+  FragColor = vec4(result, 1.0);
 
-  vec3 mapped = vec3(1.0) - exp(-hdrColor * exposure);
-  mapped = pow(mapped, vec3(1.0 / gamma));
-
-  FragColor = vec4(mapped, 1.0);
-
-
-  float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
-  if (brightness > 1.0)
-    BrightColor = vec4(FragColor.rgb, 1.0);
-  else
-    BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 
 }
