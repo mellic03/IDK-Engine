@@ -1,12 +1,15 @@
 #version 330 core
 out vec4 FragColor;
-  
+
 in vec2 TexCoords;
 
 uniform float kernel[9];
 uniform float kernelDivisor;
 uniform float kernelOffsetDivisor;
 uniform sampler2D screenTexture;
+
+uniform float gamma;
+uniform float exposure;
 
 void main()
 { 
@@ -36,10 +39,15 @@ void main()
   vec3 sampleTex[9];
   for(int i = 0; i < 9; i++)
     sampleTex[i] = vec3(texture(screenTexture, TexCoords.st + offsets[i]));
-  vec3 col = vec3(0.0);
+  vec3 RenderWithKernel = vec3(0.0);
   for(int i = 0; i < 9; i++)
-    col += sampleTex[i] * ImageKernel[i];
-    
+    RenderWithKernel += sampleTex[i] * ImageKernel[i];
+  
 
-  FragColor = vec4(col, 1.0);
+  vec3 hdrColor = RenderWithKernel;
+
+  vec3 mapped = vec3(1.0) - exp(-hdrColor * exposure);
+  mapped = pow(mapped, vec3(1.0 / gamma));
+
+  FragColor = vec4(mapped, 1.0);
 }

@@ -18,7 +18,7 @@ class Texture {
 
     Texture() {};
 
-    bool load(const char *filepath);
+    bool load(const char *filepath, bool useSRGB);
     void bind(GLenum texture_unit);
 
 };

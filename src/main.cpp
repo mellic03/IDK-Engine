@@ -77,7 +77,7 @@ int ENTRY(int argc, char **argv)
 
 
   // Model skybox;  skybox.load("assets/model/", "skybox");
-  Model cube;    cube.load("assets/block/", "block");
+  Model cube;    cube.load("assets/crate/", "crate");
   Model ground;  ground.load("assets/ground/", "ground");
   Model sphere;  sphere.load("assets/sphere/", "sphere");
   sphere.bindRenderer(&ren);
@@ -159,7 +159,7 @@ int ENTRY(int argc, char **argv)
 
     ///////////////////////////////////////////////////////////////////////////////////////////// Render start
     int x = (int)io.DisplaySize.x, y = (int)io.DisplaySize.y;
-    glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+    glViewport(0, 0, x, y);
     ren.bindFrameBufferObject(ren.FBO, x, y);
     ren.bindRenderBufferObject(ren.rbo, x, y);
     ren.bindTexture(ren.textureColorbuffer, x, y);
@@ -176,10 +176,8 @@ int ENTRY(int argc, char **argv)
     glClear(GL_DEPTH_BUFFER_BIT); // clear depth buffer for weapon
     ren.useShader(SHADER_VIEWSPACE); // switch to viewspace shader
     player.draw(&ren); // draw weapon
-  
     //---------------------------------
     ren.unbindFrameBufferObject();
-    ren.usePerspective();
 
  
 

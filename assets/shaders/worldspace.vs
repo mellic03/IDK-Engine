@@ -14,7 +14,6 @@ layout (location = 5) in vec3 aBitangent;
 struct DirLight {
   vec3 direction;
   vec3 ambient, diffuse, specular;
-  float constant, linear, quadratic;
 };
 uniform DirLight dirlights[NUM_DIRLIGHTS];
 
@@ -60,6 +59,7 @@ out VS_OUT {
 
 } vs_out;
 
+out mat3 TBNmat;
 
 void main()
 {
@@ -68,12 +68,12 @@ void main()
   vs_out.TexCoords = aTexCoords;
   
   mat3 normalMatrix = transpose(inverse(mat3(model * transform)));
-  vec3 T = normalize(normalMatrix * aBitangent);
+  vec3 T = normalize(normalMatrix * aTangent);
   vec3 N = normalize(normalMatrix * aNormal);
   T = normalize(T - dot(T, N) * N);
   vec3 B = cross(N, T);
   mat3 TBN = transpose(mat3(T, B, N));      
-
+  TBNmat = TBN;
   for (int i=0; i<NUM_DIRLIGHTS; i++)
   {
     vs_out.DIR_TangentLightPositions[i] = TBN * dirlights[i].direction;

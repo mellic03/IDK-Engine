@@ -8,7 +8,6 @@ bool show = false;
 
 void draw_lighting_tab(Renderer *ren)
 {
-
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
 
@@ -58,6 +57,10 @@ void draw_lighting_tab(Renderer *ren)
   ImGui::ColorEdit3("diffuse", (float*)&ren->pointlights[selected_pointlight].diffuse);
   ImGui::ColorEdit3("specular", (float*)&ren->pointlights[selected_pointlight].specular);
   
+  ImGui::SliderFloat("constant", &ren->pointlights[selected_pointlight].constant, 0.0f, 100.0f, "%0.4f", NULL);
+  ImGui::DragScalar("linear", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].linear,       0.001f, NULL);
+  ImGui::DragScalar("quadratic", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].quadratic, 0.001f, NULL);
+
   ImGui::Text("Position");
   ImGui::DragScalar("x", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.x, 0.05f, NULL);
   ImGui::DragScalar("y", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.y, 0.05f, NULL);
@@ -113,7 +116,11 @@ void draw_lighting_tab(Renderer *ren)
 
 void draw_render_tab(Renderer *ren)
 {
+  ImGui::Dummy(ImVec2(0.0f, 20.0f));
+
   ImGui::SliderFloat("FOV", &ren->fov, 45.0f, 110.0f);
+  ImGui::SliderFloat("Exposure", &ren->exposure, 0.0f, 10.0f);
+  ImGui::SliderFloat("Gamma", &ren->gamma, 0.0f, 5.0f);
 
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
 

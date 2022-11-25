@@ -14,7 +14,6 @@ uniform Material material;
 struct DirLight {
   vec3 direction;
   vec3 ambient, diffuse, specular;
-  float constant, linear, quadratic;
 };
 uniform DirLight dirlights[NUM_DIRLIGHTS];
 
@@ -52,24 +51,25 @@ in VS_OUT {
   vec3 SPOT_TangentFragPositions[NUM_SPOTLIGHTS];
 } fs_in;
 
+in mat3 TBNmat;
+
 uniform vec3 viewPos;
 out vec4 FragColor;
 
-vec3 calculate_dirlight(DirLight light, vec3 normal, vec3 viewDir)
+vec3 calculate_dirlight(DirLight light, vec3 normal, vec3 viewDir, int index)
 {
-  vec3 lightDir = normalize(-light.direction);
-
-  // diffuse
+  vec3 ambient = light.ambient * texture(material.diffuseMap, fs_in.TexCoords).rgb;
+  
+  // diffuse 
+  vec3 lightDir = normalize(-light.direction);  
   float diff = max(dot(normal, lightDir), 0.0);
-
+  vec3 diffuse = light.diffuse * diff * texture(material.diffuseMap, fs_in.TexCoords).rgb;  
+  
   // specular
   vec3 halfwayDir = normalize(lightDir + viewDir);  
   float spec = pow(max(dot(normal, halfwayDir), 0.0), material.spec_exponent);
-
-  // combine results
-  vec3 ambient  = light.ambient  * texture(material.diffuseMap, fs_in.TexCoords).rgb;
-  vec3 diffuse  = light.diffuse  * diff * texture(material.diffuseMap, fs_in.TexCoords).rgb;
   vec3 specular = light.specular * spec * texture(material.specularMap, fs_in.TexCoords).rgb;
+        
   return (ambient + diffuse + specular);
 }
 
@@ -90,9 +90,10 @@ vec3 calculate_pointlight(PointLight light, vec3 normal, vec3 fragPos, int index
   float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
 
   // combine results
-  vec3 ambient  = light.ambient  * texture(material.diffuseMap, fs_in.TexCoords).rgb;
-  vec3 diffuse  = light.diffuse  * diff * texture(material.diffuseMap, fs_in.TexCoords).rgb;
-  vec3 specular = light.specular * spec * texture(material.specularMap, fs_in.TexCoords).rgb;
+  vec3 ambient  = light.ambient * texture(material.diffuseMap, fs_in.TexCoords).rgb;
+  vec3 diffuse  = light.diffuse * diff * texture(material.diffuseMap, fs_in.TexCoords).rgb;
+  vec3 specular = light.diffuse * spec * texture(material.specularMap, fs_in.TexCoords).rgb;
+
   ambient  *= attenuation;
   diffuse  *= attenuation;
   specular *= attenuation;
@@ -139,7 +140,6 @@ vec3 calculate_spotlight(SpotLight light, vec3 normal, vec3 fragPos, int index)
 
 void main()
 {
-
   vec3 fragNormal = texture(material.normalMap, fs_in.TexCoords).rgb;
   fragNormal = normalize(2.0 * fragNormal - 1.0);
 
@@ -151,7 +151,7 @@ void main()
 
 
   for (int i=0; i<NUM_DIRLIGHTS; i++)
-    result += calculate_dirlight(dirlights[i], fs_in.SurfaceNormal, viewDir);
+    result += calculate_dirlight(dirlights[i], inverse(TBNmat) * fragNormal, viewDir, i);
 
   for (int i=0; i<NUM_POINTLIGHTS; i++)
     result += calculate_pointlight(pointlights[i], fragNormal, fs_in.FragPos, i);
@@ -160,7 +160,5 @@ void main()
     result += calculate_spotlight(spotlights[i], fragNormal, fs_in.FragPos, i);
 
   FragColor += vec4(result, 0.0);
-  float gamma = 2.2;
-  FragColor.rgb = pow(FragColor.rgb, vec3(1.0/gamma));
 }
 

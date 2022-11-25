@@ -35,21 +35,23 @@ void Scene::draw(SDL_Event *event)
   for (int i=0; i<this->physicsContainers.size(); i++)
     this->physicsContainers[i]->collide(this->player);
 
-  this->ren->spotlights[0].position = *this->player->pos;
-  this->ren->spotlights[0].direction = this->ren->cam.front;
+  this->ren->spotlights[0].position = *this->player->pos - this->ren->cam.dir;
+  this->ren->spotlights[0].direction = this->ren->cam.dir;
 
   for (int i=0; i<1; i++)
   {
-    // sphere.set_pos(this->ren->dirlights[i].direction);
-    // sphere.material.diffuse_color = this->ren->dirlights[i].diffuse;
-    // sphere.draw(&ren);
+    this->lightsource_model->material.diffuse_color = this->ren->dirlights[i].diffuse;
+    this->lightsource_model->set_pos(this->ren->dirlights[i].position);
+    this->lightsource_model->draw(this->ren);
+    this->lightsource_model->set_pos(this->ren->dirlights[i].position + this->ren->dirlights[i].direction);
+    this->lightsource_model->draw(this->ren);
   }
 
   this->ren->useShader(SHADER_LIGHTSOURCE);
   for (int i=0; i<5; i++)
   {
-    this->lightsource_model->set_pos(this->ren->pointlights[i].position);
     this->lightsource_model->material.diffuse_color = this->ren->pointlights[i].diffuse;
+    this->lightsource_model->set_pos(this->ren->pointlights[i].position);
     this->lightsource_model->draw(this->ren);
   }
 

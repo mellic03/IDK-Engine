@@ -90,7 +90,7 @@ void Model::load(const char *filepath, std::string name)
     else if (buffer[0] == 'v' && buffer[1] == 't')
     {
       sscanf(buffer, "vt %f %f", &x, &y);
-      uvs[tex_count] = glm::vec2(x, 1-y);
+      uvs[tex_count] = glm::vec2(x, y);
       tex_count += 1;
     }
   
@@ -108,21 +108,25 @@ void Model::load(const char *filepath, std::string name)
       glm::vec2 deltaUV2 = uvs[t3-1] - uvs[t1-1];
 
       float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-      this->vertices[poly_count+0].tangent = {
+      glm::vec3 tangent = {
         f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x),
         f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y),
         f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z)
       };
-      this->vertices[poly_count+1].tangent = this->vertices[poly_count].tangent;
-      this->vertices[poly_count+2].tangent = this->vertices[poly_count].tangent;
 
-      this->vertices[poly_count+0].bitangent = {
+      this->vertices[poly_count+0].tangent = tangent;
+      this->vertices[poly_count+1].tangent = tangent;
+      this->vertices[poly_count+2].tangent = tangent;
+
+      glm::vec3 bitangent = {
         f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x),
         f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y),
         f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z)
       };
-      this->vertices[poly_count+1].bitangent = this->vertices[poly_count].bitangent;
-      this->vertices[poly_count+2].bitangent = this->vertices[poly_count].bitangent;
+
+      this->vertices[poly_count+0].bitangent = bitangent;
+      this->vertices[poly_count+1].bitangent = bitangent;
+      this->vertices[poly_count+2].bitangent = bitangent;
       //----------------------------------------------------
 
 
@@ -162,8 +166,6 @@ void Model::load(const char *filepath, std::string name)
     exit(1);
   }
 
-  char image_path[64];
-  char asset_path[128] = "assets/model/";
   
   while (fgets(buffer, 64, fh) != NULL)
   {
@@ -179,18 +181,6 @@ void Model::load(const char *filepath, std::string name)
       this->material.ambient = {x, y, z};
     }
 
-    else if (buffer[0] == 'K' && buffer[1] == 's')
-    {
-      sscanf(buffer, "Ks %f %f %f", &x, &y, &z);
-      // this->material.specular = {x, y, z};
-    }
-
-    else if (buffer[0] == 'K' && buffer[1] == 'd')
-    {
-      sscanf(buffer, "Kd %f %f %f", &x, &y, &z);
-      // this->material.diffuse = {x, y, z};
-    }
-
     else if (buffer[0] == 'm' && buffer[1] == 'a')
     {
       char *token = strtok(buffer, " ");
@@ -200,17 +190,11 @@ void Model::load(const char *filepath, std::string name)
         if (token[i] == '\n')
           token[i] = '\0';
       }
-      // strcat(asset_path, token);
-      // printf("path: %s\n", asset_path);
-      // len = strlen(asset_path);
-      // asset_path[len] = '\0';
 
-      this->material.diffuse.load(diffuse_path.c_str());
-      this->material.specular.load(specular_path.c_str());
-      this->material.emission.load(emission_path.c_str());
-      this->material.normal.load(normal_path.c_str());
-
-      break;
+      this->material.diffuse.load(diffuse_path.c_str(), true);
+      this->material.specular.load(specular_path.c_str(), false);
+      this->material.emission.load(emission_path.c_str(), false);
+      this->material.normal.load(normal_path.c_str(), false);
     }
   }
 
@@ -280,15 +264,6 @@ void Model::draw(Renderer *ren)
 
     sprintf(buffer, "dirlights[%d].specular", i);
     ren->active_shader.setVec3(buffer,  ren->dirlights[i].specular);
-
-    sprintf(buffer, "dirlights[%d].constant", i);
-    ren->active_shader.setFloat(buffer,  ren->dirlights[i].constant); 
-
-    sprintf(buffer, "dirlights[%d].linear", i);
-    ren->active_shader.setFloat(buffer,  ren->dirlights[i].linear); 
-
-    sprintf(buffer, "dirlights[%d].quadratic", i);
-    ren->active_shader.setFloat(buffer,  ren->dirlights[i].quadratic); 
   }
 
   for (int i=0; i<ren->NM_POINTLIGHTS; i++)

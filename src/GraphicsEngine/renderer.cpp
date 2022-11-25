@@ -55,7 +55,7 @@ Renderer::Renderer()
   
   glGenTextures(1, &this->textureColorbuffer);
   glBindTexture(GL_TEXTURE_2D, this->textureColorbuffer);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glBindTexture(GL_TEXTURE_2D, 0);
@@ -99,13 +99,12 @@ Renderer::Renderer()
 void Renderer::bindFrameBufferObject(GLuint buffer, int x, int y)
 {
   glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
-  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 }
 
 void Renderer::bindTexture(GLuint texture, int x, int y)
 {
   glBindTexture(GL_TEXTURE_2D, texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 }
 
 void Renderer::bindRenderBufferObject(GLuint render_buffer_object, int x, int y)
@@ -128,6 +127,9 @@ void Renderer::postProcess(void)
   this->active_shader.setFloatVector("kernel", 9, this->image_kernel);
   this->active_shader.setFloat("kernelDivisor", this->kernel_divisor);
   this->active_shader.setFloat("kernelOffsetDivisor", this->kernel_offset_divisor);
+  this->active_shader.setFloat("exposure", this->exposure);
+  this->active_shader.setFloat("gamma", this->gamma);
+  
 }
 
 void Renderer::useOrthographic(void)

@@ -62,6 +62,9 @@ class Renderer {
     };
     float kernel_divisor = 1.0f, kernel_offset_divisor = 600.0f;
 
+    float exposure = 0.5f, gamma = 2.2f;
+
+
     int SCR_width = DEFAULT_SCREEN_WIDTH;
     int SCR_height = DEFAULT_SCREEN_HEIGHT;
     
