@@ -163,14 +163,15 @@ int ENTRY(int argc, char **argv)
 
     ///////////////////////////////////////////////////////////////////////////////////////////// Render start
     int x = (int)io.DisplaySize.x, y = (int)io.DisplaySize.y;
-    glViewport(0, 0, x, y); glEnable(GL_DEPTH_TEST);
-    
+    ren.usePerspective();
+    glViewport(0, 0, x, y);
+    glEnable(GL_DEPTH_TEST);
 
     // Render depth map
     // ---------------------------------
+    glViewport(0, 0, x, y);
     glBindFramebuffer(GL_FRAMEBUFFER, ren.depthMapFBO);
     glBindTexture(GL_TEXTURE_2D, ren.depthMap);
-    glViewport(0, 0, x, y);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, x, y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
         glClear(GL_DEPTH_BUFFER_BIT);
         ren.useOrthographic(player.pos->x, player.pos->y, player.pos->z);
@@ -178,9 +179,11 @@ int ENTRY(int argc, char **argv)
         scene_1.draw(&event);
         glCullFace(GL_BACK);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // ---------------------------------
+
+    glViewport(0, 0, x, y);
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    // ---------------------------------
 
 
 
@@ -191,13 +194,10 @@ int ENTRY(int argc, char **argv)
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, x, y); 
 
     glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[0]);
-    glViewport(0, 0, x, y);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
     glClear(GL_COLOR_BUFFER_BIT);
 
-
-    ren.usePerspective();
     ren.useShader(SHADER_WORLDSPACE);
 
     glActiveTexture(GL_TEXTURE12);
@@ -207,7 +207,6 @@ int ENTRY(int argc, char **argv)
     scene_1.draw(&event);
 
     glClear(GL_DEPTH_BUFFER_BIT); // clear depth buffer for weapon
-    glViewport(0, 0, x, y);
     ren.useShader(SHADER_VIEWSPACE); // switch to viewspace shader
     player.draw(&ren); // draw weapon
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -215,6 +214,7 @@ int ENTRY(int argc, char **argv)
     //---------------------------------
 
 
+    glViewport(0, 0, x, y);
 
 
 
@@ -228,16 +228,14 @@ int ENTRY(int argc, char **argv)
     // glBindTexture(GL_TEXTURE_2D, ren.depthMap);
     // ren.useShader(SHADER_RENDERQUAD);
     // ren.active_shader.setInt("depthMap", 5);
-    glViewport(0, 0, x, y);
     glDisable(GL_DEPTH_TEST);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     ren.useShader(SHADER_FIN);
     ren.postProcess();
     ren.active_shader.setInt("screenTexture", 0);
     ren.active_shader.setInt("bloomBlur", 0);
-
-
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 

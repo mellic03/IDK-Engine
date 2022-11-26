@@ -70,7 +70,7 @@ Renderer::Renderer()
   for (GLuint i=0; i<2; i++)
   {
     glBindTexture(GL_TEXTURE_2D, this->colorBuffers[i]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 4028, 4028, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -83,7 +83,7 @@ Renderer::Renderer()
 
   glGenRenderbuffers(1, &this->rbo);
   glBindRenderbuffer(GL_RENDERBUFFER, this->rbo); 
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT);  
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 4028, 4028);  
   glBindRenderbuffer(GL_RENDERBUFFER, 0);
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->rbo);
 
@@ -95,7 +95,7 @@ Renderer::Renderer()
   // Create depth framebuffer
   //------------------------------------------------------
   glGenFramebuffers(1, &this->depthMapFBO); 
-  const unsigned int SHADOW_WIDTH = DEFAULT_SCREEN_WIDTH, SHADOW_HEIGHT = DEFAULT_SCREEN_HEIGHT;
+  const unsigned int SHADOW_WIDTH = 4028, SHADOW_HEIGHT = 4028;
 
   glGenTextures(1, &this->depthMap);
   glBindTexture(GL_TEXTURE_2D, this->depthMap);
@@ -174,9 +174,6 @@ void Renderer::useOrthographic(float x, float y, float z)
                                       this->spotlights[0].position + this->spotlights[0].direction,
                                       glm::vec3( 0.0f, 1.0f,  0.0f) );
 
-  // this->cam.projection = lightProjection;
-  // this->cam.view = lightView;
-
   this->lightSpaceMatrix = lightProjection * lightView;
   this->useShader(SHADER_SHADOWMAP);
   this->active_shader.setMat4("lightSpaceMatrix", this->lightSpaceMatrix);
@@ -185,9 +182,4 @@ void Renderer::useOrthographic(float x, float y, float z)
 void Renderer::usePerspective(void)
 {
   this->cam.projection = glm::perspective(glm::radians(this->fov), (float)this->SCR_width/(float)this->SCR_height, NEAR_PLANE_DIST, RENDER_DISTANCE);
-  this->cam.view = glm::lookAt(
-    this->cam.pos,
-    this->cam.pos + this->cam.front,
-    this->cam.up
-  ); 
 }
