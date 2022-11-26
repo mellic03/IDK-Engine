@@ -35,8 +35,8 @@ void Scene::draw(SDL_Event *event)
   for (int i=0; i<this->physicsContainers.size(); i++)
     this->physicsContainers[i]->collide(this->player);
 
-  this->ren->spotlights[0].position = *this->player->pos - this->ren->cam.dir;
-  this->ren->spotlights[0].direction = this->ren->cam.dir;
+  // this->ren->spotlights[0].position = glm::vec3(-2.0f, 4.0f, -1.0f);
+  // this->ren->spotlights[0].direction = -glm::vec3(-2.0f, 4.0f, -1.0f);
 
   for (int i=0; i<1; i++)
   {

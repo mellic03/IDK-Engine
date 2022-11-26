@@ -32,7 +32,6 @@ class Shader {
     Shader() { };
     void set(GLuint shader_id) { this->id = shader_id; };
     GLuint get(void) { return this->id; };
-    void use(void) { glUseProgram(this->id); };
     void setVec3(const char *uniform_name, glm::vec3 vec);
     void setMat4(const char *uniform_name, glm::mat4 mat);
     void setInt(const char *uniform_name, GLuint value);

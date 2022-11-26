@@ -236,16 +236,18 @@ void Model::load(const char *filepath, std::string name)
 
 void Model::draw(Renderer *ren)
 {
+
+  this->material.diffuse.bind(GL_TEXTURE0);
+  this->material.specular.bind(GL_TEXTURE1);
+  this->material.emission.bind(GL_TEXTURE2);
+  this->material.normal.bind(GL_TEXTURE3);
+
   ren->active_shader.setInt("material.diffuseMap", 0);
   ren->active_shader.setInt("material.specularMap", 1);
   ren->active_shader.setInt("material.emissionMap", 2);
   ren->active_shader.setInt("material.normalMap", 3);
   ren->active_shader.setFloat("material.spec_exponent", this->material.spec_exponent);
 
-  this->material.diffuse.bind(GL_TEXTURE0);
-  this->material.specular.bind(GL_TEXTURE1);
-  this->material.emission.bind(GL_TEXTURE2);
-  this->material.normal.bind(GL_TEXTURE3);
 
   glBindVertexArray(this->VAO);
 
@@ -339,6 +341,12 @@ void Model::draw(Renderer *ren)
 
   glDrawElements(GL_TRIANGLES, this->num_indices, GL_UNSIGNED_INT, (void *)0);
   glBindVertexArray(0);
+
+  this->material.diffuse.unbind(GL_TEXTURE0);
+  this->material.specular.unbind(GL_TEXTURE1);
+  this->material.emission.unbind(GL_TEXTURE2);
+  this->material.normal.unbind(GL_TEXTURE3);
+
 }
 
 void Model::set_pos(glm::vec3 point)

@@ -11,7 +11,6 @@
 
 Renderer::Renderer()
 {
-
   ShaderSource worldspace_src = parse_shader("assets/shaders/worldspace.vs", "assets/shaders/worldspace.fs");
   Shader worldspace;
   worldspace.set(create_shader(worldspace_src.vertex_source, worldspace_src.fragment_source));
@@ -42,8 +41,7 @@ Renderer::Renderer()
   test.set(create_shader(testsrc.vertex_source, testsrc.fragment_source));
   this->shaders[SHADER_TEST] = test;
 
-
-  ShaderSource final = parse_shader("assets/shaders/renderquadfinal.vs", "assets/shaders/renderquad.fs");
+  ShaderSource final = parse_shader("assets/shaders/renderquad.vs", "assets/shaders/renderquad.fs");
   Shader fin;
   fin.set(create_shader(final.vertex_source, final.fragment_source));
   this->shaders[SHADER_FIN] = fin;
@@ -63,7 +61,7 @@ Renderer::Renderer()
   //------------------------------------------------------
 
 
-  // Create and setup framebuffer
+  // Create colour framebuffer
   //------------------------------------------------------
   glGenFramebuffers(1, &this->FBO);
   glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
@@ -91,34 +89,49 @@ Renderer::Renderer()
 
   GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
   glDrawBuffers(2, attachments);
+  //------------------------------------------------------
+
+
+  // Create depth framebuffer
+  //------------------------------------------------------
+  glGenFramebuffers(1, &this->depthMapFBO); 
+  const unsigned int SHADOW_WIDTH = DEFAULT_SCREEN_WIDTH, SHADOW_HEIGHT = DEFAULT_SCREEN_HEIGHT;
+
+  glGenTextures(1, &this->depthMap);
+  glBindTexture(GL_TEXTURE_2D, this->depthMap);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 
+              SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); 
+
+
+  glBindFramebuffer(GL_FRAMEBUFFER, this->depthMapFBO);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this->depthMap, 0);
+  glDrawBuffer(GL_NONE);
+  glReadBuffer(GL_NONE);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);  
 
   //------------------------------------------------------
 
 
+
+
+
   for (int i=0; i<NUM_DIRLIGHTS; i++)
-  {
     this->dirlights.push_back(DirLight());
-
-    // glGenFramebuffers(1, &this->dirlights[i].depthMapFBO);
-
-    // glGenTextures(1, &this->dirlights[i].depthMap);
-    // glBindTexture(GL_TEXTURE_2D, this->dirlights[i].depthMap);
-    // glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  }
 
   for (int i=0; i<NUM_POINTLIGHTS; i++)
     this->pointlights.push_back(PointLight());
 
   this->pointlights[0].diffuse  = {1.0, 1.0, 1.0};
   this->pointlights[0].specular = {0.15, 0.15, 0.15};
-  this->pointlights[0].position = {0.0, -5.0, 0.0};
+  this->pointlights[0].position = {1.0, 2.0, 1.0};
 
   for (int i=0; i<NUM_SPOTLIGHTS; i++)
     this->spotlights.push_back(SpotLight());
+  this->spotlights[0].position = {-2.0f, 4.0f, -1.0f};
 
 
 }
@@ -127,11 +140,7 @@ void Renderer::bindFrameBufferObject(GLuint buffer, int x, int y)
 {
   glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
 
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->colorBuffers[0], 0);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, this->colorBuffers[1], 0);
 
-  GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-  glDrawBuffers(2, attachments);
 }
 
 void Renderer::bindTexture(GLuint texture, int x, int y)
@@ -139,13 +148,6 @@ void Renderer::bindTexture(GLuint texture, int x, int y)
   glBindTexture(GL_TEXTURE_2D, texture);
   // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 }
-
-void Renderer::bindRenderBufferObject(GLuint render_buffer_object, int x, int y)
-{
-  glBindRenderbuffer(GL_RENDERBUFFER, render_buffer_object); 
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, x, y); 
-}
-
 
 
 void Renderer::useShader(ShaderType shader)
@@ -164,20 +166,20 @@ void Renderer::postProcess(void)
   this->active_shader.setFloat("gamma", this->gamma);
 }
 
-void Renderer::useOrthographic(void)
+void Renderer::useOrthographic(float x, float y, float z)
 {
-  float near_plane = 1.0f, far_plane = 70.5f;
+  float near_plane = 1.0f, far_plane = 66.5;
   glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-  glm::mat4 lightView = glm::lookAt(  glm::vec3(-2.0f, 4.0f, -1.0f), 
-                                      glm::vec3( 0.0f, 0.0f,  0.0f), 
-                                      glm::vec3( 0.0f, 1.0f,  0.0f));
+  glm::mat4 lightView = glm::lookAt(  this->spotlights[0].position,
+                                      this->spotlights[0].position + this->spotlights[0].direction,
+                                      glm::vec3( 0.0f, 1.0f,  0.0f) );
 
-  this->cam.projection = lightProjection;
-  this->cam.view = lightView;
-  glm::mat4 lightSpaceMatrix = lightProjection * lightView;
-  this->shaders[SHADER_SHADOWMAP].use();
-  this->shaders[SHADER_SHADOWMAP].setMat4("lightSpaceMatrix", lightSpaceMatrix);
+  // this->cam.projection = lightProjection;
+  // this->cam.view = lightView;
 
+  this->lightSpaceMatrix = lightProjection * lightView;
+  this->useShader(SHADER_SHADOWMAP);
+  this->active_shader.setMat4("lightSpaceMatrix", this->lightSpaceMatrix);
 }
 
 void Renderer::usePerspective(void)

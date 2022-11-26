@@ -78,6 +78,7 @@ int ENTRY(int argc, char **argv)
 
   // Model skybox;  skybox.load("assets/model/", "skybox");
   Model cube;    cube.load("assets/crate/", "crate");
+  Model cube2;   cube2.load("assets/crate/", "crate");
   Model ground;  ground.load("assets/ground/", "ground");
   Model sphere;  sphere.load("assets/sphere/", "sphere");
   sphere.bindRenderer(&ren);
@@ -86,6 +87,7 @@ int ENTRY(int argc, char **argv)
 
   ModelContainer render_container;
   render_container.add(&cube);
+  render_container.add(&cube2);
   render_container.add(&ground);
   // render_container.add(&skybox);
   render_container.bindRenderer(&ren);
@@ -119,7 +121,9 @@ int ENTRY(int argc, char **argv)
 
   // RENDER LOOP
   //----------------------------------------
-  cube.translate(glm::vec3(2.0f, -5.8f, 0.0f));
+  // cube.translate(glm::vec3(2.0f, -5.8f, 0.0f));
+
+  cube2.translate({0.2, 1.0, 0.0});
 
   int err = glGetError();
   if (err)
@@ -159,68 +163,83 @@ int ENTRY(int argc, char **argv)
 
     ///////////////////////////////////////////////////////////////////////////////////////////// Render start
     int x = (int)io.DisplaySize.x, y = (int)io.DisplaySize.y;
+    glViewport(0, 0, x, y); glEnable(GL_DEPTH_TEST);
+    
+
+    // Render depth map
+    // ---------------------------------
+    glBindFramebuffer(GL_FRAMEBUFFER, ren.depthMapFBO);
+    glBindTexture(GL_TEXTURE_2D, ren.depthMap);
     glViewport(0, 0, x, y);
-    ren.bindFrameBufferObject(ren.FBO, x, y);
-    ren.bindRenderBufferObject(ren.rbo, x, y);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, x, y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        ren.useOrthographic(player.pos->x, player.pos->y, player.pos->z);
+        glCullFace(GL_FRONT);
+        scene_1.draw(&event);
+        glCullFace(GL_BACK);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClear(GL_DEPTH_BUFFER_BIT);
 
-    glActiveTexture(GL_TEXTURE0);
+    // ---------------------------------
+
+
+
+    // Draw scene normally
+    // ---------------------------------
+    glBindFramebuffer(GL_FRAMEBUFFER, ren.FBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, ren.rbo); 
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, x, y); 
+
     glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-  
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[1]);
+    glViewport(0, 0, x, y);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
+    glClear(GL_COLOR_BUFFER_BIT);
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
-
-
-
-    // Draw scene
-    //---------------------------------
 
     ren.usePerspective();
     ren.useShader(SHADER_WORLDSPACE);
+
+    glActiveTexture(GL_TEXTURE12);
+    glBindTexture(GL_TEXTURE_2D, ren.depthMap);
+    ren.active_shader.setInt("shadowMap", 12);
+    ren.active_shader.setMat4("lightSpaceMatrix", ren.lightSpaceMatrix);
     scene_1.draw(&event);
+
     glClear(GL_DEPTH_BUFFER_BIT); // clear depth buffer for weapon
+    glViewport(0, 0, x, y);
     ren.useShader(SHADER_VIEWSPACE); // switch to viewspace shader
     player.draw(&ren); // draw weapon
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //---------------------------------
-    ren.unbindFrameBufferObject();
+
+
+
 
 
 
     // Draw to quad
     //---------------------------------
-    glDisable(GL_DEPTH_TEST);
 
     glBindVertexArray(ren.quadVAO);
 
+    // glActiveTexture(GL_TEXTURE5);
+    // glBindTexture(GL_TEXTURE_2D, ren.depthMap);
+    // ren.useShader(SHADER_RENDERQUAD);
+    // ren.active_shader.setInt("depthMap", 5);
+    glViewport(0, 0, x, y);
+    glDisable(GL_DEPTH_TEST);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[0]);
-
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[1]);
-
-    ren.useShader(SHADER_TEST);
-    ren.active_shader.setInt("image", 1);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    ren.active_shader.setInt("image", 0);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    // glDrawArrays(GL_TRIANGLES, 0, 6);
-    // glDrawArrays(GL_TRIANGLES, 0, 6);
-    // glDrawArrays(GL_TRIANGLES, 0, 6);
-
-
     ren.useShader(SHADER_FIN);
     ren.postProcess();
-
     ren.active_shader.setInt("screenTexture", 0);
     ren.active_shader.setInt("bloomBlur", 0);
+
+
+
     glDrawArrays(GL_TRIANGLES, 0, 6);
-
-
 
 
     //---------------------------------

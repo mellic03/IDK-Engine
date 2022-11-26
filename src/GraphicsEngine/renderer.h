@@ -46,12 +46,15 @@ class Renderer {
 
 
   public:
+    GLuint FBO;
     GLuint quadVAO, quadVBO, rbo;
     GLuint colorBuffers[2];
 
+    GLuint depthMapFBO, depthMap;
+    glm::mat4 lightSpaceMatrix;
+
     Camera cam;
 
-    GLuint FBO;
 
     float deltaTime = 0.0f;
     float fov = 90.0f;
@@ -91,7 +94,7 @@ class Renderer {
 
     void useShader(ShaderType shader);
     void postProcess(void);
-    void useOrthographic(void);
+    void useOrthographic(float x, float y, float z);
     void usePerspective(void);
 
 };
