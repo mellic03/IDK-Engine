@@ -78,7 +78,7 @@ int ENTRY(int argc, char **argv)
 
   // Model skybox;  skybox.load("assets/model/", "skybox");
   Model cube;    cube.load("assets/crate/", "crate");
-  Model cube2;   cube2.load("assets/crate/", "crate");
+  Model fish;    fish.load("assets/fish/", "fish");
   Model ground;  ground.load("assets/ground/", "ground");
   Model sphere;  sphere.load("assets/sphere/", "sphere");
   sphere.bindRenderer(&ren);
@@ -87,14 +87,15 @@ int ENTRY(int argc, char **argv)
 
   ModelContainer render_container;
   render_container.add(&cube);
-  render_container.add(&cube2);
   render_container.add(&ground);
+  render_container.add(&fish);
   // render_container.add(&skybox);
   render_container.bindRenderer(&ren);
 
   ModelContainer physics_container;
   physics_container.add(&cube);
   physics_container.add(&ground);
+  physics_container.add(&fish);
 
 
 
@@ -123,7 +124,6 @@ int ENTRY(int argc, char **argv)
   //----------------------------------------
   // cube.translate(glm::vec3(2.0f, -5.8f, 0.0f));
 
-  cube2.translate({0.2, 1.0, 0.0});
 
   int err = glGetError();
   if (err)
