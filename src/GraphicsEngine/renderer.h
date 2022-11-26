@@ -52,6 +52,8 @@ class Renderer {
 
     GLuint depthMapFBO, depthMap;
     glm::mat4 lightSpaceMatrix;
+    float DIRBIAS = 0.01f;
+
 
     Camera cam;
 

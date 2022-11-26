@@ -17,6 +17,7 @@ enum ShaderType { SHADER_WORLDSPACE, SHADER_VIEWSPACE, SHADER_LIGHTSOURCE, SHADE
 struct ShaderSource {
   std::string vertex_source;
   std::string fragment_source;
+  std::string geometry_source;
 };
 
 ShaderSource parse_shader(const std::string &vertex_shader, const std::string &fragment_shader);

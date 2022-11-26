@@ -100,7 +100,7 @@ Renderer::Renderer()
   glGenTextures(1, &this->depthMap);
   glBindTexture(GL_TEXTURE_2D, this->depthMap);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 
-              SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+              1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER); 
@@ -169,9 +169,9 @@ void Renderer::postProcess(void)
 
 void Renderer::useOrthographic(float x, float y, float z)
 {
-  float near_plane = 1.0f, far_plane = 66.5;
+  float near_plane = 1.0f, far_plane = 45.5;
   glm::mat4 lightProjection = glm::ortho(-30.0f, 30.0f, -30.0f, 30.0f, near_plane, far_plane);
-  glm::mat4 lightView = glm::lookAt(  this->pointlights[0].position,
+  glm::mat4 lightView = glm::lookAt(  -25.0f * this->dirlights[0].direction,
                                       glm::vec3( 0.0f, 0.0f,  0.0f),
                                       glm::vec3( 0.0f, 1.0f,  0.0f) );
 

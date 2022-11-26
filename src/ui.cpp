@@ -31,8 +31,11 @@ void draw_lighting_tab(Renderer *ren)
   ImGui::Text("Direction");
   ImGui::DragScalar("x", ImGuiDataType_Float, &ren->dirlights[selected_dirlight].direction.x, 0.05f, NULL);
   ImGui::DragScalar("y", ImGuiDataType_Float, &ren->dirlights[selected_dirlight].direction.y, 0.05f, NULL);
-  ImGui::DragScalar("z", ImGuiDataType_Float, &ren->dirlights[selected_dirlight].direction.z, 0.05f, NULL);
-  ren->dirlights[selected_dirlight].direction = glm::normalize(ren->dirlights[selected_dirlight].direction);
+  ImGui::DragScalar("z", ImGuiDataType_Float, &ren->dirlights[selected_dirlight].direction.z, 0.001f, NULL);
+  ren->dirlights[0].direction = glm::normalize(ren->dirlights[0].direction);
+  ImGui::Dummy(ImVec2(0.0f, 20.0f));
+
+  ImGui::DragScalar("bias", ImGuiDataType_Float, &ren->DIRBIAS, 0.05f, NULL);
   ImGui::PopID();
 
 

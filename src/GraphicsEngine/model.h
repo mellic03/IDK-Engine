@@ -64,6 +64,7 @@ class Model {
 
     void set_pos(glm::vec3 position);
     void translate(glm::vec3 translation);
+    void scale(float alpha);
 
     void set_rot_x(float theta);
     void rot_x(float theta);

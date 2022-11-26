@@ -82,6 +82,7 @@ int ENTRY(int argc, char **argv)
   Model ground;  ground.load("assets/ground/", "ground");
   Model sphere;  sphere.load("assets/sphere/", "sphere");
   sphere.bindRenderer(&ren);
+  // ground.scale(10.0f);
 
 
 
@@ -205,6 +206,7 @@ int ENTRY(int argc, char **argv)
     glActiveTexture(GL_TEXTURE12);
     glBindTexture(GL_TEXTURE_2D, ren.depthMap);
     ren.active_shader.setInt("shadowMap", 12);
+    ren.active_shader.setFloat("BIAS", ren.DIRBIAS);
     ren.active_shader.setMat4("lightSpaceMatrix", ren.lightSpaceMatrix);
     scene_1.draw(&event);
 

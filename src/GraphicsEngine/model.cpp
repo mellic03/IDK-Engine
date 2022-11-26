@@ -368,6 +368,11 @@ void Model::translate(glm::vec3 translation)
   this->model_mat = glm::translate(this->model_mat, translation);
 }
 
+void Model::scale(float alpha)
+{
+  this->model_mat = glm::scale(this->model_mat, {alpha, alpha, alpha});
+}
+
 void Model::set_rot_x(float theta)
 {
   this->rot.x = theta;
