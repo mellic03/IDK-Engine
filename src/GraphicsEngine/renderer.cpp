@@ -66,11 +66,12 @@ Renderer::Renderer()
   glGenFramebuffers(1, &this->FBO);
   glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
   glGenTextures(2, this->colorBuffers);
+  const unsigned int SHADOW_WIDTH = 4096, SHADOW_HEIGHT = 4096;
   
   for (GLuint i=0; i<2; i++)
   {
     glBindTexture(GL_TEXTURE_2D, this->colorBuffers[i]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 4028, 4028, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -83,7 +84,7 @@ Renderer::Renderer()
 
   glGenRenderbuffers(1, &this->rbo);
   glBindRenderbuffer(GL_RENDERBUFFER, this->rbo); 
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 4028, 4028);  
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SHADOW_WIDTH, SHADOW_HEIGHT);  
   glBindRenderbuffer(GL_RENDERBUFFER, 0);
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->rbo);
 
@@ -95,7 +96,6 @@ Renderer::Renderer()
   // Create depth framebuffer
   //------------------------------------------------------
   glGenFramebuffers(1, &this->depthMapFBO); 
-  const unsigned int SHADOW_WIDTH = 4028, SHADOW_HEIGHT = 4028;
 
   glGenTextures(1, &this->depthMap);
   glBindTexture(GL_TEXTURE_2D, this->depthMap);
@@ -103,9 +103,10 @@ Renderer::Renderer()
               SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); 
-
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER); 
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER); 
+  float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+  glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
   glBindFramebuffer(GL_FRAMEBUFFER, this->depthMapFBO);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this->depthMap, 0);
@@ -169,9 +170,9 @@ void Renderer::postProcess(void)
 void Renderer::useOrthographic(float x, float y, float z)
 {
   float near_plane = 1.0f, far_plane = 66.5;
-  glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-  glm::mat4 lightView = glm::lookAt(  this->spotlights[0].position,
-                                      this->spotlights[0].position + this->spotlights[0].direction,
+  glm::mat4 lightProjection = glm::ortho(-30.0f, 30.0f, -30.0f, 30.0f, near_plane, far_plane);
+  glm::mat4 lightView = glm::lookAt(  this->pointlights[0].position,
+                                      glm::vec3( 0.0f, 0.0f,  0.0f),
                                       glm::vec3( 0.0f, 1.0f,  0.0f) );
 
   this->lightSpaceMatrix = lightProjection * lightView;

@@ -86,7 +86,7 @@ int ENTRY(int argc, char **argv)
 
 
   ModelContainer render_container;
-  render_container.add(&cube);
+  // render_container.add(&cube);
   render_container.add(&ground);
   render_container.add(&fish);
   // render_container.add(&skybox);
@@ -123,7 +123,7 @@ int ENTRY(int argc, char **argv)
   // RENDER LOOP
   //----------------------------------------
   // cube.translate(glm::vec3(2.0f, -5.8f, 0.0f));
-
+  fish.translate({3.0, 0.0, 0.0});
 
   int err = glGetError();
   if (err)
@@ -176,7 +176,9 @@ int ENTRY(int argc, char **argv)
         glClear(GL_DEPTH_BUFFER_BIT);
         ren.useOrthographic(player.pos->x, player.pos->y, player.pos->z);
         glCullFace(GL_FRONT);
+        glDisable( GL_CULL_FACE );
         scene_1.draw(&event);
+        glEnable( GL_CULL_FACE );
         glCullFace(GL_BACK);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     // ---------------------------------

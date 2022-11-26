@@ -63,28 +63,25 @@ float calculate_shadow(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
   vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
   projCoords = projCoords * 0.5 + 0.5;
 
-  if(projCoords.z > 1.0)
+  if (projCoords.z > 1.0)
     return 0.0;
 
   float closestDepth = texture(shadowMap, projCoords.xy).r; 
   float currentDepth = projCoords.z;
   
-  float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);  
+  float bias = max(0.01 * (1.0 - dot(normal, lightDir)), 0.0005);
+
   float shadow = 0.0;
-
-
   vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
-  const int halfkernelWidth = 3;
-  for(int x = -halfkernelWidth; x <= halfkernelWidth; ++x)
+  for(int x = -1; x <= 1; ++x)
   {
-    for(int y = -halfkernelWidth; y <= halfkernelWidth; ++y)
-    {
-      float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
-      shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
-    }
+      for(int y = -1; y <= 1; ++y)
+      {
+          float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
+          shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
+      }    
   }
-  shadow /= ((halfkernelWidth*2+1)*(halfkernelWidth*2+1));
-
+  shadow /= 9.0;
 
   return shadow;
 }
@@ -130,7 +127,9 @@ vec3 calculate_pointlight(PointLight light, vec3 normal, vec3 fragPos, int index
   ambient  *= attenuation;
   diffuse  *= attenuation;
   specular *= attenuation;
-  return (ambient + diffuse + specular);
+
+  float shadow = calculate_shadow(fs_in.FragPosLightSpace, normal, lightDir);
+  return (ambient + (1.0 - shadow) * (diffuse + specular));
 }
 
 vec3 calculate_spotlight(SpotLight light, vec3 normal, vec3 fragPos, int index)
@@ -163,9 +162,7 @@ vec3 calculate_spotlight(SpotLight light, vec3 normal, vec3 fragPos, int index)
     diffuse  *= intensity * attenuation;
     specular *= intensity * attenuation;
 
-    float shadow = calculate_shadow(fs_in.FragPosLightSpace, normal, lightDir);
-
-    return (ambient + (1.0 - shadow) * (diffuse + specular));
+    return (ambient + diffuse + specular);
 }
 
 void main()
