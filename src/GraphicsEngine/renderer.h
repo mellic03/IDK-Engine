@@ -54,6 +54,8 @@ class Renderer {
     glm::mat4 lightSpaceMatrix;
     float DIRBIAS = 0.01f;
 
+    GLuint depthCubemap;
+
 
     Camera cam;
 
@@ -72,13 +74,15 @@ class Renderer {
 
     int SCR_width = DEFAULT_SCREEN_WIDTH;
     int SCR_height = DEFAULT_SCREEN_HEIGHT;
-    
+
+    glm::vec4 clearColor = {0.0, 0.0, 0.0, 1.0};
+
     float NM_DIRLIGHTS = 1;
     float NM_POINTLIGHTS = 5;
     float NM_SPOTLIGHTS = 2;
 
     Shader shaders[10];
-   Shader active_shader;
+    Shader active_shader;
     std::vector<DirLight>    dirlights;
     std::vector<PointLight>  pointlights;
     std::vector<SpotLight>   spotlights;

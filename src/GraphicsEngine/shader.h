@@ -20,9 +20,9 @@ struct ShaderSource {
   std::string geometry_source;
 };
 
-ShaderSource parse_shader(const std::string &vertex_shader, const std::string &fragment_shader);
+ShaderSource parse_shader(const std::string &vertex_shader, const std::string &fragment_shader, const std::string &geometry_shader);
 unsigned int compile_shader(unsigned int type, const std::string &source);
-unsigned int create_shader(const std::string &vertex_shader, const std::string &fragment_shader);
+unsigned int create_shader(const std::string &vertex_shader, const std::string &fragment_shader, const std::string &geometry_shader);
 
 
 class Shader {

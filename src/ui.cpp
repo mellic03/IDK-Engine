@@ -10,6 +10,10 @@ void draw_lighting_tab(Renderer *ren)
 {
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
+  ImGui::ColorEdit3("Clear colour", (float*)&ren->clearColor);
+  glClearColor(ren->clearColor.x, ren->clearColor.y, ren->clearColor.z, ren->clearColor.w);
+
+  ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
   char buffer[64];
 

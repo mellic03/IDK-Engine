@@ -11,39 +11,39 @@
 
 Renderer::Renderer()
 {
-  ShaderSource worldspace_src = parse_shader("assets/shaders/worldspace.vs", "assets/shaders/worldspace.fs");
+  ShaderSource worldspace_src = parse_shader("assets/shaders/worldspace.vs", "assets/shaders/worldspace.fs", "NULL");
   Shader worldspace;
-  worldspace.set(create_shader(worldspace_src.vertex_source, worldspace_src.fragment_source));
+  worldspace.set(create_shader(worldspace_src.vertex_source, worldspace_src.fragment_source, worldspace_src.geometry_source));
   this->shaders[SHADER_WORLDSPACE] = worldspace;
 
-  ShaderSource viewspace_src = parse_shader("assets/shaders/viewspace.vs", "assets/shaders/viewspace.fs");
+  ShaderSource viewspace_src = parse_shader("assets/shaders/viewspace.vs", "assets/shaders/viewspace.fs", "NULL");
   Shader viewspace;
-  viewspace.set(create_shader(viewspace_src.vertex_source, viewspace_src.fragment_source));
+  viewspace.set(create_shader(viewspace_src.vertex_source, viewspace_src.fragment_source, viewspace_src.geometry_source));
   this->shaders[SHADER_VIEWSPACE] = viewspace;
 
-  ShaderSource lightsource_src = parse_shader("assets/shaders/lightsource.vs", "assets/shaders/lightsource.fs");
+  ShaderSource lightsource_src = parse_shader("assets/shaders/lightsource.vs", "assets/shaders/lightsource.fs", "NULL");
   Shader lightsource;
-  lightsource.set(create_shader(lightsource_src.vertex_source, lightsource_src.fragment_source));
+  lightsource.set(create_shader(lightsource_src.vertex_source, lightsource_src.fragment_source, lightsource_src.geometry_source));
   this->shaders[SHADER_LIGHTSOURCE] = lightsource;
   
-  ShaderSource renderquad_src = parse_shader("assets/shaders/renderquad.vs", "assets/shaders/renderquad.fs");
+  ShaderSource renderquad_src = parse_shader("assets/shaders/renderquad.vs", "assets/shaders/renderquad.fs", "NULL");
   Shader renderquad;
-  renderquad.set(create_shader(renderquad_src.vertex_source, renderquad_src.fragment_source));
+  renderquad.set(create_shader(renderquad_src.vertex_source, renderquad_src.fragment_source, renderquad_src.geometry_source));
   this->shaders[SHADER_RENDERQUAD] = renderquad;
 
-  ShaderSource shadowmap_src = parse_shader("assets/shaders/shadowmap.vs", "assets/shaders/shadowmap.fs");
+  ShaderSource shadowmap_src = parse_shader("assets/shaders/shadowmap.vs", "assets/shaders/shadowmap.fs", "NULL");
   Shader shadowmap;
-  shadowmap.set(create_shader(shadowmap_src.vertex_source, shadowmap_src.fragment_source));
+  shadowmap.set(create_shader(shadowmap_src.vertex_source, shadowmap_src.fragment_source, shadowmap_src.geometry_source));
   this->shaders[SHADER_SHADOWMAP] = shadowmap;
 
-  ShaderSource testsrc = parse_shader("assets/shaders/renderquad.vs", "assets/shaders/guassianblur.fs");
+  ShaderSource testsrc = parse_shader("assets/shaders/renderquad.vs", "assets/shaders/guassianblur.fs", "NULL");
   Shader test;
-  test.set(create_shader(testsrc.vertex_source, testsrc.fragment_source));
+  test.set(create_shader(testsrc.vertex_source, testsrc.fragment_source, testsrc.geometry_source));
   this->shaders[SHADER_TEST] = test;
 
-  ShaderSource final = parse_shader("assets/shaders/renderquad.vs", "assets/shaders/renderquad.fs");
+  ShaderSource final = parse_shader("assets/shaders/renderquad.vs", "assets/shaders/renderquad.fs", "NULL");
   Shader fin;
-  fin.set(create_shader(final.vertex_source, final.fragment_source));
+  fin.set(create_shader(final.vertex_source, final.fragment_source, final.geometry_source));
   this->shaders[SHADER_FIN] = fin;
 
 
@@ -113,7 +113,27 @@ Renderer::Renderer()
   glDrawBuffer(GL_NONE);
   glReadBuffer(GL_NONE);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);  
+  //------------------------------------------------------
 
+
+  // Create depth cubemap
+  //------------------------------------------------------
+  // glGenTextures(1, &this->depthCubemap);
+  // glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+  // for (unsigned int i = 0; i < 6; ++i)
+  //   glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+
+  // glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  // glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  // glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  // glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  // glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+  // glBindFramebuffer(GL_FRAMEBUFFER, this->depthMapFBO);
+  // glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, this->depthCubemap, 0);
+  // glDrawBuffer(GL_NONE);
+  // glReadBuffer(GL_NONE);
+  // glBindFramebuffer(GL_FRAMEBUFFER, 0); 
   //------------------------------------------------------
 
 

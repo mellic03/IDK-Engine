@@ -161,6 +161,7 @@ int ENTRY(int argc, char **argv)
     player.key_input(&ren);
     //---------------------------------
 
+    fish.rot_z(0.2f);
 
     ///////////////////////////////////////////////////////////////////////////////////////////// Render start
     int x = (int)io.DisplaySize.x, y = (int)io.DisplaySize.y;
@@ -176,11 +177,11 @@ int ENTRY(int argc, char **argv)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, x, y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
         glClear(GL_DEPTH_BUFFER_BIT);
         ren.useOrthographic(player.pos->x, player.pos->y, player.pos->z);
-        glCullFace(GL_FRONT);
+        // glCullFace(GL_FRONT);
         glDisable( GL_CULL_FACE );
         scene_1.draw(&event);
         glEnable( GL_CULL_FACE );
-        glCullFace(GL_BACK);
+        // glCullFace(GL_BACK);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     // ---------------------------------
 

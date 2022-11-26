@@ -1,12 +1,13 @@
 
 #include "shader.h"
 
-ShaderSource parse_shader(const std::string &vertex_shader, const std::string &fragment_shader)
+ShaderSource parse_shader(const std::string &vertex_shader, const std::string &fragment_shader, const std::string &geometry_shader)
 {
   std::ifstream vs_stream(vertex_shader);
   std::ifstream fs_stream(fragment_shader);
+  std::ifstream gs_stream(geometry_shader);
   std::string line;
-  std::stringstream ss[2];
+  std::stringstream ss[3];
 
   while (getline(vs_stream, line))
     ss[0] << line << '\n';
@@ -14,11 +15,16 @@ ShaderSource parse_shader(const std::string &vertex_shader, const std::string &f
   while (getline(fs_stream, line))
     ss[1] << line << '\n';
 
-  return (ShaderSource){ss[0].str(), ss[1].str()};
+  if (geometry_shader != "NULL")
+    while (getline(gs_stream, line))
+      ss[2] << line << '\n';
+
+  return (ShaderSource){ss[0].str(), ss[1].str(), geometry_shader == "NULL" ? "NULL" : ss[2].str()};
 }
 
 unsigned int compile_shader(unsigned int type, const std::string &source)
 {
+  if (source == "NULL") return 0;
   unsigned int id = glCreateShader(type);
   const char *src = source.c_str();
   glShaderSource(id, 1, &src, nullptr);
@@ -42,19 +48,22 @@ unsigned int compile_shader(unsigned int type, const std::string &source)
   return id;
 }
 
-unsigned int create_shader(const std::string &vertex_shader, const std::string &fragment_shader)
+unsigned int create_shader(const std::string &vertex_shader, const std::string &fragment_shader, const std::string &geometry_shader)
 {
   unsigned int program = glCreateProgram();
   unsigned int vs = compile_shader(GL_VERTEX_SHADER, vertex_shader);
   unsigned int fs = compile_shader(GL_FRAGMENT_SHADER, fragment_shader);
+  unsigned int gs = compile_shader(GL_FRAGMENT_SHADER, geometry_shader);
 
   glAttachShader(program, vs);
   glAttachShader(program, fs);
+  if (gs != 0)  glAttachShader(program, gs);
   glLinkProgram(program);
   glValidateProgram(program);
 
   glDeleteShader(vs);
   glDeleteShader(fs);
+  glDeleteShader(gs);
 
   return program;
 }
