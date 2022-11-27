@@ -208,8 +208,8 @@ void Renderer::usePerspective(void)
 
 void Renderer::update(void)
 { 
-  std::vector<PointLight> temp_pointlights;
-  std::vector<SpotLight> temp_spotlights;
+  this->shaderready_pointlights.clear();
+  this->shaderready_spotlights.clear();
 
   this->num_active_pointlights = 0;
   this->num_active_spotlights = 0;
@@ -219,29 +219,25 @@ void Renderer::update(void)
   for (int i=0; i<NUM_POINTLIGHTS; i++)
     if (this->pointlights_on[i])
     {
-      temp_pointlights.push_back(this->pointlights[i]);
+      this->shaderready_pointlights.push_back(this->pointlights[i]);
       this->num_active_pointlights += 1;
     }
   
   for (int i=0; i<NUM_POINTLIGHTS; i++)
     if (!this->pointlights_on[i])
-      temp_pointlights.push_back(this->pointlights[i]);
+      this->shaderready_pointlights.push_back(this->pointlights[i]);
   
 
   for (int i=0; i<NUM_SPOTLIGHTS; i++)
     if (this->spotlights_on[i])
     {
-      temp_spotlights.push_back(this->spotlights[i]);
+      this->shaderready_spotlights.push_back(this->spotlights[i]);
       this->num_active_spotlights += 1;
     }
 
   for (int i=0; i<NUM_SPOTLIGHTS; i++)
     if (!this->spotlights_on[i])
-      temp_spotlights.push_back(this->spotlights[i]);
-
-  this->pointlights = temp_pointlights;
-  this->spotlights = temp_spotlights;
-
+      this->shaderready_spotlights.push_back(this->spotlights[i]);
 }
 
 
@@ -270,61 +266,61 @@ void Renderer::sendLightsToShader(void)
   for (int i=0; i<NUM_POINTLIGHTS; i++)
   {
     sprintf(buffer, "pointlights[%d].position", i);
-    this->active_shader.setVec3(buffer,  this->pointlights[i].position);
+    this->active_shader.setVec3(buffer,  this->shaderready_pointlights[i].position);
 
     sprintf(buffer, "pointlights[%d].ambient", i);
-    this->active_shader.setVec3(buffer,  this->pointlights[i].ambient);
+    this->active_shader.setVec3(buffer,  this->shaderready_pointlights[i].ambient);
 
     sprintf(buffer, "pointlights[%d].diffuse", i);
-    this->active_shader.setVec3(buffer,  this->pointlights[i].diffuse);
+    this->active_shader.setVec3(buffer,  this->shaderready_pointlights[i].diffuse);
 
     sprintf(buffer, "pointlights[%d].specular", i);
-    this->active_shader.setVec3(buffer,  this->pointlights[i].specular);
+    this->active_shader.setVec3(buffer,  this->shaderready_pointlights[i].specular);
 
     sprintf(buffer, "pointlights[%d].constant", i);
-    this->active_shader.setFloat(buffer,  this->pointlights[i].constant); 
+    this->active_shader.setFloat(buffer,  this->shaderready_pointlights[i].constant); 
 
     sprintf(buffer, "pointlights[%d].linear", i);
-    this->active_shader.setFloat(buffer,  this->pointlights[i].linear); 
+    this->active_shader.setFloat(buffer,  this->shaderready_pointlights[i].linear); 
 
     sprintf(buffer, "pointlights[%d].quadratic", i);
-    this->active_shader.setFloat(buffer,  this->pointlights[i].quadratic); 
+    this->active_shader.setFloat(buffer,  this->shaderready_pointlights[i].quadratic); 
   }
 
   for (int i=0; i<NUM_SPOTLIGHTS; i++)
   {
     sprintf(buffer, "spotlights[%d].position", i);
-    this->active_shader.setVec3(buffer,  this->spotlights[i].position);
+    this->active_shader.setVec3(buffer,  this->shaderready_spotlights[i].position);
 
     sprintf(buffer, "spotlights[%d].direction", i);
-    this->active_shader.setVec3(buffer,  this->spotlights[i].direction);
+    this->active_shader.setVec3(buffer,  this->shaderready_spotlights[i].direction);
 
     sprintf(buffer, "spotlights[%d].ambient", i);
-    this->active_shader.setVec3(buffer,  this->spotlights[i].ambient);
+    this->active_shader.setVec3(buffer,  this->shaderready_spotlights[i].ambient);
 
     sprintf(buffer, "spotlights[%d].diffuse", i);
-    this->active_shader.setVec3(buffer,  this->spotlights[i].diffuse);
+    this->active_shader.setVec3(buffer,  this->shaderready_spotlights[i].diffuse);
 
     sprintf(buffer, "spotlights[%d].specular", i);
-    this->active_shader.setVec3(buffer,  this->spotlights[i].specular);
+    this->active_shader.setVec3(buffer,  this->shaderready_spotlights[i].specular);
 
     sprintf(buffer, "spotlights[%d].constant", i);
-    this->active_shader.setFloat(buffer,  this->spotlights[i].constant);
+    this->active_shader.setFloat(buffer,  this->shaderready_spotlights[i].constant);
 
     sprintf(buffer, "spotlights[%d].linear", i);
-    this->active_shader.setFloat(buffer,  this->spotlights[i].linear);
+    this->active_shader.setFloat(buffer,  this->shaderready_spotlights[i].linear);
 
     sprintf(buffer, "spotlights[%d].quadratic", i);
-    this->active_shader.setFloat(buffer,  this->spotlights[i].quadratic);
+    this->active_shader.setFloat(buffer,  this->shaderready_spotlights[i].quadratic);
 
     sprintf(buffer, "spotlights[%d].inner_cutoff", i);
-    this->active_shader.setFloat(buffer,  glm::cos(glm::radians(this->spotlights[i].inner_cutoff)));
+    this->active_shader.setFloat(buffer,  glm::cos(glm::radians(this->shaderready_spotlights[i].inner_cutoff)));
 
     sprintf(buffer, "spotlights[%d].outer_cutoff", i);
-    this->active_shader.setFloat(buffer,  glm::cos(glm::radians(this->spotlights[i].outer_cutoff)));
+    this->active_shader.setFloat(buffer,  glm::cos(glm::radians(this->shaderready_spotlights[i].outer_cutoff)));
 
     sprintf(buffer, "spotlights[%d].intensity", i);
-    this->active_shader.setFloat(buffer,  this->spotlights[i].intensity);
+    this->active_shader.setFloat(buffer,  this->shaderready_spotlights[i].intensity);
   }
 
 

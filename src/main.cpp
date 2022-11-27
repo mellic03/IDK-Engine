@@ -215,7 +215,16 @@ int ENTRY(int argc, char **argv)
 
     glClear(GL_DEPTH_BUFFER_BIT); // clear depth buffer for weapon
     ren.useShader(SHADER_VIEWSPACE); // switch to viewspace shader
+    ren.sendLightsToShader();
+
+    ren.active_shader.setInt("shadowMap", 12);
+    ren.active_shader.setFloat("BIAS", ren.DIRBIAS);
+    ren.active_shader.setFloat("fog_start", ren.fog_start);
+    ren.active_shader.setFloat("fog_end",   ren.fog_end);
+    ren.active_shader.setMat4("lightSpaceMatrix", ren.lightSpaceMatrix);
+    ren.active_shader.setVec3("clearColor", ren.clearColor);
     player.draw(&ren); // draw weapon
+    
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //---------------------------------
@@ -223,6 +232,7 @@ int ENTRY(int argc, char **argv)
 
     glViewport(0, 0, x, y);
 
+    fish.rot_y(0.2f);
 
 
 

@@ -33,7 +33,6 @@ struct SpotLight {
 uniform SpotLight spotlights[NUM_POINTLIGHTS];
 
 
-uniform mat4 transform;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
@@ -65,12 +64,12 @@ out mat3 TBNmat;
 
 void main()
 {
-  vs_out.FragPos = vec3(model * transform * vec4(aPos, 1.0));
+  vs_out.FragPos = vec3(model * vec4(aPos, 1.0));
   vs_out.FragPosLightSpace = lightSpaceMatrix * vec4(vs_out.FragPos, 1.0);
   vs_out.SurfaceNormal = aNormal;
   vs_out.TexCoords = aTexCoords;
   
-  mat3 normalMatrix = transpose(inverse(mat3(model * transform)));
+  mat3 normalMatrix = transpose(inverse(mat3(model)));
   vec3 T = normalize(normalMatrix * aTangent);
   vec3 N = normalize(normalMatrix * aNormal);
   T = normalize(T - dot(T, N) * N);

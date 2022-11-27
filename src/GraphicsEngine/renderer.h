@@ -88,10 +88,10 @@ class Renderer {
     std::vector<DirLight>    dirlights;
 
     std::vector<PointLight>  pointlights, shaderready_pointlights;
-    bool pointlights_on[NUM_POINTLIGHTS] = { true };  int num_active_pointlights = 0;
+    bool pointlights_on[NUM_POINTLIGHTS] = { false };  int num_active_pointlights = 0;
 
     std::vector<SpotLight>   spotlights, shaderready_spotlights;
-    bool spotlights_on[NUM_SPOTLIGHTS] = { true };    int num_active_spotlights = 0;
+    bool spotlights_on[NUM_SPOTLIGHTS] = { false };    int num_active_spotlights = 0;
     
     
     glm::vec3 ambient_light = {0.0, 0.0, 0.0};

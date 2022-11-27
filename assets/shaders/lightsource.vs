@@ -7,7 +7,6 @@ layout (location = 4) in vec3 aTangent;
 layout (location = 5) in vec3 aBitangent;
 
 uniform vec3 diffuse;
-uniform mat4 transform;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
@@ -16,6 +15,6 @@ out vec3 fragColor;
 
 void main()
 {
-  gl_Position = projection * view * model * transform * vec4(aPos, 1.0);
+  gl_Position = projection * view * model * vec4(aPos, 1.0);
   fragColor = 2 * diffuse;
 }

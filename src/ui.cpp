@@ -1,9 +1,76 @@
 #include "ui.h"
+#include "stdio.h"
 
 int selected_dirlight = 0;    char *dir_options[4] = {"1"};
 int selected_pointlight = 0;  char *point_options[4] = {"1", "2", "3", "4"};
 int selected_spotlight = 0;   char *spot_options[4] = {"1", "2"};
 bool show = false;
+
+
+void export_lighting_config(Renderer *ren)
+{
+  FILE *fh = fopen("config.txt", "w");
+  
+  for (int i=0; i<NUM_DIRLIGHTS; i++)
+  {
+    DirLight *light = &ren->dirlights[i];
+    fprintf(fh, "DIRLIGHT AMBIENT: %f %f %f\n", light->ambient.x, light->ambient.y, light->ambient.z);
+    fprintf(fh, "DIRLIGHT DIFFUSE: %f %f %f\n", light->diffuse.x, light->diffuse.y, light->diffuse.z);
+    fprintf(fh, "DIRLIGHT DIRECTION: %f %f %f\n", light->direction.x, light->direction.y, light->direction.z);
+    fprintf(fh, "DIRLIGHT BIAS: %f\n", ren->DIRBIAS);
+  }
+
+  for (int i=0; i<NUM_POINTLIGHTS; i++)
+  {
+    PointLight *light = &ren->pointlights[i];
+    fprintf(fh, "POINTLIGHT ENABLED: %d\n", ren->pointlights_on[i]);
+    fprintf(fh, "POINTLIGHT AMBIENT: %f %f %f\n", light->ambient.x, light->ambient.y, light->ambient.z);
+    fprintf(fh, "POINTLIGHT DIFFUSE: %f %f %f\n", light->diffuse.x, light->diffuse.y, light->diffuse.z);
+    fprintf(fh, "POINTLIGHT CONSTANT, LINEAR, QUADRATIC: %f %f %f\n", light->constant, light->linear, light->quadratic);
+    fprintf(fh, "POINTLIGHT POSITION: %f %f %f\n", light->position.x, light->position.y, light->position.z);
+  }
+
+  fprintf(fh, "CLEAR COLOR: %f %f %f\n", ren->clearColor.x, ren->clearColor.y, ren->clearColor.z);
+  fprintf(fh, "FOG START, STOP: %f %f\n", ren->fog_start, ren->fog_end);
+  fprintf(fh, "FOV: %f\n", ren->fov);
+  fprintf(fh, "EXPOSURE: %f\n", ren->exposure);
+  fprintf(fh, "GAMMA: %f\n", ren->gamma);
+
+
+  fclose(fh);
+}
+
+void import_lighting_config(Renderer *ren)
+{
+  FILE *fh = fopen("config.txt", "r");
+  
+  for (int i=0; i<NUM_DIRLIGHTS; i++)
+  {
+    DirLight *light = &ren->dirlights[i];
+    fscanf(fh, "DIRLIGHT AMBIENT: %f %f %f\n", &light->ambient.x, &light->ambient.y, &light->ambient.z);
+    fscanf(fh, "DIRLIGHT DIFFUSE: %f %f %f\n", &light->diffuse.x, &light->diffuse.y, &light->diffuse.z);
+    fscanf(fh, "DIRLIGHT DIRECTION: %f %f %f\n", &light->direction.x, &light->direction.y, &light->direction.z);
+    fscanf(fh, "DIRLIGHT BIAS: %f\n", &ren->DIRBIAS);
+  }
+
+  for (int i=0; i<NUM_POINTLIGHTS; i++)
+  {
+    PointLight *light = &ren->pointlights[i];
+    fscanf(fh, "POINTLIGHT ENABLED: %d\n", &ren->pointlights_on[i]);
+    fscanf(fh, "POINTLIGHT AMBIENT: %f %f %f\n", &light->ambient.x, &light->ambient.y, &light->ambient.z);
+    fscanf(fh, "POINTLIGHT DIFFUSE: %f %f %f\n", &light->diffuse.x, &light->diffuse.y, &light->diffuse.z);
+    fscanf(fh, "POINTLIGHT CONSTANT, LINEAR, QUADRATIC: %f %f %f\n", &light->constant, &light->linear, &light->quadratic);
+    fscanf(fh, "POINTLIGHT POSITION: %f %f %f\n", &light->position.x, &light->position.y, &light->position.z);
+  }
+
+  fscanf(fh, "CLEAR COLOR: %f %f %f\n", &ren->clearColor.x, &ren->clearColor.y, &ren->clearColor.z);
+  fscanf(fh, "FOG START, STOP: %f %f\n", &ren->fog_start, &ren->fog_end);
+  fscanf(fh, "FOV: %f\n", &ren->fov);
+  fscanf(fh, "EXPOSURE: %f\n", &ren->exposure);
+  fscanf(fh, "GAMMA: %f\n", &ren->gamma);
+
+  fclose(fh);
+}
 
 
 void draw_lighting_tab(Renderer *ren)
@@ -59,6 +126,8 @@ void draw_lighting_tab(Renderer *ren)
   {
     ImGui::ListBox("Point light #", &selected_spotlight, spot_options, 2, -1);
 
+    ImGui::Checkbox("Enable", &ren->spotlights_on[selected_spotlight]);
+
     ImGui::PushID(3);
     ImGui::ColorEdit3("ambient", (float*)&ren->spotlights[selected_spotlight].ambient);
     ImGui::ColorEdit3("diffuse", (float*)&ren->spotlights[selected_spotlight].diffuse);
@@ -90,7 +159,13 @@ void draw_lighting_tab(Renderer *ren)
     ImGui::TreePop();
   }
 
+  ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
+  if (ImGui::Button("Import"))
+    import_lighting_config(ren);
+  ImGui::SameLine(ImGui::GetWindowWidth()-60);
+  if (ImGui::Button("Export"))
+    export_lighting_config(ren);
 }
 
 void draw_render_tab(Renderer *ren)

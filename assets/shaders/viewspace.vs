@@ -14,7 +14,6 @@ layout (location = 5) in vec3 aBitangent;
 struct DirLight {
   vec3 direction;
   vec3 ambient, diffuse, specular;
-  float constant, linear, quadratic;
 };
 uniform DirLight dirlights[NUM_DIRLIGHTS];
 
@@ -34,15 +33,16 @@ struct SpotLight {
 uniform SpotLight spotlights[NUM_POINTLIGHTS];
 
 
-uniform mat4 transform;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
+uniform mat4 lightSpaceMatrix;
+
 uniform vec3 viewPos;
 
 out VS_OUT {
-  vec3 FragPos;
+  vec3 FragPos; vec4 FragPosLightSpace;
   vec3 SurfaceNormal;
   vec2 TexCoords;
   
@@ -60,20 +60,22 @@ out VS_OUT {
 
 } vs_out;
 
+out mat3 TBNmat;
 
 void main()
 {
-  vs_out.FragPos = vec3(model * transform * vec4(aPos, 1.0));
+  vs_out.FragPos = vec3(inverse(view) * model * vec4(aPos, 1.0));
+  vs_out.FragPosLightSpace = lightSpaceMatrix * vec4(vs_out.FragPos, 1.0);
   vs_out.SurfaceNormal = aNormal;
   vs_out.TexCoords = aTexCoords;
   
-  mat3 normalMatrix = transpose(inverse(mat3(model * transform)));
+  mat3 normalMatrix = transpose(inverse(mat3(inverse(view) * model)));
   vec3 T = normalize(normalMatrix * aTangent);
   vec3 N = normalize(normalMatrix * aNormal);
   T = normalize(T - dot(T, N) * N);
   vec3 B = cross(N, T);
   mat3 TBN = transpose(mat3(T, B, N));      
-
+  TBNmat = TBN;
   for (int i=0; i<NUM_DIRLIGHTS; i++)
   {
     vs_out.DIR_TangentLightPositions[i] = TBN * dirlights[i].direction;
@@ -83,19 +85,19 @@ void main()
 
   for (int i=0; i<NUM_POINTLIGHTS; i++)
   {
-    vs_out.POINT_TangentLightPositions[i] = TBN * vec3(view * vec4(pointlights[i].position, 1.0));
+    vs_out.POINT_TangentLightPositions[i] = TBN * pointlights[i].position;
     vs_out.POINT_TangentViewPositions[i]  = TBN * viewPos;
     vs_out.POINT_TangentFragPositions[i]  = TBN * vs_out.FragPos;
   }
   
   for (int i=0; i<NUM_SPOTLIGHTS; i++)
   {
-    vs_out.SPOT_TangentLightPositions[i] = TBN * vec3(view * vec4(spotlights[i].position, 1.0));
+    vs_out.SPOT_TangentLightPositions[i] = TBN * spotlights[i].position;
     vs_out.SPOT_TangentViewPositions[i]  = TBN * viewPos;
     vs_out.SPOT_TangentFragPositions[i]  = TBN * vs_out.FragPos;
   }
   
 
-  gl_Position = projection * model * vec4(aPos, 1.0);
+  gl_Position = projection * view * vec4(vs_out.FragPos, 1.0);
 }
 

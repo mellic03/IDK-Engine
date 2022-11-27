@@ -254,7 +254,7 @@ void Model::draw(Renderer *ren)
 
   ren->active_shader.setVec3("diffuse", this->material.diffuse_color);
   
-  ren->active_shader.setMat4("transform", this->transform_mat);
+  // ren->active_shader.setMat4("transform", this->transform_mat);
   ren->active_shader.setMat4("model", this->model_mat);
   ren->active_shader.setMat4("view", *this->view_mat);
   ren->active_shader.setMat4("projection", *this->projection_mat);
@@ -297,26 +297,26 @@ void Model::scale(float alpha)
 void Model::set_rot_x(float theta)
 {
   this->rot.x = theta;
-  this->transform_mat = glm::mat4(1.0f);
-  this->transform_mat = glm::rotate(this->transform_mat, glm::radians(theta), glm::vec3(1.0, 0.0, 0.0));
+  this->model_mat = glm::mat4(1.0f);
+  this->model_mat = glm::rotate(this->model_mat, glm::radians(theta), glm::vec3(1.0, 0.0, 0.0));
 }
 
 void Model::rot_x(float theta)
 {
   this->rot.x += theta;
-  this->transform_mat = glm::rotate(this->transform_mat, glm::radians(theta), glm::vec3(1.0, 0.0, 0.0));
+  this->model_mat = glm::rotate(this->model_mat, glm::radians(theta), glm::vec3(1.0, 0.0, 0.0));
 }
 
 void Model::rot_y(float theta)
 {
   this->rot.y += theta;
-  this->transform_mat = glm::rotate(this->transform_mat, glm::radians(theta), glm::vec3(0.0, 1.0, 0.0));
+  this->model_mat = glm::rotate(this->model_mat, glm::radians(theta), glm::vec3(0.0, 1.0, 0.0));
 }
 
 void Model::rot_z(float theta)
 {
   this->rot.z += theta;
-  this->transform_mat = glm::rotate(this->transform_mat, glm::radians(theta), glm::vec3(0.0, 0.0, 1.0));
+  this->model_mat = glm::rotate(this->model_mat, glm::radians(theta), glm::vec3(0.0, 0.0, 1.0));
 }
 
 
