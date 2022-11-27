@@ -52,6 +52,7 @@ in VS_OUT {
 } fs_in;
 
 in mat3 TBNmat;
+in vec2 TextureCoords;
 
 uniform float BIAS, fog_start, fog_end;
 uniform vec3 viewPos;

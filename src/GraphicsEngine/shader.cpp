@@ -53,7 +53,7 @@ unsigned int create_shader(const std::string &vertex_shader, const std::string &
   unsigned int program = glCreateProgram();
   unsigned int vs = compile_shader(GL_VERTEX_SHADER, vertex_shader);
   unsigned int fs = compile_shader(GL_FRAGMENT_SHADER, fragment_shader);
-  unsigned int gs = compile_shader(GL_FRAGMENT_SHADER, geometry_shader);
+  unsigned int gs = geometry_shader == "NULL" ? 0 : compile_shader(GL_GEOMETRY_SHADER, geometry_shader);
 
   glAttachShader(program, vs);
   glAttachShader(program, fs);

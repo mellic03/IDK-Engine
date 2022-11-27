@@ -36,7 +36,7 @@ Renderer::Renderer()
   shadowmap.set(create_shader(shadowmap_src.vertex_source, shadowmap_src.fragment_source, shadowmap_src.geometry_source));
   this->shaders[SHADER_SHADOWMAP] = shadowmap;
 
-  ShaderSource testsrc = parse_shader("assets/shaders/renderquad.vs", "assets/shaders/guassianblur.fs", "NULL");
+  ShaderSource testsrc = parse_shader("assets/shaders/visualisenormals.vs", "assets/shaders/visualisenormals.fs", "assets/shaders/visualisenormals.gs");
   Shader test;
   test.set(create_shader(testsrc.vertex_source, testsrc.fragment_source, testsrc.geometry_source));
   this->shaders[SHADER_TEST] = test;
@@ -66,7 +66,7 @@ Renderer::Renderer()
   glGenFramebuffers(1, &this->FBO);
   glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
   glGenTextures(2, this->colorBuffers);
-  const unsigned int SHADOW_WIDTH = 4096, SHADOW_HEIGHT = 4096;
+  const unsigned int SHADOW_WIDTH = 2560, SHADOW_HEIGHT = 2560;
   
   for (GLuint i=0; i<2; i++)
   {
@@ -189,7 +189,7 @@ void Renderer::postProcess(void)
 
 void Renderer::useOrthographic(float x, float y, float z)
 {
-  float near_plane = 1.0f, far_plane = 45.5;
+  float near_plane = 1.0f, far_plane = 40.0f;
   glm::mat4 lightProjection = glm::ortho(-30.0f, 30.0f, -30.0f, 30.0f, near_plane, far_plane);
   glm::mat4 lightView = glm::lookAt(  -25.0f * this->dirlights[0].direction,
                                       glm::vec3( 0.0f, 0.0f,  0.0f),

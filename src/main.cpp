@@ -187,8 +187,6 @@ int ENTRY(int argc, char **argv)
     glClear(GL_DEPTH_BUFFER_BIT);
 
 
-
-
     // Draw scene normally
     // ---------------------------------
     glBindFramebuffer(GL_FRAMEBUFFER, ren.FBO);
@@ -225,9 +223,17 @@ int ENTRY(int argc, char **argv)
     ren.active_shader.setVec3("clearColor", ren.clearColor);
     player.draw(&ren); // draw weapon
     
+    // ren.useShader(SHADER_TEST); // visualise normals
+    // ren.active_shader.setMat4("view", ren.cam.view);
+    // ren.active_shader.setMat4("projection", ren.cam.projection);
+    // scene_1.draw(&event);
+
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //---------------------------------
+
+
+
 
 
     glViewport(0, 0, x, y);
@@ -253,6 +259,8 @@ int ENTRY(int argc, char **argv)
     ren.postProcess();
     ren.active_shader.setInt("screenTexture", 0);
     ren.active_shader.setInt("bloomBlur", 0);
+
+
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
