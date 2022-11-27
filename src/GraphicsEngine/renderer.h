@@ -69,13 +69,14 @@ class Renderer {
     };
     float kernel_divisor = 1.0f, kernel_offset_divisor = 600.0f;
 
-    float exposure = 0.5f, gamma = 2.2f;
+
+    glm::vec4 clearColor = {0.0, 0.0, 0.0, 1.0};
+    float fog_start = 10, fog_end = 25;
+    float exposure = 1.0f, gamma = 2.2f;
 
 
     int SCR_width = DEFAULT_SCREEN_WIDTH;
     int SCR_height = DEFAULT_SCREEN_HEIGHT;
-
-    glm::vec4 clearColor = {0.0, 0.0, 0.0, 1.0};
 
     float NM_DIRLIGHTS = 1;
     float NM_POINTLIGHTS = 5;
@@ -83,9 +84,16 @@ class Renderer {
 
     Shader shaders[10];
     Shader active_shader;
+    
     std::vector<DirLight>    dirlights;
-    std::vector<PointLight>  pointlights;
-    std::vector<SpotLight>   spotlights;
+
+    std::vector<PointLight>  pointlights, shaderready_pointlights;
+    bool pointlights_on[NUM_POINTLIGHTS] = { true };  int num_active_pointlights = 0;
+
+    std::vector<SpotLight>   spotlights, shaderready_spotlights;
+    bool spotlights_on[NUM_SPOTLIGHTS] = { true };    int num_active_spotlights = 0;
+    
+    
     glm::vec3 ambient_light = {0.0, 0.0, 0.0};
 
     float gravity = 5.0f;
@@ -103,4 +111,6 @@ class Renderer {
     void useOrthographic(float x, float y, float z);
     void usePerspective(void);
 
+    void update(void);
+    void sendLightsToShader(void);
 };

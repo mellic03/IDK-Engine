@@ -53,9 +53,13 @@ in VS_OUT {
 
 in mat3 TBNmat;
 
-uniform float BIAS;
+uniform float BIAS, fog_start, fog_end;
 uniform vec3 viewPos;
+
+uniform int num_active_pointlights, num_active_spotlights;
+
 uniform sampler2D shadowMap;
+uniform vec3 clearColor;
 layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 BrightColor;
 
@@ -70,7 +74,8 @@ float calculate_shadow(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
   float closestDepth = texture(shadowMap, projCoords.xy).r; 
   float currentDepth = projCoords.z;
   
-  float bias = max(BIAS * (1.0 - dot(normal, lightDir)), 0.0005);
+  float diffuseFactor = dot(normal, -lightDir);
+  float bias = mix(BIAS, 0.0, diffuseFactor);
 
   float shadow = 0.0;
   vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
@@ -182,13 +187,19 @@ void main()
   for (int i=0; i<NUM_DIRLIGHTS; i++)
     result += calculate_dirlight(dirlights[i], inverse(TBNmat) * fragNormal, viewDir, i);
 
-  for (int i=0; i<NUM_POINTLIGHTS; i++)
+  for (int i=0; i<num_active_pointlights; i++)
     result += calculate_pointlight(pointlights[i], fragNormal, fs_in.FragPos, i);
 
-  for (int i=0; i<NUM_SPOTLIGHTS; i++)
+  for (int i=0; i<num_active_spotlights; i++)
     result += calculate_spotlight(spotlights[i], fragNormal, fs_in.FragPos, i);
 
   FragColor += vec4(result, 0.0);
+
+  //linear interpolation
+  float fog_factor = (length(fs_in.FragPos-viewPos)-fog_start)/(fog_end-fog_start);
+  fog_factor = 1.0 - clamp(fog_factor, 0, 1);
+
+  FragColor = mix(vec4(clearColor, 1.0), FragColor, fog_factor);
 
   float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
   if(brightness > 1.0)

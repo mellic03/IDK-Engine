@@ -1,8 +1,8 @@
 #include "ui.h"
 
-int selected_dirlight = 0;
-int selected_pointlight = 0;
-int selected_spotlight = 0;
+int selected_dirlight = 0;    char *dir_options[4] = {"1"};
+int selected_pointlight = 0;  char *point_options[4] = {"1", "2", "3", "4"};
+int selected_spotlight = 0;   char *spot_options[4] = {"1", "2"};
 bool show = false;
 
 
@@ -10,120 +10,100 @@ void draw_lighting_tab(Renderer *ren)
 {
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
-  ImGui::ColorEdit3("Clear colour", (float*)&ren->clearColor);
-  glClearColor(ren->clearColor.x, ren->clearColor.y, ren->clearColor.z, ren->clearColor.w);
-
-  ImGui::Dummy(ImVec2(0.0f, 20.0f));
-
   char buffer[64];
 
   if (ImGui::TreeNode("Directional Lights"))
   {
-    for (int n = 0; n < NUM_DIRLIGHTS; n++)
-    {
-      sprintf(buffer, "directional light %d", n);
-      if (ImGui::Selectable(buffer, selected_dirlight == n))
-          selected_dirlight = n;
-    }
+    ImGui::ListBox("Directional light #", &selected_dirlight, dir_options, 1, -1);
+
+    ImGui::PushID(1);
+    ImGui::ColorEdit3("ambient", (float*)&ren->dirlights[selected_dirlight].ambient);
+    ImGui::ColorEdit3("diffuse", (float*)&ren->dirlights[selected_dirlight].diffuse);
+    
+    ImGui::Text("Direction");
+    ImGui::DragScalar("x", ImGuiDataType_Float, &ren->dirlights[selected_dirlight].direction.x, 0.05f, NULL);
+    ImGui::DragScalar("y", ImGuiDataType_Float, &ren->dirlights[selected_dirlight].direction.y, 0.05f, NULL);
+    ImGui::DragScalar("z", ImGuiDataType_Float, &ren->dirlights[selected_dirlight].direction.z, 0.001f, NULL);
+    ren->dirlights[0].direction = glm::normalize(ren->dirlights[0].direction);
+    ImGui::Dummy(ImVec2(0.0f, 20.0f));
+
+    ImGui::DragScalar("bias", ImGuiDataType_Float, &ren->DIRBIAS, 0.05f, NULL);
+    ImGui::PopID();
     ImGui::TreePop();
   }
-  ImGui::PushID(1);
-  ImGui::ColorEdit3("ambient", (float*)&ren->dirlights[selected_dirlight].ambient);
-  ImGui::ColorEdit3("diffuse", (float*)&ren->dirlights[selected_dirlight].diffuse);
-  ImGui::ColorEdit3("specular", (float*)&ren->dirlights[selected_dirlight].specular);
-  
-  ImGui::Text("Direction");
-  ImGui::DragScalar("x", ImGuiDataType_Float, &ren->dirlights[selected_dirlight].direction.x, 0.05f, NULL);
-  ImGui::DragScalar("y", ImGuiDataType_Float, &ren->dirlights[selected_dirlight].direction.y, 0.05f, NULL);
-  ImGui::DragScalar("z", ImGuiDataType_Float, &ren->dirlights[selected_dirlight].direction.z, 0.001f, NULL);
-  ren->dirlights[0].direction = glm::normalize(ren->dirlights[0].direction);
-  ImGui::Dummy(ImVec2(0.0f, 20.0f));
-
-  ImGui::DragScalar("bias", ImGuiDataType_Float, &ren->DIRBIAS, 0.05f, NULL);
-  ImGui::PopID();
-
-
-  ImGui::Dummy(ImVec2(0.0f, 20.0f));
-
-
 
   if (ImGui::TreeNode("Point Lights"))
   {
-    for (int n = 0; n < NUM_POINTLIGHTS; n++)
-    {
-      sprintf(buffer, "point light %d", n);
-      if (ImGui::Selectable(buffer, selected_pointlight == n))
-          selected_pointlight = n;
-    }
+    ImGui::ListBox("Point light #", &selected_pointlight, point_options, 4, -1);
+
+    ImGui::PushID(1);
+    
+    ImGui::Checkbox("Enable", &ren->pointlights_on[selected_pointlight]);
+
+    ImGui::ColorEdit3("ambient", (float*)&ren->pointlights[selected_pointlight].ambient);
+    ImGui::ColorEdit3("diffuse", (float*)&ren->pointlights[selected_pointlight].diffuse);
+    
+    ImGui::SliderFloat("constant", &ren->pointlights[selected_pointlight].constant, 0.0f, 100.0f, "%0.4f", NULL);
+    ImGui::DragScalar("linear", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].linear,       0.001f, NULL);
+    ImGui::DragScalar("quadratic", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].quadratic, 0.001f, NULL);
+
+    ImGui::Text("Position");
+    ImGui::DragScalar("x", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.x, 0.05f, NULL);
+    ImGui::DragScalar("y", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.y, 0.05f, NULL);
+    ImGui::DragScalar("z", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.z, 0.05f, NULL);
+    ImGui::PopID();
     ImGui::TreePop();
   }
-  
-
-  ImGui::PushID(2);
-  ImGui::ColorEdit3("ambient", (float*)&ren->pointlights[selected_pointlight].ambient);
-  ImGui::ColorEdit3("diffuse", (float*)&ren->pointlights[selected_pointlight].diffuse);
-  ImGui::ColorEdit3("specular", (float*)&ren->pointlights[selected_pointlight].specular);
-  
-  ImGui::SliderFloat("constant", &ren->pointlights[selected_pointlight].constant, 0.0f, 100.0f, "%0.4f", NULL);
-  ImGui::DragScalar("linear", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].linear,       0.001f, NULL);
-  ImGui::DragScalar("quadratic", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].quadratic, 0.001f, NULL);
-
-  ImGui::Text("Position");
-  ImGui::DragScalar("x", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.x, 0.05f, NULL);
-  ImGui::DragScalar("y", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.y, 0.05f, NULL);
-  ImGui::DragScalar("z", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.z, 0.05f, NULL);
-  ImGui::PopID();
-
-
-  ImGui::Dummy(ImVec2(0.0f, 20.0f));
-
 
   if (ImGui::TreeNode("Spot Lights"))
   {
-    for (int n = 0; n < NUM_SPOTLIGHTS; n++)
-    {
-      sprintf(buffer, "spot light %d", n);
-      if (ImGui::Selectable(buffer, selected_spotlight == n))
-          selected_spotlight = n;
-    }
+    ImGui::ListBox("Point light #", &selected_spotlight, spot_options, 2, -1);
+
+    ImGui::PushID(3);
+    ImGui::ColorEdit3("ambient", (float*)&ren->spotlights[selected_spotlight].ambient);
+    ImGui::ColorEdit3("diffuse", (float*)&ren->spotlights[selected_spotlight].diffuse);
+
+    // ImGui::DragScalar("constant", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].constant,   0.001f, NULL);
+    ImGui::SliderFloat("constant", &ren->spotlights[selected_spotlight].constant, 0.0f, 100.0f, "%0.4f", NULL);
+    ImGui::DragScalar("linear", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].linear,       0.001f, NULL);
+    ImGui::DragScalar("quadratic", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].quadratic, 0.001f, NULL);
+
+    ImGui::DragScalar("intensity", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].intensity, 0.05f, NULL);
+    ImGui::DragScalar("inner cutoff", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].inner_cutoff, 0.05f, NULL);
+    ImGui::DragScalar("outer cutoff", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].outer_cutoff, 0.05f, NULL);
+
+    ImGui::PushID(4);
+    ImGui::Text("Position");
+    ImGui::DragScalar("x", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].position.x, 0.05f, NULL);
+    ImGui::DragScalar("y", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].position.y, 0.05f, NULL);
+    ImGui::DragScalar("z", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].position.z, 0.05f, NULL);
+    ImGui::PopID();
+    
+    ImGui::PushID(5);
+    ImGui::Text("Direction");
+    ImGui::DragScalar("x", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].direction.x, 0.05f, NULL);
+    ImGui::DragScalar("y", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].direction.y, 0.05f, NULL);
+    ImGui::DragScalar("z", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].direction.z, 0.05f, NULL);
+    ren->spotlights[selected_spotlight].direction = glm::normalize(ren->spotlights[selected_spotlight].direction);
+    ImGui::PopID();
+    ImGui::PopID();
     ImGui::TreePop();
   }
-
-  ImGui::PushID(3);
-  ImGui::ColorEdit3("ambient", (float*)&ren->spotlights[selected_spotlight].ambient);
-  ImGui::ColorEdit3("diffuse", (float*)&ren->spotlights[selected_spotlight].diffuse);
-  ImGui::ColorEdit3("specular", (float*)&ren->spotlights[selected_spotlight].specular);
-
-  // ImGui::DragScalar("constant", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].constant,   0.001f, NULL);
-  ImGui::SliderFloat("constant", &ren->spotlights[selected_spotlight].constant, 0.0f, 100.0f, "%0.4f", NULL);
-  ImGui::DragScalar("linear", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].linear,       0.001f, NULL);
-  ImGui::DragScalar("quadratic", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].quadratic, 0.001f, NULL);
-
-  ImGui::DragScalar("intensity", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].intensity, 0.05f, NULL);
-  ImGui::DragScalar("inner cutoff", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].inner_cutoff, 0.05f, NULL);
-  ImGui::DragScalar("outer cutoff", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].outer_cutoff, 0.05f, NULL);
-
-  ImGui::PushID(4);
-  ImGui::Text("Position");
-  ImGui::DragScalar("x", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].position.x, 0.05f, NULL);
-  ImGui::DragScalar("y", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].position.y, 0.05f, NULL);
-  ImGui::DragScalar("z", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].position.z, 0.05f, NULL);
-  ImGui::PopID();
-  
-  ImGui::PushID(5);
-  ImGui::Text("Direction");
-  ImGui::DragScalar("x", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].direction.x, 0.05f, NULL);
-  ImGui::DragScalar("y", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].direction.y, 0.05f, NULL);
-  ImGui::DragScalar("z", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].direction.z, 0.05f, NULL);
-  ren->spotlights[selected_spotlight].direction = glm::normalize(ren->spotlights[selected_spotlight].direction);
-  ImGui::PopID();
-  ImGui::PopID();
 
 
 }
 
 void draw_render_tab(Renderer *ren)
 {
+
+  ImGui::Dummy(ImVec2(0.0f, 20.0f));
+
+  ImGui::ColorEdit3("Clear colour", (float*)&ren->clearColor);
+  glClearColor(ren->clearColor.x, ren->clearColor.y, ren->clearColor.z, 1.0f);
+  ImGui::SliderFloat("Fog start", &ren->fog_start, 0.0f, 100.0f, "%0.1f", NULL);
+  ImGui::SliderFloat("Fog end",   &ren->fog_end,   0.0f, 100.0f, "%0.1f", NULL);
+
+
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
   ImGui::SliderFloat("FOV", &ren->fov, 45.0f, 110.0f);

@@ -157,6 +157,6 @@ void main()
   for (int i=0; i<NUM_SPOTLIGHTS; i++)
     result += calculate_spotlight(spotlights[i], fragNormal, fs_in.FragPos, i);
 
-  FragColor += vec4(result, 0.0);
+  FragColor += vec4(result, 1.0);
 }
 

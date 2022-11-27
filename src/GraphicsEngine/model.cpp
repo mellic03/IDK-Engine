@@ -251,87 +251,8 @@ void Model::draw(Renderer *ren)
 
   glBindVertexArray(this->VAO);
 
-  char buffer[64];
 
-  for (int i=0; i<ren->NM_DIRLIGHTS; i++)
-  {
-    sprintf(buffer, "dirlights[%d].direction", i);
-    ren->active_shader.setVec3(buffer,  ren->dirlights[i].direction);
-
-    sprintf(buffer, "dirlights[%d].ambient", i);
-    ren->active_shader.setVec3(buffer,  ren->dirlights[i].ambient);
-
-    sprintf(buffer, "dirlights[%d].diffuse", i);
-    ren->active_shader.setVec3(buffer,  ren->dirlights[i].diffuse);
-
-    sprintf(buffer, "dirlights[%d].specular", i);
-    ren->active_shader.setVec3(buffer,  ren->dirlights[i].specular);
-  }
-
-  for (int i=0; i<ren->NM_POINTLIGHTS; i++)
-  {
-    sprintf(buffer, "pointlights[%d].position", i);
-    ren->active_shader.setVec3(buffer,  ren->pointlights[i].position);
-
-    sprintf(buffer, "pointlights[%d].ambient", i);
-    ren->active_shader.setVec3(buffer,  ren->pointlights[i].ambient);
-
-    sprintf(buffer, "pointlights[%d].diffuse", i);
-    ren->active_shader.setVec3(buffer,  ren->pointlights[i].diffuse);
-
-    sprintf(buffer, "pointlights[%d].specular", i);
-    ren->active_shader.setVec3(buffer,  ren->pointlights[i].specular);
-
-    sprintf(buffer, "pointlights[%d].constant", i);
-    ren->active_shader.setFloat(buffer,  ren->pointlights[i].constant); 
-
-    sprintf(buffer, "pointlights[%d].linear", i);
-    ren->active_shader.setFloat(buffer,  ren->pointlights[i].linear); 
-
-    sprintf(buffer, "pointlights[%d].quadratic", i);
-    ren->active_shader.setFloat(buffer,  ren->pointlights[i].quadratic); 
-  }
-
-  for (int i=0; i<ren->NM_SPOTLIGHTS; i++)
-  {
-    sprintf(buffer, "spotlights[%d].position", i);
-    ren->active_shader.setVec3(buffer,  ren->spotlights[i].position);
-
-    sprintf(buffer, "spotlights[%d].direction", i);
-    ren->active_shader.setVec3(buffer,  ren->spotlights[i].direction);
-
-    sprintf(buffer, "spotlights[%d].ambient", i);
-    ren->active_shader.setVec3(buffer,  ren->spotlights[i].ambient);
-
-    sprintf(buffer, "spotlights[%d].diffuse", i);
-    ren->active_shader.setVec3(buffer,  ren->spotlights[i].diffuse);
-
-    sprintf(buffer, "spotlights[%d].specular", i);
-    ren->active_shader.setVec3(buffer,  ren->spotlights[i].specular);
-
-    sprintf(buffer, "spotlights[%d].constant", i);
-    ren->active_shader.setFloat(buffer,  ren->spotlights[i].constant);
-
-    sprintf(buffer, "spotlights[%d].linear", i);
-    ren->active_shader.setFloat(buffer,  ren->spotlights[i].linear);
-
-    sprintf(buffer, "spotlights[%d].quadratic", i);
-    ren->active_shader.setFloat(buffer,  ren->spotlights[i].quadratic);
-
-    sprintf(buffer, "spotlights[%d].inner_cutoff", i);
-    ren->active_shader.setFloat(buffer,  glm::cos(glm::radians(ren->spotlights[i].inner_cutoff)));
-
-    sprintf(buffer, "spotlights[%d].outer_cutoff", i);
-    ren->active_shader.setFloat(buffer,  glm::cos(glm::radians(ren->spotlights[i].outer_cutoff)));
-
-    sprintf(buffer, "spotlights[%d].intensity", i);
-    ren->active_shader.setFloat(buffer,  ren->spotlights[i].intensity);
-  }
-
-
-  ren->active_shader.setVec3("viewPos", ren->cam.pos);
   ren->active_shader.setVec3("diffuse", this->material.diffuse_color);
-
   
   ren->active_shader.setMat4("transform", this->transform_mat);
   ren->active_shader.setMat4("model", this->model_mat);

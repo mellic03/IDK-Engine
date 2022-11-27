@@ -65,6 +65,7 @@ int ENTRY(int argc, char **argv)
   glEnable(GL_CULL_FACE);
   glEnable(GL_MULTISAMPLE);
 
+
   SDL_Event event;
 
 
@@ -75,7 +76,6 @@ int ENTRY(int argc, char **argv)
   Player player(&ren);
 
 
-
   // Model skybox;  skybox.load("assets/model/", "skybox");
   Model cube;    cube.load("assets/crate/", "crate");
   Model fish;    fish.load("assets/fish/", "fish");
@@ -83,7 +83,6 @@ int ENTRY(int argc, char **argv)
   Model sphere;  sphere.load("assets/sphere/", "sphere");
   sphere.bindRenderer(&ren);
   // ground.scale(10.0f);
-
 
 
   ModelContainer render_container;
@@ -96,7 +95,6 @@ int ENTRY(int argc, char **argv)
   ModelContainer physics_container;
   physics_container.add(&cube);
   physics_container.add(&ground);
-  physics_container.add(&fish);
 
 
 
@@ -147,6 +145,7 @@ int ENTRY(int argc, char **argv)
     SDL_GetWindowSize(window, &ren.SCR_width, &ren.SCR_height);
     draw_dev_ui(&ren);
 
+    ren.update();
 
     // Input
     //---------------------------------
@@ -161,13 +160,12 @@ int ENTRY(int argc, char **argv)
     player.key_input(&ren);
     //---------------------------------
 
-    fish.rot_z(0.2f);
-
     ///////////////////////////////////////////////////////////////////////////////////////////// Render start
     int x = (int)io.DisplaySize.x, y = (int)io.DisplaySize.y;
     ren.usePerspective();
     glViewport(0, 0, x, y);
     glEnable(GL_DEPTH_TEST);
+
 
     // Render depth map
     // ---------------------------------
@@ -177,11 +175,11 @@ int ENTRY(int argc, char **argv)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, x, y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
         glClear(GL_DEPTH_BUFFER_BIT);
         ren.useOrthographic(player.pos->x, player.pos->y, player.pos->z);
-        // glCullFace(GL_FRONT);
+        glCullFace(GL_FRONT);
         glDisable( GL_CULL_FACE );
         scene_1.draw(&event);
         glEnable( GL_CULL_FACE );
-        // glCullFace(GL_BACK);
+        glCullFace(GL_BACK);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     // ---------------------------------
 
@@ -201,14 +199,18 @@ int ENTRY(int argc, char **argv)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
     glClear(GL_COLOR_BUFFER_BIT);
-
+    
     ren.useShader(SHADER_WORLDSPACE);
+    ren.sendLightsToShader();
 
     glActiveTexture(GL_TEXTURE12);
     glBindTexture(GL_TEXTURE_2D, ren.depthMap);
     ren.active_shader.setInt("shadowMap", 12);
     ren.active_shader.setFloat("BIAS", ren.DIRBIAS);
+    ren.active_shader.setFloat("fog_start", ren.fog_start);
+    ren.active_shader.setFloat("fog_end",   ren.fog_end);
     ren.active_shader.setMat4("lightSpaceMatrix", ren.lightSpaceMatrix);
+    ren.active_shader.setVec3("clearColor", ren.clearColor);
     scene_1.draw(&event);
 
     glClear(GL_DEPTH_BUFFER_BIT); // clear depth buffer for weapon
