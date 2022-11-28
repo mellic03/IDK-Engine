@@ -23,13 +23,13 @@ void GenerateLine(int index)
 
 void main()
 {
-  gl_Position = gl_in[0].gl_Position;
-  EmitVertex();
-  gl_Position = gl_in[1].gl_Position;
-  EmitVertex();
-  gl_Position = gl_in[2].gl_Position;
-  EmitVertex();
-  EndPrimitive();
+  // gl_Position = gl_in[0].gl_Position;
+  // EmitVertex();
+  // gl_Position = gl_in[1].gl_Position;
+  // EmitVertex();
+  // gl_Position = gl_in[2].gl_Position;
+  // EmitVertex();
+  // EndPrimitive();
 
   GenerateLine(0);
   GenerateLine(1);

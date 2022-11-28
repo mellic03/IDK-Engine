@@ -236,7 +236,6 @@ void Model::load(const char *filepath, std::string name)
 
 void Model::draw(Renderer *ren)
 {
-
   this->material.diffuse.bind(GL_TEXTURE0);
   this->material.specular.bind(GL_TEXTURE1);
   this->material.emission.bind(GL_TEXTURE2);
@@ -254,7 +253,6 @@ void Model::draw(Renderer *ren)
 
   ren->active_shader.setVec3("diffuse", this->material.diffuse_color);
   
-  // ren->active_shader.setMat4("transform", this->transform_mat);
   ren->active_shader.setMat4("model", this->model_mat);
   ren->active_shader.setMat4("view", *this->view_mat);
   ren->active_shader.setMat4("projection", *this->projection_mat);

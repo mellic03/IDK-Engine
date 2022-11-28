@@ -97,7 +97,7 @@ vec3 calculate_dirlight(DirLight light, vec3 normal, vec3 viewDir, int index)
   vec3 ambient = light.ambient * texture(material.diffuseMap, fs_in.TexCoords).rgb;
   
   // diffuse 
-  vec3 lightDir = normalize(-light.direction);  
+  vec3 lightDir = normalize(light.direction);  
   float diff = max(dot(normal, lightDir), 0.0);
   vec3 diffuse = light.diffuse * diff * texture(material.diffuseMap, fs_in.TexCoords).rgb;  
   

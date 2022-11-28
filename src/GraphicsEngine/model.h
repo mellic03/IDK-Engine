@@ -33,6 +33,8 @@ class Model {
   public:
 
     GLuint VAO, VBO, IBO;
+    std::vector<GLuint> VBOS;
+
     Shader *shader;
     float *positions;
     float *normals;

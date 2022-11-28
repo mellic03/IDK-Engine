@@ -100,7 +100,7 @@ Renderer::Renderer()
   glGenTextures(1, &this->depthMap);
   glBindTexture(GL_TEXTURE_2D, this->depthMap);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 
-              1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+              4096, 4096, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER); 
@@ -187,17 +187,91 @@ void Renderer::postProcess(void)
   this->active_shader.setFloat("gamma", this->gamma);
 }
 
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
 void Renderer::useOrthographic(float x, float y, float z)
 {
-  float near_plane = 1.0f, far_plane = 40.0f;
-  glm::mat4 lightProjection = glm::ortho(-30.0f, 30.0f, -30.0f, 30.0f, near_plane, far_plane);
-  glm::mat4 lightView = glm::lookAt(  -25.0f * this->dirlights[0].direction,
-                                      glm::vec3( 0.0f, 0.0f,  0.0f),
+
+  glm::mat4 proj = glm::perspective(glm::radians(this->fov), (float)this->SCR_width / (float)this->SCR_height, -1.0f, this->far_plane/50.0f);
+
+
+  glm::mat4 inv = glm::inverse(proj * this->cam.view);
+
+  std::vector<glm::vec4> frustum_corners;
+
+  for (int x=0; x<2; ++x)
+  {
+    for (int y=0; y<2; ++y)
+    {
+      for (int z=0; z<2; ++z)
+      {
+        glm::vec4 pt = inv * glm::vec4(
+          2.0f * x - 1.0f,
+          2.0f * y - 1.0f,
+          2.0f * z - 1.0f,
+          1.0f
+        );
+        frustum_corners.push_back(pt / pt.w);
+      }
+    }
+  }
+
+
+  glm::vec3 center = glm::vec3(0, 0, 0);
+  for (int i=0; i<8; i++)
+  {
+    center.x += frustum_corners[i].x;
+    center.y += frustum_corners[i].y;
+    center.z += frustum_corners[i].z;
+  }
+  center /= 8;
+
+  glm::mat4 lightView = glm::lookAt(  center + this->dirlights[0].direction,
+                                      center,
                                       glm::vec3( 0.0f, 1.0f,  0.0f) );
 
+  for (int i=0; i<8; i++)
+    frustum_corners[i] = lightView * frustum_corners[i];
+
+  
+  float xmin = frustum_corners[0].x;
+  float xmax = frustum_corners[0].x;
+  float ymin = frustum_corners[0].y;
+  float ymax = frustum_corners[0].y;
+  float zmin = frustum_corners[0].z;
+  float zmax = frustum_corners[0].z;
+  for (int i=0; i<8; i++)
+  {
+    xmin = MIN(frustum_corners[i].x, xmin);
+    xmax = MAX(frustum_corners[i].x, xmax);
+    ymin = MIN(frustum_corners[i].y, ymin);
+    ymax = MAX(frustum_corners[i].y, ymax);
+    zmin = MIN(frustum_corners[i].z, zmin);
+    zmax = MAX(frustum_corners[i].z, zmax);
+  }
+
+
+  constexpr float zMult = 1.0f;
+  if (zmin < 0)
+    zmin *= zMult;
+  else
+    zmin /= zMult;
+  if (zmax < 0)
+    zmax /= zMult;
+  else
+    zmax *= zMult;
+
+
+  glm::mat4 lightProjection = glm::ortho(xmin, xmax, ymin, ymax, zmin, zmax);
   this->lightSpaceMatrix = lightProjection * lightView;
+
+
   this->useShader(SHADER_SHADOWMAP);
   this->active_shader.setMat4("lightSpaceMatrix", this->lightSpaceMatrix);
+  this->active_shader.setVec3("lightPos", this->dirlights[0].direction);
+  this->active_shader.setFloat("far_plane", this->far_plane);
+  this->active_shader.setFloat("BIAS", this->DIRBIAS);
 }
 
 void Renderer::usePerspective(void)

@@ -45,7 +45,7 @@ int ENTRY(int argc, char **argv)
     SDL_WINDOWPOS_CENTERED,
     DEFAULT_SCREEN_WIDTH,
     DEFAULT_SCREEN_HEIGHT,
-    SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
+    SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED
   );
 
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -74,7 +74,7 @@ int ENTRY(int argc, char **argv)
   //----------------------------------------
   Renderer ren, shadowren;
   Player player(&ren);
-
+  import_lighting_config(&ren);
 
   // Model skybox;  skybox.load("assets/model/", "skybox");
   Model cube;    cube.load("assets/crate/", "crate");
@@ -121,8 +121,6 @@ int ENTRY(int argc, char **argv)
 
   // RENDER LOOP
   //----------------------------------------
-  // cube.translate(glm::vec3(2.0f, -5.8f, 0.0f));
-  fish.translate({3.0, 0.0, 0.0});
 
   int err = glGetError();
   if (err)
@@ -143,6 +141,7 @@ int ENTRY(int argc, char **argv)
     start = end;
     end = SDL_GetPerformanceCounter();
     SDL_GetWindowSize(window, &ren.SCR_width, &ren.SCR_height);
+    glClearColor(ren.clearColor.x, ren.clearColor.y, ren.clearColor.z, 1.0f);
     draw_dev_ui(&ren);
 
     ren.update();
@@ -169,16 +168,16 @@ int ENTRY(int argc, char **argv)
 
     // Render depth map
     // ---------------------------------
-    glViewport(0, 0, x, y);
+    glViewport(0, 0, 4096, 4096);
     glBindFramebuffer(GL_FRAMEBUFFER, ren.depthMapFBO);
     glBindTexture(GL_TEXTURE_2D, ren.depthMap);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, x, y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 4096, 4096, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
         glClear(GL_DEPTH_BUFFER_BIT);
         ren.useOrthographic(player.pos->x, player.pos->y, player.pos->z);
         glCullFace(GL_FRONT);
-        glDisable( GL_CULL_FACE );
+        glDisable(GL_CULL_FACE);
         scene_1.draw(&event);
-        glEnable( GL_CULL_FACE );
+        glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     // ---------------------------------
@@ -191,10 +190,8 @@ int ENTRY(int argc, char **argv)
     // ---------------------------------
     glBindFramebuffer(GL_FRAMEBUFFER, ren.FBO);
     glBindRenderbuffer(GL_RENDERBUFFER, ren.rbo); 
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, x, y); 
 
     glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
     glClear(GL_COLOR_BUFFER_BIT);
     
@@ -203,15 +200,17 @@ int ENTRY(int argc, char **argv)
 
     glActiveTexture(GL_TEXTURE12);
     glBindTexture(GL_TEXTURE_2D, ren.depthMap);
+
     ren.active_shader.setInt("shadowMap", 12);
     ren.active_shader.setFloat("BIAS", ren.DIRBIAS);
     ren.active_shader.setFloat("fog_start", ren.fog_start);
     ren.active_shader.setFloat("fog_end",   ren.fog_end);
+    ren.active_shader.setFloat("far_plane",   ren.far_plane);
     ren.active_shader.setMat4("lightSpaceMatrix", ren.lightSpaceMatrix);
     ren.active_shader.setVec3("clearColor", ren.clearColor);
     scene_1.draw(&event);
 
-    glClear(GL_DEPTH_BUFFER_BIT); // clear depth buffer for weapon
+    glClear(GL_DEPTH_BUFFER_BIT);
     ren.useShader(SHADER_VIEWSPACE); // switch to viewspace shader
     ren.sendLightsToShader();
 
@@ -230,17 +229,29 @@ int ENTRY(int argc, char **argv)
 
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+
+
+    ImGui::End();
+    ImGui::Render();
+
     //---------------------------------
 
+    ren.spotlights[0].position = *player.pos + 0.45f * player.cam->front;
+    ren.spotlights[0].direction = player.cam->front;
 
 
 
 
     glViewport(0, 0, x, y);
+    
+    glm::vec3 translation = *player.pos - fish.pos;
+    translation.y = 0;
+    translation = glm::normalize(translation);
 
-    fish.rot_y(0.2f);
-
-
+    fish.translate(0.003f * translation);
+    fish.model_mat = glm::inverse(glm::lookAt(fish.pos, *player.pos, glm::vec3(0.0f, 1.0f, 0.0f)));
 
     // Draw to quad
     //---------------------------------

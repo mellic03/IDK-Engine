@@ -90,8 +90,8 @@ void draw_lighting_tab(Renderer *ren)
     ImGui::Text("Direction");
     ImGui::DragScalar("x", ImGuiDataType_Float, &ren->dirlights[selected_dirlight].direction.x, 0.05f, NULL);
     ImGui::DragScalar("y", ImGuiDataType_Float, &ren->dirlights[selected_dirlight].direction.y, 0.05f, NULL);
-    ImGui::DragScalar("z", ImGuiDataType_Float, &ren->dirlights[selected_dirlight].direction.z, 0.001f, NULL);
-    ren->dirlights[0].direction = glm::normalize(ren->dirlights[0].direction);
+    ImGui::DragScalar("z", ImGuiDataType_Float, &ren->dirlights[selected_dirlight].direction.z, 0.05f, NULL);
+    // ren->dirlights[0].direction = glm::normalize(ren->dirlights[0].direction);
     ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
     ImGui::DragScalar("bias", ImGuiDataType_Float, &ren->DIRBIAS, 0.05f, NULL);
@@ -166,17 +166,20 @@ void draw_lighting_tab(Renderer *ren)
   ImGui::SameLine(ImGui::GetWindowWidth()-60);
   if (ImGui::Button("Export"))
     export_lighting_config(ren);
+
+
 }
 
 void draw_render_tab(Renderer *ren)
 {
-
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
   ImGui::ColorEdit3("Clear colour", (float*)&ren->clearColor);
-  glClearColor(ren->clearColor.x, ren->clearColor.y, ren->clearColor.z, 1.0f);
   ImGui::SliderFloat("Fog start", &ren->fog_start, 0.0f, 100.0f, "%0.1f", NULL);
-  ImGui::SliderFloat("Fog end",   &ren->fog_end,   0.0f, 100.0f, "%0.1f", NULL);
+  ImGui::SliderFloat("Fog end",   &ren->fog_end,   0.0f, 1000.0f, "%0.1f", NULL);
+
+  ImGui::SliderFloat("near plane",  &ren->near_plane,  0.1f, 1.0f, "%0.1f", NULL);
+  ImGui::SliderFloat("Far plane",   &ren->far_plane,   1.0f, 1000.0f, "%0.1f", NULL);
 
 
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
@@ -269,6 +272,12 @@ void draw_dev_ui(Renderer *ren)
   }
 
 
+    ImGui::BeginChild("RenderWindow");
+
+    ImVec2 wsize = ImGui::GetWindowSize();
+    ImGui::Image((ImTextureID)ren->depthMap, wsize, ImVec2(0, 1), ImVec2(1, 0));
+
+    ImGui::EndChild();
 
 
   // if (ImGui::Button("Import"))
@@ -294,8 +303,5 @@ void draw_dev_ui(Renderer *ren)
   // ImGui::Text("P(x, y, z): %.2f, %.2f, %.2f", player.pos->x, player.pos->y, player.pos->z);
   // ImGui::Text("V(x, y, z): %.2f, %.2f, %.2f", player.vel.x, player.vel.y, player.vel.z);
   // ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-  ImGui::End();
 
-
-  ImGui::Render();
 }

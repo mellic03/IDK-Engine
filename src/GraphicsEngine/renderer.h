@@ -23,7 +23,7 @@
 #define DEFAULT_SCREEN_WIDTH 1500
 #define DEFAULT_SCREEN_HEIGHT 900
 
-#define RENDER_DISTANCE 10000.0f
+#define RENDER_DISTANCE 100.0f
 #define NEAR_PLANE_DIST 0.1f
 
 #define NUM_DIRLIGHTS 1
@@ -56,12 +56,11 @@ class Renderer {
 
     GLuint depthCubemap;
 
-
     Camera cam;
 
 
     float deltaTime = 0.0f;
-    float fov = 90.0f;
+    float fov = 90.0f, far_plane = 2000.0f, near_plane = 1.0f;
     float image_kernel[9] = {
       0, 0, 0,
       0, 1, 0,

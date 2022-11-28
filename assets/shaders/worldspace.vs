@@ -97,6 +97,6 @@ void main()
     vs_out.SPOT_TangentFragPositions[i]  = TBN * vs_out.FragPos;
   }
   
-  gl_Position = projection * view * model * vec4(aPos, 1.0);
+  gl_Position = projection * view * model  * vec4(aPos, 1.0);
 }
 

@@ -7,3 +7,4 @@
 #include "GraphicsEngine/renderer.h"
 
 void draw_dev_ui(Renderer *ren);
+void import_lighting_config(Renderer *ren);

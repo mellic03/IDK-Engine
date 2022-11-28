@@ -46,8 +46,6 @@ void Camera::input()
 
   const Uint8 *state = SDL_GetKeyboardState(NULL);
 
-  float y_offset = 0.02f * sin(this->headbob_value);
-
   if (this->pitch <= -85)
     this->pitch = -85;
   else if (this->pitch >= 85)
@@ -65,7 +63,4 @@ void Camera::input()
     this->pos + this->front,
     this->up
   );
-
-  this->view = glm::translate(this->view, glm::vec3(0.0f, y_offset, 0.0f));
-
 }
