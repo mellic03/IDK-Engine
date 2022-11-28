@@ -77,23 +77,23 @@ int ENTRY(int argc, char **argv)
   import_lighting_config(&ren);
 
   // Model skybox;  skybox.load("assets/model/", "skybox");
-  Model cube;    cube.load("assets/crate/", "crate");
-  Model fish;    fish.load("assets/fish/", "fish");
+  // Model cube;    cube.load("assets/crate/", "crate");
+  // Model fish;    fish.load("assets/fish/", "fish");
   Model ground;  ground.load("assets/ground/", "ground");
-  Model sphere;  sphere.load("assets/sphere/", "sphere");
-  sphere.bindRenderer(&ren);
+  // Model sphere;  sphere.load("assets/sphere/", "sphere");
+  // sphere.bindRenderer(&ren);
   // ground.scale(10.0f);
 
 
   ModelContainer render_container;
   // render_container.add(&cube);
   render_container.add(&ground);
-  render_container.add(&fish);
+  // render_container.add(&fish);
   // render_container.add(&skybox);
   render_container.bindRenderer(&ren);
 
   ModelContainer physics_container;
-  physics_container.add(&cube);
+  // physics_container.add(&cube);
   physics_container.add(&ground);
 
 
@@ -104,7 +104,7 @@ int ENTRY(int argc, char **argv)
   scene_1.addPhysicsContainer(&physics_container);
   scene_1.bindRenderer(&ren);
   scene_1.bindPlayer(&player);
-  scene_1.addLightsourceModel(&sphere);
+  // scene_1.addLightsourceModel(&sphere);
 
   //----------------------------------------
 
@@ -246,12 +246,12 @@ int ENTRY(int argc, char **argv)
 
     glViewport(0, 0, x, y);
     
-    glm::vec3 translation = *player.pos - fish.pos;
-    translation.y = 0;
-    translation = glm::normalize(translation);
+    // glm::vec3 translation = *player.pos - fish.pos;
+    // translation.y = 0;
+    // translation = glm::normalize(translation);
 
-    fish.translate(0.003f * translation);
-    fish.model_mat = glm::inverse(glm::lookAt(fish.pos, *player.pos, glm::vec3(0.0f, 1.0f, 0.0f)));
+    // fish.translate(0.003f * translation);
+    // fish.model_mat = glm::inverse(glm::lookAt(fish.pos, *player.pos, glm::vec3(0.0f, 1.0f, 0.0f)));
 
     // Draw to quad
     //---------------------------------

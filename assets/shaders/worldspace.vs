@@ -9,7 +9,7 @@ layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec3 aFaceNormal;
 layout (location = 3) in vec2 aTexCoords;
 layout (location = 4) in vec3 aTangent;
-layout (location = 5) in vec3 aBitangent;
+layout (location = 5) in uint material_index;
 
 struct DirLight {
   vec3 direction;
@@ -32,11 +32,9 @@ struct SpotLight {
 };
 uniform SpotLight spotlights[NUM_POINTLIGHTS];
 
-
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-
 uniform mat4 lightSpaceMatrix;
 
 uniform vec3 viewPos;
@@ -45,6 +43,7 @@ out VS_OUT {
   vec3 FragPos; vec4 FragPosLightSpace;
   vec3 SurfaceNormal;
   vec2 TexCoords;
+  flat uint material_index;
   
   vec3 DIR_TangentLightPositions[NUM_DIRLIGHTS];
   vec3 DIR_TangentViewPositions[NUM_DIRLIGHTS];
@@ -68,6 +67,7 @@ void main()
   vs_out.FragPosLightSpace = lightSpaceMatrix * vec4(vs_out.FragPos, 1.0);
   vs_out.SurfaceNormal = aNormal;
   vs_out.TexCoords = aTexCoords;
+  vs_out.material_index = material_index;
   
   mat3 normalMatrix = transpose(inverse(mat3(model)));
   vec3 T = normalize(normalMatrix * aTangent);

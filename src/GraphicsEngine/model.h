@@ -16,7 +16,7 @@
 #include "material.h"
 
 
-#define ELEMENTS_PER_VERTEX (3 + 3 + 2 + 3 + 3)
+#define ELEMENTS_PER_VERTEX (3 + 3 + 2 + 3 + 1)
 
 struct Vertex {
   glm::vec3 position;
@@ -24,7 +24,7 @@ struct Vertex {
   glm::vec3 face_normal;
   glm::vec2 texture;
   glm::vec3 tangent;
-  glm::vec3 bitangent;
+  GLuint material_index;
 };
 
 
@@ -35,6 +35,8 @@ class Model {
     GLuint VAO, VBO, IBO;
     std::vector<GLuint> VBOS;
 
+    std::vector<Material> materials;
+
     Shader *shader;
     float *positions;
     float *normals;
@@ -44,8 +46,6 @@ class Model {
 
     char name[64] = "empty";
 
-    Material material;
-    
     glm::mat4 transform_mat = glm::mat4(1.0f);
     glm::mat4 model_mat = glm::mat4(1.0f);
     glm::mat4 *view_mat = &this->model_mat, *projection_mat = &this->model_mat;
