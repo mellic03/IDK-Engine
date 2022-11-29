@@ -8,7 +8,7 @@ struct Material {
   sampler2D diffuseMap, specularMap, emissionMap, normalMap;
   float spec_exponent;
 };
-uniform Material materials[2];
+uniform Material materials[5];
 
 
 struct DirLight {
@@ -58,6 +58,7 @@ in vec2 TextureCoords;
 
 uniform float BIAS, fog_start, fog_end;
 uniform vec3 viewPos;
+uniform vec3 viewDirection;
 
 uniform int num_active_pointlights, num_active_spotlights;
 
@@ -199,7 +200,9 @@ void main()
 
   FragColor += vec4(result, 0.0);
 
-  float fog_factor = (length(fs_in.FragPos-viewPos)-fog_start)/(fog_end-fog_start);
+
+  float dist = length(fs_in.FragPos-viewPos);
+  float fog_factor = (dist - fog_start)/(fog_end-fog_start);
   fog_factor = 1.0 - clamp(fog_factor, 0, 1);
 
   FragColor = mix(vec4(clearColor, 1.0), FragColor, fog_factor);

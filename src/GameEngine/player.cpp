@@ -1,5 +1,8 @@
+#include <functional>
+
 #include "physics.h"
 #include "../include/glm/gtx/matrix_interpolation.hpp"
+
 
 Player::Player(Renderer *ren)
 {
@@ -13,18 +16,33 @@ Player::Player(Renderer *ren)
   this->active_weapon->load_model("assets/gun/", "gun", ren);
   this->active_weapon->hip_pos = glm::vec3(+0.10f, -0.10f, -0.15f);
   this->active_weapon->aim_pos = glm::vec3( 0.00f, -0.015f, -0.10f);
+
 }
+
+void Player::changeState(PlayerState state)
+{
+  this->current_state = state;
+
+  switch (state)
+  {
+    case (PSTATE_GROUNDED):
+      break;
+
+    case (PSTATE_FALLING):
+      break;
+  }
+
+}
+
 
 SDL_bool mouse_capture = SDL_TRUE;
 
 void Player::key_input(Renderer *ren)
 {
   this->vel.y *= 0.999f;
-  float friction = 5.0f;
-  float damping = 1 / (1 + (ren->deltaTime * friction));
+  float damping = 1 / (1 + (ren->deltaTime * this->friction));
   this->vel.x *= damping;
   this->vel.z *= damping;
-  this->vel.y -= ren->gravity * ren->deltaTime;
 
   this->vel = glm::clamp(this->vel, glm::vec3(-4.5), glm::vec3(4.5));
   *this->pos += this->vel * ren->deltaTime;
@@ -62,10 +80,25 @@ void Player::key_input(Renderer *ren)
     headbob = true;
   }
 
-  if (state[SDL_SCANCODE_SPACE])
+
+
+
+  switch (this->current_state)
   {
-    this->vel.y += this->jump_force * ren->deltaTime;
+    case (PSTATE_FALLING):
+      this->vel.y -= ren->gravity * ren->deltaTime;
+      break;
+
+    case (PSTATE_GROUNDED):
+      if (state[SDL_SCANCODE_SPACE])
+      {
+        this->pos->y += 0.5 * this->jump_force * ren->deltaTime;
+        this->vel.y += 25 * this->jump_force * ren->deltaTime;
+        this->changeState(PSTATE_FALLING);
+      }
+      break;
   }
+
 
 }
 

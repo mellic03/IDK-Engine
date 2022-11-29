@@ -399,4 +399,5 @@ void Renderer::sendLightsToShader(void)
 
 
   this->active_shader.setVec3("viewPos", this->cam.pos);
+  this->active_shader.setVec3("viewDirection", this->cam.dir);
 }

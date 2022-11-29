@@ -60,7 +60,7 @@ class Renderer {
 
 
     float deltaTime = 0.0f;
-    float fov = 90.0f, far_plane = 2000.0f, near_plane = 1.0f;
+    float fov = 90.0f, far_plane = 650.0f, near_plane = 1.0f;
     float image_kernel[9] = {
       0, 0, 0,
       0, 1, 0,

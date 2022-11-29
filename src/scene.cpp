@@ -38,21 +38,13 @@ void Scene::draw(SDL_Event *event)
   // this->ren->spotlights[0].position = glm::vec3(-2.0f, 4.0f, -1.0f);
   // this->ren->spotlights[0].direction = -glm::vec3(-2.0f, 4.0f, -1.0f);
 
-  for (int i=0; i<1; i++)
-  {
-    // this->lightsource_model->material.diffuse_color = this->ren->dirlights[i].diffuse;
-    // this->lightsource_model->set_pos(this->ren->dirlights[i].position);
-    // this->lightsource_model->draw(this->ren);
-    // this->lightsource_model->set_pos(this->ren->dirlights[i].position + this->ren->dirlights[i].direction);
-    // this->lightsource_model->draw(this->ren);
-  }
 
   this->ren->useShader(SHADER_LIGHTSOURCE);
   for (int i=0; i<5; i++)
   {
-    // this->lightsource_model->material.diffuse_color = this->ren->pointlights[i].diffuse;
-    // this->lightsource_model->set_pos(this->ren->pointlights[i].position);
-    // this->lightsource_model->draw(this->ren);
+    this->lightsource_model->materials[0].diffuse_color = this->ren->pointlights[i].diffuse;
+    this->lightsource_model->set_pos(this->ren->pointlights[i].position);
+    this->lightsource_model->draw(this->ren);
   }
 
 }

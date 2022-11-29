@@ -71,6 +71,8 @@ void Model::load(const char *filepath, std::string name)
   this->vertices = (Vertex *)malloc(poly_count * 3 * sizeof(Vertex));
 
   int current_material_index = -1;
+  std::vector<std::string> material_names;
+
   float x, y, z;
   int p1, t1, n1, p2, t2, n2, p3, t3, n3;
 
@@ -102,7 +104,24 @@ void Model::load(const char *filepath, std::string name)
     // usemtl "NAME"
     else if (buffer[0] == 'u' && buffer[1] == 's')
     {
-      current_material_index += 1;
+      bool already_used = false;
+      std::string name(buffer);
+      for (int i=0; i<material_names.size(); i++)
+      {
+        if (material_names[i] == name)
+        {
+          already_used = true;
+          current_material_index = i;
+          break;
+        }
+      }
+
+      if (already_used == false)
+      {
+        material_names.push_back(name);
+        current_material_index = material_names.size() - 1;
+      }
+
     }
   
     else if (buffer[0] == 'f' && buffer[1] == ' ')
@@ -183,13 +202,13 @@ void Model::load(const char *filepath, std::string name)
     if (buffer[0] == 'N' && buffer[1] == 's')
     {
       sscanf(buffer, "Ns %f", &x);
-      this->materials[0].spec_exponent = x;
+      this->materials[current_material_index].spec_exponent = x;
     }
 
     else if (buffer[0] == 'K' && buffer[1] == 'a')
     {
       sscanf(buffer, "Ka %f %f %f", &x, &y, &z);
-      this->materials[0].ambient = {x, y, z};
+      this->materials[current_material_index].ambient = {x, y, z};
     }
 
     else if (buffer[0] == 'm' && buffer[1] == 'a')

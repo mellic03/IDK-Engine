@@ -73,6 +73,17 @@ void import_lighting_config(Renderer *ren)
 }
 
 
+void draw_entities_tab(Renderer *ren)
+{
+  ImGui::Dummy(ImVec2(0.0f, 20.0f));
+
+  if (ImGui::TreeNode("Models"))
+  {
+    ImGui::TreePop();
+  }
+
+}
+
 void draw_lighting_tab(Renderer *ren)
 {
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
@@ -216,6 +227,11 @@ void draw_render_tab(Renderer *ren)
     }
   }
 
+  if (ImGui::Button("Invert"))
+  {
+    for (int i=0; i<9; i++)
+      ren->image_kernel[i] = -ren->image_kernel[i];
+  }
   if (ImGui::Button("Reset"))
   {
     for (int i=0; i<9; i++)
@@ -234,6 +250,8 @@ void draw_render_tab(Renderer *ren)
 void draw_physics_tab(Renderer *ren)
 {
   ImGui::SliderFloat("Gravity", &ren->gravity, 0, 10);
+  bool fly = false;
+  ImGui::Checkbox("Fly", &fly);
 }
 
 void draw_dev_ui(Renderer *ren)
@@ -253,6 +271,12 @@ void draw_dev_ui(Renderer *ren)
 
   if (ImGui::BeginTabBar("MyTabBar", 0))
   {
+    if (ImGui::BeginTabItem("Entities"))
+    {
+      draw_entities_tab(ren);
+      ImGui::EndTabItem();
+    }
+
     if (ImGui::BeginTabItem("Lighting"))
     {
       draw_lighting_tab(ren);
@@ -263,7 +287,7 @@ void draw_dev_ui(Renderer *ren)
       draw_render_tab(ren);
       ImGui::EndTabItem();
     }
-    if (ImGui::BeginTabItem("Physics?"))
+    if (ImGui::BeginTabItem("Physics"))
     {
       draw_physics_tab(ren);
       ImGui::EndTabItem();
@@ -278,30 +302,9 @@ void draw_dev_ui(Renderer *ren)
     ImGui::Image((ImTextureID)ren->depthMap, wsize, ImVec2(0, 1), ImVec2(1, 0));
 
     ImGui::EndChild();
+  
 
-
-  // if (ImGui::Button("Import"))
-  // {
-  //   FILE *fh = fopen("export.txt", "r");
-  //   fscanf(fh, "%f %f %f\n", &ren->lightsource.ambient.x,  &ren->lightsource.ambient.y,  &ren->lightsource.ambient.z);
-  //   fscanf(fh, "%f %f %f\n", &ren->lightsource.diffuse.x,  &ren->lightsource.diffuse.y,  &ren->lightsource.diffuse.z);
-  //   fscanf(fh, "%f %f %f\n", &ren->lightsource.specular.x, &ren->lightsource.specular.y, &ren->lightsource.specular.z);
-  //   fclose(fh);
-  // }
-  // if (ImGui::Button("Export"))
-  // {
-  //   FILE *fh = fopen("export.txt", "w");
-  //   fprintf(fh, "%f %f %f\n", ren->lightsource.ambient.x,  ren->lightsource.ambient.y,   ren->lightsource.ambient.z);
-  //   fprintf(fh, "%f %f %f\n", ren->lightsource.diffuse.x,  ren->lightsource.diffuse.y,   ren->lightsource.diffuse.z);
-  //   fprintf(fh, "%f %f %f\n", ren->lightsource.specular.x, ren->lightsource.specular.y,  ren->lightsource.specular.z);
-  //   fclose(fh);
-  // }
-  //     counter++;
-  // ImGui::SameLine();
-  // ImGui::Text("counter = %d", counter);
-
-  // ImGui::Text("P(x, y, z): %.2f, %.2f, %.2f", player.pos->x, player.pos->y, player.pos->z);
-  // ImGui::Text("V(x, y, z): %.2f, %.2f, %.2f", player.vel.x, player.vel.y, player.vel.z);
-  // ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+  ImGui::End();
+  ImGui::Render();
 
 }

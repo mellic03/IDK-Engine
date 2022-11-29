@@ -80,9 +80,8 @@ int ENTRY(int argc, char **argv)
   // Model cube;    cube.load("assets/crate/", "crate");
   // Model fish;    fish.load("assets/fish/", "fish");
   Model ground;  ground.load("assets/ground/", "ground");
-  // Model sphere;  sphere.load("assets/sphere/", "sphere");
-  // sphere.bindRenderer(&ren);
-  // ground.scale(10.0f);
+  Model sphere;  sphere.load("assets/sphere/", "sphere");
+  sphere.bindRenderer(&ren);
 
 
   ModelContainer render_container;
@@ -104,7 +103,7 @@ int ENTRY(int argc, char **argv)
   scene_1.addPhysicsContainer(&physics_container);
   scene_1.bindRenderer(&ren);
   scene_1.bindPlayer(&player);
-  // scene_1.addLightsourceModel(&sphere);
+  scene_1.addLightsourceModel(&sphere);
 
   //----------------------------------------
 
@@ -231,17 +230,13 @@ int ENTRY(int argc, char **argv)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_DEPTH_BUFFER_BIT);
 
-
-
-    ImGui::End();
-    ImGui::Render();
-
     //---------------------------------
 
-    ren.spotlights[0].position = *player.pos + 0.45f * player.cam->front;
-    ren.spotlights[0].direction = player.cam->front;
+    ren.spotlights[0].position = *player.pos;
+    ren.spotlights[0].direction = player.cam->front - 0.3f * player.cam->right;
 
-
+    ren.spotlights[1].position = *player.pos;
+    ren.spotlights[1].direction = player.cam->front + 0.3f * player.cam->right;
 
 
     glViewport(0, 0, x, y);
