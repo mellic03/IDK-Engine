@@ -8,7 +8,7 @@ struct Material {
   sampler2D diffuseMap, specularMap, emissionMap, normalMap;
   float spec_exponent;
 };
-uniform Material materials[5];
+uniform Material material;
 
 
 struct DirLight {
@@ -38,8 +38,6 @@ in VS_OUT {
   vec3 SurfaceNormal;
   vec2 TexCoords;
   
-  flat uint material_index;
-
   vec3 DIR_TangentLightPositions[NUM_DIRLIGHTS];
   vec3 DIR_TangentViewPositions[NUM_DIRLIGHTS];
   vec3 DIR_TangentFragPositions[NUM_DIRLIGHTS];
@@ -99,12 +97,12 @@ float calculate_shadow(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
 
 vec3 calculate_dirlight(DirLight light, vec3 normal, vec3 viewDir, int index)
 {
-  vec3 ambient = light.ambient * texture(materials[fs_in.material_index].diffuseMap, fs_in.TexCoords).rgb;
+  vec3 ambient = light.ambient * texture(material.diffuseMap, fs_in.TexCoords).rgb;
   
   // diffuse 
   vec3 lightDir = normalize(light.direction);  
   float diff = max(dot(normal, lightDir), 0.0);
-  vec3 diffuse = light.diffuse * diff * texture(materials[fs_in.material_index].diffuseMap, fs_in.TexCoords).rgb;  
+  vec3 diffuse = light.diffuse * diff * texture(material.diffuseMap, fs_in.TexCoords).rgb;  
   
   // specular
   // vec3 halfwayDir = normalize(lightDir + viewDir);  
@@ -126,16 +124,16 @@ vec3 calculate_pointlight(PointLight light, vec3 normal, vec3 fragPos, int index
 
   // specular shading
   vec3 halfwayDir = normalize(lightDir + viewDir);  
-  float spec = pow(max(dot(normal, halfwayDir), 0.0), materials[fs_in.material_index].spec_exponent);
+  float spec = pow(max(dot(normal, halfwayDir), 0.0), material.spec_exponent);
 
   // attenuation
   float distance    = length(light.position - fragPos);
   float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
 
   // combine results
-  vec3 ambient  = light.ambient * texture(materials[fs_in.material_index].diffuseMap, fs_in.TexCoords).rgb;
-  vec3 diffuse  = light.diffuse * diff * texture(materials[fs_in.material_index].diffuseMap, fs_in.TexCoords).rgb;
-  vec3 specular = light.diffuse * spec * texture(materials[fs_in.material_index].specularMap, fs_in.TexCoords).rgb;
+  vec3 ambient  = light.ambient * texture(material.diffuseMap, fs_in.TexCoords).rgb;
+  vec3 diffuse  = light.diffuse * diff * texture(material.diffuseMap, fs_in.TexCoords).rgb;
+  vec3 specular = light.diffuse * spec * texture(material.specularMap, fs_in.TexCoords).rgb;
 
   ambient  *= attenuation;
   diffuse  *= attenuation;
@@ -160,16 +158,16 @@ vec3 calculate_spotlight(SpotLight light, vec3 normal, vec3 fragPos, int index)
 
     // specular shading
     vec3 halfwayDir = normalize(lightDir + viewDir);  
-    float spec = pow(max(dot(normal, halfwayDir), 0.0), materials[fs_in.material_index].spec_exponent);
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), material.spec_exponent);
 
     // attenuation
     float distance    = length(light.position - fragPos);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
 
     // combine results
-    vec3 ambient  = light.ambient  * vec3(texture(materials[fs_in.material_index].diffuseMap, fs_in.TexCoords));
-    vec3 diffuse  = light.diffuse  * diff * vec3(texture(materials[fs_in.material_index].diffuseMap, fs_in.TexCoords));
-    vec3 specular = light.diffuse * spec * vec3(texture(materials[fs_in.material_index].specularMap, fs_in.TexCoords));
+    vec3 ambient  = light.ambient  * vec3(texture(material.diffuseMap, fs_in.TexCoords));
+    vec3 diffuse  = light.diffuse  * diff * vec3(texture(material.diffuseMap, fs_in.TexCoords));
+    vec3 specular = light.diffuse * spec * vec3(texture(material.specularMap, fs_in.TexCoords));
     ambient  *= intensity * attenuation;
     diffuse  *= intensity * attenuation;
     specular *= intensity * attenuation;
@@ -179,14 +177,14 @@ vec3 calculate_spotlight(SpotLight light, vec3 normal, vec3 fragPos, int index)
 
 void main()
 {
-  vec3 fragNormal = texture(materials[fs_in.material_index].normalMap, fs_in.TexCoords).rgb;
+  vec3 fragNormal = texture(material.normalMap, fs_in.TexCoords).rgb;
   fragNormal = normalize(2.0 * fragNormal - 1.0);
 
   vec3 viewDir = fs_in.FragPos - viewPos;
 
   vec3 result = vec3(0.0);
 
-  FragColor = texture(materials[fs_in.material_index].emissionMap, fs_in.TexCoords);
+  FragColor = texture(material.emissionMap, fs_in.TexCoords);
 
 
   for (int i=0; i<NUM_DIRLIGHTS; i++)

@@ -32,8 +32,9 @@ class Model {
 
   public:
 
-    GLuint VAO, VBO, IBO;
-    std::vector<GLuint> VBOS;
+    GLuint VAO, VBO, IBO0, IBO1;
+    std::vector<GLuint> IBOS;
+    std::vector<std::vector<GLuint>> indices;
 
     std::vector<Material> materials;
 
@@ -42,7 +43,8 @@ class Model {
     float *normals;
     int num_polygons;
     Vertex *vertices; int num_vertices;
-    int *indices; int num_indices;
+    int num_indices;
+
 
     char name[64] = "empty";
 

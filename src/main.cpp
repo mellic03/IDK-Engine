@@ -80,6 +80,9 @@ int ENTRY(int argc, char **argv)
   // Model cube;    cube.load("assets/crate/", "crate");
   // Model fish;    fish.load("assets/fish/", "fish");
   Model ground;  ground.load("assets/ground/", "ground");
+  // ground.rot_x(180);
+  // ground.scale(0.15f);
+  // ground.translate({0.0f, -5.0f, -25.0f});
   Model sphere;  sphere.load("assets/sphere/", "sphere");
   sphere.bindRenderer(&ren);
 
@@ -190,7 +193,6 @@ int ENTRY(int argc, char **argv)
     glBindFramebuffer(GL_FRAMEBUFFER, ren.FBO);
     glBindRenderbuffer(GL_RENDERBUFFER, ren.rbo); 
 
-    glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[0]);
 
     glClear(GL_COLOR_BUFFER_BIT);
     

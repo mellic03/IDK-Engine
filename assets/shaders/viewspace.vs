@@ -46,8 +46,6 @@ out VS_OUT {
   vec3 SurfaceNormal;
   vec2 TexCoords;
   
-  flat uint material_index;
-
   vec3 DIR_TangentLightPositions[NUM_DIRLIGHTS];
   vec3 DIR_TangentViewPositions[NUM_DIRLIGHTS];
   vec3 DIR_TangentFragPositions[NUM_DIRLIGHTS];
@@ -70,7 +68,6 @@ void main()
   vs_out.FragPosLightSpace = lightSpaceMatrix * vec4(vs_out.FragPos, 1.0);
   vs_out.SurfaceNormal = aNormal;
   vs_out.TexCoords = aTexCoords;
-  vs_out.material_index = material_index;
   
   mat3 normalMatrix = transpose(inverse(mat3(inverse(view) * model)));
   vec3 T = normalize(normalMatrix * aTangent);

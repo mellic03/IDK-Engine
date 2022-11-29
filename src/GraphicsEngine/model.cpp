@@ -12,7 +12,8 @@ Model::Model(void)
 {
   glGenVertexArrays(1, &this->VAO);
   glGenBuffers(1, &this->VBO);
-  glGenBuffers(1, &this->IBO);
+  glGenBuffers(1, &this->IBO0);
+  glGenBuffers(1, &this->IBO1);
 }
 
 void Model::load(const char *filepath, std::string name)
@@ -105,7 +106,13 @@ void Model::load(const char *filepath, std::string name)
     else if (buffer[0] == 'u' && buffer[1] == 's')
     {
       bool already_used = false;
-      std::string name(buffer);
+
+      char *token = strtok(buffer, " "); token = strtok(NULL, " ");
+      for (int i=0; i<strlen(token); i++)
+        if (token[i] == '\n')
+          token[i] = '\0';
+
+      std::string name(token);
       for (int i=0; i<material_names.size(); i++)
       {
         if (material_names[i] == name)
@@ -176,9 +183,30 @@ void Model::load(const char *filepath, std::string name)
   this->num_vertices = poly_count;
   this->num_indices = this->num_vertices; // This needs to be changed once number of verts != number of indices
 
-  this->indices = (int *)malloc(this->num_vertices * sizeof(int));
-  for (int i=0; i<this->num_vertices; i++)
-    this->indices[i] = i;
+  int *slowindices = (int *)malloc(this->num_indices * sizeof(int));
+  for (int i=0; i<this->num_indices; i++)
+    slowindices[i] = i;
+
+  for (int i=0; i<material_names.size(); i++)
+  {
+    this->indices.push_back(std::vector<GLuint>());
+    this->IBOS.push_back(0);
+
+  }
+
+
+  for (int i=0; i<material_names.size(); i++)
+  {
+    for (int j=0; j<this->num_vertices; j++)
+    {
+      if (this->vertices[slowindices[j]].material_index == i)
+      {
+        this->indices[i].push_back(slowindices[j]);
+      }
+
+    }
+  }
+  
 
 
   // load .mtl file
@@ -189,14 +217,26 @@ void Model::load(const char *filepath, std::string name)
     exit(1);
   }
 
-  current_material_index = -1;
-  
+  current_material_index = 0;
+
+  for (int i=0; i<material_names.size(); i++)
+    this->materials.push_back(Material());
+
+
   while (fgets(buffer, 64, fh) != NULL)
   {
     if (buffer[0] == 'n' && buffer[1] == 'e')
     {
-      this->materials.push_back(Material());
-      current_material_index += 1;
+      char *token = strtok(buffer, " "); token = strtok(NULL, " ");
+      for (int i=0; i<strlen(token); i++)
+        if (token[i] == '\n')
+          token[i] = '\0';
+
+      for (int i=0; i<material_names.size(); i++)
+        if (material_names[i] == std::string(token))
+          current_material_index = i;
+
+      printf("material: %s, index: %d\n", token, current_material_index);
     }
 
     if (buffer[0] == 'N' && buffer[1] == 's')
@@ -213,21 +253,16 @@ void Model::load(const char *filepath, std::string name)
 
     else if (buffer[0] == 'm' && buffer[1] == 'a')
     {
-      char *token = strtok(buffer, " ");
-      token = strtok(NULL, " ");
+      char *token = strtok(buffer, " "); token = strtok(NULL, " ");
       for (int i=0; i<strlen(token); i++)
-      {
         if (token[i] == '\n')
           token[i] = '\0';
-      }
 
-      std::cout << "index: " << current_material_index << "\n";
 
       std::string imagepath(token), tempimagepath(token);
       imagepath = objdirectory + imagepath;
+
       std::cout << imagepath << "\n";
-
-
       this->materials[current_material_index].diffuse.load(imagepath.c_str(), true);
 
       tempimagepath = imagepath;
@@ -277,9 +312,12 @@ void Model::load(const char *filepath, std::string name)
   glEnableVertexAttribArray(5);
 
   // Indexing
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->IBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->num_indices * sizeof(GLuint), this->indices, GL_STATIC_DRAW);
-
+  for (int i=0; i<this->IBOS.size(); i++)
+  {
+    glGenBuffers(1, &this->IBOS[i]);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->IBOS[i]);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices[i].size() * sizeof(GLuint), &this->indices[i][0], GL_STATIC_DRAW);
+  }
 }
 
 
@@ -291,54 +329,40 @@ void unbindTextureUnit(GLenum texture_unit)
 
 void Model::draw(Renderer *ren)
 {
-
-  this->materials[0].diffuse.bind(GL_TEXTURE0);
-  this->materials[0].specular.bind(GL_TEXTURE1);
-  this->materials[0].emission.bind(GL_TEXTURE2);
-  this->materials[0].normal.bind(GL_TEXTURE3);
-
-  ren->active_shader.setInt("materials[0].diffuseMap", 0);
-  ren->active_shader.setInt("materials[0].specularMap", 1);
-  ren->active_shader.setInt("materials[0].emissionMap", 2);
-  ren->active_shader.setInt("materials[0].normalMap", 3);
-  ren->active_shader.setFloat("materials[0].spec_exponent", this->materials[0].spec_exponent);
-
-  if (this->materials.size() > 1)
-  {
-    this->materials[1].diffuse.bind(GL_TEXTURE4);
-    this->materials[1].specular.bind(GL_TEXTURE5);
-    this->materials[1].emission.bind(GL_TEXTURE6);
-    this->materials[1].normal.bind(GL_TEXTURE7);
-
-    ren->active_shader.setInt("materials[1].diffuseMap", 4);
-    ren->active_shader.setInt("materials[1].specularMap", 5);
-    ren->active_shader.setInt("materials[1].emissionMap", 6);
-    ren->active_shader.setInt("materials[1].normalMap", 7);
-    ren->active_shader.setFloat("materials[1].spec_exponent", this->materials[1].spec_exponent);
-  }
-
-
   glBindVertexArray(this->VAO);
 
-
   ren->active_shader.setVec3("diffuse", this->materials[0].diffuse_color);
-  
   ren->active_shader.setMat4("model", this->model_mat);
   ren->active_shader.setMat4("view", *this->view_mat);
   ren->active_shader.setMat4("projection", *this->projection_mat);
 
 
-  glDrawElements(GL_TRIANGLES, this->num_indices, GL_UNSIGNED_INT, (void *)0);
-  glBindVertexArray(0);
+  char buffer[64];
 
-  unbindTextureUnit(GL_TEXTURE0);
-  unbindTextureUnit(GL_TEXTURE1);
-  unbindTextureUnit(GL_TEXTURE2);
-  unbindTextureUnit(GL_TEXTURE3);
-  unbindTextureUnit(GL_TEXTURE4);
-  unbindTextureUnit(GL_TEXTURE5);
-  unbindTextureUnit(GL_TEXTURE6);
-  unbindTextureUnit(GL_TEXTURE7);
+  for (int i=0; i<this->IBOS.size(); i++)
+  {
+    this->materials[i].diffuse.bind(  GL_TEXTURE0 );
+    this->materials[i].specular.bind( GL_TEXTURE1 );
+    this->materials[i].emission.bind( GL_TEXTURE2 );
+    this->materials[i].normal.bind(   GL_TEXTURE3 );
+
+    ren->active_shader.setInt("material.diffuseMap", 0);
+    ren->active_shader.setInt("material.specularMap", 1);
+    ren->active_shader.setInt("material.emissionMap", 2);
+    ren->active_shader.setInt("material.normalMap", 3);
+    ren->active_shader.setFloat("material.spec_exponent", this->materials[i].spec_exponent);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->IBOS[i]);
+    glDrawElements(GL_TRIANGLES, this->indices[i].size(), GL_UNSIGNED_INT, (void *)0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    unbindTextureUnit(GL_TEXTURE0);
+    unbindTextureUnit(GL_TEXTURE1);
+    unbindTextureUnit(GL_TEXTURE2);
+    unbindTextureUnit(GL_TEXTURE3);
+  }
+
+  glBindVertexArray(0);
 }
 
 void Model::set_pos(glm::vec3 point)

@@ -39,6 +39,24 @@ SDL_bool mouse_capture = SDL_TRUE;
 
 void Player::key_input(Renderer *ren)
 {
+  const Uint8 *state = SDL_GetKeyboardState(NULL);
+
+  switch (this->current_state)
+  {
+    case (PSTATE_FALLING):
+      this->vel.y -= ren->gravity * ren->deltaTime;
+      break;
+
+    case (PSTATE_GROUNDED):
+      if (state[SDL_SCANCODE_SPACE])
+      {
+        this->vel.y += 25 * this->jump_force * ren->deltaTime;
+        this->changeState(PSTATE_FALLING);
+      }
+      break;
+  }
+
+
   this->vel.y *= 0.999f;
   float damping = 1 / (1 + (ren->deltaTime * this->friction));
   this->vel.x *= damping;
@@ -49,7 +67,6 @@ void Player::key_input(Renderer *ren)
 
   this->cam->input();
 
-  const Uint8 *state = SDL_GetKeyboardState(NULL);
 
   glm::vec3 temp_front = { this->cam->front.x, 0.0f, this->cam->front.z };
   temp_front = glm::normalize(temp_front);
@@ -80,24 +97,6 @@ void Player::key_input(Renderer *ren)
     headbob = true;
   }
 
-
-
-
-  switch (this->current_state)
-  {
-    case (PSTATE_FALLING):
-      this->vel.y -= ren->gravity * ren->deltaTime;
-      break;
-
-    case (PSTATE_GROUNDED):
-      if (state[SDL_SCANCODE_SPACE])
-      {
-        this->pos->y += 0.5 * this->jump_force * ren->deltaTime;
-        this->vel.y += 25 * this->jump_force * ren->deltaTime;
-        this->changeState(PSTATE_FALLING);
-      }
-      break;
-  }
 
 
 }

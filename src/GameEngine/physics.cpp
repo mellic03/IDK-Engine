@@ -61,7 +61,7 @@ float calculate_impulse(glm::vec3 vel, glm::vec3 face_normal, float mass)
     return 0.0f;
   
   float j = -1 * relative_to_normal;
-  j /= (1/mass) + 0.00000001;
+  j /= (1/mass) + 0.0001;
 
   return j;
 }
@@ -93,7 +93,7 @@ void player_collide(Player *player, glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, g
 
       else
       {
-        player->vel += (1.0f/0.1f) * impulse;
+        player->vel += (1.0f) * impulse;
         *player->pos = *player->pos - (d-dist)*ray;
       }
     }
@@ -128,6 +128,7 @@ void ModelContainer::collide(Player *player)
   {
     for (int j=0; j<this->models[i]->num_vertices; j+=3)
     {
+
       glm::vec3 v0 = this->models[i]->vertices[j+0].position + this->models[i]->pos;
       glm::vec3 v1 = this->models[i]->vertices[j+1].position + this->models[i]->pos;
       glm::vec3 v2 = this->models[i]->vertices[j+2].position + this->models[i]->pos;
