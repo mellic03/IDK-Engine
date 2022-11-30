@@ -76,9 +76,6 @@ void import_lighting_config(Renderer *ren)
  
 void draw_transform_menu(GameObject *object)
 {
-
-  static bool local = false;
-
   ImGui::PushID(1);
   ImGui::Text("Position");
   ImGui::DragScalar("x", ImGuiDataType_Float, &object->pos.x, 0.05f, 0);
@@ -88,12 +85,12 @@ void draw_transform_menu(GameObject *object)
 
   ImGui::PushID(2);
   ImGui::Text("Velocity");
-  // ImGui::DragScalar("x", ImGuiDataType_Float, &object->vel.x, 0.05f, 0);
-  // ImGui::DragScalar("y", ImGuiDataType_Float, &object->vel.y, 0.05f, 0);
-  // ImGui::DragScalar("z", ImGuiDataType_Float, &object->vel.z, 0.05f, 0);
-  ImGui::SliderFloat("x", &object->vel.x, -100.0f, 100.0f, "%0.4f", 0);
-  ImGui::SliderFloat("y", &object->vel.y, -100.0f, 100.0f, "%0.4f", 0);
-  ImGui::SliderFloat("z", &object->vel.z, -100.0f, 100.0f, "%0.4f", 0);
+  ImGui::DragScalar("x", ImGuiDataType_Float, &object->vel.x, 0.05f, 0);
+  ImGui::DragScalar("y", ImGuiDataType_Float, &object->vel.y, 0.05f, 0);
+  ImGui::DragScalar("z", ImGuiDataType_Float, &object->vel.z, 0.05f, 0);
+  // ImGui::SliderFloat("x", &object->vel.x, -100.0f, 100.0f, "%0.4f", 0);
+  // ImGui::SliderFloat("y", &object->vel.y, -100.0f, 100.0f, "%0.4f", 0);
+  // ImGui::SliderFloat("z", &object->vel.z, -100.0f, 100.0f, "%0.4f", 0);
   ImGui::PopID();
 
   ImGui::PushID(3);
@@ -101,11 +98,22 @@ void draw_transform_menu(GameObject *object)
   ImGui::DragScalar("x", ImGuiDataType_Float, &object->model->rot.x, 0.5f, 0);
   ImGui::DragScalar("y", ImGuiDataType_Float, &object->model->rot.y, 0.5f, 0);
   ImGui::DragScalar("z", ImGuiDataType_Float, &object->model->rot.z, 0.5f, 0);
-  ImGui::Checkbox("local", &local);
+  ImGui::Checkbox("local", &object->model->rotate_local);
 
   if (object->model->rot.x >= 360) object->model->rot.x -= 360;
   if (object->model->rot.y >= 360) object->model->rot.y -= 360;
-
+  ImGui::PopID();
+  
+  ImGui::PushID(4);
+  static glm::vec3 movetowards;
+  ImGui::DragScalar("x", ImGuiDataType_Float, &movetowards.x, 0.5f, 0);
+  ImGui::DragScalar("y", ImGuiDataType_Float, &movetowards.y, 0.5f, 0);
+  ImGui::DragScalar("z", ImGuiDataType_Float, &movetowards.z, 0.5f, 0);
+  if (ImGui::Button("Move"))
+  {
+    object->move_towards = movetowards;
+    object->changeState(GSTATE_MOVETOWARDS);
+  }
   ImGui::PopID();
 }
 
@@ -117,10 +125,10 @@ void draw_entities_tab(Renderer *ren, Scene *scene)
 
 
 
-  for (int i=0; i<scene->rendered_objects.objects.size(); i++)
+  for (int i=0; i<scene->renderables.objects.size(); i++)
   {
     char buffer[32];
-    sprintf(buffer, "%s", scene->rendered_objects.objects[i]->model->m_name.c_str());
+    sprintf(buffer, "%s", scene->renderables.objects[i]->model->m_name.c_str());
 
     ImGui::PushID(i);
     if (ImGui::TreeNode(buffer))
@@ -128,7 +136,7 @@ void draw_entities_tab(Renderer *ren, Scene *scene)
       
       if (ImGui::TreeNode("Transform"))
       {
-        draw_transform_menu(scene->rendered_objects.objects[i]);
+        draw_transform_menu(scene->renderables.objects[i]);
 
         ImGui::TreePop();
       }
@@ -139,35 +147,6 @@ void draw_entities_tab(Renderer *ren, Scene *scene)
     ImGui::PopID();
   }
 
-
-
-  if (ImGui::TreeNode("Objects"))
-  {
-    for (int i=0; i<scene->rendered_objects.objects.size(); i++)
-    {
-      char buffer[32];
-      sprintf(buffer, "%s", scene->rendered_objects.objects[i]->model->m_name.c_str());
-      ImGui::PushID(i);
-      if (ImGui::TreeNode(buffer))
-      {
-        ImGui::Text("Position");
-        if (ImGui::BeginTable("table1", 3))
-        {
-          ImGui::TableNextRow();
-          ImGui::TableSetColumnIndex(0);
-          ImGui::DragScalar("x", ImGuiDataType_Float, &scene->rendered_objects.objects[i]->pos.x, 0.05f, 0);
-          ImGui::TableSetColumnIndex(1);
-          ImGui::DragScalar("y", ImGuiDataType_Float, &scene->rendered_objects.objects[i]->pos.y, 0.05f, 0);
-          ImGui::TableSetColumnIndex(2);
-          ImGui::DragScalar("z", ImGuiDataType_Float, &scene->rendered_objects.objects[i]->pos.z, 0.05f, 0);
-          ImGui::EndTable();
-        }
-        ImGui::TreePop();
-      }
-      ImGui::PopID();
-    }
-    ImGui::TreePop();
-  }
 
 }
 

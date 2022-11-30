@@ -325,8 +325,17 @@ void Model::draw(Renderer *ren)
 {
   this->model_mat = glm::mat4(1.0f);
   this->model_mat = glm::translate(this->model_mat, *this->pos);
-  this->model_mat = glm::rotate(this->model_mat, glm::radians(this->rot.y), {0.0f, 1.0f, 0.0f});
-  this->model_mat = glm::rotate(this->model_mat, glm::radians(this->rot.x), {1.0f, 0.0f, 0.0f});
+  if (this->rotate_local)
+  {
+    this->model_mat = glm::rotate(this->model_mat, glm::radians(this->rot.y), {0.0f, 1.0f, 0.0f});
+    this->model_mat = glm::rotate(this->model_mat, glm::radians(this->rot.x), {1.0f, 0.0f, 0.0f});
+  }
+  else
+  {
+    this->model_mat = glm::rotate(this->model_mat, glm::radians(this->rot.x), {1.0f, 0.0f, 0.0f});
+    this->model_mat = glm::rotate(this->model_mat, glm::radians(this->rot.y), {0.0f, 1.0f, 0.0f});
+  }
+
   // this->model_mat = glm::rotate(this->model_mat, this->rot.z, {0.0f, 0.0f, 1.0f});
 
   glBindVertexArray(this->VAO);

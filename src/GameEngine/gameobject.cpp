@@ -3,6 +3,19 @@
 #include "physics.h"
 
 
+void GameObject::changeState(GameObjectState new_state)
+{
+  this->state = new_state;
+
+  switch (new_state)
+  {
+    case (GSTATE_ATREST):
+
+      break;
+  }
+}
+
+
 void GameObject::perFrameUpdate(Renderer *ren)
 {
   this->vel.y -= ren->gravity * ren->deltaTime;
@@ -14,6 +27,27 @@ void GameObject::perFrameUpdate(Renderer *ren)
 
   // this->vel = glm::clamp(this->vel, glm::vec3(-4.5), glm::vec3(4.5));
   this->pos += this->vel * ren->deltaTime;
+
+
+
+
+  switch (this->state)
+  {
+    case (GSTATE_ATREST):
+
+      break;
+
+    case (GSTATE_MOVETOWARDS):
+
+      if (glm::length(this->pos - this->move_towards) < 0.01f)
+        this->changeState(GSTATE_ATREST);
+
+      glm::vec3 move_towards_dir = 0.02f * glm::normalize(this->move_towards - this->pos);
+      this->pos += move_towards_dir;
+      break;
+  }
+
+
 }
 
 void GameObject::attemptCollision(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal, float d, bool downwards)
@@ -82,3 +116,9 @@ void GameObject::draw(Renderer *ren)
   this->model->draw(ren);
 }
 
+
+void ObjectContainer::draw(Renderer *ren)
+{
+  for (int i=0; i<this->objects.size(); i++)
+    this->objects[i]->draw(ren);
+}

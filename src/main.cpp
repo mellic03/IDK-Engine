@@ -89,6 +89,7 @@ int ENTRY(int argc, char **argv)
 
 
   ModelContainer physics_container;
+  physics_container.add(&crate);
   physics_container.add(&ground);
 
 
@@ -98,7 +99,7 @@ int ENTRY(int argc, char **argv)
   scene_1.bindPlayer(&player);
   scene_1.addLightsourceModel(&sphere);
 
-  scene_1.rendered_objects = rendered_objects;
+  scene_1.renderables = rendered_objects;
 
   //----------------------------------------
 

@@ -62,7 +62,7 @@ void Player::key_input(Renderer *ren)
   this->vel.x *= damping;
   this->vel.z *= damping;
 
-  this->vel = glm::clamp(this->vel, glm::vec3(-4.5), glm::vec3(4.5));
+  this->vel = glm::clamp(this->vel, glm::vec3(-4.5, -INFINITY, -4.5), glm::vec3(4.5, INFINITY, 4.5));
   *this->pos += this->vel * ren->deltaTime;
 
   this->cam->input();

@@ -18,7 +18,7 @@ class Scene {
   public:
     std::vector<ModelContainer *> renderContainers;
     std::vector<ModelContainer *> physicsContainers;
-    ObjectContainer rendered_objects;
+    ObjectContainer renderables;
 
     Scene() { };
 

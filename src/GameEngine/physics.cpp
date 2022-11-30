@@ -123,6 +123,8 @@ void ModelContainer::collide(Player *player)
   glm::vec3 ray_front =  player->cam->front;
   glm::vec3 ray_back  = -player->cam->front;
 
+  glm::vec3 ray_traveldir = glm::normalize(player->vel);
+
   for (int i=0; i<this->models.size(); i++)
   {
     for (int j=0; j<this->models[i]->num_vertices; j+=3)
@@ -166,6 +168,9 @@ void ModelContainer::collide(Player *player)
 
       if (glm::dot(ray_back, normal) <= 0)
         player_collide(player, ray_back , v0, v1, v2, normal, player->height/2, false);
+
+      player_collide(player, ray_traveldir , v0, v1, v2, normal, player->height/2, false);
+      
     }
   }
 
