@@ -76,37 +76,29 @@ int ENTRY(int argc, char **argv)
   Player player(&ren);
   import_lighting_config(&ren);
 
-  // Model skybox;  skybox.load("assets/model/", "skybox");
-  // Model cube;    cube.load("assets/crate/", "crate");
-  // Model fish;    fish.load("assets/fish/", "fish");
-  Model ground;  ground.load("assets/ground/", "ground");
-  // ground.rot_x(180);
-  // ground.scale(0.15f);
-  // ground.translate({0.0f, -5.0f, -25.0f});
-  Model sphere;  sphere.load("assets/sphere/", "sphere");
-  sphere.bindRenderer(&ren);
+  Model ground;  ground.load("assets/ground/", "ground"); ground.bindRenderer(&ren);
+  Model crate;   crate.load("assets/crate/", "crate");  crate.bindRenderer(&ren);
+  Model sphere;  sphere.load("assets/sphere/", "sphere");  sphere.bindRenderer(&ren);
+  
+  ObjectContainer rendered_objects;
+  GameObject cr = GameObject(&crate);
+  cr.usePhysics = true;
+  GameObject gr = GameObject(&ground);
+  rendered_objects.addObject(&cr);
+  rendered_objects.addObject(&gr);
 
-
-  ModelContainer render_container;
-  // render_container.add(&cube);
-  render_container.add(&ground);
-  // render_container.add(&fish);
-  // render_container.add(&skybox);
-  render_container.bindRenderer(&ren);
 
   ModelContainer physics_container;
-  // physics_container.add(&cube);
   physics_container.add(&ground);
 
 
-
-
   Scene scene_1;
-  scene_1.addRenderContainer(&render_container);
   scene_1.addPhysicsContainer(&physics_container);
   scene_1.bindRenderer(&ren);
   scene_1.bindPlayer(&player);
   scene_1.addLightsourceModel(&sphere);
+
+  scene_1.rendered_objects = rendered_objects;
 
   //----------------------------------------
 
@@ -144,7 +136,7 @@ int ENTRY(int argc, char **argv)
     end = SDL_GetPerformanceCounter();
     SDL_GetWindowSize(window, &ren.SCR_width, &ren.SCR_height);
     glClearColor(ren.clearColor.x, ren.clearColor.y, ren.clearColor.z, 1.0f);
-    draw_dev_ui(&ren);
+    draw_dev_ui(&ren, &scene_1);
 
     ren.update();
 

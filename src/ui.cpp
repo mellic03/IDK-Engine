@@ -1,9 +1,10 @@
+#include "scene.h"
 #include "ui.h"
 #include "stdio.h"
 
-int selected_dirlight = 0;    char *dir_options[4] = {"1"};
-int selected_pointlight = 0;  char *point_options[4] = {"1", "2", "3", "4"};
-int selected_spotlight = 0;   char *spot_options[4] = {"1", "2"};
+int selected_dirlight = 0;    const char *dir_options[4] = {"1"};
+int selected_pointlight = 0;  const char *point_options[4] = {"1", "2", "3", "4"};
+int selected_spotlight = 0;   const char *spot_options[4] = {"1", "2"};
 bool show = false;
 
 
@@ -71,14 +72,100 @@ void import_lighting_config(Renderer *ren)
 
   fclose(fh);
 }
+ 
+ 
+void draw_transform_menu(GameObject *object)
+{
 
+  static bool local = false;
 
-void draw_entities_tab(Renderer *ren)
+  ImGui::PushID(1);
+  ImGui::Text("Position");
+  ImGui::DragScalar("x", ImGuiDataType_Float, &object->pos.x, 0.05f, 0);
+  ImGui::DragScalar("y", ImGuiDataType_Float, &object->pos.y, 0.05f, 0);
+  ImGui::DragScalar("z", ImGuiDataType_Float, &object->pos.z, 0.05f, 0);
+  ImGui::PopID();
+
+  ImGui::PushID(2);
+  ImGui::Text("Velocity");
+  // ImGui::DragScalar("x", ImGuiDataType_Float, &object->vel.x, 0.05f, 0);
+  // ImGui::DragScalar("y", ImGuiDataType_Float, &object->vel.y, 0.05f, 0);
+  // ImGui::DragScalar("z", ImGuiDataType_Float, &object->vel.z, 0.05f, 0);
+  ImGui::SliderFloat("x", &object->vel.x, -100.0f, 100.0f, "%0.4f", 0);
+  ImGui::SliderFloat("y", &object->vel.y, -100.0f, 100.0f, "%0.4f", 0);
+  ImGui::SliderFloat("z", &object->vel.z, -100.0f, 100.0f, "%0.4f", 0);
+  ImGui::PopID();
+
+  ImGui::PushID(3);
+  ImGui::Text("Rotation");
+  ImGui::DragScalar("x", ImGuiDataType_Float, &object->model->rot.x, 0.5f, 0);
+  ImGui::DragScalar("y", ImGuiDataType_Float, &object->model->rot.y, 0.5f, 0);
+  ImGui::DragScalar("z", ImGuiDataType_Float, &object->model->rot.z, 0.5f, 0);
+  ImGui::Checkbox("local", &local);
+
+  if (object->model->rot.x >= 360) object->model->rot.x -= 360;
+  if (object->model->rot.y >= 360) object->model->rot.y -= 360;
+
+  ImGui::PopID();
+}
+
+void draw_entities_tab(Renderer *ren, Scene *scene)
 {
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
-  if (ImGui::TreeNode("Models"))
+  std::vector<std::string> model_names;
+
+
+
+  for (int i=0; i<scene->rendered_objects.objects.size(); i++)
   {
+    char buffer[32];
+    sprintf(buffer, "%s", scene->rendered_objects.objects[i]->model->m_name.c_str());
+
+    ImGui::PushID(i);
+    if (ImGui::TreeNode(buffer))
+    {
+      
+      if (ImGui::TreeNode("Transform"))
+      {
+        draw_transform_menu(scene->rendered_objects.objects[i]);
+
+        ImGui::TreePop();
+      }
+
+
+      ImGui::TreePop();
+    }
+    ImGui::PopID();
+  }
+
+
+
+  if (ImGui::TreeNode("Objects"))
+  {
+    for (int i=0; i<scene->rendered_objects.objects.size(); i++)
+    {
+      char buffer[32];
+      sprintf(buffer, "%s", scene->rendered_objects.objects[i]->model->m_name.c_str());
+      ImGui::PushID(i);
+      if (ImGui::TreeNode(buffer))
+      {
+        ImGui::Text("Position");
+        if (ImGui::BeginTable("table1", 3))
+        {
+          ImGui::TableNextRow();
+          ImGui::TableSetColumnIndex(0);
+          ImGui::DragScalar("x", ImGuiDataType_Float, &scene->rendered_objects.objects[i]->pos.x, 0.05f, 0);
+          ImGui::TableSetColumnIndex(1);
+          ImGui::DragScalar("y", ImGuiDataType_Float, &scene->rendered_objects.objects[i]->pos.y, 0.05f, 0);
+          ImGui::TableSetColumnIndex(2);
+          ImGui::DragScalar("z", ImGuiDataType_Float, &scene->rendered_objects.objects[i]->pos.z, 0.05f, 0);
+          ImGui::EndTable();
+        }
+        ImGui::TreePop();
+      }
+      ImGui::PopID();
+    }
     ImGui::TreePop();
   }
 
@@ -121,14 +208,14 @@ void draw_lighting_tab(Renderer *ren)
     ImGui::ColorEdit3("ambient", (float*)&ren->pointlights[selected_pointlight].ambient);
     ImGui::ColorEdit3("diffuse", (float*)&ren->pointlights[selected_pointlight].diffuse);
     
-    ImGui::SliderFloat("constant", &ren->pointlights[selected_pointlight].constant, 0.0f, 100.0f, "%0.4f", NULL);
-    ImGui::DragScalar("linear", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].linear,       0.001f, NULL);
-    ImGui::DragScalar("quadratic", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].quadratic, 0.001f, NULL);
+    ImGui::SliderFloat("constant", &ren->pointlights[selected_pointlight].constant, 0.0f, 100.0f, "%0.4f", 0);
+    ImGui::DragScalar("linear", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].linear,       0.001f, 0);
+    ImGui::DragScalar("quadratic", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].quadratic, 0.001f, 0);
 
     ImGui::Text("Position");
-    ImGui::DragScalar("x", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.x, 0.05f, NULL);
-    ImGui::DragScalar("y", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.y, 0.05f, NULL);
-    ImGui::DragScalar("z", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.z, 0.05f, NULL);
+    ImGui::DragScalar("x", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.x, 0.05f, 0);
+    ImGui::DragScalar("y", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.y, 0.05f, 0);
+    ImGui::DragScalar("z", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.z, 0.05f, 0);
     ImGui::PopID();
     ImGui::TreePop();
   }
@@ -144,26 +231,26 @@ void draw_lighting_tab(Renderer *ren)
     ImGui::ColorEdit3("diffuse", (float*)&ren->spotlights[selected_spotlight].diffuse);
 
     // ImGui::DragScalar("constant", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].constant,   0.001f, NULL);
-    ImGui::SliderFloat("constant", &ren->spotlights[selected_spotlight].constant, 0.0f, 100.0f, "%0.4f", NULL);
-    ImGui::DragScalar("linear", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].linear,       0.001f, NULL);
-    ImGui::DragScalar("quadratic", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].quadratic, 0.001f, NULL);
+    ImGui::SliderFloat("constant", &ren->spotlights[selected_spotlight].constant, 0.0f, 100.0f, "%0.4f", 0);
+    ImGui::DragScalar("linear", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].linear,       0.001f, 0);
+    ImGui::DragScalar("quadratic", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].quadratic, 0.001f, 0);
 
-    ImGui::DragScalar("intensity", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].intensity, 0.05f, NULL);
-    ImGui::DragScalar("inner cutoff", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].inner_cutoff, 0.05f, NULL);
-    ImGui::DragScalar("outer cutoff", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].outer_cutoff, 0.05f, NULL);
+    ImGui::DragScalar("intensity", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].intensity, 0.05f, 0);
+    ImGui::DragScalar("inner cutoff", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].inner_cutoff, 0.05f, 0);
+    ImGui::DragScalar("outer cutoff", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].outer_cutoff, 0.05f, 0);
 
     ImGui::PushID(4);
     ImGui::Text("Position");
-    ImGui::DragScalar("x", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].position.x, 0.05f, NULL);
-    ImGui::DragScalar("y", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].position.y, 0.05f, NULL);
-    ImGui::DragScalar("z", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].position.z, 0.05f, NULL);
+    ImGui::DragScalar("x", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].position.x, 0.05f, 0);
+    ImGui::DragScalar("y", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].position.y, 0.05f, 0);
+    ImGui::DragScalar("z", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].position.z, 0.05f, 0);
     ImGui::PopID();
     
     ImGui::PushID(5);
     ImGui::Text("Direction");
-    ImGui::DragScalar("x", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].direction.x, 0.05f, NULL);
-    ImGui::DragScalar("y", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].direction.y, 0.05f, NULL);
-    ImGui::DragScalar("z", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].direction.z, 0.05f, NULL);
+    ImGui::DragScalar("x", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].direction.x, 0.05f, 0);
+    ImGui::DragScalar("y", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].direction.y, 0.05f, 0);
+    ImGui::DragScalar("z", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].direction.z, 0.05f, 0);
     ren->spotlights[selected_spotlight].direction = glm::normalize(ren->spotlights[selected_spotlight].direction);
     ImGui::PopID();
     ImGui::PopID();
@@ -186,11 +273,11 @@ void draw_render_tab(Renderer *ren)
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
   ImGui::ColorEdit3("Clear colour", (float*)&ren->clearColor);
-  ImGui::SliderFloat("Fog start", &ren->fog_start, 0.0f, 100.0f, "%0.1f", NULL);
-  ImGui::SliderFloat("Fog end",   &ren->fog_end,   0.0f, 1000.0f, "%0.1f", NULL);
+  ImGui::SliderFloat("Fog start", &ren->fog_start, 0.0f, 100.0f, "%0.1f", 0);
+  ImGui::SliderFloat("Fog end",   &ren->fog_end,   0.0f, 1000.0f, "%0.1f", 0);
 
-  ImGui::SliderFloat("near plane",  &ren->near_plane,  0.1f, 1.0f, "%0.1f", NULL);
-  ImGui::SliderFloat("Far plane",   &ren->far_plane,   1.0f, 1000.0f, "%0.1f", NULL);
+  ImGui::SliderFloat("near plane",  &ren->near_plane,  0.1f, 1.0f, "%0.1f", 0);
+  ImGui::SliderFloat("Far plane",   &ren->far_plane,   1.0f, 1000.0f, "%0.1f", 0);
 
 
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
@@ -212,17 +299,17 @@ void draw_render_tab(Renderer *ren)
       ImGui::TableNextRow();
       ImGui::TableNextColumn();
       ImGui::PushID(3*row+0);
-      ImGui::DragScalar("", ImGuiDataType_Float, &ren->image_kernel[3*row+0], 1.0f, NULL);
+      ImGui::DragScalar("", ImGuiDataType_Float, &ren->image_kernel[3*row+0], 1.0f, 0);
       ImGui::PopID();
       
       ImGui::TableNextColumn();
       ImGui::PushID(3*row+1);
-      ImGui::DragScalar("", ImGuiDataType_Float, &ren->image_kernel[3*row+1], 1.0f, NULL);
+      ImGui::DragScalar("", ImGuiDataType_Float, &ren->image_kernel[3*row+1], 1.0f, 0);
       ImGui::PopID();
 
       ImGui::TableNextColumn();
       ImGui::PushID(3*row+2);
-      ImGui::DragScalar("", ImGuiDataType_Float, &ren->image_kernel[3*row+2], 1.0f, NULL);
+      ImGui::DragScalar("", ImGuiDataType_Float, &ren->image_kernel[3*row+2], 1.0f, 0);
       ImGui::PopID();
     }
   }
@@ -254,7 +341,7 @@ void draw_physics_tab(Renderer *ren)
   ImGui::Checkbox("Fly", &fly);
 }
 
-void draw_dev_ui(Renderer *ren)
+void draw_dev_ui(Renderer *ren, Scene *scene)
 {
   // Start the Dear ImGui frame
   ImGui_ImplOpenGL3_NewFrame();
@@ -273,7 +360,7 @@ void draw_dev_ui(Renderer *ren)
   {
     if (ImGui::BeginTabItem("Entities"))
     {
-      draw_entities_tab(ren);
+      draw_entities_tab(ren, scene);
       ImGui::EndTabItem();
     }
 
@@ -296,12 +383,12 @@ void draw_dev_ui(Renderer *ren)
   }
 
 
-    ImGui::BeginChild("RenderWindow");
+  // ImGui::BeginChild("RenderWindow");
 
-    ImVec2 wsize = ImGui::GetWindowSize();
-    ImGui::Image((ImTextureID)ren->depthMap, wsize, ImVec2(0, 1), ImVec2(1, 0));
+  // ImVec2 wsize = ImGui::GetWindowSize();
+  // ImGui::Image((ImTextureID)ren->depthMap, wsize, ImVec2(0, 1), ImVec2(1, 0));
 
-    ImGui::EndChild();
+  // ImGui::EndChild();
   
 
   ImGui::End();

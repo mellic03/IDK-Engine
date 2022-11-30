@@ -18,6 +18,8 @@ Model::Model(void)
 
 void Model::load(const char *filepath, std::string name)
 {
+  this->m_name = name;
+
   std::string obj_path(filepath);
   obj_path.append(name);
   obj_path.append(".obj");
@@ -28,14 +30,14 @@ void Model::load(const char *filepath, std::string name)
 
   std::string objdirectory(filepath);
 
-  std::string diffuse_path(filepath);
-  std::string specular_path(filepath);
-  std::string emission_path(filepath);
-  std::string normal_path(filepath);
-  diffuse_path.append(name + "_diffuse.png");
-  specular_path.append(name + "_specular.png");
-  emission_path.append(name + "_emission.png");
-  normal_path.append(name + "_normal.png");
+  // std::string diffuse_path(filepath);
+  // std::string specular_path(filepath);
+  // std::string emission_path(filepath);
+  // std::string normal_path(filepath);
+  // diffuse_path.append(name + "_diffuse.png");
+  // specular_path.append(name + "_specular.png");
+  // emission_path.append(name + "_emission.png");
+  // normal_path.append(name + "_normal.png");
 
 
 
@@ -128,6 +130,7 @@ void Model::load(const char *filepath, std::string name)
         material_names.push_back(name);
         current_material_index = material_names.size() - 1;
       }
+      // printf("material: %s, index: %d\n", token, current_material_index);
 
     }
   
@@ -194,19 +197,10 @@ void Model::load(const char *filepath, std::string name)
 
   }
 
-
   for (int i=0; i<material_names.size(); i++)
-  {
     for (int j=0; j<this->num_vertices; j++)
-    {
       if (this->vertices[slowindices[j]].material_index == i)
-      {
         this->indices[i].push_back(slowindices[j]);
-      }
-
-    }
-  }
-  
 
 
   // load .mtl file
@@ -236,7 +230,7 @@ void Model::load(const char *filepath, std::string name)
         if (material_names[i] == std::string(token))
           current_material_index = i;
 
-      printf("material: %s, index: %d\n", token, current_material_index);
+      // printf("material: %s, index: %d\n", token, current_material_index);
     }
 
     if (buffer[0] == 'N' && buffer[1] == 's')
@@ -262,23 +256,23 @@ void Model::load(const char *filepath, std::string name)
       std::string imagepath(token), tempimagepath(token);
       imagepath = objdirectory + imagepath;
 
-      std::cout << imagepath << "\n";
+      // std::cout << imagepath << "\n";
       this->materials[current_material_index].diffuse.load(imagepath.c_str(), true);
 
       tempimagepath = imagepath;
       tempimagepath.insert(imagepath.find('.'), std::string("_specular"));
       this->materials[current_material_index].specular.load(tempimagepath.c_str(), false);
-      std::cout << tempimagepath << "\n";
+      // std::cout << tempimagepath << "\n";
 
       tempimagepath = imagepath;
       tempimagepath.insert(imagepath.find('.'), std::string("_normal"));
       this->materials[current_material_index].normal.load(tempimagepath.c_str(), false);
-      std::cout << tempimagepath << "\n";
+      // std::cout << tempimagepath << "\n";
 
       tempimagepath = imagepath;
       tempimagepath.insert(imagepath.find('.'), std::string("_emission"));
       this->materials[current_material_index].emission.load(tempimagepath.c_str(), false);
-      std::cout << tempimagepath << "\n";
+      // std::cout << tempimagepath << "\n";
     }
   }
 
@@ -329,6 +323,12 @@ void unbindTextureUnit(GLenum texture_unit)
 
 void Model::draw(Renderer *ren)
 {
+  this->model_mat = glm::mat4(1.0f);
+  this->model_mat = glm::translate(this->model_mat, *this->pos);
+  this->model_mat = glm::rotate(this->model_mat, glm::radians(this->rot.y), {0.0f, 1.0f, 0.0f});
+  this->model_mat = glm::rotate(this->model_mat, glm::radians(this->rot.x), {1.0f, 0.0f, 0.0f});
+  // this->model_mat = glm::rotate(this->model_mat, this->rot.z, {0.0f, 0.0f, 1.0f});
+
   glBindVertexArray(this->VAO);
 
   ren->active_shader.setVec3("diffuse", this->materials[0].diffuse_color);
@@ -345,7 +345,7 @@ void Model::draw(Renderer *ren)
     this->materials[i].specular.bind( GL_TEXTURE1 );
     this->materials[i].emission.bind( GL_TEXTURE2 );
     this->materials[i].normal.bind(   GL_TEXTURE3 );
-
+  
     ren->active_shader.setInt("material.diffuseMap", 0);
     ren->active_shader.setInt("material.specularMap", 1);
     ren->active_shader.setInt("material.emissionMap", 2);
@@ -367,9 +367,9 @@ void Model::draw(Renderer *ren)
 
 void Model::set_pos(glm::vec3 point)
 {
-  this->pos = point;
+  *this->pos = point;
   this->model_mat = glm::mat4(1.0f);
-  this->model_mat = glm::translate(this->model_mat, this->pos);
+  this->model_mat = glm::translate(this->model_mat, *this->pos);
 }
 
 void Model::bindRenderer(Renderer *ren)
@@ -380,7 +380,7 @@ void Model::bindRenderer(Renderer *ren)
 
 void Model::translate(glm::vec3 translation)
 {
-  this->pos += translation;
+  *this->pos += translation;
   this->model_mat = glm::translate(this->model_mat, translation);
 }
 

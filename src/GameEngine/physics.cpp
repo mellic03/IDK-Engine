@@ -100,7 +100,6 @@ void player_collide(Player *player, glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, g
 
     else if (dist > d && downwards)
       player->changeState(PSTATE_FALLING);
-
   }
 }
 
@@ -129,9 +128,9 @@ void ModelContainer::collide(Player *player)
     for (int j=0; j<this->models[i]->num_vertices; j+=3)
     {
 
-      glm::vec3 v0 = this->models[i]->vertices[j+0].position + this->models[i]->pos;
-      glm::vec3 v1 = this->models[i]->vertices[j+1].position + this->models[i]->pos;
-      glm::vec3 v2 = this->models[i]->vertices[j+2].position + this->models[i]->pos;
+      glm::vec3 v0 = this->models[i]->vertices[j+0].position + *this->models[i]->pos;
+      glm::vec3 v1 = this->models[i]->vertices[j+1].position + *this->models[i]->pos;
+      glm::vec3 v2 = this->models[i]->vertices[j+2].position + *this->models[i]->pos;
       glm::vec3 normal = this->models[i]->vertices[j+2].face_normal;
 
       player->temp_pos = glm::vec3(player->pos->x, player->pos->y, player->pos->z);
@@ -167,13 +166,12 @@ void ModelContainer::collide(Player *player)
 
       if (glm::dot(ray_back, normal) <= 0)
         player_collide(player, ray_back , v0, v1, v2, normal, player->height/2, false);
-
     }
   }
 
-  glm::vec3 v0 = this->models[nearest_i]->vertices[nearest_j+0].position + this->models[nearest_i]->pos;
-  glm::vec3 v1 = this->models[nearest_i]->vertices[nearest_j+1].position + this->models[nearest_i]->pos;
-  glm::vec3 v2 = this->models[nearest_i]->vertices[nearest_j+2].position + this->models[nearest_i]->pos;
+  glm::vec3 v0 = this->models[nearest_i]->vertices[nearest_j+0].position + *this->models[nearest_i]->pos;
+  glm::vec3 v1 = this->models[nearest_i]->vertices[nearest_j+1].position + *this->models[nearest_i]->pos;
+  glm::vec3 v2 = this->models[nearest_i]->vertices[nearest_j+2].position + *this->models[nearest_i]->pos;
   glm::vec3 normal = this->models[nearest_i]->vertices[nearest_j+2].face_normal;
 
   player_collide(player, ray_down, v0, v1, v2, normal, player->height, true);
@@ -183,7 +181,6 @@ void ModelContainer::collide(Player *player)
 
   total_time += clock() - time;
   // printf("average time: %f\n", (double)(total_time/tests_run) / CLOCKS_PER_SEC);
-
 }
 
 

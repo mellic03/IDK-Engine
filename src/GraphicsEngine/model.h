@@ -30,34 +30,29 @@ struct Vertex {
 
 class Model {
 
-  public:
-
+  private:
     GLuint VAO, VBO, IBO0, IBO1;
     std::vector<GLuint> IBOS;
     std::vector<std::vector<GLuint>> indices;
+    glm::vec3 default_pos = glm::vec3(0.0f);
 
+  public:
     std::vector<Material> materials;
 
-    Shader *shader;
-    float *positions;
-    float *normals;
     int num_polygons;
-    Vertex *vertices; int num_vertices;
-    int num_indices;
+    Vertex *vertices;
+    int num_vertices, num_indices;
 
-
-    char name[64] = "empty";
+    std::string m_name;
 
     glm::mat4 transform_mat = glm::mat4(1.0f);
     glm::mat4 model_mat = glm::mat4(1.0f);
     glm::mat4 *view_mat = &this->model_mat, *projection_mat = &this->model_mat;
 
+    glm::vec3 *pos = &this->default_pos;
     glm::vec3 dir = {0, 0, 1.0f};
-    glm::vec3 pos = {0, 0, 0};
     glm::vec3 rot = {0, 0, 0};
 
-
-    Model *next;
 
     Model();
 

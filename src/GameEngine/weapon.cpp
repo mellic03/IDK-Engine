@@ -27,12 +27,12 @@ void Weapon::draw(Renderer *ren)
 
 
   if (this->aiming)
-    this->model.pos = lerp(glm::vec3(this->model.pos), this->aim_pos + this->movement_offset, 0.15f);
+    *this->model.pos = lerp(glm::vec3(*this->model.pos), this->aim_pos + this->movement_offset, 0.15f);
   else
-    this->model.pos = lerp(glm::vec3(this->model.pos), this->hip_pos + this->movement_offset, 0.15f);
+    *this->model.pos = lerp(glm::vec3(*this->model.pos), this->hip_pos + this->movement_offset, 0.15f);
   
   
-  this->model.set_pos(this->model.pos);
+  this->model.set_pos(*this->model.pos);
   
 
   this->model.draw(ren);

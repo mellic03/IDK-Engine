@@ -5,6 +5,7 @@
 #include "include/imgui/imgui_impl_opengl3.h"
 
 #include "GraphicsEngine/renderer.h"
+#include "scene.h"
 
-void draw_dev_ui(Renderer *ren);
+void draw_dev_ui(Renderer *ren, Scene *scene);
 void import_lighting_config(Renderer *ren);
