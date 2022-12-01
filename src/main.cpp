@@ -76,6 +76,9 @@ int ENTRY(int argc, char **argv)
   Player player(&ren);
   import_lighting_config(&ren);
 
+  NavMesh navmesh1;
+  navmesh1.load("assets/ground/nav.obj");
+
   Model ground;  ground.load("assets/ground/", "ground"); ground.bindRenderer(&ren);
   Model crate;   crate.load("assets/crate/", "crate");  crate.bindRenderer(&ren);
   Model sphere;  sphere.load("assets/sphere/", "sphere");  sphere.bindRenderer(&ren);
@@ -192,6 +195,7 @@ int ENTRY(int argc, char **argv)
     ren.useShader(SHADER_WORLDSPACE);
     ren.sendLightsToShader();
 
+
     glActiveTexture(GL_TEXTURE12);
     glBindTexture(GL_TEXTURE_2D, ren.depthMap);
 
@@ -203,6 +207,13 @@ int ENTRY(int argc, char **argv)
     ren.active_shader.setMat4("lightSpaceMatrix", ren.lightSpaceMatrix);
     ren.active_shader.setVec3("clearColor", ren.clearColor);
     scene_1.draw(&event);
+
+        
+    for (int i=0; i<navmesh1.nodes.size(); i++)
+    {
+      sphere.set_pos(navmesh1.nodes[i].position);
+      sphere.draw(&ren);
+    }
 
     glClear(GL_DEPTH_BUFFER_BIT);
     ren.useShader(SHADER_VIEWSPACE); // switch to viewspace shader
