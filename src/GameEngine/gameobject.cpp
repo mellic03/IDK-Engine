@@ -43,7 +43,7 @@ void GameObject::perFrameUpdate(Renderer *ren)
         break;
       }
 
-      if (glm::length(this->pos - this->path[this->path.size()-1]) < 0.5f)
+      if (glm::distance(this->pos, this->path[this->path.size()-1] + glm::vec3(0.0f, 0.5f, 0.0f)) < 0.5f)
       {
         // printf("%d\n", this->path.size());
         this->path.pop_back();
@@ -51,7 +51,7 @@ void GameObject::perFrameUpdate(Renderer *ren)
 
       else
       {
-        glm::vec3 move_towards_dir = 0.02f * glm::normalize(this->path[this->path.size()-1] - this->pos);
+        glm::vec3 move_towards_dir = 0.004f * glm::normalize(this->path[this->path.size()-1] - this->pos);
         this->pos += move_towards_dir;
       }
   
@@ -107,16 +107,16 @@ void GameObject::collideWithMesh(Model *collisionmesh)
       this->attemptCollision(this->ray_down, v0, v1, v2, normal, 0.5, true);
 
     if (glm::dot(normal, this->ray_left) <= 0)
-      this->attemptCollision(this->ray_left, v0, v1, v2, normal, 0.5, false);
+      this->attemptCollision(this->ray_left, v0, v1, v2, normal, 0.25, false);
 
     if (glm::dot(normal, this->ray_right) <= 0)
-      this->attemptCollision(this->ray_right, v0, v1, v2, normal, 0.5, false);
+      this->attemptCollision(this->ray_right, v0, v1, v2, normal, 0.25, false);
 
     if (glm::dot(normal, this->ray_front) <= 0)
-      this->attemptCollision(this->ray_front, v0, v1, v2, normal, 0.5, false);
+      this->attemptCollision(this->ray_front, v0, v1, v2, normal, 0.25, false);
 
     if (glm::dot(normal, this->ray_back) <= 0)
-      this->attemptCollision(this->ray_back, v0, v1, v2, normal, 0.5, false);
+      this->attemptCollision(this->ray_back, v0, v1, v2, normal, 0.25, false);
      
   }
 }

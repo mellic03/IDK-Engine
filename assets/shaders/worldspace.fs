@@ -123,8 +123,8 @@ vec3 calculate_pointlight(PointLight light, vec3 normal, vec3 fragPos, int index
   float diff = max(dot(normal, lightDir), 0.0);
 
   // specular shading
-  vec3 halfwayDir = normalize(lightDir + viewDir);  
-  float spec = pow(max(dot(normal, halfwayDir), 0.0), material.spec_exponent);
+  // vec3 halfwayDir = normalize(lightDir + viewDir);  
+  // float spec = pow(max(dot(normal, halfwayDir), 0.0), material.spec_exponent);
 
   // attenuation
   float distance    = length(light.position - fragPos);
@@ -133,13 +133,13 @@ vec3 calculate_pointlight(PointLight light, vec3 normal, vec3 fragPos, int index
   // combine results
   vec3 ambient  = light.ambient * texture(material.diffuseMap, fs_in.TexCoords).rgb;
   vec3 diffuse  = light.diffuse * diff * texture(material.diffuseMap, fs_in.TexCoords).rgb;
-  vec3 specular = light.diffuse * spec * texture(material.specularMap, fs_in.TexCoords).rgb;
+  // vec3 specular = light.diffuse * spec * texture(material.specularMap, fs_in.TexCoords).rgb;
 
   ambient  *= attenuation;
   diffuse  *= attenuation;
-  specular *= attenuation;
+  // specular *= attenuation;
 
-  return (ambient + diffuse + specular);
+  return (ambient + diffuse);// + specular);
 }
 
 vec3 calculate_spotlight(SpotLight light, vec3 normal, vec3 fragPos, int index)
@@ -191,7 +191,9 @@ void main()
     result += calculate_dirlight(dirlights[i], inverse(TBNmat) * fragNormal, viewDir, i);
 
   for (int i=0; i<num_active_pointlights; i++)
+  {
     result += calculate_pointlight(pointlights[i], fragNormal, fs_in.FragPos, i);
+  }
 
   for (int i=0; i<num_active_spotlights; i++)
     result += calculate_spotlight(spotlights[i], fragNormal, fs_in.FragPos, i);

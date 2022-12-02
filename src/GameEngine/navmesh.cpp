@@ -114,10 +114,10 @@ void NavMesh::load(std::string filepath)
   {
     this->nodes[i].removeDuplicateNeighbours();
 
-    printf("Node: %d, neighbours: ", i);
-    for (int j=0; j<this->nodes[i].neighbours.size(); j++)
-      printf("%d ", this->nodes[i].neighbours[j]);
-    printf("\n");
+    // printf("Node: %d, neighbours: ", i);
+    // for (int j=0; j<this->nodes[i].neighbours.size(); j++)
+    //   printf("%d ", this->nodes[i].neighbours[j]);
+    // printf("\n");
   }
 
 }
@@ -148,8 +148,8 @@ std::vector<glm::vec3> NavMesh::path(glm::vec3 from, glm::vec3 to)
   Node *starting_node = this->closestNode(from);
   Node *ending_node = this->closestNode(to);
 
-  printf("start: node %d, (%f, %f, %f)\n", starting_node->id, starting_node->position.x, starting_node->position.y, starting_node->position.z);
-  printf("end: node %d, (%f, %f, %f)\n",     ending_node->id,   ending_node->position.x,   ending_node->position.y,   ending_node->position.z);
+  // printf("start: node %d, (%f, %f, %f)\n", starting_node->id, starting_node->position.x, starting_node->position.y, starting_node->position.z);
+  // printf("end: node %d, (%f, %f, %f)\n",     ending_node->id,   ending_node->position.x,   ending_node->position.y,   ending_node->position.z);
 
 
   for (int i=0; i<this->nodes.size(); i++)
@@ -168,13 +168,11 @@ std::vector<glm::vec3> NavMesh::path(glm::vec3 from, glm::vec3 to)
   
   while (nodes_visited < this->nodes.size())
   {
-
     if (current_node == ending_node)
     {
-      printf("ending node: %d\n", current_node->id);
+      // printf("ending node: %d\n", current_node->id);
       break;
     }
-
 
     for (int i=0; i<current_node->neighbours.size(); i++)
     {
@@ -194,7 +192,7 @@ std::vector<glm::vec3> NavMesh::path(glm::vec3 from, glm::vec3 to)
 
     current_node->visited = true;
     nodes_visited += 1;
-    printf("current node: %d\n", current_node->id);
+    // printf("current node: %d\n", current_node->id);
 
     // Find node with smallest tent_dist in ENTIRE graph
     float smallest_tent = INFINITY;
@@ -211,21 +209,10 @@ std::vector<glm::vec3> NavMesh::path(glm::vec3 from, glm::vec3 to)
       }
     }
 
-    // if (indexof_next_node == -1)
-    // {
-    //   printf("No path\n");
-    //   return std::vector<glm::vec3>();
-    // }
-
-    // else
-    // {
-      current_node = &this->nodes[indexof_next_node];
-    // }
-
-
+    current_node = &this->nodes[indexof_next_node];
   }
 
-  printf("nodes visited: %d\n", nodes_visited);
+  // printf("nodes visited: %d\n", nodes_visited);
 
 
   std::vector<glm::vec3> navpath;
@@ -233,7 +220,7 @@ std::vector<glm::vec3> NavMesh::path(glm::vec3 from, glm::vec3 to)
   while (current_node->previous != -1)
   {
     navpath.push_back(current_node->position);
-    printf("node: %d\n", current_node->id);
+    // printf("node: %d\n", current_node->id);
     current_node = &this->nodes[current_node->previous];
   }
 

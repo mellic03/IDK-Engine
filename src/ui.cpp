@@ -363,12 +363,12 @@ void draw_dev_ui(Renderer *ren, Scene *scene)
   }
 
 
-  // ImGui::BeginChild("RenderWindow");
+  ImGui::BeginChild("RenderWindow");
 
-  // ImVec2 wsize = ImGui::GetWindowSize();
-  // ImGui::Image((ImTextureID)ren->depthMap, wsize, ImVec2(0, 1), ImVec2(1, 0));
+  ImVec2 wsize = ImGui::GetWindowSize();
+  ImGui::Image((ImTextureID)ren->depthMap, wsize, ImVec2(0, 1), ImVec2(1, 0));
 
-  // ImGui::EndChild();
+  ImGui::EndChild();
   
 
   ImGui::End();
