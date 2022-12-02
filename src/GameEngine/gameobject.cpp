@@ -51,7 +51,7 @@ void GameObject::perFrameUpdate(Renderer *ren)
 
       else
       {
-        glm::vec3 move_towards_dir = 0.004f * glm::normalize(this->path[this->path.size()-1] - this->pos);
+        glm::vec3 move_towards_dir = 0.01f * glm::normalize(this->path[this->path.size()-1] - this->pos);
         this->pos += move_towards_dir;
       }
   
