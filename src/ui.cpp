@@ -74,7 +74,7 @@ void import_lighting_config(Renderer *ren)
 }
  
  
-void draw_transform_menu(GameObject *object)
+void draw_transform_menu(Scene *scene, GameObject *object, NavMesh *navmesh)
 {
   ImGui::PushID(1);
   ImGui::Text("Position");
@@ -112,6 +112,7 @@ void draw_transform_menu(GameObject *object)
   if (ImGui::Button("Move"))
   {
     object->move_towards = movetowards;
+    object->path = navmesh->path(object->pos, *scene->player->pos);
     object->changeState(GSTATE_MOVETOWARDS);
   }
   ImGui::PopID();
@@ -136,7 +137,7 @@ void draw_entities_tab(Renderer *ren, Scene *scene)
       
       if (ImGui::TreeNode("Transform"))
       {
-        draw_transform_menu(scene->renderables.objects[i]);
+        draw_transform_menu(scene, scene->renderables.objects[i], &scene->navmesh);
 
         ImGui::TreePop();
       }

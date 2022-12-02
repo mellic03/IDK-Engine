@@ -9,9 +9,9 @@ enum GameObjectState { GSTATE_ATREST, GSTATE_MOVETOWARDS };
 class GameObject {
 
   private:
-    GameObjectState state = GSTATE_ATREST;
 
   public:
+    GameObjectState state = GSTATE_ATREST;
     Model *model;
 
     bool usePhysics = false;
@@ -24,6 +24,8 @@ class GameObject {
     glm::vec3 ray_back  = glm::vec3( 0.0f,  0.0f, -1.0f);
 
     glm::vec3 move_towards = glm::vec3(0.0f, 1.0f, 0.0f);
+
+    std::vector<glm::vec3> path;
 
     glm::vec3 pos = glm::vec3(0.0f);
     glm::vec3 vel = glm::vec3(0.0f);

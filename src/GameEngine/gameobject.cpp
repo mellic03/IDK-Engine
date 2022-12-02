@@ -29,8 +29,6 @@ void GameObject::perFrameUpdate(Renderer *ren)
   this->pos += this->vel * ren->deltaTime;
 
 
-
-
   switch (this->state)
   {
     case (GSTATE_ATREST):
@@ -39,11 +37,24 @@ void GameObject::perFrameUpdate(Renderer *ren)
 
     case (GSTATE_MOVETOWARDS):
 
-      if (glm::length(this->pos - this->move_towards) < 0.01f)
+      if (this->path.size() == 0)
+      {
         this->changeState(GSTATE_ATREST);
+        break;
+      }
 
-      glm::vec3 move_towards_dir = 0.02f * glm::normalize(this->move_towards - this->pos);
-      this->pos += move_towards_dir;
+      if (glm::length(this->pos - this->path[this->path.size()-1]) < 0.5f)
+      {
+        // printf("%d\n", this->path.size());
+        this->path.pop_back();
+      }
+
+      else
+      {
+        glm::vec3 move_towards_dir = 0.02f * glm::normalize(this->path[this->path.size()-1] - this->pos);
+        this->pos += move_towards_dir;
+      }
+  
       break;
   }
 

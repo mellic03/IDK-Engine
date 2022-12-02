@@ -36,6 +36,14 @@ void Scene::draw(SDL_Event *event)
   this->renderables.objects[0]->collideWithMesh(this->renderables.objects[1]->model);
 
   this->renderables.draw(ren);
+
+        
+  for (int i=0; i<this->renderables.objects[0]->path.size(); i++)
+  {
+    this->lightsource_model->set_pos(this->renderables.objects[0]->path[i]);
+    this->lightsource_model->draw(ren);
+  }
+
   // this->ren->spotlights[0].position = glm::vec3(-2.0f, 4.0f, -1.0f);
   // this->ren->spotlights[0].direction = -glm::vec3(-2.0f, 4.0f, -1.0f);
 

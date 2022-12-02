@@ -103,7 +103,7 @@ int ENTRY(int argc, char **argv)
   scene_1.addLightsourceModel(&sphere);
 
   scene_1.renderables = rendered_objects;
-
+  scene_1.navmesh = navmesh1;
   //----------------------------------------
 
   // IMGUI SETUP
@@ -131,6 +131,9 @@ int ENTRY(int argc, char **argv)
   if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
   glBindFramebuffer(GL_FRAMEBUFFER, 0);  
+
+
+
 
 
   Uint64 start = SDL_GetPerformanceCounter(), end = SDL_GetPerformanceCounter();
@@ -196,6 +199,7 @@ int ENTRY(int argc, char **argv)
     ren.sendLightsToShader();
 
 
+
     glActiveTexture(GL_TEXTURE12);
     glBindTexture(GL_TEXTURE_2D, ren.depthMap);
 
@@ -208,12 +212,7 @@ int ENTRY(int argc, char **argv)
     ren.active_shader.setVec3("clearColor", ren.clearColor);
     scene_1.draw(&event);
 
-        
-    for (int i=0; i<navmesh1.nodes.size(); i++)
-    {
-      sphere.set_pos(navmesh1.nodes[i].position);
-      sphere.draw(&ren);
-    }
+
 
     glClear(GL_DEPTH_BUFFER_BIT);
     ren.useShader(SHADER_VIEWSPACE); // switch to viewspace shader

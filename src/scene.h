@@ -9,16 +9,16 @@ class Scene {
   private:
     
     Renderer *ren;
-    Player *player;
-
 
     Model *lightsource_model;
 
 
   public:
+    Player *player;
     std::vector<ModelContainer *> renderContainers;
     std::vector<ModelContainer *> physicsContainers;
     ObjectContainer renderables;
+    NavMesh navmesh;
 
     Scene() { };
 
