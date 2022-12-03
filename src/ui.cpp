@@ -172,7 +172,7 @@ void draw_lighting_tab(Renderer *ren)
     // ren->dirlights[0].direction = glm::normalize(ren->dirlights[0].direction);
     ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
-    ImGui::DragScalar("bias", ImGuiDataType_Float, &ren->DIRBIAS, 0.05f, NULL);
+    ImGui::DragScalar("bias", ImGuiDataType_Float, &ren->DIRBIAS, 0.005f, NULL);
     ImGui::PopID();
     ImGui::TreePop();
   }
@@ -218,6 +218,11 @@ void draw_lighting_tab(Renderer *ren)
     ImGui::DragScalar("intensity", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].intensity, 0.05f, 0);
     ImGui::DragScalar("inner cutoff", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].inner_cutoff, 0.05f, 0);
     ImGui::DragScalar("outer cutoff", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].outer_cutoff, 0.05f, 0);
+    ImGui::DragScalar("fov", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].fov, 0.05f, 0);
+
+    ImGui::Checkbox("follow", &ren->spotlights[selected_spotlight].follow);
+
+
 
     ImGui::PushID(4);
     ImGui::Text("Position");
@@ -366,7 +371,7 @@ void draw_dev_ui(Renderer *ren, Scene *scene)
   ImGui::BeginChild("RenderWindow");
 
   ImVec2 wsize = ImGui::GetWindowSize();
-  ImGui::Image((ImTextureID)ren->depthMap, wsize, ImVec2(0, 1), ImVec2(1, 0));
+  ImGui::Image((ImTextureID)ren->colorBuffers[0], wsize, ImVec2(0, 1), ImVec2(1, 0));
 
   ImGui::EndChild();
   

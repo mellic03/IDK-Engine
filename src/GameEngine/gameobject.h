@@ -12,7 +12,7 @@ class GameObject {
 
   public:
     GameObjectState state = GSTATE_ATREST;
-    Model *model;
+    Mesh *model;
 
     bool usePhysics = false;
 
@@ -30,7 +30,7 @@ class GameObject {
     glm::vec3 pos = glm::vec3(0.0f);
     glm::vec3 vel = glm::vec3(0.0f);
     
-    GameObject(Model *model = NULL)
+    GameObject(Mesh *model = NULL)
     {
       if (model != NULL)
         this->model = model;
@@ -40,11 +40,11 @@ class GameObject {
 
     void changeState(GameObjectState new_state);
 
-    void bindModel(Model *model) { this->model = model; };
+    void bindModel(Mesh *model) { this->model = model; };
     void perFrameUpdate(Renderer *ren);
     void attemptCollision(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal, float d, bool downwards);
 
-    void collideWithMesh(Model *collisionmesh);
+    void collideWithMesh(Mesh *collisionmesh);
     void draw(Renderer *ren);
 };
 

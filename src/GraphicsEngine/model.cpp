@@ -8,7 +8,7 @@
 #include "model.h"
 
 
-Model::Model(void)
+Mesh::Mesh(void)
 {
   glGenVertexArrays(1, &this->VAO);
   glGenBuffers(1, &this->VBO);
@@ -16,7 +16,7 @@ Model::Model(void)
   glGenBuffers(1, &this->IBO1);
 }
 
-void Model::load(const char *filepath, std::string name)
+void Mesh::load(const char *filepath, std::string name)
 {
   this->m_name = name;
 
@@ -321,7 +321,7 @@ void unbindTextureUnit(GLenum texture_unit)
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Model::draw(Renderer *ren)
+void Mesh::draw(Renderer *ren)
 {
   this->model_mat = glm::mat4(1.0f);
   this->model_mat = glm::translate(this->model_mat, *this->pos);
@@ -351,15 +351,8 @@ void Model::draw(Renderer *ren)
   for (int i=0; i<this->IBOS.size(); i++)
   {
     this->materials[i].diffuse.bind(  GL_TEXTURE0 );
-    this->materials[i].specular.bind( GL_TEXTURE1 );
-    this->materials[i].emission.bind( GL_TEXTURE2 );
-    this->materials[i].normal.bind(   GL_TEXTURE3 );
   
-    ren->active_shader.setInt("material.diffuseMap", 0);
-    ren->active_shader.setInt("material.specularMap", 1);
-    ren->active_shader.setInt("material.emissionMap", 2);
-    ren->active_shader.setInt("material.normalMap", 3);
-    ren->active_shader.setFloat("material.spec_exponent", this->materials[i].spec_exponent);
+    ren->active_shader.setInt("diffuseTexture", 0);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->IBOS[i]);
     glDrawElements(GL_TRIANGLES, this->indices[i].size(), GL_UNSIGNED_INT, (void *)0);
@@ -374,50 +367,50 @@ void Model::draw(Renderer *ren)
   glBindVertexArray(0);
 }
 
-void Model::set_pos(glm::vec3 point)
+void Mesh::set_pos(glm::vec3 point)
 {
   *this->pos = point;
   this->model_mat = glm::mat4(1.0f);
   this->model_mat = glm::translate(this->model_mat, *this->pos);
 }
 
-void Model::bindRenderer(Renderer *ren)
+void Mesh::bindRenderer(Renderer *ren)
 {
   this->view_mat = &ren->cam.view;
   this->projection_mat = &ren->cam.projection;
 }
 
-void Model::translate(glm::vec3 translation)
+void Mesh::translate(glm::vec3 translation)
 {
   *this->pos += translation;
   this->model_mat = glm::translate(this->model_mat, translation);
 }
 
-void Model::scale(float alpha)
+void Mesh::scale(float alpha)
 {
   this->model_mat = glm::scale(this->model_mat, {alpha, alpha, alpha});
 }
 
-void Model::set_rot_x(float theta)
+void Mesh::set_rot_x(float theta)
 {
   this->rot.x = theta;
   this->model_mat = glm::mat4(1.0f);
   this->model_mat = glm::rotate(this->model_mat, glm::radians(theta), glm::vec3(1.0, 0.0, 0.0));
 }
 
-void Model::rot_x(float theta)
+void Mesh::rot_x(float theta)
 {
   this->rot.x += theta;
   this->model_mat = glm::rotate(this->model_mat, glm::radians(theta), glm::vec3(1.0, 0.0, 0.0));
 }
 
-void Model::rot_y(float theta)
+void Mesh::rot_y(float theta)
 {
   this->rot.y += theta;
   this->model_mat = glm::rotate(this->model_mat, glm::radians(theta), glm::vec3(0.0, 1.0, 0.0));
 }
 
-void Model::rot_z(float theta)
+void Mesh::rot_z(float theta)
 {
   this->rot.z += theta;
   this->model_mat = glm::rotate(this->model_mat, glm::radians(theta), glm::vec3(0.0, 0.0, 1.0));

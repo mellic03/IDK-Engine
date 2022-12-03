@@ -28,7 +28,7 @@ struct Vertex {
 };
 
 
-class Model {
+class Mesh {
 
   private:
     GLuint VAO, VBO, IBO0, IBO1;
@@ -56,7 +56,7 @@ class Model {
     glm::vec3 rot = {0, 0, 0};
 
 
-    Model();
+    Mesh();
 
     void load(const char *filepath, std::string name);
     void draw(Renderer *ren);

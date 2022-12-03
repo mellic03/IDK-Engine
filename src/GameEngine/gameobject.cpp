@@ -93,7 +93,7 @@ void GameObject::attemptCollision(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm
   }
 }
 
-void GameObject::collideWithMesh(Model *collisionmesh)
+void GameObject::collideWithMesh(Mesh *collisionmesh)
 {
   for (int i=0; i<collisionmesh->num_vertices; i+=3)
   {

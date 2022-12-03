@@ -79,9 +79,9 @@ int ENTRY(int argc, char **argv)
   NavMesh navmesh1;
   navmesh1.load("assets/ground/nav.obj");
 
-  Model ground;  ground.load("assets/ground/", "ground"); ground.bindRenderer(&ren);
-  Model crate;   crate.load("assets/crate/", "crate");  crate.bindRenderer(&ren);
-  Model sphere;  sphere.load("assets/sphere/", "sphere");  sphere.bindRenderer(&ren);
+  Mesh ground;  ground.load("assets/ground/", "ground"); ground.bindRenderer(&ren);
+  Mesh crate;   crate.load("assets/crate/", "crate");  crate.bindRenderer(&ren);
+  Mesh sphere;  sphere.load("assets/sphere/", "sphere");  sphere.bindRenderer(&ren);
   
   ObjectContainer rendered_objects;
   GameObject cr = GameObject(&crate);
@@ -145,7 +145,7 @@ int ENTRY(int argc, char **argv)
     glClearColor(ren.clearColor.x, ren.clearColor.y, ren.clearColor.z, 1.0f);
     draw_dev_ui(&ren, &scene_1);
 
-    ren.update();
+    ren.update(*player.pos, player.cam->front);
 
     // Input
     //---------------------------------
@@ -163,123 +163,100 @@ int ENTRY(int argc, char **argv)
     ///////////////////////////////////////////////////////////////////////////////////////////// Render start
     int x = (int)io.DisplaySize.x, y = (int)io.DisplaySize.y;
     ren.usePerspective();
-    glViewport(0, 0, x, y);
     glEnable(GL_DEPTH_TEST);
 
 
     // Render depth map
     // ---------------------------------
-    glViewport(0, 0, 4096, 4096);
+    glViewport(0, 0, ren.SHADOW_WIDTH, ren.SHADOW_HEIGHT);
     glBindFramebuffer(GL_FRAMEBUFFER, ren.depthMapFBO);
-    glBindTexture(GL_TEXTURE_2D, ren.depthMap);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 4096, 4096, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-        glClear(GL_DEPTH_BUFFER_BIT);
-        ren.useOrthographic(player.pos->x, player.pos->y, player.pos->z);
-        glCullFace(GL_FRONT);
-        glDisable(GL_CULL_FACE);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, ren.depthCubemap);
+    glClear(GL_DEPTH_BUFFER_BIT);
+        ren.useShader(SHADER_POINTSHADOW);
+        ren.setupDepthCubemap({0, 0, 0}, {0, 0, 0});
         scene_1.draw(&event);
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     // ---------------------------------
 
-    glViewport(0, 0, x, y);
-    glClear(GL_DEPTH_BUFFER_BIT);
 
 
     // Draw scene normally
     // ---------------------------------
+
+    glViewport(0, 0, x, y);
     glBindFramebuffer(GL_FRAMEBUFFER, ren.FBO);
-    glBindRenderbuffer(GL_RENDERBUFFER, ren.rbo); 
-
-
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     ren.useShader(SHADER_WORLDSPACE);
     ren.sendLightsToShader();
 
 
-
-    glActiveTexture(GL_TEXTURE12);
-    glBindTexture(GL_TEXTURE_2D, ren.depthMap);
-
-    ren.active_shader.setInt("shadowMap", 12);
-    ren.active_shader.setFloat("BIAS", ren.DIRBIAS);
-    ren.active_shader.setFloat("fog_start", ren.fog_start);
-    ren.active_shader.setFloat("fog_end",   ren.fog_end);
-    ren.active_shader.setFloat("far_plane",   ren.far_plane);
-    ren.active_shader.setMat4("lightSpaceMatrix", ren.lightSpaceMatrix);
-    ren.active_shader.setVec3("clearColor", ren.clearColor);
-    scene_1.draw(&event);
+    glActiveTexture(GL_TEXTURE10);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, ren.depthCubemap);
 
 
-
-    glClear(GL_DEPTH_BUFFER_BIT);
-    ren.useShader(SHADER_VIEWSPACE); // switch to viewspace shader
-    ren.sendLightsToShader();
-
-    ren.active_shader.setInt("shadowMap", 12);
-    ren.active_shader.setFloat("BIAS", ren.DIRBIAS);
-    ren.active_shader.setFloat("fog_start", ren.fog_start);
-    ren.active_shader.setFloat("fog_end",   ren.fog_end);
-    ren.active_shader.setMat4("lightSpaceMatrix", ren.lightSpaceMatrix);
-    ren.active_shader.setVec3("clearColor", ren.clearColor);
-    player.draw(&ren); // draw weapon
+    ren.active_shader.setInt("depthMap", 10);
+    ren.active_shader.setFloat("far_plane",   25.0f);
+    ren.active_shader.setVec3("lightPos", ren.pointlights[0].position);
+    ren.active_shader.setVec3("viewPos", *player.pos);
+    ren.active_shader.setFloat("lightStrength", ren.pointlights[0].constant);
     
-    // ren.useShader(SHADER_TEST); // visualise normals
-    // ren.active_shader.setMat4("view", ren.cam.view);
-    // ren.active_shader.setMat4("projection", ren.cam.projection);
-    // scene_1.draw(&event);
+    ren.active_shader.setVec3("light.ambient", ren.pointlights[0].ambient);
+    ren.active_shader.setVec3("light.diffuse", ren.pointlights[0].diffuse);
+    ren.active_shader.setVec3("light.pos", ren.pointlights[0].position);
+    ren.active_shader.setFloat("light.constant", ren.pointlights[0].constant);
+    ren.active_shader.setFloat("light.linear", ren.pointlights[0].linear);
+    ren.active_shader.setFloat("light.quadratic", ren.pointlights[0].quadratic);
 
-    glBindTexture(GL_TEXTURE_2D, 0);
+
+    scene_1.draw(&event);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClear(GL_DEPTH_BUFFER_BIT);
+
+
+    // ren.useShader(SHADER_VIEWSPACE); // switch to viewspace shader
+    // ren.sendLightsToShader();
+
+    // ren.active_shader.setInt("shadowMap", 12);
+    // ren.active_shader.setFloat("BIAS", ren.DIRBIAS);
+    // ren.active_shader.setFloat("fog_start", ren.fog_start);
+    // ren.active_shader.setFloat("fog_end",   ren.fog_end);
+    // ren.active_shader.setMat4("lightSpaceMatrix", ren.lightSpaceMatrix);
+    // ren.active_shader.setVec3("clearColor", ren.clearColor);
+    // player.draw(&ren); // draw weapon
+    
+
 
     //---------------------------------
 
-    ren.spotlights[0].position = *player.pos;
-    ren.spotlights[0].direction = player.cam->front - 0.3f * player.cam->right;
-
-    ren.spotlights[1].position = *player.pos;
-    ren.spotlights[1].direction = player.cam->front + 0.3f * player.cam->right;
 
 
-    glViewport(0, 0, x, y);
     
-    // glm::vec3 translation = *player.pos - fish.pos;
-    // translation.y = 0;
-    // translation = glm::normalize(translation);
-
-    // fish.translate(0.003f * translation);
-    // fish.model_mat = glm::inverse(glm::lookAt(fish.pos, *player.pos, glm::vec3(0.0f, 1.0f, 0.0f)));
-
     // Draw to quad
     //---------------------------------
 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glBindVertexArray(ren.quadVAO);
 
-    // glActiveTexture(GL_TEXTURE5);
-    // glBindTexture(GL_TEXTURE_2D, ren.depthMap);
-    // ren.useShader(SHADER_RENDERQUAD);
-    // ren.active_shader.setInt("depthMap", 5);
+
+    ren.useShader(SHADER_SCREENQUAD);
+    ren.postProcess();
+    
     glDisable(GL_DEPTH_TEST);
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE10);
     glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[0]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-    ren.useShader(SHADER_FIN);
-    ren.postProcess();
-    ren.active_shader.setInt("screenTexture", 0);
-    ren.active_shader.setInt("bloomBlur", 0);
 
+    ren.active_shader.setInt("screenTexture", 10);
 
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
-
+  
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glEnable(GL_DEPTH_TEST);
 
     //---------------------------------
-
-
-
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////// Render stop

@@ -9,10 +9,10 @@
 class ModelContainer {
 
   public:
-    std::vector<Model *> models;
+    std::vector<Mesh *> models;
     ModelContainer(void) {};
 
-    void add(Model *model);
+    void add(Mesh *model);
     void draw(Renderer *ren);
     void collide(Player *player);
     void bindRenderer(Renderer *ren);

@@ -10,7 +10,7 @@ class Scene {
     
     Renderer *ren;
 
-    Model *lightsource_model;
+    Mesh *lightsource_model;
 
 
   public:
@@ -28,7 +28,7 @@ class Scene {
     void addRenderContainer(ModelContainer *render_container);
     void addPhysicsContainer(ModelContainer *physics_container);
 
-    void addLightsourceModel(Model *lightsource_model);
+    void addLightsourceModel(Mesh *lightsource_model);
     
     void draw(SDL_Event *event);    
 

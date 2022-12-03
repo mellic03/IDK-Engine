@@ -34,4 +34,6 @@ struct SpotLight {
   float inner_cutoff = 12.5f;
   float outer_cutoff = 20.5f;
   float intensity = 1.0f;
+  float fov = 60.0f;
+  bool follow = true;
 };

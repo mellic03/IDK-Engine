@@ -9,7 +9,7 @@ enum WeaponType { SHOTGUN };
 class Weapon {
 
   private:
-    Model model;
+    Mesh model;
 
 
   public:

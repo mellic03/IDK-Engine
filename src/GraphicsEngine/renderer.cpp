@@ -36,15 +36,15 @@ Renderer::Renderer()
   shadowmap.set(create_shader(shadowmap_src.vertex_source, shadowmap_src.fragment_source, shadowmap_src.geometry_source));
   this->shaders[SHADER_SHADOWMAP] = shadowmap;
 
-  ShaderSource testsrc = parse_shader("assets/shaders/visualisenormals.vs", "assets/shaders/visualisenormals.fs", "assets/shaders/visualisenormals.gs");
-  Shader test;
-  test.set(create_shader(testsrc.vertex_source, testsrc.fragment_source, testsrc.geometry_source));
-  this->shaders[SHADER_TEST] = test;
+  ShaderSource pointshadow_src = parse_shader("assets/shaders/pointshadow.vs", "assets/shaders/pointshadow.fs", "assets/shaders/pointshadow.gs");
+  Shader pointshadow;
+  pointshadow.set(create_shader(pointshadow_src.vertex_source, pointshadow_src.fragment_source, pointshadow_src.geometry_source));
+  this->shaders[SHADER_POINTSHADOW] = pointshadow;
 
-  ShaderSource final = parse_shader("assets/shaders/renderquad.vs", "assets/shaders/renderquad.fs", "NULL");
-  Shader fin;
-  fin.set(create_shader(final.vertex_source, final.fragment_source, final.geometry_source));
-  this->shaders[SHADER_FIN] = fin;
+  ShaderSource screenquad_src = parse_shader("assets/shaders/renderquad.vs", "assets/shaders/renderquad.fs", "NULL");
+  Shader screenquad;
+  screenquad.set(create_shader(screenquad_src.vertex_source, screenquad_src.fragment_source, screenquad_src.geometry_source));
+  this->shaders[SHADER_SCREENQUAD] = screenquad;
 
 
   // Generate screen quad
@@ -65,13 +65,12 @@ Renderer::Renderer()
   //------------------------------------------------------
   glGenFramebuffers(1, &this->FBO);
   glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
-  glGenTextures(2, this->colorBuffers);
-  const unsigned int SHADOW_WIDTH = 2560, SHADOW_HEIGHT = 2560;
+  glGenTextures(1, this->colorBuffers);
   
-  for (GLuint i=0; i<2; i++)
+  for (GLuint i=0; i<1; i++)
   {
     glBindTexture(GL_TEXTURE_2D, this->colorBuffers[i]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, this->SHADOW_WIDTH, this->SHADOW_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -84,56 +83,36 @@ Renderer::Renderer()
 
   glGenRenderbuffers(1, &this->rbo);
   glBindRenderbuffer(GL_RENDERBUFFER, this->rbo); 
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SHADOW_WIDTH, SHADOW_HEIGHT);  
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, this->SHADOW_WIDTH, this->SHADOW_HEIGHT);  
   glBindRenderbuffer(GL_RENDERBUFFER, 0);
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->rbo);
 
-  GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-  glDrawBuffers(2, attachments);
-  //------------------------------------------------------
-
-
-  // Create depth framebuffer
-  //------------------------------------------------------
-  glGenFramebuffers(1, &this->depthMapFBO); 
-
-  glGenTextures(1, &this->depthMap);
-  glBindTexture(GL_TEXTURE_2D, this->depthMap);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 
-              4096, 4096, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER); 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER); 
-  float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-  glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-
-  glBindFramebuffer(GL_FRAMEBUFFER, this->depthMapFBO);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this->depthMap, 0);
-  glDrawBuffer(GL_NONE);
-  glReadBuffer(GL_NONE);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);  
+  GLuint attachments[1] = { GL_COLOR_ATTACHMENT0 };
+  glDrawBuffers(1, attachments);
   //------------------------------------------------------
 
 
   // Create depth cubemap
   //------------------------------------------------------
-  // glGenTextures(1, &this->depthCubemap);
-  // glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-  // for (unsigned int i = 0; i < 6; ++i)
-  //   glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+  glGenFramebuffers(1, &this->depthMapFBO); 
 
-  // glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  // glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  // glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  // glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  // glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+  glGenTextures(1, &this->depthCubemap);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, this->depthCubemap);
+  for (unsigned int i = 0; i < 6; ++i)
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 
-  // glBindFramebuffer(GL_FRAMEBUFFER, this->depthMapFBO);
-  // glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, this->depthCubemap, 0);
-  // glDrawBuffer(GL_NONE);
-  // glReadBuffer(GL_NONE);
-  // glBindFramebuffer(GL_FRAMEBUFFER, 0); 
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, this->depthMapFBO);
+  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, this->depthCubemap, 0);
+  glDrawBuffer(GL_NONE);
+  glReadBuffer(GL_NONE);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
   //------------------------------------------------------
 
 
@@ -190,88 +169,32 @@ void Renderer::postProcess(void)
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
-void Renderer::useOrthographic(float x, float y, float z)
+void Renderer::setupDepthCubemap(glm::vec3 pos, glm::vec3 dir)
 {
+  float aspect = (float)this->SHADOW_WIDTH / (float)this->SHADOW_HEIGHT;
+  float near = 1.0f;
+  float far = 25.0f;
+  glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, near, far);
 
-  glm::mat4 proj = glm::perspective(glm::radians(this->fov), (float)this->SCR_width / (float)this->SCR_height, -1.0f, this->far_plane/50.0f);
+  std::vector<glm::mat4> shadowTransforms;
+  shadowTransforms.push_back(shadowProj * glm::lookAt(this->pointlights[0].position, this->pointlights[0].position + glm::vec3( 1.0,  0.0,  0.0), glm::vec3(0.0, -1.0,  0.0)));
+  shadowTransforms.push_back(shadowProj * glm::lookAt(this->pointlights[0].position, this->pointlights[0].position + glm::vec3(-1.0,  0.0,  0.0), glm::vec3(0.0, -1.0,  0.0)));
+  shadowTransforms.push_back(shadowProj * glm::lookAt(this->pointlights[0].position, this->pointlights[0].position + glm::vec3( 0.0,  1.0,  0.0), glm::vec3(0.0,  0.0,  1.0)));
+  shadowTransforms.push_back(shadowProj * glm::lookAt(this->pointlights[0].position, this->pointlights[0].position + glm::vec3( 0.0, -1.0,  0.0), glm::vec3(0.0,  0.0, -1.0)));
+  shadowTransforms.push_back(shadowProj * glm::lookAt(this->pointlights[0].position, this->pointlights[0].position + glm::vec3( 0.0,  0.0,  1.0), glm::vec3(0.0, -1.0,  0.0)));
+  shadowTransforms.push_back(shadowProj * glm::lookAt(this->pointlights[0].position, this->pointlights[0].position + glm::vec3( 0.0,  0.0, -1.0), glm::vec3(0.0, -1.0,  0.0)));
 
 
-  glm::mat4 inv = glm::inverse(proj * this->cam.view);
-
-  std::vector<glm::vec4> frustum_corners;
-
-  for (int x=0; x<2; ++x)
+  char buffer[64];
+  for (int i=0; i<6; i++)
   {
-    for (int y=0; y<2; ++y)
-    {
-      for (int z=0; z<2; ++z)
-      {
-        glm::vec4 pt = inv * glm::vec4(
-          2.0f * x - 1.0f,
-          2.0f * y - 1.0f,
-          2.0f * z - 1.0f,
-          1.0f
-        );
-        frustum_corners.push_back(pt / pt.w);
-      }
-    }
+    sprintf(buffer, "shadowMatrices[%d]", i);
+    this->active_shader.setMat4(buffer, shadowTransforms[i]);
   }
 
+  this->active_shader.setVec3("lightPos", this->pointlights[0].position);
+  this->active_shader.setFloat("far_plane", far);
 
-  glm::vec3 center = glm::vec3(0, 0, 0);
-  for (int i=0; i<8; i++)
-  {
-    center.x += frustum_corners[i].x;
-    center.y += frustum_corners[i].y;
-    center.z += frustum_corners[i].z;
-  }
-  center /= 8;
-
-  glm::mat4 lightView = glm::lookAt(  center + this->dirlights[0].direction,
-                                      center,
-                                      glm::vec3( 0.0f, 1.0f,  0.0f) );
-
-  for (int i=0; i<8; i++)
-    frustum_corners[i] = lightView * frustum_corners[i];
-
-  
-  float xmin = frustum_corners[0].x;
-  float xmax = frustum_corners[0].x;
-  float ymin = frustum_corners[0].y;
-  float ymax = frustum_corners[0].y;
-  float zmin = frustum_corners[0].z;
-  float zmax = frustum_corners[0].z;
-  for (int i=0; i<8; i++)
-  {
-    xmin = MIN(frustum_corners[i].x, xmin);
-    xmax = MAX(frustum_corners[i].x, xmax);
-    ymin = MIN(frustum_corners[i].y, ymin);
-    ymax = MAX(frustum_corners[i].y, ymax);
-    zmin = MIN(frustum_corners[i].z, zmin);
-    zmax = MAX(frustum_corners[i].z, zmax);
-  }
-
-
-  constexpr float zMult = 1.0f;
-  if (zmin < 0)
-    zmin *= zMult;
-  else
-    zmin /= zMult;
-  if (zmax < 0)
-    zmax /= zMult;
-  else
-    zmax *= zMult;
-
-
-  glm::mat4 lightProjection = glm::ortho(xmin, xmax, ymin, ymax, zmin, zmax);
-  this->lightSpaceMatrix = lightProjection * lightView;
-
-
-  this->useShader(SHADER_SHADOWMAP);
-  this->active_shader.setMat4("lightSpaceMatrix", this->lightSpaceMatrix);
-  this->active_shader.setVec3("lightPos", this->dirlights[0].direction);
-  this->active_shader.setFloat("far_plane", this->far_plane);
-  this->active_shader.setFloat("BIAS", this->DIRBIAS);
 }
 
 void Renderer::usePerspective(void)
@@ -280,7 +203,7 @@ void Renderer::usePerspective(void)
 }
 
 
-void Renderer::update(void)
+void Renderer::update(glm::vec3 pos, glm::vec3 dir)
 { 
   this->shaderready_pointlights.clear();
   this->shaderready_spotlights.clear();
@@ -312,6 +235,17 @@ void Renderer::update(void)
   for (int i=0; i<NUM_SPOTLIGHTS; i++)
     if (!this->spotlights_on[i])
       this->shaderready_spotlights.push_back(this->spotlights[i]);
+  
+
+  for (int i=0; i<NUM_SPOTLIGHTS; i++)
+  {
+    if (this->spotlights[i].follow)
+    {
+      this->spotlights[i].position = pos;
+      this->spotlights[i].direction = dir;
+    }
+  }
+
 }
 
 
@@ -340,25 +274,25 @@ void Renderer::sendLightsToShader(void)
   for (int i=0; i<NUM_POINTLIGHTS; i++)
   {
     sprintf(buffer, "pointlights[%d].position", i);
-    this->active_shader.setVec3(buffer,  this->shaderready_pointlights[i].position);
+    this->active_shader.setVec3(buffer,  this->pointlights[i].position);
 
     sprintf(buffer, "pointlights[%d].ambient", i);
-    this->active_shader.setVec3(buffer,  this->shaderready_pointlights[i].ambient);
+    this->active_shader.setVec3(buffer,  this->pointlights[i].ambient);
 
     sprintf(buffer, "pointlights[%d].diffuse", i);
-    this->active_shader.setVec3(buffer,  this->shaderready_pointlights[i].diffuse);
+    this->active_shader.setVec3(buffer,  this->pointlights[i].diffuse);
 
     sprintf(buffer, "pointlights[%d].specular", i);
-    this->active_shader.setVec3(buffer,  this->shaderready_pointlights[i].specular);
+    this->active_shader.setVec3(buffer,  this->pointlights[i].specular);
 
     sprintf(buffer, "pointlights[%d].constant", i);
-    this->active_shader.setFloat(buffer,  this->shaderready_pointlights[i].constant); 
+    this->active_shader.setFloat(buffer,  this->pointlights[i].constant); 
 
     sprintf(buffer, "pointlights[%d].linear", i);
-    this->active_shader.setFloat(buffer,  this->shaderready_pointlights[i].linear); 
+    this->active_shader.setFloat(buffer,  this->pointlights[i].linear); 
 
     sprintf(buffer, "pointlights[%d].quadratic", i);
-    this->active_shader.setFloat(buffer,  this->shaderready_pointlights[i].quadratic); 
+    this->active_shader.setFloat(buffer,  this->pointlights[i].quadratic); 
   }
 
   for (int i=0; i<NUM_SPOTLIGHTS; i++)

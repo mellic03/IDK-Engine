@@ -4,7 +4,7 @@
 
 
 
-void ModelContainer::add(Model *model)
+void ModelContainer::add(Mesh *model)
 {
   this->models.push_back(model);
 }

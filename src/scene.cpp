@@ -22,7 +22,7 @@ void Scene::addPhysicsContainer(ModelContainer *physics_container)
   this->physicsContainers.push_back(physics_container);
 }
 
-void Scene::addLightsourceModel(Model *lightsource_model)
+void Scene::addLightsourceModel(Mesh *lightsource_model)
 {
   this->lightsource_model = lightsource_model;
 }

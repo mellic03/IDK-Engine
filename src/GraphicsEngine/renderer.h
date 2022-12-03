@@ -49,12 +49,25 @@ class Renderer {
     GLuint FBO;
     GLuint quadVAO, quadVBO, rbo;
     GLuint colorBuffers[2];
+    GLuint colorBuffer;
+
+    // Shadows
+    //----------------------------------------------
+    int SHADOW_WIDTH = 2560;
+    int SHADOW_HEIGHT = 2560;
 
     GLuint depthMapFBO, depthMap;
     glm::mat4 lightSpaceMatrix;
     float DIRBIAS = 0.01f;
 
     GLuint depthCubemap;
+
+    GLuint dirlightDepthMapFBO, dirlightDepthMap;
+    GLuint spotlightDepthMapFBO, spotlightDepthMap;
+    float spotlight_bias = 0.01f;
+    //----------------------------------------------
+
+
 
     Camera cam;
 
@@ -107,9 +120,9 @@ class Renderer {
 
     void useShader(ShaderType shader);
     void postProcess(void);
-    void useOrthographic(float x, float y, float z);
+    void setupDepthCubemap(glm::vec3 pos, glm::vec3 dir);
     void usePerspective(void);
 
-    void update(void);
+    void update(glm::vec3 pos, glm::vec3 dir);
     void sendLightsToShader(void);
 };
