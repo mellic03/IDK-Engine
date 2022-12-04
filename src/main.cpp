@@ -174,7 +174,9 @@ int ENTRY(int argc, char **argv)
     glClear(GL_DEPTH_BUFFER_BIT);
         ren.useShader(SHADER_POINTSHADOW);
         ren.setupDepthCubemap({0, 0, 0}, {0, 0, 0});
+        glDisable(GL_CULL_FACE);
         scene_1.draw(&event);
+        glEnable(GL_CULL_FACE);
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     // ---------------------------------
@@ -198,16 +200,19 @@ int ENTRY(int argc, char **argv)
 
     ren.active_shader.setInt("depthMap", 10);
     ren.active_shader.setFloat("far_plane",   25.0f);
-    ren.active_shader.setVec3("lightPos", ren.pointlights[0].position);
     ren.active_shader.setVec3("viewPos", *player.pos);
-    ren.active_shader.setFloat("lightStrength", ren.pointlights[0].constant);
     
-    ren.active_shader.setVec3("light.ambient", ren.pointlights[0].ambient);
-    ren.active_shader.setVec3("light.diffuse", ren.pointlights[0].diffuse);
-    ren.active_shader.setVec3("light.pos", ren.pointlights[0].position);
-    ren.active_shader.setFloat("light.constant", ren.pointlights[0].constant);
-    ren.active_shader.setFloat("light.linear", ren.pointlights[0].linear);
-    ren.active_shader.setFloat("light.quadratic", ren.pointlights[0].quadratic);
+    ren.active_shader.setFloat("bias", ren.DIRBIAS);
+    ren.active_shader.setVec3( "pointlight.ambient", ren.pointlights[0].ambient);
+    ren.active_shader.setVec3( "pointlight.diffuse", ren.pointlights[0].diffuse);
+    ren.active_shader.setVec3( "pointlight.pos", ren.pointlights[0].position);
+    ren.active_shader.setVec3( "pointlight.tangent_pos", ren.pointlights[0].position);
+    ren.active_shader.setFloat("pointlight.constant", ren.pointlights[0].constant);
+    ren.active_shader.setFloat("pointlight.linear", ren.pointlights[0].linear);
+    ren.active_shader.setFloat("pointlight.quadratic", ren.pointlights[0].quadratic);
+    ren.active_shader.setVec3( "clearColor", ren.clearColor);
+    ren.active_shader.setFloat("fog_start", ren.fog_start);
+    ren.active_shader.setFloat("fog_end", ren.fog_end);
 
 
     scene_1.draw(&event);

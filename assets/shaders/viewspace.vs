@@ -57,7 +57,6 @@ out VS_OUT {
   vec3 SPOT_TangentLightPositions[NUM_SPOTLIGHTS];
   vec3 SPOT_TangentViewPositions[NUM_SPOTLIGHTS];
   vec3 SPOT_TangentFragPositions[NUM_SPOTLIGHTS];
-
 } vs_out;
 
 out mat3 TBNmat;

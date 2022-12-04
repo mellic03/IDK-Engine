@@ -351,8 +351,16 @@ void Mesh::draw(Renderer *ren)
   for (int i=0; i<this->IBOS.size(); i++)
   {
     this->materials[i].diffuse.bind(  GL_TEXTURE0 );
+    this->materials[i].specular.bind(  GL_TEXTURE1 );
+    this->materials[i].normal.bind(  GL_TEXTURE2 );
+    this->materials[i].emission.bind(  GL_TEXTURE3 );
   
-    ren->active_shader.setInt("diffuseTexture", 0);
+    ren->active_shader.setInt("material.diffuseMap", 0);
+    ren->active_shader.setInt("material.specularMap", 1);
+    ren->active_shader.setInt("material.normalMap", 2);
+    ren->active_shader.setInt("material.emissionMap", 3);
+    ren->active_shader.setFloat("material.spec_exponent", this->materials[i].spec_exponent);
+
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->IBOS[i]);
     glDrawElements(GL_TRIANGLES, this->indices[i].size(), GL_UNSIGNED_INT, (void *)0);
