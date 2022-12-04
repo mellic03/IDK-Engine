@@ -53,8 +53,8 @@ class Renderer {
 
     // Shadows
     //----------------------------------------------
-    int SHADOW_WIDTH = 2560;
-    int SHADOW_HEIGHT = 2560;
+    int SHADOW_WIDTH = 512;
+    int SHADOW_HEIGHT = 512;
 
     GLuint depthMapFBO, depthMap;
     glm::mat4 lightSpaceMatrix;

@@ -70,7 +70,7 @@ Renderer::Renderer()
   for (GLuint i=0; i<1; i++)
   {
     glBindTexture(GL_TEXTURE_2D, this->colorBuffers[i]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, this->SHADOW_WIDTH, this->SHADOW_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 2560, 2560, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -83,7 +83,7 @@ Renderer::Renderer()
 
   glGenRenderbuffers(1, &this->rbo);
   glBindRenderbuffer(GL_RENDERBUFFER, this->rbo); 
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, this->SHADOW_WIDTH, this->SHADOW_HEIGHT);  
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 2560, 2560);  
   glBindRenderbuffer(GL_RENDERBUFFER, 0);
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->rbo);
 
@@ -330,7 +330,6 @@ void Renderer::sendLightsToShader(void)
     sprintf(buffer, "spotlights[%d].intensity", i);
     this->active_shader.setFloat(buffer,  this->shaderready_spotlights[i].intensity);
   }
-
 
   this->active_shader.setVec3("viewPos", this->cam.pos);
   this->active_shader.setVec3("viewDirection", this->cam.dir);
