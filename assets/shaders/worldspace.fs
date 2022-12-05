@@ -112,6 +112,8 @@ vec3 calculate_pointlight(PointLight light, vec3 normal, vec3 fragPos, vec3 view
   return (ambient + (1.0 - shadow) * (diffuse + specular));
 }
 
+uniform float waa;
+
 vec3 calculate_spotlight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewPos)
 {
   vec3 lightDir = normalize(light.position - fragPos);
@@ -132,7 +134,7 @@ vec3 calculate_spotlight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewPo
 
     // attenuation
     float distance    = length(light.position - fragPos);
-    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
+    float attenuation = 1.0 / (5.0 * waa + light.linear * distance + light.quadratic * (distance * distance));
 
     // combine results
     vec3 ambient  = light.ambient  * vec3(texture(material.diffuseMap, fs_in.TexCoords));

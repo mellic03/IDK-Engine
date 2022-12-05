@@ -224,6 +224,7 @@ int ENTRY(int argc, char **argv)
     ren.active_shader.setFloat("spotlight.quadratic",  ren.spotlights[0].quadratic);
     ren.active_shader.setFloat("spotlight.inner_cutoff",  glm::cos(glm::radians(ren.spotlights[0].inner_cutoff)));
     ren.active_shader.setFloat("spotlight.outer_cutoff",  glm::cos(glm::radians(ren.spotlights[0].outer_cutoff)));
+    ren.active_shader.setFloat("waa",  1.0f / ren.spotlights[0].outer_cutoff);
     ren.active_shader.setFloat("spotlight.intensity",  ren.spotlights[0].intensity);
 
 
