@@ -16,7 +16,7 @@
 #include "material.h"
 
 
-#define ELEMENTS_PER_VERTEX (3 + 3 + 2 + 3 + 1)
+#define ELEMENTS_PER_VERTEX (3 + 3 + 2 + 3 + 1 + 3)
 
 struct Vertex {
   glm::vec3 position;
@@ -25,6 +25,7 @@ struct Vertex {
   glm::vec2 texture;
   glm::vec3 tangent;
   GLuint material_index;
+  glm::vec3 color;
 };
 
 

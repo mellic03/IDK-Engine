@@ -214,21 +214,6 @@ int ENTRY(int argc, char **argv)
     ren.active_shader.setFloat("fog_start", ren.fog_start);
     ren.active_shader.setFloat("fog_end", ren.fog_end);
 
-
-    ren.active_shader.setVec3( "spotlight.position",   ren.spotlights[0].position);
-    ren.active_shader.setVec3( "spotlight.direction",  ren.spotlights[0].direction);
-    ren.active_shader.setVec3( "spotlight.ambient",    ren.spotlights[0].ambient);
-    ren.active_shader.setVec3( "spotlight.diffuse",    ren.spotlights[0].diffuse);
-    ren.active_shader.setFloat("spotlight.constant",   ren.spotlights[0].constant);
-    ren.active_shader.setFloat("spotlight.linear",     ren.spotlights[0].linear);
-    ren.active_shader.setFloat("spotlight.quadratic",  ren.spotlights[0].quadratic);
-    ren.active_shader.setFloat("spotlight.inner_cutoff",  glm::cos(glm::radians(ren.spotlights[0].inner_cutoff)));
-    ren.active_shader.setFloat("spotlight.outer_cutoff",  glm::cos(glm::radians(ren.spotlights[0].outer_cutoff)));
-    ren.active_shader.setFloat("waa",  1.0f / ren.spotlights[0].outer_cutoff);
-    ren.active_shader.setFloat("spotlight.intensity",  ren.spotlights[0].intensity);
-
-
-
     scene_1.draw(&event);
 
     glClear(GL_DEPTH_BUFFER_BIT);

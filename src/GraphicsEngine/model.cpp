@@ -67,6 +67,7 @@ void Mesh::load(const char *filepath, std::string name)
   rewind(fh);
 
   glm::vec3 *positions = (glm::vec3 *)malloc(pos_count * sizeof(glm::vec3));
+  glm::vec3 *colors    = (glm::vec3 *)malloc(pos_count * sizeof(glm::vec3));
   glm::vec3 *normals   = (glm::vec3 *)malloc(norm_count * sizeof(glm::vec3));
   glm::vec2 *uvs       = (glm::vec2 *)malloc(tex_count * sizeof(glm::vec2));
 
@@ -76,7 +77,7 @@ void Mesh::load(const char *filepath, std::string name)
   int current_material_index = -1;
   std::vector<std::string> material_names;
 
-  float x, y, z;
+  float x, y, z, r, g, b;
   int p1, t1, n1, p2, t2, n2, p3, t3, n3;
 
   pos_count = 0, norm_count = 0, tex_count = 0, poly_count = 0;
@@ -85,8 +86,9 @@ void Mesh::load(const char *filepath, std::string name)
   {
     if (buffer[0] == 'v' && buffer[1] == ' ')
     {
-      sscanf(buffer, "v %f %f %f", &x, &y, &z);
+      sscanf(buffer, "v %f %f %f %f %f %f", &x, &y, &z, &r, &g, &b);
       positions[pos_count] = glm::vec3(x, y, z);
+      colors[pos_count] = glm::vec3(r, g, b);
       pos_count += 1;
     }
 
@@ -164,16 +166,19 @@ void Mesh::load(const char *filepath, std::string name)
       //----------------------------------------------------
 
       this->vertices[poly_count+0].position     = positions[p1-1];
+      this->vertices[poly_count+0].color        = colors[p1-1];
       this->vertices[poly_count+0].normal       = normals[n1-1];
       this->vertices[poly_count+0].face_normal  = face_normal;
       this->vertices[poly_count+0].texture      = uvs[t1-1];
 
       this->vertices[poly_count+1].position     = positions[p2-1];
+      this->vertices[poly_count+1].color        = colors[p2-1];
       this->vertices[poly_count+1].normal       = normals[n2-1];
       this->vertices[poly_count+1].face_normal  = face_normal;
       this->vertices[poly_count+1].texture      = uvs[t2-1];
 
       this->vertices[poly_count+2].position     = positions[p3-1];
+      this->vertices[poly_count+2].color        = colors[p3-1];
       this->vertices[poly_count+2].normal       = normals[n3-1];
       this->vertices[poly_count+2].face_normal  = face_normal;
       this->vertices[poly_count+2].texture      = uvs[t3-1];
@@ -304,6 +309,11 @@ void Mesh::load(const char *filepath, std::string name)
   // Material index
   glVertexAttribIPointer(5, sizeof(GLuint), GL_UNSIGNED_INT, sizeof(Vertex), (void *)(14*sizeof(float)));
   glEnableVertexAttribArray(5);
+
+  // Vertex color
+  glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(14*sizeof(float) + 1*sizeof(int)));
+  glEnableVertexAttribArray(6);
+
 
   // Indexing
   for (int i=0; i<this->IBOS.size(); i++)

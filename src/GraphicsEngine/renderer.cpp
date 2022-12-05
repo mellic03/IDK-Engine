@@ -256,44 +256,44 @@ void Renderer::sendLightsToShader(void)
 
   char buffer[64];
 
-  for (int i=0; i<this->NM_DIRLIGHTS; i++)
-  {
-    sprintf(buffer, "dirlights[%d].direction", i);
-    this->active_shader.setVec3(buffer,  this->dirlights[i].direction);
+  // for (int i=0; i<this->NM_DIRLIGHTS; i++)
+  // {
+  //   sprintf(buffer, "dirlights[%d].direction", i);
+  //   this->active_shader.setVec3(buffer,  this->dirlights[i].direction);
 
-    sprintf(buffer, "dirlights[%d].ambient", i);
-    this->active_shader.setVec3(buffer,  this->dirlights[i].ambient);
+  //   sprintf(buffer, "dirlights[%d].ambient", i);
+  //   this->active_shader.setVec3(buffer,  this->dirlights[i].ambient);
 
-    sprintf(buffer, "dirlights[%d].diffuse", i);
-    this->active_shader.setVec3(buffer,  this->dirlights[i].diffuse);
+  //   sprintf(buffer, "dirlights[%d].diffuse", i);
+  //   this->active_shader.setVec3(buffer,  this->dirlights[i].diffuse);
 
-    sprintf(buffer, "dirlights[%d].specular", i);
-    this->active_shader.setVec3(buffer,  this->dirlights[i].specular);
-  }
+  //   sprintf(buffer, "dirlights[%d].specular", i);
+  //   this->active_shader.setVec3(buffer,  this->dirlights[i].specular);
+  // }
 
-  for (int i=0; i<NUM_POINTLIGHTS; i++)
-  {
-    sprintf(buffer, "pointlights[%d].position", i);
-    this->active_shader.setVec3(buffer,  this->pointlights[i].position);
+  // for (int i=0; i<NUM_POINTLIGHTS; i++)
+  // {
+  //   sprintf(buffer, "pointlights[%d].position", i);
+  //   this->active_shader.setVec3(buffer,  this->pointlights[i].position);
 
-    sprintf(buffer, "pointlights[%d].ambient", i);
-    this->active_shader.setVec3(buffer,  this->pointlights[i].ambient);
+  //   sprintf(buffer, "pointlights[%d].ambient", i);
+  //   this->active_shader.setVec3(buffer,  this->pointlights[i].ambient);
 
-    sprintf(buffer, "pointlights[%d].diffuse", i);
-    this->active_shader.setVec3(buffer,  this->pointlights[i].diffuse);
+  //   sprintf(buffer, "pointlights[%d].diffuse", i);
+  //   this->active_shader.setVec3(buffer,  this->pointlights[i].diffuse);
 
-    sprintf(buffer, "pointlights[%d].specular", i);
-    this->active_shader.setVec3(buffer,  this->pointlights[i].specular);
+  //   sprintf(buffer, "pointlights[%d].specular", i);
+  //   this->active_shader.setVec3(buffer,  this->pointlights[i].specular);
 
-    sprintf(buffer, "pointlights[%d].constant", i);
-    this->active_shader.setFloat(buffer,  this->pointlights[i].constant); 
+  //   sprintf(buffer, "pointlights[%d].constant", i);
+  //   this->active_shader.setFloat(buffer,  this->pointlights[i].constant); 
 
-    sprintf(buffer, "pointlights[%d].linear", i);
-    this->active_shader.setFloat(buffer,  this->pointlights[i].linear); 
+  //   sprintf(buffer, "pointlights[%d].linear", i);
+  //   this->active_shader.setFloat(buffer,  this->pointlights[i].linear); 
 
-    sprintf(buffer, "pointlights[%d].quadratic", i);
-    this->active_shader.setFloat(buffer,  this->pointlights[i].quadratic); 
-  }
+  //   sprintf(buffer, "pointlights[%d].quadratic", i);
+  //   this->active_shader.setFloat(buffer,  this->pointlights[i].quadratic); 
+  // }
 
   for (int i=0; i<NUM_SPOTLIGHTS; i++)
   {
