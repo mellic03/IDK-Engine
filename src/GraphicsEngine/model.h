@@ -42,7 +42,6 @@ class Model {
     Model() { };
     
     bool load(std::string filepath);
-    void loadCollisionMesh(void);
 
     void bindRenderer(Renderer *ren);
 

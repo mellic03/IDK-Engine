@@ -18,22 +18,31 @@ bool Model::load(std::string filepath)
 
   while (fgets(buffer, 64, fh) != NULL)
   {
-    if (sscanf(buffer, "#ANIMATION REST %s %d", stringdata, &intdata))
+    if (sscanf(buffer, "#ANIMATION"))
     {
       this->staticmesh = false;
-      printf("animation: %s, keyframes: %d\n", stringdata, intdata);
-      this->animations[ANIM_REST] = Animation();
-      this->animations[ANIM_REST].addKeyFrames(filepath, stringdata, intdata);
+      break;
     }
 
-    else if (sscanf(buffer, "#ANIMATION MOVE %s %d", stringdata, &intdata))
+    else if (sscanf(buffer, "#STATIC"))
     {
+      this->staticmesh = true;
+      break;
+    }
+  }
 
+  rewind(fh);
+
+  while (fgets(buffer, 64, fh) != NULL)
+  {
+    if (sscanf(buffer, "#ANIMATION REST %s %d", stringdata, &intdata))
+    {
+      printf("animation: %s, keyframes: %d\n", stringdata, intdata);
+      this->animations[ANIM_REST].loadKeyframes(filepath, stringdata, intdata);
     }
 
     else if (sscanf(buffer, "#STATIC %s", stringdata))
     {
-      this->staticmesh = true;
       printf("static: %s\n", stringdata);
 
       this->meshes.push_back(Mesh());
@@ -54,10 +63,6 @@ bool Model::load(std::string filepath)
   return true;
 }
 
-void Model::loadCollisionMesh(void)
-{
-  this->m_collision_mesh = this->meshes[0];
-}
 
 void Model::bindRenderer(Renderer *ren)
 {
@@ -76,15 +81,15 @@ void Model::activeAnimation(AnimationType id)
 void Model::draw(Renderer *ren)
 {
  
-  // switch (this->staticmesh)
-  // {
+  switch (this->staticmesh)
+  {
 
-    // case (false):
-    //   for (Mesh mesh: this->meshes)
-    //     mesh.draw(ren);
-    //   break;
+    case (false):
+      for (Mesh mesh: this->meshes)
+        mesh.draw(ren);
+      break;
 
-    // case (true):
+    case (true):
       switch (this->m_state)
       {
         case (MSTATE_NOANIM_PLAYING):
@@ -95,6 +100,6 @@ void Model::draw(Renderer *ren)
           this->animations[this->m_active_animation].play(ren);
           break;
       }
-      // break;
-  // }
+      break;
+  }
 }

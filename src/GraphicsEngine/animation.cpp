@@ -3,7 +3,7 @@
 #include "animation.h"
 
 
-bool Animation::addKeyFrames(std::string filepath, std::string name, int num_keyframes)
+bool Animation::loadKeyframes(std::string filepath, std::string name, int num_keyframes)
 {
   for (int i=0; i<num_keyframes; i++)
   {

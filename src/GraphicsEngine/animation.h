@@ -23,8 +23,7 @@ class Animation {
   public:
     Animation() { };
 
-    bool addKeyFrame(std::string filepath);
-    bool addKeyFrames(std::string filepath, std::string name, int num_keyframes);
+    bool loadKeyframes(std::string filepath, std::string name, int num_keyframes);
 
     void looping(bool loop) { this->m_looping = loop; };
 
