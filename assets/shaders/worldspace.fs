@@ -39,6 +39,7 @@ struct Material {
 };
 uniform Material material;
 
+in vec3 color;
 
 uniform samplerCube depthMap;
 uniform float bias;
@@ -136,9 +137,9 @@ vec3 calculate_pointlight(PointLight light, vec3 normal, vec3 fragPos, vec3 view
   float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
 
   // combine results
-  vec3 ambient  = light.ambient * textureNoTile(material.diffuseMap, fs_in.TexCoords).rgb;
-  vec3 diffuse  = light.diffuse * diff * textureNoTile(material.diffuseMap, fs_in.TexCoords).rgb;
-  vec3 specular = light.diffuse * spec * textureNoTile(material.specularMap, fs_in.TexCoords).rgb;
+  vec3 ambient  = light.ambient * texture(material.diffuseMap, fs_in.TexCoords).rgb;
+  vec3 diffuse  = light.diffuse * diff * texture(material.diffuseMap, fs_in.TexCoords).rgb;
+  vec3 specular = light.diffuse * spec * texture(material.specularMap, fs_in.TexCoords).rgb;
 
   ambient  *= attenuation;
   diffuse  *= attenuation;
@@ -186,11 +187,11 @@ vec3 calculate_spotlight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewPo
 
 void main()
 {
-  vec3 normal = textureNoTile(material.normalMap, fs_in.TexCoords).rgb;
+  vec3 normal = texture(material.normalMap, fs_in.TexCoords).rgb;
   normal = normal * 2.0 - 1.0; 
   normal = normalize(fs_in.TBN * normal);
 
-  vec3 result = textureNoTile(material.emissionMap, fs_in.TexCoords).rgb;
+  vec3 result = texture(material.emissionMap, fs_in.TexCoords).rgb;
 
   result += calculate_pointlight(fs_in.pointlight, normal, fs_in.FragPos, fs_in.viewPos);
 
@@ -199,7 +200,6 @@ void main()
 
 
   FragColor = vec4(result, 1.0);
-
 
 
   float dist = length(fs_in.FragPos - fs_in.viewPos);

@@ -6,6 +6,8 @@ layout (location = 3) in vec2 aTexCoords;
 layout (location = 4) in vec3 aTangent;
 layout (location = 6) in vec3 aColor;
 
+layout (location = 7) in vec3 aAnimNextPos;
+
 out vec3 color;
 
 out vec2 TexCoords;
@@ -35,16 +37,18 @@ uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 model;
 
+uniform float lerp_value;
 
 void main()
 {
+  vec3 outpos = mix(aPos, aAnimNextPos, lerp_value);
 
   color = aColor;
-  vs_out.FragPos = vec3(model * vec4(aPos, 1.0));
+  vs_out.FragPos = vec3(model * vec4(outpos, 1.0));
   vs_out.viewPos = viewPos;
   vs_out.Normal =  aNormal;
   vs_out.TexCoords = aTexCoords;
-  gl_Position = projection * view * model * vec4(aPos, 1.0);
+  gl_Position = projection * view * model * vec4(outpos, 1.0);
 
   // tangent-space to world-space transform
   //------------------------------------------------------------------

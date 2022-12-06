@@ -12,68 +12,50 @@
 #include "../include/glm/gtc/matrix_transform.hpp"
 #include "../include/glm/gtc/type_ptr.hpp"
 
+#include "mesh.h"
+#include "animation.h"
 #include "renderer.h"
-#include "material.h"
+
+#include "../GameEngine/navmesh.h"
+
+enum ModelState { MSTATE_NOANIM_PLAYING, MSTATE_ANIM_PLAYING };
 
 
-#define ELEMENTS_PER_VERTEX (3 + 3 + 2 + 3 + 1 + 3)
-
-struct Vertex {
-  glm::vec3 position;
-  glm::vec3 normal;
-  glm::vec3 face_normal;
-  glm::vec2 texture;
-  glm::vec3 tangent;
-  GLuint material_index;
-  glm::vec3 color;
-};
-
-
-class Mesh {
+class Model {
 
   private:
-    GLuint VAO, VBO, IBO0, IBO1;
-    std::vector<GLuint> IBOS;
-    std::vector<std::vector<GLuint>> indices;
-    glm::vec3 default_pos = glm::vec3(0.0f);
+
+    bool staticmesh = true;
+
+    std::vector<Mesh> meshes;
+
+    ModelState m_state = MSTATE_NOANIM_PLAYING;
+
+    AnimationType m_active_animation = ANIM_REST;
+    Animation animations[NUM_ANIMATION_TYPES];
 
   public:
-    std::vector<Material> materials;
 
-    int num_polygons;
-    Vertex *vertices;
-    int num_vertices, num_indices;
+    glm::vec3 *position;
+    Mesh m_collision_mesh;
 
-    std::string m_name;
-
-    glm::mat4 transform_mat = glm::mat4(1.0f);
-    glm::mat4 model_mat = glm::mat4(1.0f);
-    glm::mat4 *view_mat = &this->model_mat, *projection_mat = &this->model_mat;
-
-    bool rotate_local = false;
-
-    glm::vec3 *pos = &this->default_pos;
-    glm::vec3 dir = {0, 0, 1.0f};
-    glm::vec3 rot = {0, 0, 0};
-
-
-    Mesh();
-
-    void load(const char *filepath, std::string name);
-    void draw(Renderer *ren);
+    Model() { };
+    
+    bool load(std::string filepath);
+    void loadCollisionMesh(void);
 
     void bindRenderer(Renderer *ren);
 
-    void set_pos(glm::vec3 position);
-    void translate(glm::vec3 translation);
-    void scale(float alpha);
+    void activeAnimation(AnimationType id);
+    void playAnimation(Renderer *ren);
 
-    void set_rot_x(float theta);
-    void rot_x(float theta);
-    void rot_y(float theta);
-    void rot_z(float theta);
+    void draw(Renderer *ren);
+};
+
+class TerrainModel: private Model {
 
 };
 
+class InstancedModel {
 
-
+};

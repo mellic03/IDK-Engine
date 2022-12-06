@@ -1,0 +1,4 @@
+// #[attribute] [type] [name] [num keyframes] //
+
+
+#ANIMATION REST bend 2

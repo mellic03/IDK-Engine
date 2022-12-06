@@ -44,9 +44,6 @@ void Scene::draw(SDL_Event *event)
     this->lightsource_model->draw(ren);
   }
 
-  // this->ren->spotlights[0].position = glm::vec3(-2.0f, 4.0f, -1.0f);
-  // this->ren->spotlights[0].direction = -glm::vec3(-2.0f, 4.0f, -1.0f);
-
 
   this->ren->useShader(SHADER_LIGHTSOURCE);
   for (int i=0; i<5; i++)

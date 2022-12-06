@@ -55,7 +55,7 @@ int ENTRY(int argc, char **argv)
 
   gl_context = SDL_GL_CreateContext(window);
   SDL_GL_MakeCurrent(window, gl_context);
-  SDL_GL_SetSwapInterval(1); // vsync
+  SDL_GL_SetSwapInterval(-1); // vsync
   SDL_SetRelativeMouseMode(SDL_TRUE);
 
   if (glewInit() != GLEW_OK)
@@ -74,15 +74,24 @@ int ENTRY(int argc, char **argv)
   //----------------------------------------
   Renderer ren, shadowren;
   Player player(&ren);
+  player.pos->z = 6.0f;
   import_lighting_config(&ren);
 
   NavMesh navmesh1;
   navmesh1.load("assets/ground/nav.obj");
 
   Mesh ground;  ground.load("assets/ground/", "ground2"); ground.bindRenderer(&ren);
-  Mesh crate;   crate.load("assets/crate/", "crate");  crate.bindRenderer(&ren);
+  Mesh crate;   crate.load("assets/crate/", "crate");     crate.bindRenderer(&ren);
   Mesh sphere;  sphere.load("assets/sphere/", "sphere");  sphere.bindRenderer(&ren);
   
+
+  Model tree;
+  tree.load("assets/environment/tree/");
+
+  Model geegee;
+  geegee.load("assets/environment/terrain1/");
+
+
   ObjectContainer rendered_objects;
   GameObject cr = GameObject(&crate);
   cr.usePhysics = true;
@@ -175,6 +184,7 @@ int ENTRY(int argc, char **argv)
         ren.useShader(SHADER_POINTSHADOW);
         ren.setupDepthCubemap({0, 0, 0}, {0, 0, 0});
         glDisable(GL_CULL_FACE);
+        tree.draw(&ren);
         scene_1.draw(&event);
         glEnable(GL_CULL_FACE);
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
@@ -214,6 +224,7 @@ int ENTRY(int argc, char **argv)
     ren.active_shader.setFloat("fog_start", ren.fog_start);
     ren.active_shader.setFloat("fog_end", ren.fog_end);
 
+    tree.draw(&ren);
     scene_1.draw(&event);
 
     glClear(GL_DEPTH_BUFFER_BIT);

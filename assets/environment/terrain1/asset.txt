@@ -1,0 +1,5 @@
+// #[attribute] [type] [name] [num keyframes] //
+
+
+#STATIC ground2
+#NAVMESH nav.obj
