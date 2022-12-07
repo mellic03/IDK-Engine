@@ -64,7 +64,7 @@ class Mesh {
 
     void useRenderer(Renderer *ren);
 
-    void set_pos(glm::vec3 position);
+    void setPos(glm::vec3 *position);
     void translate(glm::vec3 translation);
     void scale(float alpha);
 

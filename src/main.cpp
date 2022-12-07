@@ -77,17 +77,14 @@ int ENTRY(int argc, char **argv)
   player.pos->z = 6.0f;
   import_lighting_config(&ren);
 
-  NavMesh navmesh1;
-  navmesh1.load("assets/ground/nav.obj");
 
-  Mesh ground;  ground.load("assets/ground/", "ground2"); ground.useRenderer(&ren);
-  Mesh sphere;  sphere.load("assets/sphere/", "sphere");  sphere.useRenderer(&ren);
+  Mesh sphere;  sphere.load("assets/sphere/", "sphere");
   
 
-  Model tree;    tree.load("assets/environment/tree/");
+  Model tree;            tree.load("assets/environment/tree/");
   GameObject treeobj;    treeobj.addModel(&tree);
 
-  Model terrain;    terrain.load("assets/environment/terrain1/");
+  Model terrain;            terrain.load("assets/environment/terrain1/");
   GameObject terrainobj;    terrainobj.addModel(&terrain);
   terrainobj.collide(true);
 
@@ -100,7 +97,6 @@ int ENTRY(int argc, char **argv)
   scene_1.addRenderObject(&treeobj);
   scene_1.addRenderObject(&terrainobj);
 
-  scene_1.navmesh = navmesh1;
   //----------------------------------------
 
   // IMGUI SETUP
@@ -207,11 +203,11 @@ int ENTRY(int argc, char **argv)
     ren.active_shader->setFloat("pointlight.constant", ren.pointlights[0].constant);
     ren.active_shader->setFloat("pointlight.linear", ren.pointlights[0].linear);
     ren.active_shader->setFloat("pointlight.quadratic", ren.pointlights[0].quadratic);
+    ren.active_shader->setFloat("pointlight.bias", ren.pointlights[0].bias);
     ren.active_shader->setVec3( "clearColor", ren.clearColor);
     ren.active_shader->setFloat("fog_start", ren.fog_start);
     ren.active_shader->setFloat("fog_end", ren.fog_end);
 
-    tree.draw(&ren);
     scene_1.draw(&event);
 
     glClear(GL_DEPTH_BUFFER_BIT);

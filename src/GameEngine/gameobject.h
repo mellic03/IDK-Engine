@@ -40,29 +40,43 @@ class OldGameObject {
 
     void changeState(GameObjectState new_state);
 
-    void bindModel(Mesh *model) { this->model = model; };
     void perFrameUpdate(Renderer *ren);
     void attemptCollision(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal, float d, bool downwards);
 
     void collideWithMesh(Mesh *collisionmesh);
-    void draw(Renderer *ren);
 };
 
 
 class GameObject {
 
   private:
+    std::vector<glm::vec3> m_path;
+
     bool m_collideWith = false;
-    GameObjectState state = GSTATE_ATREST;
+    GameObjectState m_state = GSTATE_ATREST;
     std::vector<Model *> models;
+
+
 
   public:
     GameObject() { };
+    glm::vec3 pos = glm::vec3(0.0f);
+    glm::vec3 vel = glm::vec3(0.0f);
+    
+    // Member access
+    //-----------------------
+    glm::vec3 getPos(void) { return this->pos; };
+    //-----------------------
 
     void collide(bool collide) { this->m_collideWith = collide; };
     void collideWithPlayer(Player *player);
 
-    void addModel(Model *model) { this->models.push_back(model); };
+    void addModel(Model *model);
+    
+    void perFrameUpdate(Renderer *ren);
+    void changeState(GameObjectState state) { this->m_state = state; };
+    void setPath(std::vector<glm::vec3> path) { this->m_path = path; };
+
     void draw(Renderer *ren);
 
 };

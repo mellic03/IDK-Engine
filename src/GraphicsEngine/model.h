@@ -50,6 +50,8 @@ class Model {
 
     void collideWithPlayer(Player *player);
 
+    void setPos(glm::vec3 *position);
+
     void drawStaticMesh(Renderer *ren);
     void drawAnimatedMesh(Renderer *ren);
     void draw(Renderer *ren);

@@ -74,13 +74,38 @@ void import_lighting_config(Renderer *ren)
 }
  
  
-void draw_transform_menu(Scene *scene, OldGameObject *object, NavMesh *navmesh)
+void draw_transform_menu(Scene *scene, GameObject *object, NavMesh *navmesh)
 {
+  ImGui::Text("Transform");
+  ImGui::Separator();
 
+  ImGui::DragFloat3("Position", &object->pos[0], 0.01f, 0, 0, "%0.01f", 0);
+  ImGui::DragFloat3("Velocity", &object->vel[0], 0.01f, 0, 0, "%0.01f", 0);
 }
 
 void draw_entities_tab(Renderer *ren, Scene *scene)
 {
+
+  static int selected_object = 0;
+  char buffer[64];
+
+  ImGui::BeginChild("ChildL", ImVec2(ImGui::GetContentRegionAvail().x/4, 0), false, 0);
+  ImGui::Text("Object");
+  ImGui::Separator();
+  for (int i=0; i<scene->m_gameObjects.size(); i++)
+  {
+    sprintf(buffer, "Object %d", i);
+    if (ImGui::Selectable(buffer, selected_object == i))
+      selected_object = i;
+  }
+  ImGui::EndChild();
+
+  ImGui::SameLine();
+
+  ImGui::BeginChild("ChildR", ImVec2(ImGui::GetContentRegionAvail().x, 0), true, 0);
+  draw_transform_menu(scene, scene->m_gameObjects[selected_object], NULL);
+  ImGui::EndChild();
+
 
 
 }
@@ -125,6 +150,7 @@ void draw_lighting_tab(Renderer *ren)
     ImGui::SliderFloat("constant", &ren->pointlights[selected_pointlight].constant, 0.0f, 100.0f, "%0.4f", 0);
     ImGui::DragScalar("linear", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].linear,       0.001f, 0);
     ImGui::DragScalar("quadratic", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].quadratic, 0.001f, 0);
+    ImGui::DragScalar("bias", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].bias, 0.001f, 0);
 
     ImGui::Text("Position");
     ImGui::DragScalar("x", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.x, 0.05f, 0);

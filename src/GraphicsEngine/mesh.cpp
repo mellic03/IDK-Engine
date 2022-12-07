@@ -344,10 +344,9 @@ void unbindTextureUnit(GLenum texture_unit)
 
 void Mesh::draw(Renderer *ren)
 {
-  this->useRenderer(ren);
-
   this->model_mat = glm::mat4(1.0f);
   this->model_mat = glm::translate(this->model_mat, *this->pos);
+
   if (this->rotate_local)
   {
     this->model_mat = glm::rotate(this->model_mat, glm::radians(this->rot.y), {0.0f, 1.0f, 0.0f});
@@ -397,17 +396,9 @@ void Mesh::draw(Renderer *ren)
   glBindVertexArray(0);
 }
 
-void Mesh::set_pos(glm::vec3 point)
+void Mesh::setPos(glm::vec3 *position)
 {
-  *this->pos = point;
-  this->model_mat = glm::mat4(1.0f);
-  this->model_mat = glm::translate(this->model_mat, *this->pos);
-}
-
-void Mesh::useRenderer(Renderer *ren)
-{
-  this->view_mat = &ren->cam.view;
-  this->projection_mat = &ren->cam.projection;
+  this->pos = position;
 }
 
 void Mesh::translate(glm::vec3 translation)

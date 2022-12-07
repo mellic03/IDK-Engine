@@ -8,7 +8,9 @@ struct PointLight {
   vec3 pos;
   vec3 ambient, diffuse;
   float constant, linear, quadratic;
+  float bias;
 };
+uniform PointLight pointlight;
 
 struct SpotLight {
   vec3 position, direction;
@@ -25,8 +27,6 @@ in VS_OUT {
   vec3 viewPos;
   vec3 Normal;
   vec2 TexCoords;
-
-  PointLight pointlight;
 
   mat3 TBN;
 
@@ -193,7 +193,7 @@ void main()
 
   vec3 result = texture(material.emissionMap, fs_in.TexCoords).rgb;
 
-  result += calculate_pointlight(fs_in.pointlight, normal, fs_in.FragPos, fs_in.viewPos);
+  result += calculate_pointlight(pointlight, normal, fs_in.FragPos, fs_in.viewPos);
 
   for (int i=0; i<num_active_spotlights; i++)
     result += calculate_spotlight(spotlights[i], normal, fs_in.FragPos, fs_in.viewPos);

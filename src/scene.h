@@ -11,11 +11,11 @@ class Scene {
     Renderer *ren;
     Mesh *lightsource_model;
 
-    std::vector<GameObject *> m_gameObjects;
 
   public:
     Player *player;
 
+    std::vector<GameObject *> m_gameObjects;
     NavMesh navmesh;
 
     Scene() { };

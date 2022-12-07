@@ -58,7 +58,6 @@ void OldGameObject::perFrameUpdate(Renderer *ren)
       break;
   }
 
-
 }
 
 void OldGameObject::attemptCollision(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal, float d, bool downwards)
@@ -122,19 +121,54 @@ void OldGameObject::collideWithMesh(Mesh *collisionmesh)
 }
 
 
-void OldGameObject::draw(Renderer *ren)
+void GameObject::perFrameUpdate(Renderer *ren)
 {
-  this->model->draw(ren);
+  this->vel.y -= ren->gravity * ren->deltaTime;
+
+  this->vel.y *= 0.999f;
+  float damping = 1 / (1 + (ren->deltaTime * 5.0f));
+  this->vel.x *= damping;
+  this->vel.z *= damping;
+
+  // this->vel = glm::clamp(this->vel, glm::vec3(-4.5), glm::vec3(4.5));
+  this->pos += this->vel * ren->deltaTime;
+
+
+  switch (this->m_state)
+  {
+    case (GSTATE_ATREST):
+
+      break;
+
+    case (GSTATE_MOVETOWARDS):
+
+      if (this->m_path.size() == 0)
+      {
+        this->changeState(GSTATE_ATREST);
+        break;
+      }
+
+      if (glm::distance(this->pos, this->m_path[this->m_path.size()-1] + glm::vec3(0.0f, 0.5f, 0.0f)) < 0.5f)
+      {
+        this->m_path.pop_back();
+      }
+
+      else
+      {
+        glm::vec3 move_towards_dir = 0.01f * glm::normalize(this->m_path[this->m_path.size()-1] - this->pos);
+        this->pos += move_towards_dir;
+      }
+  
+      break;
+  }
 }
 
 
-
-void ObjectContainer::draw(Renderer *ren)
+void GameObject::addModel(Model *model)
 {
-  for (int i=0; i<this->objects.size(); i++)
-    this->objects[i]->draw(ren);
+  model->setPos(&this->pos);
+  this->models.push_back(model);
 }
-
 
 
 void GameObject::collideWithPlayer(Player *player)
@@ -145,7 +179,6 @@ void GameObject::collideWithPlayer(Player *player)
       model->collideWithPlayer(player);
   }
 }
-
 
 
 void GameObject::draw(Renderer *ren)

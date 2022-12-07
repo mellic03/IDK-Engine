@@ -43,6 +43,7 @@ bool Model::load(std::string filepath)
     {
       // printf("animation: %s, keyframes: %d\n", stringdata, intdata);
       this->animations[ANIM_REST].loadKeyframes(filepath, stringdata, intdata);
+      this->animations[ANIM_REST].setPos(this->position);
     }
 
     else if (sscanf(buffer, "GEOMETRYMESH %s", stringdata))
@@ -98,22 +99,20 @@ void Model::drawAnimatedMesh(Renderer *ren)
   }
 }
 
+void Model::setPos(glm::vec3 *position)
+{
+  this->position = position;
+
+  this->m_staticmesh.setPos(position);
+
+  for (int i=0; i<NUM_ANIMATION_TYPES; i++)
+    this->animations[i].setPos(position);
+}
+
 
 void Model::draw(Renderer *ren)
 {
   (this->use_staticmesh) ? this->drawStaticMesh(ren) : this->drawAnimatedMesh(ren);
-
-  // this->drawAnimatedMesh(ren);
-  // switch (this->use_staticmesh)
-  // {
-  //   case (true):
-  //     this->drawStaticMesh(ren);
-  //     break;
-
-  //   case (false):
-  //     this->drawAnimatedMesh(ren);
-  //     break;
-  // }
 }
 
 
