@@ -12,7 +12,7 @@ class Animation {
   private:
 
     unsigned int m_anim_framecount = 0;
-    unsigned int m_anim_framelength = 144;
+    unsigned int m_anim_framelength = 512;
     unsigned int m_active_keyframe = 0;
     std::vector<Mesh> keyframes;
   

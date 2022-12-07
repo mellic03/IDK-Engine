@@ -19,6 +19,8 @@ bool Animation::loadKeyframes(std::string filepath, std::string name, int num_ke
     this->keyframes[i].setBufferData();
   }
 
+  printf("num_keyframes: %d\n", num_keyframes);
+
   return true;
 }
 
@@ -29,10 +31,10 @@ void Animation::nextFrame(void)
 
 void Animation::play(Renderer *ren)
 {
-  this->keyframes[this->m_active_keyframe].bindRenderer(ren);
+  this->keyframes[this->m_active_keyframe].useRenderer(ren);
 
   float lerp_value = (float)this->m_anim_framecount / (float)this->m_anim_framelength;
-  ren->active_shader.setFloat("lerp_value", lerp_value);
+  ren->active_shader->setFloat("lerp_value", lerp_value);
 
   this->keyframes[this->m_active_keyframe].draw(ren);
 

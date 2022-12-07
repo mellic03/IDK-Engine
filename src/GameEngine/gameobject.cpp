@@ -3,7 +3,7 @@
 #include "physics.h"
 
 
-void GameObject::changeState(GameObjectState new_state)
+void OldGameObject::changeState(GameObjectState new_state)
 {
   this->state = new_state;
 
@@ -16,7 +16,7 @@ void GameObject::changeState(GameObjectState new_state)
 }
 
 
-void GameObject::perFrameUpdate(Renderer *ren)
+void OldGameObject::perFrameUpdate(Renderer *ren)
 {
   this->vel.y -= ren->gravity * ren->deltaTime;
 
@@ -61,7 +61,7 @@ void GameObject::perFrameUpdate(Renderer *ren)
 
 }
 
-void GameObject::attemptCollision(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal, float d, bool downwards)
+void OldGameObject::attemptCollision(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal, float d, bool downwards)
 {
   glm::vec3 intersect_point;
 
@@ -93,7 +93,7 @@ void GameObject::attemptCollision(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm
   }
 }
 
-void GameObject::collideWithMesh(Mesh *collisionmesh)
+void OldGameObject::collideWithMesh(Mesh *collisionmesh)
 {
   for (int i=0; i<collisionmesh->num_vertices; i+=3)
   {
@@ -122,10 +122,11 @@ void GameObject::collideWithMesh(Mesh *collisionmesh)
 }
 
 
-void GameObject::draw(Renderer *ren)
+void OldGameObject::draw(Renderer *ren)
 {
   this->model->draw(ren);
 }
+
 
 
 void ObjectContainer::draw(Renderer *ren)
@@ -133,3 +134,23 @@ void ObjectContainer::draw(Renderer *ren)
   for (int i=0; i<this->objects.size(); i++)
     this->objects[i]->draw(ren);
 }
+
+
+
+void GameObject::collideWithPlayer(Player *player)
+{
+  for (Model *model: this->models)
+  {
+    if (this->m_collideWith)
+      model->collideWithPlayer(player);
+  }
+}
+
+
+
+void GameObject::draw(Renderer *ren)
+{
+  for (Model *model: this->models)
+    model->draw(ren);
+}
+

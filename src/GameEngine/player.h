@@ -20,9 +20,9 @@ class Player {
     glm::vec3 *dir;
     glm::vec3 vel = {0.0f, 0.0f, 0.0f};
 
-    Weapon weapons[1];
-    Weapon *active_weapon;
-    WeaponType active_weapon_type = SHOTGUN;
+    // Weapon weapons[1];
+    // Weapon *active_weapon;
+    // WeaponType active_weapon_type = SHOTGUN;
 
 
     float height = 0.5f;

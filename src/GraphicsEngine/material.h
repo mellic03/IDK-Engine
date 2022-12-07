@@ -15,7 +15,7 @@
 struct Material {
   glm::vec3 ambient = glm::vec3(0.0f);
   Texture diffuse, specular, emission, normal;
-  glm::vec3 diffuse_color = glm::vec3(0.0f);
+  glm::vec3 diffuse_color = glm::vec3(0.0f, 0.0f, 0.0f);
   float spec_exponent = 0.5f;
 };
 

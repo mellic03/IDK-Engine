@@ -12,7 +12,15 @@
 #include "../include/glm/gtc/matrix_transform.hpp"
 #include "../include/glm/gtc/type_ptr.hpp"
 
-enum ShaderType { SHADER_WORLDSPACE, SHADER_VIEWSPACE, SHADER_LIGHTSOURCE, SHADER_SHADOWMAP, SHADER_RENDERQUAD, SHADER_TEST, SHADER_POINTSHADOW, SHADER_SCREENQUAD };
+enum ShaderType {
+  SHADER_WORLDSPACE,
+  SHADER_VIEWSPACE,
+  SHADER_LIGHTSOURCE,
+  SHADER_SHADOWMAP,
+  SHADER_POINTSHADOW,
+  SHADER_SCREENQUAD,
+  SHADER_TERRAIN
+};
 
 struct ShaderSource {
   std::string vertex_source;

@@ -283,6 +283,8 @@ void Mesh::load(const char *filepath, std::string name)
     }
   }
 
+  fclose(fh);
+
   this->setBufferData();
 }
 
@@ -342,6 +344,8 @@ void unbindTextureUnit(GLenum texture_unit)
 
 void Mesh::draw(Renderer *ren)
 {
+  this->useRenderer(ren);
+
   this->model_mat = glm::mat4(1.0f);
   this->model_mat = glm::translate(this->model_mat, *this->pos);
   if (this->rotate_local)
@@ -355,14 +359,13 @@ void Mesh::draw(Renderer *ren)
     this->model_mat = glm::rotate(this->model_mat, glm::radians(this->rot.y), {0.0f, 1.0f, 0.0f});
   }
 
-  // this->model_mat = glm::rotate(this->model_mat, this->rot.z, {0.0f, 0.0f, 1.0f});
 
   glBindVertexArray(this->VAO);
 
-  ren->active_shader.setVec3("diffuse", this->materials[0].diffuse_color);
-  ren->active_shader.setMat4("model", this->model_mat);
-  ren->active_shader.setMat4("view", *this->view_mat);
-  ren->active_shader.setMat4("projection", *this->projection_mat);
+  ren->active_shader->setVec3("diffuse", glm::vec3(0.0f, 0.0f, 0.0f));
+  ren->active_shader->setMat4("model", this->model_mat);
+  ren->active_shader->setMat4("view", ren->cam.view);
+  ren->active_shader->setMat4("projection", ren->cam.projection);
 
 
   char buffer[64];
@@ -374,11 +377,11 @@ void Mesh::draw(Renderer *ren)
     this->materials[i].normal.bind(  GL_TEXTURE2 );
     this->materials[i].emission.bind(  GL_TEXTURE3 );
   
-    ren->active_shader.setInt("material.diffuseMap", 0);
-    ren->active_shader.setInt("material.specularMap", 1);
-    ren->active_shader.setInt("material.normalMap", 2);
-    ren->active_shader.setInt("material.emissionMap", 3);
-    ren->active_shader.setFloat("material.spec_exponent", this->materials[i].spec_exponent);
+    ren->active_shader->setInt("material.diffuseMap", 0);
+    ren->active_shader->setInt("material.specularMap", 1);
+    ren->active_shader->setInt("material.normalMap", 2);
+    ren->active_shader->setInt("material.emissionMap", 3);
+    ren->active_shader->setFloat("material.spec_exponent", this->materials[i].spec_exponent);
 
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->IBOS[i]);
@@ -401,7 +404,7 @@ void Mesh::set_pos(glm::vec3 point)
   this->model_mat = glm::translate(this->model_mat, *this->pos);
 }
 
-void Mesh::bindRenderer(Renderer *ren)
+void Mesh::useRenderer(Renderer *ren)
 {
   this->view_mat = &ren->cam.view;
   this->projection_mat = &ren->cam.projection;

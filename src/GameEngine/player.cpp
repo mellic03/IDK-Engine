@@ -11,11 +11,11 @@ Player::Player(Renderer *ren)
   this->pos = &this->cam->pos;
   this->dir = &this->cam->front;
 
-  this->active_weapon_type = SHOTGUN;
-  this->active_weapon = &this->weapons[this->active_weapon_type];
-  this->active_weapon->load_model("assets/gun/", "gun", ren);
-  this->active_weapon->hip_pos = glm::vec3(+0.10f, -0.10f, -0.15f);
-  this->active_weapon->aim_pos = glm::vec3( 0.00f, -0.015f, -0.10f);
+  // this->active_weapon_type = SHOTGUN;
+  // this->active_weapon = &this->weapons[this->active_weapon_type];
+  // this->active_weapon->load_model("assets/gun/", "gun", ren);
+  // this->active_weapon->hip_pos = glm::vec3(+0.10f, -0.10f, -0.15f);
+  // this->active_weapon->aim_pos = glm::vec3( 0.00f, -0.015f, -0.10f);
 
 }
 
@@ -109,8 +109,8 @@ void Player::mouse_input(Renderer *ren, SDL_Event *event)
     case SDL_MOUSEBUTTONDOWN:
       if (event->button.button == SDL_BUTTON_RIGHT)
       {
-        this->active_weapon->aiming = true;
-        this->active_weapon->sway /= 8;
+        // this->active_weapon->aiming = true;
+        // this->active_weapon->sway /= 8;
         this->move_speed /= 2;
       }
     break;
@@ -118,8 +118,8 @@ void Player::mouse_input(Renderer *ren, SDL_Event *event)
     case SDL_MOUSEBUTTONUP:
       if (event->button.button == SDL_BUTTON_RIGHT)
       {
-        this->active_weapon->aiming = false;
-        this->active_weapon->sway *= 8;
+        // this->active_weapon->aiming = false;
+        // this->active_weapon->sway *= 8;
         this->move_speed *= 2;
       }
     break;
@@ -129,8 +129,8 @@ void Player::mouse_input(Renderer *ren, SDL_Event *event)
   {
     this->cam->yaw   += this->cam->rot_speed * ren->deltaTime * event->motion.xrel;
     this->cam->pitch -= this->cam->rot_speed * ren->deltaTime * event->motion.yrel;
-    this->active_weapon->movement_offset.x -= this->cam->rot_speed * ren->deltaTime * 0.001f * event->motion.xrel;
-    this->active_weapon->movement_offset.y += this->cam->rot_speed * ren->deltaTime * 0.001f * event->motion.yrel;
+    // this->active_weapon->movement_offset.x -= this->cam->rot_speed * ren->deltaTime * 0.001f * event->motion.xrel;
+    // this->active_weapon->movement_offset.y += this->cam->rot_speed * ren->deltaTime * 0.001f * event->motion.yrel;
   }
 
   else if (event->type == SDL_KEYDOWN)
@@ -149,5 +149,5 @@ void Player::mouse_input(Renderer *ren, SDL_Event *event)
 
 void Player::draw(Renderer *ren)
 {
-  this->active_weapon->draw(ren);
+  // this->active_weapon->draw(ren);
 }

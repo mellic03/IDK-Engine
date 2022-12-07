@@ -1,5 +1,8 @@
 // #[attribute] [type] [name] [num keyframes] //
 
+#STATIC
 
-#STATIC ground2
-#NAVMESH nav.obj
+GEOMETRYMESH ground2
+COLLISIONMESH ground2
+
+NAVMESH nav.obj

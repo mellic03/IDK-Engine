@@ -44,6 +44,8 @@ class Renderer {
        1.0f,  1.0f, 1.0f, 1.0f
     };
 
+    void createShader(std::string filename, ShaderType type);
+
 
   public:
     GLuint FBO;
@@ -51,8 +53,51 @@ class Renderer {
     GLuint colorBuffers[2];
     GLuint colorBuffer;
 
+    // Camera/user-facing
+    //---------------------------------------------------------------------
+    Camera cam;
+
+    float deltaTime = 0.0f;
+    float fov = 90.0f, far_plane = 650.0f, near_plane = 1.0f;
+    float image_kernel[9] = {
+      0, 0, 0,
+      0, 1, 0,
+      0, 0, 0
+    };
+    float kernel_divisor = 1.0f, kernel_offset_divisor = 600.0f;
+
+    glm::vec4 clearColor = {0.0, 0.0, 0.0, 1.0};
+    float fog_start = 10, fog_end = 25;
+    float exposure = 1.0f, gamma = 2.2f;
+
+    int SCR_width = DEFAULT_SCREEN_WIDTH;
+    int SCR_height = DEFAULT_SCREEN_HEIGHT;
+    //---------------------------------------------------------------------
+
+
+    // Lighting
+    //---------------------------------------------------------------------
+    float NM_DIRLIGHTS = 1;
+    float NM_POINTLIGHTS = 5;
+    float NM_SPOTLIGHTS = 2;
+
+    Shader shaders[20];
+    Shader *active_shader = &this->shaders[0];
+    
+    std::vector<DirLight>    dirlights;
+
+    std::vector<PointLight>  pointlights, shaderready_pointlights;
+    bool pointlights_on[NUM_POINTLIGHTS] = { false };  int num_active_pointlights = 0;
+
+    std::vector<SpotLight>   spotlights, shaderready_spotlights;
+    bool spotlights_on[NUM_SPOTLIGHTS] = { false };    int num_active_spotlights = 0;
+    
+    glm::vec3 ambient_light = {0.0, 0.0, 0.0};
+    //---------------------------------------------------------------------
+
+
     // Shadows
-    //----------------------------------------------
+    //---------------------------------------------------------------------
     int SHADOW_WIDTH = 512;
     int SHADOW_HEIGHT = 512;
 
@@ -65,58 +110,13 @@ class Renderer {
     GLuint dirlightDepthMapFBO, dirlightDepthMap;
     GLuint spotlightDepthMapFBO, spotlightDepthMap;
     float spotlight_bias = 0.01f;
-    //----------------------------------------------
+    //---------------------------------------------------------------------
 
 
-
-    Camera cam;
-
-
-    float deltaTime = 0.0f;
-    float fov = 90.0f, far_plane = 650.0f, near_plane = 1.0f;
-    float image_kernel[9] = {
-      0, 0, 0,
-      0, 1, 0,
-      0, 0, 0
-    };
-    float kernel_divisor = 1.0f, kernel_offset_divisor = 600.0f;
-
-
-    glm::vec4 clearColor = {0.0, 0.0, 0.0, 1.0};
-    float fog_start = 10, fog_end = 25;
-    float exposure = 1.0f, gamma = 2.2f;
-
-
-    int SCR_width = DEFAULT_SCREEN_WIDTH;
-    int SCR_height = DEFAULT_SCREEN_HEIGHT;
-
-    float NM_DIRLIGHTS = 1;
-    float NM_POINTLIGHTS = 5;
-    float NM_SPOTLIGHTS = 2;
-
-    Shader shaders[10];
-    Shader active_shader;
-    
-    std::vector<DirLight>    dirlights;
-
-    std::vector<PointLight>  pointlights, shaderready_pointlights;
-    bool pointlights_on[NUM_POINTLIGHTS] = { false };  int num_active_pointlights = 0;
-
-    std::vector<SpotLight>   spotlights, shaderready_spotlights;
-    bool spotlights_on[NUM_SPOTLIGHTS] = { false };    int num_active_spotlights = 0;
-    
-    
-    glm::vec3 ambient_light = {0.0, 0.0, 0.0};
-
-    float gravity = 5.0f;
+    float gravity = 0.0f;
 
 
     Renderer();
-
-    void bindFrameBufferObject(GLuint buffer, int x, int y);
-    void bindTexture(GLuint texture, int x, int y);
-    void bindRenderBufferObject(GLuint render_buffer_object, int x, int y);
-    void unbindFrameBufferObject(void) { glBindFramebuffer(GL_FRAMEBUFFER, 0); };
 
     void useShader(ShaderType shader);
     void postProcess(void);

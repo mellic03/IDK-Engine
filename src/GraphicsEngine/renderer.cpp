@@ -9,42 +9,27 @@
 #include <sstream>
 #include "renderer.h"
 
+void Renderer::createShader(std::string filename, ShaderType type)
+{
+  std::string filepath = "assets/shaders/" + filename;
+
+  ShaderSource src = parse_shader(filepath + ".vs", filepath + ".fs", "NULL");
+  Shader shader;
+  shader.set(create_shader(src.vertex_source, src.fragment_source, src.geometry_source));
+  this->shaders[type] = shader;
+}
+
 Renderer::Renderer()
 {
-  ShaderSource worldspace_src = parse_shader("assets/shaders/worldspace.vs", "assets/shaders/worldspace.fs", "NULL");
-  Shader worldspace;
-  worldspace.set(create_shader(worldspace_src.vertex_source, worldspace_src.fragment_source, worldspace_src.geometry_source));
-  this->shaders[SHADER_WORLDSPACE] = worldspace;
-
-  ShaderSource viewspace_src = parse_shader("assets/shaders/viewspace.vs", "assets/shaders/viewspace.fs", "NULL");
-  Shader viewspace;
-  viewspace.set(create_shader(viewspace_src.vertex_source, viewspace_src.fragment_source, viewspace_src.geometry_source));
-  this->shaders[SHADER_VIEWSPACE] = viewspace;
-
-  ShaderSource lightsource_src = parse_shader("assets/shaders/lightsource.vs", "assets/shaders/lightsource.fs", "NULL");
-  Shader lightsource;
-  lightsource.set(create_shader(lightsource_src.vertex_source, lightsource_src.fragment_source, lightsource_src.geometry_source));
-  this->shaders[SHADER_LIGHTSOURCE] = lightsource;
-  
-  ShaderSource renderquad_src = parse_shader("assets/shaders/renderquad.vs", "assets/shaders/renderquad.fs", "NULL");
-  Shader renderquad;
-  renderquad.set(create_shader(renderquad_src.vertex_source, renderquad_src.fragment_source, renderquad_src.geometry_source));
-  this->shaders[SHADER_RENDERQUAD] = renderquad;
-
-  ShaderSource shadowmap_src = parse_shader("assets/shaders/shadowmap.vs", "assets/shaders/shadowmap.fs", "NULL");
-  Shader shadowmap;
-  shadowmap.set(create_shader(shadowmap_src.vertex_source, shadowmap_src.fragment_source, shadowmap_src.geometry_source));
-  this->shaders[SHADER_SHADOWMAP] = shadowmap;
+  this->createShader("worldspace",     SHADER_WORLDSPACE);
+  this->createShader("viewspace",      SHADER_VIEWSPACE);
+  this->createShader("lightsource",    SHADER_LIGHTSOURCE);
+  this->createShader("screenquad",     SHADER_SCREENQUAD);
 
   ShaderSource pointshadow_src = parse_shader("assets/shaders/pointshadow.vs", "assets/shaders/pointshadow.fs", "assets/shaders/pointshadow.gs");
   Shader pointshadow;
   pointshadow.set(create_shader(pointshadow_src.vertex_source, pointshadow_src.fragment_source, pointshadow_src.geometry_source));
   this->shaders[SHADER_POINTSHADOW] = pointshadow;
-
-  ShaderSource screenquad_src = parse_shader("assets/shaders/renderquad.vs", "assets/shaders/renderquad.fs", "NULL");
-  Shader screenquad;
-  screenquad.set(create_shader(screenquad_src.vertex_source, screenquad_src.fragment_source, screenquad_src.geometry_source));
-  this->shaders[SHADER_SCREENQUAD] = screenquad;
 
 
   // Generate screen quad
@@ -117,8 +102,6 @@ Renderer::Renderer()
 
 
 
-
-
   for (int i=0; i<NUM_DIRLIGHTS; i++)
     this->dirlights.push_back(DirLight());
 
@@ -133,37 +116,23 @@ Renderer::Renderer()
     this->spotlights.push_back(SpotLight());
   this->spotlights[0].position = {-2.0f, 4.0f, -1.0f};
 
-
-}
-
-void Renderer::bindFrameBufferObject(GLuint buffer, int x, int y)
-{
-  glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
-
-
-}
-
-void Renderer::bindTexture(GLuint texture, int x, int y)
-{
-  glBindTexture(GL_TEXTURE_2D, texture);
-  // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 }
 
 
 void Renderer::useShader(ShaderType shader)
 {
-  this->active_shader = this->shaders[shader];
-  glUseProgram(this->active_shader.id);
+  this->active_shader = &this->shaders[shader];
+  glUseProgram(this->active_shader->id);
 }
 
 void Renderer::postProcess(void)
 {
   // this->active_shader.setInt("screenTexture", 0);
-  this->active_shader.setFloatVector("kernel", 9, this->image_kernel);
-  this->active_shader.setFloat("kernelDivisor", this->kernel_divisor);
-  this->active_shader.setFloat("kernelOffsetDivisor", this->kernel_offset_divisor);
-  this->active_shader.setFloat("exposure", this->exposure);
-  this->active_shader.setFloat("gamma", this->gamma);
+  this->active_shader->setFloatVector("kernel", 9, this->image_kernel);
+  this->active_shader->setFloat("kernelDivisor", this->kernel_divisor);
+  this->active_shader->setFloat("kernelOffsetDivisor", this->kernel_offset_divisor);
+  this->active_shader->setFloat("exposure", this->exposure);
+  this->active_shader->setFloat("gamma", this->gamma);
 }
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -189,11 +158,11 @@ void Renderer::setupDepthCubemap(glm::vec3 pos, glm::vec3 dir)
   for (int i=0; i<6; i++)
   {
     sprintf(buffer, "shadowMatrices[%d]", i);
-    this->active_shader.setMat4(buffer, shadowTransforms[i]);
+    this->active_shader->setMat4(buffer, shadowTransforms[i]);
   }
 
-  this->active_shader.setVec3("lightPos", this->pointlights[0].position);
-  this->active_shader.setFloat("far_plane", far);
+  this->active_shader->setVec3("lightPos", this->pointlights[0].position);
+  this->active_shader->setFloat("far_plane", far);
 
 }
 
@@ -251,8 +220,8 @@ void Renderer::update(glm::vec3 pos, glm::vec3 dir)
 
 void Renderer::sendLightsToShader(void)
 {
-  this->active_shader.setInt("num_active_pointlights", this->num_active_pointlights);
-  this->active_shader.setInt("num_active_spotlights", this->num_active_spotlights);
+  this->active_shader->setInt("num_active_pointlights", this->num_active_pointlights);
+  this->active_shader->setInt("num_active_spotlights", this->num_active_spotlights);
 
   char buffer[64];
 
@@ -298,39 +267,39 @@ void Renderer::sendLightsToShader(void)
   for (int i=0; i<NUM_SPOTLIGHTS; i++)
   {
     sprintf(buffer, "spotlights[%d].position", i);
-    this->active_shader.setVec3(buffer,  this->shaderready_spotlights[i].position);
+    this->active_shader->setVec3(buffer,  this->shaderready_spotlights[i].position);
 
     sprintf(buffer, "spotlights[%d].direction", i);
-    this->active_shader.setVec3(buffer,  this->shaderready_spotlights[i].direction);
+    this->active_shader->setVec3(buffer,  this->shaderready_spotlights[i].direction);
 
     sprintf(buffer, "spotlights[%d].ambient", i);
-    this->active_shader.setVec3(buffer,  this->shaderready_spotlights[i].ambient);
+    this->active_shader->setVec3(buffer,  this->shaderready_spotlights[i].ambient);
 
     sprintf(buffer, "spotlights[%d].diffuse", i);
-    this->active_shader.setVec3(buffer,  this->shaderready_spotlights[i].diffuse);
+    this->active_shader->setVec3(buffer,  this->shaderready_spotlights[i].diffuse);
 
     sprintf(buffer, "spotlights[%d].specular", i);
-    this->active_shader.setVec3(buffer,  this->shaderready_spotlights[i].specular);
+    this->active_shader->setVec3(buffer,  this->shaderready_spotlights[i].specular);
 
     sprintf(buffer, "spotlights[%d].constant", i);
-    this->active_shader.setFloat(buffer,  this->shaderready_spotlights[i].constant);
+    this->active_shader->setFloat(buffer,  this->shaderready_spotlights[i].constant);
 
     sprintf(buffer, "spotlights[%d].linear", i);
-    this->active_shader.setFloat(buffer,  this->shaderready_spotlights[i].linear);
+    this->active_shader->setFloat(buffer,  this->shaderready_spotlights[i].linear);
 
     sprintf(buffer, "spotlights[%d].quadratic", i);
-    this->active_shader.setFloat(buffer,  this->shaderready_spotlights[i].quadratic);
+    this->active_shader->setFloat(buffer,  this->shaderready_spotlights[i].quadratic);
 
     sprintf(buffer, "spotlights[%d].inner_cutoff", i);
-    this->active_shader.setFloat(buffer,  glm::cos(glm::radians(this->shaderready_spotlights[i].inner_cutoff)));
+    this->active_shader->setFloat(buffer,  glm::cos(glm::radians(this->shaderready_spotlights[i].inner_cutoff)));
 
     sprintf(buffer, "spotlights[%d].outer_cutoff", i);
-    this->active_shader.setFloat(buffer,  glm::cos(glm::radians(this->shaderready_spotlights[i].outer_cutoff)));
+    this->active_shader->setFloat(buffer,  glm::cos(glm::radians(this->shaderready_spotlights[i].outer_cutoff)));
 
     sprintf(buffer, "spotlights[%d].intensity", i);
-    this->active_shader.setFloat(buffer,  this->shaderready_spotlights[i].intensity);
+    this->active_shader->setFloat(buffer,  this->shaderready_spotlights[i].intensity);
   }
 
-  this->active_shader.setVec3("viewPos", this->cam.pos);
-  this->active_shader.setVec3("viewDirection", this->cam.dir);
+  this->active_shader->setVec3("viewPos", this->cam.pos);
+  this->active_shader->setVec3("viewDirection", this->cam.dir);
 }

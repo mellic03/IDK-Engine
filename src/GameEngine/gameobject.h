@@ -1,12 +1,12 @@
 #pragma once
 
 #include "../GraphicsEngine/GraphicsEngine.h"
-
+#include "player.h"
 
 enum GameObjectState { GSTATE_ATREST, GSTATE_MOVETOWARDS };
 
 
-class GameObject {
+class OldGameObject {
 
   private:
 
@@ -30,7 +30,7 @@ class GameObject {
     glm::vec3 pos = glm::vec3(0.0f);
     glm::vec3 vel = glm::vec3(0.0f);
     
-    GameObject(Mesh *model = NULL)
+    OldGameObject(Mesh *model = NULL)
     {
       if (model != NULL)
         this->model = model;
@@ -49,14 +49,33 @@ class GameObject {
 };
 
 
+class GameObject {
+
+  private:
+    bool m_collideWith = false;
+    GameObjectState state = GSTATE_ATREST;
+    std::vector<Model *> models;
+
+  public:
+    GameObject() { };
+
+    void collide(bool collide) { this->m_collideWith = collide; };
+    void collideWithPlayer(Player *player);
+
+    void addModel(Model *model) { this->models.push_back(model); };
+    void draw(Renderer *ren);
+
+};
+
+
 class ObjectContainer {
 
   public:
-    std::vector<GameObject *> objects;
+    std::vector<OldGameObject *> objects;
 
     ObjectContainer() { };
 
-    void addObject(GameObject *game_object) { this->objects.push_back(game_object); };
+    void addObject(OldGameObject *game_object) { this->objects.push_back(game_object); };
 
     void draw(Renderer *ren);
 

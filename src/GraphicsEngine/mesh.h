@@ -62,7 +62,7 @@ class Mesh {
     void setBufferData(void);
     void draw(Renderer *ren);
 
-    void bindRenderer(Renderer *ren);
+    void useRenderer(Renderer *ren);
 
     void set_pos(glm::vec3 position);
     void translate(glm::vec3 translation);

@@ -16,7 +16,8 @@
 #include "animation.h"
 #include "renderer.h"
 
-#include "../GameEngine/navmesh.h"
+#include "../GameEngine/player.h"
+class Player;
 
 enum ModelState { MSTATE_NOANIM_PLAYING, MSTATE_ANIM_PLAYING };
 
@@ -25,35 +26,35 @@ class Model {
 
   private:
 
-    bool staticmesh = true;
-
-    std::vector<Mesh> meshes;
+    bool use_staticmesh = true;
+    Mesh m_staticmesh;
+    Mesh m_collision_mesh;
 
     ModelState m_state = MSTATE_NOANIM_PLAYING;
 
     AnimationType m_active_animation = ANIM_REST;
     Animation animations[NUM_ANIMATION_TYPES];
 
+    glm::vec3 m_default_position = glm::vec3(0.0f);
+
   public:
 
-    glm::vec3 *position;
-    Mesh m_collision_mesh;
+    glm::vec3 *position = &this->m_default_position;
 
     Model() { };
     
     bool load(std::string filepath);
 
-    void bindRenderer(Renderer *ren);
-
     void activeAnimation(AnimationType id);
     void playAnimation(Renderer *ren);
 
+    void collideWithPlayer(Player *player);
+
+    void drawStaticMesh(Renderer *ren);
+    void drawAnimatedMesh(Renderer *ren);
     void draw(Renderer *ren);
 };
 
-class TerrainModel: private Model {
-
-};
 
 class InstancedModel {
 

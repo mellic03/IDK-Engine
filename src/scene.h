@@ -9,24 +9,21 @@ class Scene {
   private:
     
     Renderer *ren;
-
     Mesh *lightsource_model;
 
+    std::vector<GameObject *> m_gameObjects;
 
   public:
     Player *player;
-    std::vector<ModelContainer *> renderContainers;
-    std::vector<ModelContainer *> physicsContainers;
-    ObjectContainer renderables;
+
     NavMesh navmesh;
 
     Scene() { };
 
-    void bindRenderer(Renderer *renptr);
-    void bindPlayer(Player *playerptr);
+    void useRenderer(Renderer *renptr);
+    void usePlayer(Player *playerptr);
 
-    void addRenderContainer(ModelContainer *render_container);
-    void addPhysicsContainer(ModelContainer *physics_container);
+    void addRenderObject(GameObject *obj) { this->m_gameObjects.push_back(obj); } ;
 
     void addLightsourceModel(Mesh *lightsource_model);
     

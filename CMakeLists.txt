@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.24)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
 
 add_compile_options(
-  -Ofast
+  -g
 )
 
 

@@ -1,4 +1,5 @@
-// #[attribute] [type] [name] [num keyframes] //
+// [attribute] [type] [name] [num keyframes] //
 
+#ANIMATED
 
-#ANIMATION REST bend 2
+ANIMATION REST bend 2

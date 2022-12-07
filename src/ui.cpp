@@ -74,79 +74,13 @@ void import_lighting_config(Renderer *ren)
 }
  
  
-void draw_transform_menu(Scene *scene, GameObject *object, NavMesh *navmesh)
+void draw_transform_menu(Scene *scene, OldGameObject *object, NavMesh *navmesh)
 {
-  ImGui::PushID(1);
-  ImGui::Text("Position");
-  ImGui::DragScalar("x", ImGuiDataType_Float, &object->pos.x, 0.05f, 0);
-  ImGui::DragScalar("y", ImGuiDataType_Float, &object->pos.y, 0.05f, 0);
-  ImGui::DragScalar("z", ImGuiDataType_Float, &object->pos.z, 0.05f, 0);
-  ImGui::PopID();
 
-  ImGui::PushID(2);
-  ImGui::Text("Velocity");
-  ImGui::DragScalar("x", ImGuiDataType_Float, &object->vel.x, 0.05f, 0);
-  ImGui::DragScalar("y", ImGuiDataType_Float, &object->vel.y, 0.05f, 0);
-  ImGui::DragScalar("z", ImGuiDataType_Float, &object->vel.z, 0.05f, 0);
-  // ImGui::SliderFloat("x", &object->vel.x, -100.0f, 100.0f, "%0.4f", 0);
-  // ImGui::SliderFloat("y", &object->vel.y, -100.0f, 100.0f, "%0.4f", 0);
-  // ImGui::SliderFloat("z", &object->vel.z, -100.0f, 100.0f, "%0.4f", 0);
-  ImGui::PopID();
-
-  ImGui::PushID(3);
-  ImGui::Text("Rotation");
-  ImGui::DragScalar("x", ImGuiDataType_Float, &object->model->rot.x, 0.5f, 0);
-  ImGui::DragScalar("y", ImGuiDataType_Float, &object->model->rot.y, 0.5f, 0);
-  ImGui::DragScalar("z", ImGuiDataType_Float, &object->model->rot.z, 0.5f, 0);
-  ImGui::Checkbox("local", &object->model->rotate_local);
-
-  if (object->model->rot.x >= 360) object->model->rot.x -= 360;
-  if (object->model->rot.y >= 360) object->model->rot.y -= 360;
-  ImGui::PopID();
-  
-  ImGui::PushID(4);
-  static glm::vec3 movetowards;
-  ImGui::DragScalar("x", ImGuiDataType_Float, &movetowards.x, 0.5f, 0);
-  ImGui::DragScalar("y", ImGuiDataType_Float, &movetowards.y, 0.5f, 0);
-  ImGui::DragScalar("z", ImGuiDataType_Float, &movetowards.z, 0.5f, 0);
-  if (ImGui::Button("Move"))
-  {
-    object->move_towards = movetowards;
-    object->path = navmesh->path(object->pos, *scene->player->pos);
-    object->changeState(GSTATE_MOVETOWARDS);
-  }
-  ImGui::PopID();
 }
 
 void draw_entities_tab(Renderer *ren, Scene *scene)
 {
-  ImGui::Dummy(ImVec2(0.0f, 20.0f));
-
-  std::vector<std::string> model_names;
-
-
-
-  for (int i=0; i<scene->renderables.objects.size(); i++)
-  {
-    char buffer[32];
-    sprintf(buffer, "%s", scene->renderables.objects[i]->model->m_name.c_str());
-
-    ImGui::PushID(i);
-    if (ImGui::TreeNode(buffer))
-    {
-      
-      if (ImGui::TreeNode("Transform"))
-      {
-        draw_transform_menu(scene, scene->renderables.objects[i], &scene->navmesh);
-
-        ImGui::TreePop();
-      }
-
-
-      ImGui::TreePop();
-    }
-    ImGui::PopID();
-  }
 
 
 }
