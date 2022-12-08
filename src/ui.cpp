@@ -74,13 +74,25 @@ void import_lighting_config(Renderer *ren)
 }
  
  
-void draw_transform_menu(Scene *scene, GameObject *object, NavMesh *navmesh)
+void draw_transform_menu(Scene *scene, GameObject *object)
 {
   ImGui::Text("Transform");
   ImGui::Separator();
 
   ImGui::DragFloat3("Position", &object->pos[0], 0.01f, 0, 0, "%0.01f", 0);
   ImGui::DragFloat3("Velocity", &object->vel[0], 0.01f, 0, 0, "%0.01f", 0);
+  ImGui::DragFloat3("Rotation", &object->rot[0], 0.1f, 0, 0, "%0.1f", 0);
+
+  ImGui::Text("Other Stuff");
+  ImGui::Separator();
+
+  ImGui::Text("is_animated: %s", (object->isAnimated() ? "true" : "false"));
+
+  if (ImGui::Button("Seek Player"))
+  {
+    object->setPath(scene->navmesh.path(object->pos, *scene->player->pos));
+  }
+
 }
 
 void draw_entities_tab(Renderer *ren, Scene *scene)
@@ -103,9 +115,8 @@ void draw_entities_tab(Renderer *ren, Scene *scene)
   ImGui::SameLine();
 
   ImGui::BeginChild("ChildR", ImVec2(ImGui::GetContentRegionAvail().x, 0), true, 0);
-  draw_transform_menu(scene, scene->m_gameObjects[selected_object], NULL);
+  draw_transform_menu(scene, scene->m_gameObjects[selected_object]);
   ImGui::EndChild();
-
 
 
 }

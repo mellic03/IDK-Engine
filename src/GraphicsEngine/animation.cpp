@@ -31,6 +31,12 @@ void Animation::setPos(glm::vec3 *position)
     this->keyframes[i].setPos(position);
 }
 
+void Animation::setRot(glm::vec3 *rotation)
+{
+  for (int i=0; i<this->keyframes.size(); i++)
+    this->keyframes[i].setRot(rotation);
+}
+
 
 void Animation::nextFrame(void)
 {

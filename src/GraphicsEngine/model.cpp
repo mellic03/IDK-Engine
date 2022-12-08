@@ -22,14 +22,12 @@ bool Model::load(std::string filepath)
 
     if (strcmp(stringdata, "#ANIMATED") == 0)
     {
-      this->use_staticmesh = false;
-      break;
+      this->is_animated = true;
     }
 
-    else if (strcmp(stringdata, "#STATIC") == 0)
+    else if (strcmp(stringdata, "#ENVIRONMENTAL") == 0)
     {
-      this->use_staticmesh = true;
-      break;
+      this->is_environmental = true;
     }
   }
 
@@ -44,6 +42,7 @@ bool Model::load(std::string filepath)
       // printf("animation: %s, keyframes: %d\n", stringdata, intdata);
       this->animations[ANIM_REST].loadKeyframes(filepath, stringdata, intdata);
       this->animations[ANIM_REST].setPos(this->position);
+      this->animations[ANIM_REST].setRot(this->rotation);
     }
 
     else if (sscanf(buffer, "GEOMETRYMESH %s", stringdata))
@@ -56,12 +55,12 @@ bool Model::load(std::string filepath)
     {
       // printf("static: %s\n", stringdata);
       this->m_collision_mesh.load(filepath.c_str(), stringdata);
+      collisionmesh_loaded = true;
     }
 
     else if (sscanf(buffer, "NAVMESH %s", stringdata))
     {
       // printf("navmesh: %s\n", stringdata);
-
     }
   }
 
@@ -110,15 +109,25 @@ void Model::setPos(glm::vec3 *position)
 }
 
 
+void Model::setRot(glm::vec3 *rotation)
+{
+  this->rotation = rotation;
+
+  this->m_staticmesh.setRot(rotation);
+
+  for (int i=0; i<NUM_ANIMATION_TYPES; i++)
+    this->animations[i].setRot(rotation);
+}
+
+
 void Model::draw(Renderer *ren)
 {
-  (this->use_staticmesh) ? this->drawStaticMesh(ren) : this->drawAnimatedMesh(ren);
+  (this->is_animated) ? this->drawAnimatedMesh(ren) : this->drawStaticMesh(ren);
 }
 
 
 void Model::collideWithPlayer(Player *player)
 {
-
   float nearest_dist = INFINITY;
   int nearest_i = 0;
 
@@ -131,13 +140,22 @@ void Model::collideWithPlayer(Player *player)
 
   glm::vec3 ray_traveldir = glm::normalize(player->vel);
 
+  glm::mat4 inverse_model = glm::inverse(this->m_staticmesh.model_mat);
+
   for (int i=0; i<this->m_collision_mesh.num_vertices; i+=3)
   {
 
-    glm::vec3 v0 = this->m_collision_mesh.vertices[i+0].position + *this->position;
-    glm::vec3 v1 = this->m_collision_mesh.vertices[i+1].position + *this->position;
-    glm::vec3 v2 = this->m_collision_mesh.vertices[i+2].position + *this->position;
-    glm::vec3 normal = this->m_collision_mesh.vertices[i+2].face_normal;
+    glm::vec3 v0 = this->m_collision_mesh.vertices[i+0].position * glm::mat3(inverse_model);
+    glm::vec3 v1 = this->m_collision_mesh.vertices[i+1].position * glm::mat3(inverse_model);
+    glm::vec3 v2 = this->m_collision_mesh.vertices[i+2].position * glm::mat3(inverse_model);
+    glm::vec3 normal = glm::vec4(
+      this->m_collision_mesh.vertices[i+2].face_normal.x,
+      this->m_collision_mesh.vertices[i+2].face_normal.y,
+      this->m_collision_mesh.vertices[i+2].face_normal.z,
+      0.0f      
+    ) * inverse_model;
+
+
 
     player->temp_pos = glm::vec3(player->pos->x, player->pos->y, player->pos->z);
 

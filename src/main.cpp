@@ -84,9 +84,16 @@ int ENTRY(int argc, char **argv)
   Model tree;            tree.load("assets/environment/tree/");
   GameObject treeobj;    treeobj.addModel(&tree);
 
+  Model building;            building.load("assets/environment/building/");
+  GameObject buildingobj;    buildingobj.addModel(&building);
+  buildingobj.collide(true);
+
   Model terrain;            terrain.load("assets/environment/terrain1/");
   GameObject terrainobj;    terrainobj.addModel(&terrain);
   terrainobj.collide(true);
+
+  NavMesh nav1;
+  nav1.load("assets/environment/terrain1/nav.obj");
 
 
   Scene scene_1;
@@ -96,6 +103,9 @@ int ENTRY(int argc, char **argv)
 
   scene_1.addRenderObject(&treeobj);
   scene_1.addRenderObject(&terrainobj);
+  scene_1.addRenderObject(&buildingobj);
+
+  scene_1.navmesh = nav1;
 
   //----------------------------------------
 

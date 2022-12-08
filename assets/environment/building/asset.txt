@@ -1,8 +1,9 @@
 // #[attribute] [type] [name] [num keyframes] //
 
+#STATIC
 #ENVIRONMENTAL
 
-GEOMETRYMESH ground2
-COLLISIONMESH collision
+GEOMETRYMESH building
+COLLISIONMESH building
 
 NAVMESH nav.obj

@@ -20,10 +20,16 @@ void Scene::addLightsourceModel(Mesh *lightsource_model)
 void Scene::draw(SDL_Event *event)
 {
 
-  for (GameObject *obj: this->m_gameObjects)
+  for (GameObject *obj1: this->m_gameObjects)
   {
-    obj->collideWithPlayer(this->player);
-    obj->draw(this->ren);
+    for (GameObject *obj2: this->m_gameObjects)
+      obj1->collideWithObject(obj2);
+  
+    obj1->perFrameUpdate(ren);
+    obj1->collideWithPlayer(this->player);
+    obj1->draw(this->ren);
+  
+
   }
 
 

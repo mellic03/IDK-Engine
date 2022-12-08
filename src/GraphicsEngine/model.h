@@ -26,7 +26,9 @@ class Model {
 
   private:
 
-    bool use_staticmesh = true;
+    bool is_animated = false;
+    bool is_environmental = false;
+  
     Mesh m_staticmesh;
     Mesh m_collision_mesh;
 
@@ -36,13 +38,24 @@ class Model {
     Animation animations[NUM_ANIMATION_TYPES];
 
     glm::vec3 m_default_position = glm::vec3(0.0f);
+    glm::vec3 m_default_rotation = glm::vec3(0.0f);
 
   public:
 
     glm::vec3 *position = &this->m_default_position;
+    glm::vec3 *rotation = &this->m_default_rotation;
 
     Model() { };
-    
+
+
+    // Member Access
+    //--------------------------------------
+    Mesh *getCollisionMesh(void) { return &this->m_collision_mesh; };
+
+    bool isAnimated(void)      { return this->is_animated; };
+    bool isEnvironmental(void) { return this->is_environmental; };
+    //--------------------------------------
+
     bool load(std::string filepath);
 
     void activeAnimation(AnimationType id);
@@ -51,6 +64,7 @@ class Model {
     void collideWithPlayer(Player *player);
 
     void setPos(glm::vec3 *position);
+    void setRot(glm::vec3 *rotation);
 
     void drawStaticMesh(Renderer *ren);
     void drawAnimatedMesh(Renderer *ren);

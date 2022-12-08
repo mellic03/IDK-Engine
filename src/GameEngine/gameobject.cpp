@@ -2,65 +2,7 @@
 
 #include "physics.h"
 
-
-void OldGameObject::changeState(GameObjectState new_state)
-{
-  this->state = new_state;
-
-  switch (new_state)
-  {
-    case (GSTATE_ATREST):
-
-      break;
-  }
-}
-
-
-void OldGameObject::perFrameUpdate(Renderer *ren)
-{
-  this->vel.y -= ren->gravity * ren->deltaTime;
-
-  this->vel.y *= 0.999f;
-  float damping = 1 / (1 + (ren->deltaTime * 5.0f));
-  this->vel.x *= damping;
-  this->vel.z *= damping;
-
-  // this->vel = glm::clamp(this->vel, glm::vec3(-4.5), glm::vec3(4.5));
-  this->pos += this->vel * ren->deltaTime;
-
-
-  switch (this->state)
-  {
-    case (GSTATE_ATREST):
-
-      break;
-
-    case (GSTATE_MOVETOWARDS):
-
-      if (this->path.size() == 0)
-      {
-        this->changeState(GSTATE_ATREST);
-        break;
-      }
-
-      if (glm::distance(this->pos, this->path[this->path.size()-1] + glm::vec3(0.0f, 0.5f, 0.0f)) < 0.5f)
-      {
-        // printf("%d\n", this->path.size());
-        this->path.pop_back();
-      }
-
-      else
-      {
-        glm::vec3 move_towards_dir = 0.01f * glm::normalize(this->path[this->path.size()-1] - this->pos);
-        this->pos += move_towards_dir;
-      }
-  
-      break;
-  }
-
-}
-
-void OldGameObject::attemptCollision(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal, float d, bool downwards)
+void GameObject::attemptCollision(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal, float d, bool downwards)
 {
   glm::vec3 intersect_point;
 
@@ -73,7 +15,7 @@ void OldGameObject::attemptCollision(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, 
 
     if (0 < dist && dist < d)
     {
-      float impulse_1d = calculate_impulse(this->vel, normal, 0.1);
+      float impulse_1d = calculate_impulse(this->vel, normal, 0.5);
       glm::vec3 impulse = impulse_1d * normal;
 
       if (downwards)
@@ -92,7 +34,7 @@ void OldGameObject::attemptCollision(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, 
   }
 }
 
-void OldGameObject::collideWithMesh(Mesh *collisionmesh)
+void GameObject::collideWithMesh(Mesh *collisionmesh)
 {
   for (int i=0; i<collisionmesh->num_vertices; i+=3)
   {
@@ -120,31 +62,75 @@ void OldGameObject::collideWithMesh(Mesh *collisionmesh)
   }
 }
 
+void GameObject::changePhysState(PhysicsState new_state)
+{
+  this->m_physics_state = new_state;
+
+  switch (new_state)
+  {
+    case (PHYSICS_GROUNDED): this->vel.y = 0.0f; break;
+    case (PHYSICS_FALLING): break;
+  }
+}
+
+void GameObject::changeNavState(NavigationState new_state)
+{
+  this->m_navigation_state = new_state;
+
+  switch (new_state)
+  {
+    case (NAVIGATION_REST): break;
+    case (NAVIGATION_SEEK): break;
+  }
+}
 
 void GameObject::perFrameUpdate(Renderer *ren)
 {
-  this->vel.y -= ren->gravity * ren->deltaTime;
-
-  this->vel.y *= 0.999f;
-  float damping = 1 / (1 + (ren->deltaTime * 5.0f));
-  this->vel.x *= damping;
-  this->vel.z *= damping;
-
-  // this->vel = glm::clamp(this->vel, glm::vec3(-4.5), glm::vec3(4.5));
-  this->pos += this->vel * ren->deltaTime;
+  if (this->m_collideWith == true)
+    return;
 
 
-  switch (this->m_state)
+  switch (this->m_physics_state)
   {
-    case (GSTATE_ATREST):
+    float damping;
+
+    case (PHYSICS_GROUNDED):
+      damping = 1 / (1 + (ren->deltaTime * 5.0f));
+      this->vel.x *= damping;
+      this->vel.z *= damping;
+
+      // this->vel = glm::clamp(this->vel, glm::vec3(-4.5), glm::vec3(4.5));
+      this->pos += this->vel * ren->deltaTime;
+      break;
+
+
+    case (PHYSICS_FALLING):
+      this->vel.y -= ren->gravity * ren->deltaTime;
+
+      this->vel.y *= 0.999f;
+      damping = 1 / (1 + (ren->deltaTime * 5.0f));
+      this->vel.x *= damping;
+      this->vel.z *= damping;
+
+      // this->vel = glm::clamp(this->vel, glm::vec3(-4.5), glm::vec3(4.5));
+      this->pos += this->vel * ren->deltaTime;
+
+      break;
+  }
+
+
+
+  switch (this->m_navigation_state)
+  {
+    case (NAVIGATION_REST):
 
       break;
 
-    case (GSTATE_MOVETOWARDS):
+    case (NAVIGATION_SEEK):
 
       if (this->m_path.size() == 0)
       {
-        this->changeState(GSTATE_ATREST);
+        this->changeNavState(NAVIGATION_REST);
         break;
       }
 
@@ -167,23 +153,38 @@ void GameObject::perFrameUpdate(Renderer *ren)
 void GameObject::addModel(Model *model)
 {
   model->setPos(&this->pos);
-  this->models.push_back(model);
+  model->setRot(&this->rot);
+  this->m_model = model;
+  this->m_is_environmental = model->isEnvironmental();
+  this->m_is_animated = model->isAnimated();
+}
+
+
+/**     object.collideWithObject(ground);
+ * E.g. cube.collideWithObject(terrain);
+ */
+void GameObject::collideWithObject(GameObject *object)
+{
+  // Two environmental objects cannot collide with one another
+  if (this->isEnvironmental() && object->isEnvironmental())
+    return;
+
+  if (!object->canCollideWith())
+    return;
+
+  this->collideWithMesh(object->m_model->getCollisionMesh());
 }
 
 
 void GameObject::collideWithPlayer(Player *player)
 {
-  for (Model *model: this->models)
-  {
-    if (this->m_collideWith)
-      model->collideWithPlayer(player);
-  }
+  if (this->m_collideWith)
+    this->m_model->collideWithPlayer(player);
 }
 
 
 void GameObject::draw(Renderer *ren)
 {
-  for (Model *model: this->models)
-    model->draw(ren);
+  this->m_model->draw(ren);
 }
 

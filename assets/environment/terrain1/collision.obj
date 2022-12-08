@@ -1,6 +1,6 @@
 # Blender 3.3.1
 # www.blender.org
-mtllib nav.mtl
+mtllib collision.mtl
 o Plane.003
 v -57.271843 9.709325 57.271843
 v 57.271843 9.709325 57.271843

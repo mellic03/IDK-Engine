@@ -26,6 +26,7 @@ class Animation {
     bool loadKeyframes(std::string filepath, std::string name, int num_keyframes);
 
     void setPos(glm::vec3 *position);
+    void setRot(glm::vec3 *rotation);
 
     void looping(bool loop) { this->m_looping = loop; };
 

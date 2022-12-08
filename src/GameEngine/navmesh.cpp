@@ -148,8 +148,8 @@ std::vector<glm::vec3> NavMesh::path(glm::vec3 from, glm::vec3 to)
   Node *starting_node = this->closestNode(from);
   Node *ending_node = this->closestNode(to);
 
-  // printf("start: node %d, (%f, %f, %f)\n", starting_node->id, starting_node->position.x, starting_node->position.y, starting_node->position.z);
-  // printf("end: node %d, (%f, %f, %f)\n",     ending_node->id,   ending_node->position.x,   ending_node->position.y,   ending_node->position.z);
+  printf("start: node %d, (%f, %f, %f)\n", starting_node->id, starting_node->position.x, starting_node->position.y, starting_node->position.z);
+  printf("end: node %d, (%f, %f, %f)\n",     ending_node->id,   ending_node->position.x,   ending_node->position.y,   ending_node->position.z);
 
 
   for (int i=0; i<this->nodes.size(); i++)

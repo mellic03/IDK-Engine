@@ -46,14 +46,14 @@ class Mesh {
     std::string m_name;
 
     glm::mat4 transform_mat = glm::mat4(1.0f);
-    glm::mat4 model_mat = glm::mat4(1.0f);
+    glm::mat4 model_mat = glm::mat4(1.0f), inverse_model_mat = glm::mat4(1.0f);
     glm::mat4 *view_mat = &this->model_mat, *projection_mat = &this->model_mat;
 
     bool rotate_local = false;
 
     glm::vec3 *pos = &this->default_pos;
+    glm::vec3 *rot = &this->default_pos;
     glm::vec3 dir = {0, 0, 1.0f};
-    glm::vec3 rot = {0, 0, 0};
 
 
     Mesh();
@@ -65,6 +65,8 @@ class Mesh {
     void useRenderer(Renderer *ren);
 
     void setPos(glm::vec3 *position);
+    void setRot(glm::vec3 *rotation);
+  
     void translate(glm::vec3 translation);
     void scale(float alpha);
 
