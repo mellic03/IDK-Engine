@@ -1,5 +1,8 @@
 // #[attribute] [type] [name] [num keyframes] //
 
+#ASSETNAME terrain1
+
+#STATIC
 #ENVIRONMENTAL
 
 GEOMETRYMESH ground2

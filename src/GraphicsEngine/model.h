@@ -26,8 +26,11 @@ class Model {
 
   private:
 
+    std::string m_name;
+
     bool is_animated = false;
     bool is_environmental = false;
+    bool is_NPC = false;
   
     Mesh m_staticmesh;
     Mesh m_collision_mesh;
@@ -54,6 +57,9 @@ class Model {
 
     bool isAnimated(void)      { return this->is_animated; };
     bool isEnvironmental(void) { return this->is_environmental; };
+    bool isNPC(void)           { return this->is_NPC; };
+
+    std::string getName(void)  { return this->m_name; };
     //--------------------------------------
 
     bool load(std::string filepath);

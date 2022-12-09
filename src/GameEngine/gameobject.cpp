@@ -86,7 +86,8 @@ void GameObject::changeNavState(NavigationState new_state)
 
 void GameObject::perFrameUpdate(Renderer *ren)
 {
-  if (this->m_collideWith == true)
+  // Dont apply gravity to environmental objects.
+  if (this->m_is_environmental)
     return;
 
 
@@ -155,8 +156,10 @@ void GameObject::addModel(Model *model)
   model->setPos(&this->pos);
   model->setRot(&this->rot);
   this->m_model = model;
+  this->m_is_npc = model->isNPC();
   this->m_is_environmental = model->isEnvironmental();
   this->m_is_animated = model->isAnimated();
+  this->m_name = model->getName();
 }
 
 
@@ -169,7 +172,7 @@ void GameObject::collideWithObject(GameObject *object)
   if (this->isEnvironmental() && object->isEnvironmental())
     return;
 
-  if (!object->canCollideWith())
+  if (!object->isEnvironmental())
     return;
 
   this->collideWithMesh(object->m_model->getCollisionMesh());
@@ -178,13 +181,15 @@ void GameObject::collideWithObject(GameObject *object)
 
 void GameObject::collideWithPlayer(Player *player)
 {
-  if (this->m_collideWith)
+  if (this->isEnvironmental())
     this->m_model->collideWithPlayer(player);
 }
 
 
 void GameObject::draw(Renderer *ren)
 {
+  this->m_model->setPos(&this->pos);
+  this->m_model->setRot(&this->rot);
   this->m_model->draw(ren);
 }
 

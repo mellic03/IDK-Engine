@@ -359,7 +359,6 @@ void Mesh::draw(Renderer *ren)
     this->model_mat = glm::rotate(this->model_mat, glm::radians(this->rot->y), {0.0f, 1.0f, 0.0f});
   }
 
-
   glBindVertexArray(this->VAO);
 
   ren->active_shader->setVec3("diffuse", glm::vec3(0.0f, 0.0f, 0.0f));
@@ -399,7 +398,11 @@ void Mesh::draw(Renderer *ren)
 
 void Mesh::setPos(glm::vec3 *position)
 {
+  // printf("position.y: %f\n", position->y);
+  // if (position->y > 1.0f) exit(1);
   this->pos = position;
+  // printf("pos.y: %f\n", this->pos->y);
+
 }
 
 void Mesh::setRot(glm::vec3 *rotation)

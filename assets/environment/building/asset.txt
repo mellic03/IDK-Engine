@@ -1,5 +1,7 @@
 // #[attribute] [type] [name] [num keyframes] //
 
+#ASSETNAME building
+
 #STATIC
 #ENVIRONMENTAL
 

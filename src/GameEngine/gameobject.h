@@ -54,15 +54,19 @@ class GameObject {
 
   private:
 
-    bool m_is_environmental = true;
+    std::string m_name;
+
+    bool m_is_environmental = false;
     bool m_is_animated = false;
+    bool m_is_npc = false;
+
+    bool m_hidden = false;
 
     PhysicsState m_physics_state = PHYSICS_FALLING;
     NavigationState m_navigation_state = NAVIGATION_REST;
 
     std::vector<glm::vec3> m_path;
 
-    bool m_collideWith = false;
 
     glm::vec3 ray_up    = glm::vec3( 0.0f, +1.0f,  0.0f);
     glm::vec3 ray_down  = glm::vec3( 0.0f, -1.0f,  0.0f);
@@ -74,6 +78,8 @@ class GameObject {
   public:
     Model *m_model;
 
+    bool selected = false;
+
     GameObject() { };
     glm::vec3 pos = glm::vec3(0.0f);
     glm::vec3 vel = glm::vec3(0.0f);
@@ -81,14 +87,16 @@ class GameObject {
     
     // Member access
     //-----------------------
-    glm::vec3 getPos(void) { return this->pos; };
+    glm::vec3 getPos(void)    { return this->pos; };
+    std::string getName(void) { return this->m_name; };
+    bool *getHidden(void)     { return &this->m_hidden; };
     //-----------------------
 
-    inline bool isEnvironmental(void) { return this->m_is_environmental; };\
+    inline bool isNPC(void)           { return this->m_is_npc; };
+    inline bool isEnvironmental(void) { return this->m_is_environmental; };
     inline bool isAnimated(void)      { return this->m_is_animated; };
+    inline bool isHidden(void)        { return this->m_hidden; };
 
-    inline bool canCollideWith(void) { return this->m_collideWith; };
-    void collide(bool collide) { this->m_collideWith = collide; };
     void collideWithObject(GameObject *object);
     void collideWithPlayer(Player *player);
 

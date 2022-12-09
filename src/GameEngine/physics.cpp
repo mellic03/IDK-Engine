@@ -57,12 +57,12 @@ void player_collide(Player *player, glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, g
 {
   glm::vec3 intersect_point;
 
-  bool intersects = ray_intersect_triangle(player->temp_pos, ray, v0, v1, v2, &intersect_point);
+  bool intersects = ray_intersect_triangle(*player->pos, ray, v0, v1, v2, &intersect_point);
 
 
   if (intersects)
   {
-    float dist = glm::distance(player->temp_pos, intersect_point);
+    float dist = glm::distance(*player->pos, intersect_point);
 
     if (0 < dist && dist < d)
     {

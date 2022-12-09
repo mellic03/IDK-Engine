@@ -16,19 +16,32 @@ bool Model::load(std::string filepath)
   char stringdata[64];
   int intdata;
 
+  bool name_supplied = false;
+
   while (fgets(buffer, 64, fh) != NULL)
   {
     sscanf(buffer, "%s", stringdata);
 
     if (strcmp(stringdata, "#ANIMATED") == 0)
-    {
       this->is_animated = true;
-    }
 
     else if (strcmp(stringdata, "#ENVIRONMENTAL") == 0)
-    {
       this->is_environmental = true;
+
+    else if (strcmp(stringdata, "#NPC") == 0)
+      this->is_NPC = true;
+
+    if (sscanf(buffer, "#ASSETNAME %s", stringdata))
+    {
+      this->m_name = std::string(stringdata);
+      name_supplied = true;
     }
+  }
+
+  if (name_supplied == false)
+  {
+    printf("Name not supplied for asset: %s\n", filepath);
+    exit(1);
   }
 
   rewind(fh);
@@ -101,6 +114,9 @@ void Model::drawAnimatedMesh(Renderer *ren)
 void Model::setPos(glm::vec3 *position)
 {
   this->position = position;
+  
+  // printf("position.y: %f\n", position->y);
+  // if (position->y < 0.0f) exit(1);
 
   this->m_staticmesh.setPos(position);
 
@@ -131,8 +147,10 @@ void Model::collideWithPlayer(Player *player)
   float nearest_dist = INFINITY;
   int nearest_i = 0;
 
-  glm::vec3 ray_up    = glm::vec3( 0.0f, +1.0f,  0.0f);
-  glm::vec3 ray_down  = glm::vec3( 0.0f, -1.0f,  0.0f);
+  glm::mat4 model = (this->m_staticmesh.model_mat);
+  
+  glm::vec3 ray_up    =  glm::vec3( 0.0f, +1.0f,  0.0f); 
+  glm::vec3 ray_down  =  glm::vec3( 0.0f, -1.0f,  0.0f);
   glm::vec3 ray_left  = -player->cam->right;
   glm::vec3 ray_right =  player->cam->right;
   glm::vec3 ray_front =  player->cam->front;
@@ -140,33 +158,34 @@ void Model::collideWithPlayer(Player *player)
 
   glm::vec3 ray_traveldir = glm::normalize(player->vel);
 
-  glm::mat4 inverse_model = glm::inverse(this->m_staticmesh.model_mat);
 
   for (int i=0; i<this->m_collision_mesh.num_vertices; i+=3)
   {
 
-    glm::vec3 v0 = this->m_collision_mesh.vertices[i+0].position * glm::mat3(inverse_model);
-    glm::vec3 v1 = this->m_collision_mesh.vertices[i+1].position * glm::mat3(inverse_model);
-    glm::vec3 v2 = this->m_collision_mesh.vertices[i+2].position * glm::mat3(inverse_model);
-    glm::vec3 normal = glm::vec4(
-      this->m_collision_mesh.vertices[i+2].face_normal.x,
-      this->m_collision_mesh.vertices[i+2].face_normal.y,
-      this->m_collision_mesh.vertices[i+2].face_normal.z,
-      0.0f      
-    ) * inverse_model;
+    glm::vec3 v0 = (this->m_collision_mesh.vertices[i+0].position);
+    glm::vec3 v1 = (this->m_collision_mesh.vertices[i+1].position);
+    glm::vec3 v2 = (this->m_collision_mesh.vertices[i+2].position);
 
+    v0 = model * glm::vec4(v0.x, v0.y, v0.z, 1.0f);
+    v1 = model * glm::vec4(v1.x, v1.y, v1.z, 1.0f);
+    v2 = model * glm::vec4(v2.x, v2.y, v2.z, 1.0f);
 
+    glm::normalize(v0);
+    glm::normalize(v1);
+    glm::normalize(v2);
 
-    player->temp_pos = glm::vec3(player->pos->x, player->pos->y, player->pos->z);
+    glm::vec3 normal = glm::mat3(model) * this->m_collision_mesh.vertices[i+2].face_normal;
+    glm::normalize(normal);
+
 
     // Find nearest "down"
     if (glm::dot(ray_down, normal) <= 0)
     {
       glm::vec3 intersect_point;
-      bool intersects = ray_intersect_triangle(player->temp_pos, ray_down, v0, v1, v2, &intersect_point);
+      bool intersects = ray_intersect_triangle(*player->pos, ray_down, v0, v1, v2, &intersect_point);
       if (intersects)
       {
-        float dist = glm::distance(player->temp_pos, intersect_point);
+        float dist = glm::distance(*player->pos, intersect_point);
         if (dist < nearest_dist)
         {
           nearest_dist = dist;
@@ -194,10 +213,15 @@ void Model::collideWithPlayer(Player *player)
     
   }
 
-  glm::vec3 v0 = this->m_collision_mesh.vertices[nearest_i+0].position + *this->position;
-  glm::vec3 v1 = this->m_collision_mesh.vertices[nearest_i+1].position + *this->position;
-  glm::vec3 v2 = this->m_collision_mesh.vertices[nearest_i+2].position + *this->position;
-  glm::vec3 normal = this->m_collision_mesh.vertices[nearest_i+2].face_normal;
+  glm::vec3 v0 = this->m_collision_mesh.vertices[nearest_i+0].position;
+  glm::vec3 v1 = this->m_collision_mesh.vertices[nearest_i+1].position;
+  glm::vec3 v2 = this->m_collision_mesh.vertices[nearest_i+2].position;
+  v0 = model * glm::vec4(v0.x, v0.y, v0.z, 1.0f);
+  v1 = model * glm::vec4(v1.x, v1.y, v1.z, 1.0f);
+  v2 = model * glm::vec4(v2.x, v2.y, v2.z, 1.0f);
+
+  glm::vec3 normal = glm::mat3(model) * this->m_collision_mesh.vertices[nearest_i+2].face_normal;
+
 
   player_collide(player, ray_down, v0, v1, v2, normal, player->height, true);
 

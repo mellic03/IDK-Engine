@@ -15,18 +15,17 @@ class Scene {
   public:
     Player *player;
 
-    std::vector<GameObject *> m_gameObjects;
+    ObjectHandler *object_handler;
     NavMesh navmesh;
 
     Scene() { };
 
     void useRenderer(Renderer *renptr);
     void usePlayer(Player *playerptr);
-
-    void addRenderObject(GameObject *obj) { this->m_gameObjects.push_back(obj); } ;
-
     void addLightsourceModel(Mesh *lightsource_model);
     
+    void addObjectHandler(ObjectHandler *objectHandler) { this->object_handler = objectHandler; };
+
     void draw(SDL_Event *event);    
 
 };

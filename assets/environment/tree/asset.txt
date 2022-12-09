@@ -1,5 +1,8 @@
 // [attribute] [type] [name] [num keyframes] //
 
+#ASSETNAME tree
+
 #ANIMATED
+#NPC
 
 ANIMATION REST bend 2

@@ -72,53 +72,110 @@ void import_lighting_config(Renderer *ren)
 
   fclose(fh);
 }
- 
- 
-void draw_transform_menu(Scene *scene, GameObject *object)
+
+
+void draw_transform_menu(Scene *scene, ObjectHandler *handler, int object_type)
 {
+  static int selected_instance = 0;
+  ImGui::ListBoxHeader("Instance", ImVec2(-FLT_MIN, 5 * ImGui::GetTextLineHeightWithSpacing()));
+  for (int i=0; i<handler->m_object_instances[object_type].size(); i++)
+  {
+    GameObject *object = &handler->m_object_instances[object_type][i];
+    if (ImGui::Selectable(std::to_string(i).c_str(), selected_instance == i, ImGuiSelectableFlags_SpanAllColumns))
+      selected_instance = i;
+  }
+  ImGui::ListBoxFooter();
+
+  if (ImGui::Button("New instance"))
+  {
+    handler->newObjectInstance(handler->m_object_templates[object_type]->getName());
+    selected_instance = handler->m_object_instances[object_type].size() - 1;
+  }
+
+  if (handler->m_object_instances[object_type].size() == 0)
+    return;
+
+
+  GameObject *object = &handler->m_object_instances[object_type][selected_instance];
+
+  ImGui::Dummy(ImVec2(0.0f, 20.0f));
   ImGui::Text("Transform");
   ImGui::Separator();
-
   ImGui::DragFloat3("Position", &object->pos[0], 0.01f, 0, 0, "%0.01f", 0);
   ImGui::DragFloat3("Velocity", &object->vel[0], 0.01f, 0, 0, "%0.01f", 0);
-  ImGui::DragFloat3("Rotation", &object->rot[0], 0.1f, 0, 0, "%0.1f", 0);
+  ImGui::DragFloat3("Rotation", &object->rot[0], 0.1f,  0, 0, "%0.1f", 0);
 
+  ImGui::Dummy(ImVec2(0.0f, 20.0f));
   ImGui::Text("Other Stuff");
   ImGui::Separator();
+  ImGui::Checkbox("Hidden", object->getHidden());
 
-  ImGui::Text("is_animated: %s", (object->isAnimated() ? "true" : "false"));
+  ImGui::Dummy(ImVec2(0.0f, 20.0f));
+  ImGui::Text("Info");
+  ImGui::Separator();
 
-  if (ImGui::Button("Seek Player"))
-  {
-    object->setPath(scene->navmesh.path(object->pos, *scene->player->pos));
-  }
+  ImGui::Text("environmental: %s", (object->isEnvironmental() ? "true" : "false"));
+  ImGui::Text("animated: %s", (object->isAnimated() ? "true" : "false"));
+
+  if (object->isNPC())
+    if (ImGui::Button("Seek Player"))
+      object->setPath(scene->navmesh.path(object->pos, *scene->player->pos));
 
 }
 
+
 void draw_entities_tab(Renderer *ren, Scene *scene)
 {
-
-  static int selected_object = 0;
+  static int selected_object_type = 0;
   char buffer[64];
 
   ImGui::BeginChild("ChildL", ImVec2(ImGui::GetContentRegionAvail().x/4, 0), false, 0);
-  ImGui::Text("Object");
-  ImGui::Separator();
-  for (int i=0; i<scene->m_gameObjects.size(); i++)
-  {
-    sprintf(buffer, "Object %d", i);
-    if (ImGui::Selectable(buffer, selected_object == i))
-      selected_object = i;
-  }
+  
+    if (ImGui::TreeNode("Environment"))
+    {
+      for (int i=0; i<scene->object_handler->m_unique_object_names.size(); i++)
+      {
+        if (scene->object_handler->m_object_templates[i]->isEnvironmental() == false)
+          continue;
+        
+        sprintf(buffer, "%s", scene->object_handler->m_unique_object_names[i].c_str());
+        if (ImGui::Selectable(buffer, selected_object_type == i))
+          selected_object_type = i;
+      }
+      ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("NPC"))
+    {
+      for (int i=0; i<scene->object_handler->m_unique_object_names.size(); i++)
+      {
+        if (scene->object_handler->m_object_templates[i]->isNPC() == false)
+          continue;
+
+        sprintf(buffer, "%s", scene->object_handler->m_unique_object_names[i].c_str());
+        if (ImGui::Selectable(buffer, selected_object_type == i))
+          selected_object_type = i;
+      }
+      ImGui::TreePop();
+    }
+
   ImGui::EndChild();
+
 
   ImGui::SameLine();
 
+  ImGui::PushID(selected_object_type);
   ImGui::BeginChild("ChildR", ImVec2(ImGui::GetContentRegionAvail().x, 0), true, 0);
-  draw_transform_menu(scene, scene->m_gameObjects[selected_object]);
+  draw_transform_menu(scene, scene->object_handler, selected_object_type);  
   ImGui::EndChild();
+  ImGui::PopID();
 
+  static char buf1[64] = ""; ImGui::InputText("Filepath", buf1, 64);
+  if (ImGui::Button("Export"))
+    scene->object_handler->exportHandler(std::string(buf1));
 
+  if (ImGui::Button("Import"))
+    scene->object_handler->importHandler(std::string(buf1));
 }
 
 void draw_lighting_tab(Renderer *ren)

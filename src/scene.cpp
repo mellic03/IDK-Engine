@@ -1,7 +1,6 @@
 #include "scene.h"
 
 
-
 void Scene::useRenderer(Renderer *renptr)
 {
   this->ren = renptr;
@@ -20,18 +19,30 @@ void Scene::addLightsourceModel(Mesh *lightsource_model)
 void Scene::draw(SDL_Event *event)
 {
 
-  for (GameObject *obj1: this->m_gameObjects)
+  for (std::vector<GameObject> objectarray: this->object_handler->m_object_instances)
   {
-    for (GameObject *obj2: this->m_gameObjects)
-      obj1->collideWithObject(obj2);
-  
-    obj1->perFrameUpdate(ren);
-    obj1->collideWithPlayer(this->player);
-    obj1->draw(this->ren);
-  
+    for (int i=0; i<objectarray.size(); i++)
+    {
+      GameObject *obj1 = &objectarray[i];
 
+      if (obj1->isHidden())
+        continue;
+
+      for (int j=0; j<objectarray.size(); j++)
+      {
+        if (i != j)
+        {
+          GameObject *obj2 = &objectarray[j];
+          obj1->collideWithObject(obj2);
+        }
+      }
+
+
+      obj1->perFrameUpdate(this->ren);
+      obj1->collideWithPlayer(this->player);
+      obj1->draw(this->ren);
+    }
   }
-
 
 
   // this->ren->useShader(SHADER_LIGHTSOURCE);

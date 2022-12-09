@@ -113,7 +113,7 @@ class Renderer {
     //---------------------------------------------------------------------
 
 
-    float gravity = 0.0f;
+    float gravity = 5.0f;
 
 
     Renderer();

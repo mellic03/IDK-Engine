@@ -77,34 +77,34 @@ int ENTRY(int argc, char **argv)
   player.pos->z = 6.0f;
   import_lighting_config(&ren);
 
+  ObjectHandler objhandler;
 
   Mesh sphere;  sphere.load("assets/sphere/", "sphere");
   
-
   Model tree;            tree.load("assets/environment/tree/");
   GameObject treeobj;    treeobj.addModel(&tree);
 
   Model building;            building.load("assets/environment/building/");
   GameObject buildingobj;    buildingobj.addModel(&building);
-  buildingobj.collide(true);
 
   Model terrain;            terrain.load("assets/environment/terrain1/");
   GameObject terrainobj;    terrainobj.addModel(&terrain);
-  terrainobj.collide(true);
 
   NavMesh nav1;
   nav1.load("assets/environment/terrain1/nav.obj");
+
+
+  objhandler.addObject(&treeobj);
+  objhandler.addObject(&buildingobj);
+  objhandler.addObject(&terrainobj);
 
 
   Scene scene_1;
   scene_1.useRenderer(&ren);
   scene_1.usePlayer(&player);
   scene_1.addLightsourceModel(&sphere);
-
-  scene_1.addRenderObject(&treeobj);
-  scene_1.addRenderObject(&terrainobj);
-  scene_1.addRenderObject(&buildingobj);
-
+  scene_1.addObjectHandler(&objhandler);
+  objhandler.newObjectInstance("terrain1");
   scene_1.navmesh = nav1;
 
   //----------------------------------------
@@ -220,30 +220,30 @@ int ENTRY(int argc, char **argv)
 
     scene_1.draw(&event);
 
-    glClear(GL_DEPTH_BUFFER_BIT);
+    // glClear(GL_DEPTH_BUFFER_BIT);
 
 
 
-    ren.useShader(SHADER_VIEWSPACE); // switch to viewspace shader
-    ren.sendLightsToShader();
+    // ren.useShader(SHADER_VIEWSPACE); // switch to viewspace shader
+    // ren.sendLightsToShader();
 
-    ren.active_shader->setInt("depthMap", 10);
-    ren.active_shader->setFloat("far_plane",   25.0f);
-    ren.active_shader->setVec3("viewPos", *player.pos);
+    // ren.active_shader->setInt("depthMap", 10);
+    // ren.active_shader->setFloat("far_plane",   25.0f);
+    // ren.active_shader->setVec3("viewPos", *player.pos);
     
-    ren.active_shader->setFloat("bias", ren.DIRBIAS);
-    ren.active_shader->setVec3( "pointlight.ambient", ren.pointlights[0].ambient);
-    ren.active_shader->setVec3( "pointlight.diffuse", ren.pointlights[0].diffuse);
-    ren.active_shader->setVec3( "pointlight.pos", ren.pointlights[0].position);
-    ren.active_shader->setVec3( "pointlight.tangent_pos", ren.pointlights[0].position);
-    ren.active_shader->setFloat("pointlight.constant", ren.pointlights[0].constant);
-    ren.active_shader->setFloat("pointlight.linear", ren.pointlights[0].linear);
-    ren.active_shader->setFloat("pointlight.quadratic", ren.pointlights[0].quadratic);
-    ren.active_shader->setVec3( "clearColor", ren.clearColor);
-    ren.active_shader->setFloat("fog_start", ren.fog_start);
-    ren.active_shader->setFloat("fog_end", ren.fog_end);
+    // ren.active_shader->setFloat("bias", ren.DIRBIAS);
+    // ren.active_shader->setVec3( "pointlight.ambient", ren.pointlights[0].ambient);
+    // ren.active_shader->setVec3( "pointlight.diffuse", ren.pointlights[0].diffuse);
+    // ren.active_shader->setVec3( "pointlight.pos", ren.pointlights[0].position);
+    // ren.active_shader->setVec3( "pointlight.tangent_pos", ren.pointlights[0].position);
+    // ren.active_shader->setFloat("pointlight.constant", ren.pointlights[0].constant);
+    // ren.active_shader->setFloat("pointlight.linear", ren.pointlights[0].linear);
+    // ren.active_shader->setFloat("pointlight.quadratic", ren.pointlights[0].quadratic);
+    // ren.active_shader->setVec3( "clearColor", ren.clearColor);
+    // ren.active_shader->setFloat("fog_start", ren.fog_start);
+    // ren.active_shader->setFloat("fog_end", ren.fog_end);
 
-    player.draw(&ren); // draw weapon
+    // player.draw(&ren); // draw weapon
     
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
