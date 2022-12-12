@@ -1,10 +1,9 @@
+#pragma once
 #include "gameobject.h"
 
 
-// A std::vector<std::string> stores the unique name of each object type
 
-
-class ObjectHandler {
+class SceneGraph {
 
   public:
 
@@ -14,16 +13,17 @@ class ObjectHandler {
     std::vector<std::vector<GameObject>> m_object_instances;
 
 
-    ObjectHandler() { };
+    SceneGraph() { };
 
     bool objectExists(std::string object_name);
     int indexOfObjectName(std::string object_name);
     void addObject(GameObject *object);
 
-    void newObjectInstance(std::string object_name);
+    void newObjectInstance(std::string object_name, glm::vec3 pos = glm::vec3(0.0f), glm::vec3 rot = glm::vec3(0.0f));
+    void deleteObjectInstance(std::string object_name, int instance);
 
-    bool exportHandler(std::string filepath);
-    bool importHandler(std::string filepath);
+    bool exportScene(std::string filepath);
+    bool importScene(std::string filepath);
 
 };
 

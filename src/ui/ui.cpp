@@ -1,6 +1,5 @@
-#include "scene.h"
+#include <stdio.h>
 #include "ui.h"
-#include "stdio.h"
 
 int selected_dirlight = 0;    const char *dir_options[4] = {"1"};
 int selected_pointlight = 0;  const char *point_options[4] = {"1", "2", "3", "4"};
@@ -74,7 +73,7 @@ void import_lighting_config(Renderer *ren)
 }
 
 
-void draw_transform_menu(Scene *scene, ObjectHandler *handler, int object_type)
+void draw_transform_menu(Scene *scene, SceneGraph *handler, int object_type)
 {
   static int selected_instance = 0;
   ImGui::ListBoxHeader("Instance", ImVec2(-FLT_MIN, 5 * ImGui::GetTextLineHeightWithSpacing()));
@@ -91,6 +90,13 @@ void draw_transform_menu(Scene *scene, ObjectHandler *handler, int object_type)
     handler->newObjectInstance(handler->m_object_templates[object_type]->getName());
     selected_instance = handler->m_object_instances[object_type].size() - 1;
   }
+  ImGui::SameLine();
+  if (ImGui::Button("Delete instance"))
+  {
+    handler->deleteObjectInstance(handler->m_unique_object_names[object_type], selected_instance);
+    selected_instance -= 1;
+  }
+
 
   if (handler->m_object_instances[object_type].size() == 0)
     return;
@@ -114,13 +120,19 @@ void draw_transform_menu(Scene *scene, ObjectHandler *handler, int object_type)
   ImGui::Text("Info");
   ImGui::Separator();
 
-  ImGui::Text("environmental: %s", (object->isEnvironmental() ? "true" : "false"));
-  ImGui::Text("animated: %s", (object->isAnimated() ? "true" : "false"));
+  ImGui::Text("environmental:    %s", (object->isEnvironmental() ? "true" : "false"));
+  ImGui::Text("animated:         %s", (object->isAnimated() ? "true" : "false"));
+  ImGui::Text("physics_state:    %s", object->physicsStateString().c_str());
+  ImGui::Text("navigation_state: %s", object->navigationStateString().c_str());
 
   if (object->isNPC())
     if (ImGui::Button("Seek Player"))
       object->setPath(scene->navmesh.path(object->pos, *scene->player->pos));
 
+  if (ImGui::Button("Set Parent"))
+  {
+    object->setParent(&handler->m_object_instances[object_type][selected_instance-1]);
+  }
 }
 
 
@@ -130,6 +142,7 @@ void draw_entities_tab(Renderer *ren, Scene *scene)
   char buffer[64];
 
   ImGui::BeginChild("ChildL", ImVec2(ImGui::GetContentRegionAvail().x/4, 0), false, 0);
+  ImGui::Separator();
   
     if (ImGui::TreeNode("Environment"))
     {
@@ -144,6 +157,8 @@ void draw_entities_tab(Renderer *ren, Scene *scene)
       }
       ImGui::TreePop();
     }
+    
+    ImGui::Separator();
 
     if (ImGui::TreeNode("NPC"))
     {
@@ -158,6 +173,7 @@ void draw_entities_tab(Renderer *ren, Scene *scene)
       }
       ImGui::TreePop();
     }
+    ImGui::Separator();
 
   ImGui::EndChild();
 
@@ -172,10 +188,10 @@ void draw_entities_tab(Renderer *ren, Scene *scene)
 
   static char buf1[64] = ""; ImGui::InputText("Filepath", buf1, 64);
   if (ImGui::Button("Export"))
-    scene->object_handler->exportHandler(std::string(buf1));
+    scene->object_handler->exportScene(std::string(buf1));
 
   if (ImGui::Button("Import"))
-    scene->object_handler->importHandler(std::string(buf1));
+    scene->object_handler->importScene(std::string(buf1));
 }
 
 void draw_lighting_tab(Renderer *ren)
@@ -395,14 +411,7 @@ void draw_dev_ui(Renderer *ren, Scene *scene)
     ImGui::EndTabBar();
   }
 
-
-  // ImGui::BeginChild("RenderWindow");
-
-  // ImVec2 wsize = ImGui::GetWindowSize();
-  // ImGui::Image((ImTextureID)ren->colorBuffers[0], wsize, ImVec2(0, 1), ImVec2(1, 0));
-
-  // ImGui::EndChild();
-  
+  ImGui::Text("state: %s\n", (scene->player->getState() == PSTATE_FALLING) ? "falling" : "grounded");
 
   ImGui::End();
   ImGui::Render();

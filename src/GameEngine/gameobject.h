@@ -53,7 +53,6 @@ enum NavigationState { NAVIGATION_REST, NAVIGATION_SEEK };
 class GameObject {
 
   private:
-
     std::string m_name;
 
     bool m_is_environmental = false;
@@ -67,6 +66,7 @@ class GameObject {
 
     std::vector<glm::vec3> m_path;
 
+    float m_bounding_sphere_radius = 1.0f;
 
     glm::vec3 ray_up    = glm::vec3( 0.0f, +1.0f,  0.0f);
     glm::vec3 ray_down  = glm::vec3( 0.0f, -1.0f,  0.0f);
@@ -74,6 +74,11 @@ class GameObject {
     glm::vec3 ray_right = glm::vec3(+1.0f,  0.0f,  0.0f);
     glm::vec3 ray_front = glm::vec3( 0.0f,  0.0f, +1.0f);
     glm::vec3 ray_back  = glm::vec3( 0.0f,  0.0f, -1.0f);
+
+    glm::mat4 m_scenegraph_model_mat = glm::mat4(1.0f);
+    glm::mat4 *m_scenegraph_parent_model_mat = nullptr;
+
+    GameObject *m_parent_object = nullptr;
 
   public:
     Model *m_model;
@@ -90,17 +95,25 @@ class GameObject {
     glm::vec3 getPos(void)    { return this->pos; };
     std::string getName(void) { return this->m_name; };
     bool *getHidden(void)     { return &this->m_hidden; };
-    //-----------------------
+    void setSceneModelMat(void);
+
+    float boundingSphereRadius(void)  { return this->m_bounding_sphere_radius; };
+
+    std::string physicsStateString(void);
+    std::string navigationStateString(void);
 
     inline bool isNPC(void)           { return this->m_is_npc; };
     inline bool isEnvironmental(void) { return this->m_is_environmental; };
     inline bool isAnimated(void)      { return this->m_is_animated; };
     inline bool isHidden(void)        { return this->m_hidden; };
 
+    void setParent(GameObject *parent);
+    //-----------------------
+
     void collideWithObject(GameObject *object);
     void collideWithPlayer(Player *player);
 
-    void collideWithMesh(Mesh *collisionmesh);
+    void collideWithMesh(Mesh *collisionmesh, glm::vec3 mesh_pos);
     void attemptCollision(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal, float d, bool downwards);
 
     void addModel(Model *model);

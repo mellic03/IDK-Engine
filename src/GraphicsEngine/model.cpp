@@ -8,7 +8,7 @@ bool Model::load(std::string filepath)
   FILE *fh = fopen(assetfilepath.c_str(), "r");
   if (fh == NULL)
   {
-    printf("Error opening %s\n", assetfilepath);
+    printf("Error opening asset.txt in directory: %s\n", filepath.c_str());
     return false;
   }
 
@@ -52,21 +52,20 @@ bool Model::load(std::string filepath)
   {
     if (sscanf(buffer, "ANIMATION REST %s %d", stringdata, &intdata))
     {
-      // printf("animation: %s, keyframes: %d\n", stringdata, intdata);
       this->animations[ANIM_REST].loadKeyframes(filepath, stringdata, intdata);
       this->animations[ANIM_REST].setPos(this->position);
       this->animations[ANIM_REST].setRot(this->rotation);
+      this->animations[ANIM_REST].setModelMat(&this->m_model_mat);
     }
 
     else if (sscanf(buffer, "GEOMETRYMESH %s", stringdata))
     {
-      // printf("static: %s\n", stringdata);
       this->m_staticmesh.load(filepath.c_str(), stringdata);
+      this->m_staticmesh.setModelMat(&this->m_model_mat);
     }
 
     else if (sscanf(buffer, "COLLISIONMESH %s", stringdata))
     {
-      // printf("static: %s\n", stringdata);
       this->m_collision_mesh.load(filepath.c_str(), stringdata);
       collisionmesh_loaded = true;
     }
@@ -81,6 +80,7 @@ bool Model::load(std::string filepath)
     this->m_collision_mesh = this->m_staticmesh;
 
   fclose(fh);
+
 
   return true;
 }
@@ -97,6 +97,7 @@ void Model::drawStaticMesh(Renderer *ren)
   this->m_staticmesh.draw(ren);
 }
 
+
 void Model::drawAnimatedMesh(Renderer *ren)
 {
   switch (this->m_state)
@@ -111,43 +112,53 @@ void Model::drawAnimatedMesh(Renderer *ren)
   }
 }
 
+
 void Model::setPos(glm::vec3 *position)
 {
   this->position = position;
-  
-  // printf("position.y: %f\n", position->y);
-  // if (position->y < 0.0f) exit(1);
-
-  this->m_staticmesh.setPos(position);
-
-  for (int i=0; i<NUM_ANIMATION_TYPES; i++)
-    this->animations[i].setPos(position);
 }
 
 
 void Model::setRot(glm::vec3 *rotation)
 {
   this->rotation = rotation;
-
-  this->m_staticmesh.setRot(rotation);
-
-  for (int i=0; i<NUM_ANIMATION_TYPES; i++)
-    this->animations[i].setRot(rotation);
 }
 
 
 void Model::draw(Renderer *ren)
 {
+
+  this->m_model_mat = glm::mat4(1.0f);
+  this->m_model_mat = glm::translate(this->m_model_mat, *this->position);
+
+  if (this->m_parent_model_mat != nullptr)
+    this->m_model_mat = *this->m_parent_model_mat * this->m_model_mat;
+
+
+  if (this->m_rotate_locally)
+  {
+    this->m_model_mat = glm::rotate(this->m_model_mat, glm::radians(this->rotation->y), {0.0f, 1.0f, 0.0f});
+    this->m_model_mat = glm::rotate(this->m_model_mat, glm::radians(this->rotation->x), {1.0f, 0.0f, 0.0f});
+  }
+  else
+  {
+    this->m_model_mat = glm::rotate(this->m_model_mat, glm::radians(this->rotation->x), {1.0f, 0.0f, 0.0f});
+    this->m_model_mat = glm::rotate(this->m_model_mat, glm::radians(this->rotation->y), {0.0f, 1.0f, 0.0f});
+  }
+
+
+
   (this->is_animated) ? this->drawAnimatedMesh(ren) : this->drawStaticMesh(ren);
+
 }
 
 
 void Model::collideWithPlayer(Player *player)
 {
   float nearest_dist = INFINITY;
-  int nearest_i = 0;
+  int nearest_i = -1;
 
-  glm::mat4 model = (this->m_staticmesh.model_mat);
+  glm::mat4 model = (this->m_model_mat);
   
   glm::vec3 ray_up    =  glm::vec3( 0.0f, +1.0f,  0.0f); 
   glm::vec3 ray_down  =  glm::vec3( 0.0f, -1.0f,  0.0f);
@@ -212,6 +223,9 @@ void Model::collideWithPlayer(Player *player)
     player_collide(player, ray_traveldir , v0, v1, v2, normal, player->height/2, false);
     
   }
+
+  if (nearest_i == -1)
+    return;
 
   glm::vec3 v0 = this->m_collision_mesh.vertices[nearest_i+0].position;
   glm::vec3 v1 = this->m_collision_mesh.vertices[nearest_i+1].position;

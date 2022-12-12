@@ -65,7 +65,6 @@ Renderer::Renderer()
   }
 
 
-
   glGenRenderbuffers(1, &this->rbo);
   glBindRenderbuffer(GL_RENDERBUFFER, this->rbo); 
   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 2560, 2560);  

@@ -35,6 +35,8 @@ file(
   "src/include/imgui/*.cpp"
   "src/GraphicsEngine/*.cpp"
   "src/GameEngine/*.cpp"
+  "src/ui/*.cpp"
+  "src/scene/*.cpp"
 )
 
 

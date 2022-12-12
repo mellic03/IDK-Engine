@@ -31,11 +31,15 @@ struct Vertex {
 
 class Mesh {
 
+  private:
+
+    glm::mat4 *m_model_mat = nullptr;
+    bool m_model_mat_set_manually = false;
+
   public:
     GLuint VAO, VBO, IBO0, IBO1;
     std::vector<GLuint> IBOS;
     std::vector<std::vector<GLuint>> indices;
-    glm::vec3 default_pos = glm::vec3(0.0f);
 
     std::vector<Material> materials;
 
@@ -45,16 +49,9 @@ class Mesh {
 
     std::string m_name;
 
-    glm::mat4 transform_mat = glm::mat4(1.0f);
-    glm::mat4 model_mat = glm::mat4(1.0f), inverse_model_mat = glm::mat4(1.0f);
-    glm::mat4 *view_mat = &this->model_mat, *projection_mat = &this->model_mat;
-
     bool rotate_local = false;
 
-    glm::vec3 *pos = &this->default_pos;
-    glm::vec3 *rot = &this->default_pos;
     glm::vec3 dir = {0, 0, 1.0f};
-
 
     Mesh();
 
@@ -62,18 +59,10 @@ class Mesh {
     void setBufferData(void);
     void draw(Renderer *ren);
 
-    void useRenderer(Renderer *ren);
+    glm::mat4 getParentModelMat(void);
 
-    void setPos(glm::vec3 *position);
-    void setRot(glm::vec3 *rotation);
-  
-    void translate(glm::vec3 translation);
-    void scale(float alpha);
+    void setModelMat(glm::mat4 *matptr)  { this->m_model_mat = matptr; };
 
-    void set_rot_x(float theta);
-    void rot_x(float theta);
-    void rot_y(float theta);
-    void rot_z(float theta);
 
 };
 

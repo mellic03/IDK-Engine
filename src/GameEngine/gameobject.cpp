@@ -18,29 +18,29 @@ void GameObject::attemptCollision(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm
       float impulse_1d = calculate_impulse(this->vel, normal, 0.5);
       glm::vec3 impulse = impulse_1d * normal;
 
-      if (downwards)
-      {
-        float overlap = d - dist;
-        this->pos.y += overlap;
-        this->vel.y = 0;
-      }
+      // if (downwards)
+      // {
+      //   float overlap = d - dist;
+      //   this->pos.y += overlap;
+      //   this->vel.y = 0;
+      // }
 
-      else
-      {
+      // else
+      // {
         this->vel += (1.0f) * impulse;
         this->pos = this->pos - (d-dist)*ray;
-      }
+      // }
     }
   }
 }
 
-void GameObject::collideWithMesh(Mesh *collisionmesh)
+void GameObject::collideWithMesh(Mesh *collisionmesh, glm::vec3 mesh_pos)
 {
   for (int i=0; i<collisionmesh->num_vertices; i+=3)
   {
-    glm::vec3 v0 = collisionmesh->vertices[i+0].position + *collisionmesh->pos;
-    glm::vec3 v1 = collisionmesh->vertices[i+1].position + *collisionmesh->pos;
-    glm::vec3 v2 = collisionmesh->vertices[i+2].position + *collisionmesh->pos;
+    glm::vec3 v0 = collisionmesh->vertices[i+0].position + mesh_pos;
+    glm::vec3 v1 = collisionmesh->vertices[i+1].position + mesh_pos;
+    glm::vec3 v2 = collisionmesh->vertices[i+2].position + mesh_pos;
 
     glm::vec3 normal = collisionmesh->vertices[i].face_normal;
 
@@ -58,7 +58,36 @@ void GameObject::collideWithMesh(Mesh *collisionmesh)
 
     if (glm::dot(normal, this->ray_back) <= 0)
       this->attemptCollision(this->ray_back, v0, v1, v2, normal, 0.25, false);
-     
+  }
+}
+
+std::string GameObject::physicsStateString(void)
+{
+  switch (this->m_physics_state)
+  {
+    default:
+      return "unknown";
+
+    case (PHYSICS_GROUNDED):
+      return "grounded";
+    
+    case (PHYSICS_FALLING):
+      return "falling";
+  }
+}
+
+std::string GameObject::navigationStateString(void)
+{
+  switch (this->m_navigation_state)
+  {
+    default:
+      return "unknown";
+
+    case (NAVIGATION_REST):
+      return "rest";
+    
+    case (NAVIGATION_SEEK):
+      return "seek";
   }
 }
 
@@ -89,7 +118,6 @@ void GameObject::perFrameUpdate(Renderer *ren)
   // Dont apply gravity to environmental objects.
   if (this->m_is_environmental)
     return;
-
 
   switch (this->m_physics_state)
   {
@@ -144,6 +172,7 @@ void GameObject::perFrameUpdate(Renderer *ren)
       {
         glm::vec3 move_towards_dir = 0.01f * glm::normalize(this->m_path[this->m_path.size()-1] - this->pos);
         this->pos += move_towards_dir;
+        this->m_model->setModelMat(glm::inverse(glm::lookAt(this->pos, this->pos + move_towards_dir, {0.0f, 1.0f, 0.0f})));
       }
   
       break;
@@ -158,36 +187,61 @@ void GameObject::addModel(Model *model)
   this->m_model = model;
   this->m_is_npc = model->isNPC();
   this->m_is_environmental = model->isEnvironmental();
+  if (this->isEnvironmental()) this->m_bounding_sphere_radius = INFINITY;
   this->m_is_animated = model->isAnimated();
   this->m_name = model->getName();
 }
 
+
+void GameObject::setSceneModelMat(void)
+{
+  this->m_scenegraph_model_mat = glm::mat4(1.0f);
+  this->m_scenegraph_model_mat = glm::translate(this->m_scenegraph_model_mat, this->pos);
+
+  this->m_scenegraph_model_mat = glm::rotate(this->m_scenegraph_model_mat, glm::radians(this->rot.x), {1.0f, 0.0f, 0.0f});
+  this->m_scenegraph_model_mat = glm::rotate(this->m_scenegraph_model_mat, glm::radians(this->rot.y), {0.0f, 1.0f, 0.0f});
+}
+
+void GameObject::setParent(GameObject *parent)
+{
+  this->m_scenegraph_parent_model_mat = &parent->m_scenegraph_model_mat;
+}
 
 /**     object.collideWithObject(ground);
  * E.g. cube.collideWithObject(terrain);
  */
 void GameObject::collideWithObject(GameObject *object)
 {
-  // Two environmental objects cannot collide with one another
-  if (this->isEnvironmental() && object->isEnvironmental())
+  if (this->isEnvironmental())
     return;
 
-  if (!object->isEnvironmental())
+  if (glm::distance(this->pos, object->getPos()) > object->boundingSphereRadius())
     return;
 
-  this->collideWithMesh(object->m_model->getCollisionMesh());
+  // this->collideWithMesh(object->m_model->getCollisionMesh(), object->getPos());
 }
-
 
 void GameObject::collideWithPlayer(Player *player)
 {
   if (this->isEnvironmental())
+  {
     this->m_model->collideWithPlayer(player);
+    return;
+  }
+
+  // if (glm::distance(this->pos, *player->pos) < this->boundingSphereRadius())
+  // {
+  //   glm::vec3 to_player = 0.5f * glm::normalize(*player->pos - this->pos);
+  //   player->vel += to_player;
+  // }
+
 }
 
 
 void GameObject::draw(Renderer *ren)
 {
+  this->setSceneModelMat();
+  this->m_model->setParentModelMat(this->m_scenegraph_parent_model_mat);
   this->m_model->setPos(&this->pos);
   this->m_model->setRot(&this->rot);
   this->m_model->draw(ren);

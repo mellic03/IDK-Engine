@@ -27,14 +27,20 @@ bool Animation::loadKeyframes(std::string filepath, std::string name, int num_ke
 
 void Animation::setPos(glm::vec3 *position)
 {
-  for (int i=0; i<this->keyframes.size(); i++)
-    this->keyframes[i].setPos(position);
+  // for (int i=0; i<this->keyframes.size(); i++)
+  //   this->keyframes[i].setPos(position);
 }
 
 void Animation::setRot(glm::vec3 *rotation)
 {
-  for (int i=0; i<this->keyframes.size(); i++)
-    this->keyframes[i].setRot(rotation);
+//   for (int i=0; i<this->keyframes.size(); i++)
+//     this->keyframes[i].setRot(rotation);
+}
+
+void Animation::setModelMat(glm::mat4 *mat)
+{
+  for (auto &keyframe: this->keyframes)
+    keyframe.setModelMat(mat);
 }
 
 
@@ -46,12 +52,8 @@ void Animation::nextFrame(void)
 
 void Animation::play(Renderer *ren)
 {
-  // this->keyframes[this->m_active_keyframe].useRenderer(ren);
-
   float lerp_value = (float)this->m_anim_framecount / (float)this->m_anim_framelength;
   ren->active_shader->setFloat("lerp_value", lerp_value);
-
-  // printf("pos.y: %f\n", this->keyframes[this->m_active_keyframe].pos->y);
 
   this->keyframes[this->m_active_keyframe].draw(ren);
 

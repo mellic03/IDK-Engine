@@ -7,5 +7,3 @@
 
 GEOMETRYMESH building
 COLLISIONMESH building
-
-NAVMESH nav.obj

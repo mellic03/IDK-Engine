@@ -1,19 +1,19 @@
 #include <algorithm>
-#include "objecthandler.h"
+#include "scenegraph.h"
 
-/** Determine if object/object name already exists in handler
+/** Determine if object/object name already exists in scene
  */
-bool ObjectHandler::objectExists(std::string object_name)
+bool SceneGraph::objectExists(std::string object_name)
 {
   return std::find(this->m_unique_object_names.begin(), this->m_unique_object_names.end(), object_name) != this->m_unique_object_names.end();
 }
 
-int ObjectHandler::indexOfObjectName(std::string object_name)
+int SceneGraph::indexOfObjectName(std::string object_name)
 {
   return std::find(this->m_unique_object_names.begin(), this->m_unique_object_names.end(), object_name) - this->m_unique_object_names.begin();
 }
 
-void ObjectHandler::addObject(GameObject *object)
+void SceneGraph::addObject(GameObject *object)
 {
   if (this->objectExists(object->getName()))
     return;
@@ -23,7 +23,7 @@ void ObjectHandler::addObject(GameObject *object)
   this->m_object_instances.push_back(std::vector<GameObject>());
 }
 
-void ObjectHandler::newObjectInstance(std::string object_name)
+void SceneGraph::newObjectInstance(std::string object_name, glm::vec3 pos, glm::vec3 rot)
 {
   if (this->objectExists(object_name) == false)
   {
@@ -35,8 +35,17 @@ void ObjectHandler::newObjectInstance(std::string object_name)
   this->m_object_instances[index].push_back(*this->m_object_templates[index]);
 
   GameObject *object = &this->m_object_instances[index][this->m_object_instances[index].size()-1];
+  object->pos = pos;
+  object->rot = rot;
+
 
   object->addModel(object->m_model);
+}
+
+void SceneGraph::deleteObjectInstance(std::string object_name, int instance)
+{
+  int object_type = this->indexOfObjectName(object_name);
+  this->m_object_instances[object_type].erase(this->m_object_instances[object_type].begin() + instance);
 }
 
 
@@ -45,7 +54,7 @@ void ObjectHandler::newObjectInstance(std::string object_name)
  * object_name  num_instances
  * 
  */
-bool ObjectHandler::exportHandler(std::string filepath)
+bool SceneGraph::exportScene(std::string filepath)
 {
 
   FILE *fh = fopen(filepath.c_str(), "w");
@@ -84,7 +93,7 @@ bool ObjectHandler::exportHandler(std::string filepath)
 }
 
 
-bool ObjectHandler::importHandler(std::string filepath)
+bool SceneGraph::importScene(std::string filepath)
 {
   FILE *fh = fopen(filepath.c_str(), "r");
   if (fh == NULL)
@@ -96,7 +105,7 @@ bool ObjectHandler::importHandler(std::string filepath)
   int num_object_types = this->m_unique_object_names.size();
 
 
-  char *object_name;
+  char object_name[64];
   bool is_hidden;
   glm::vec3 pos = glm::vec3(0.0f);
   glm::vec3 rot = glm::vec3(0.0f);
@@ -104,22 +113,16 @@ bool ObjectHandler::importHandler(std::string filepath)
   int current_object_type = 0;
 
   char buffer[128];
-  while (
-    fscanf(fh, "%s %d %f %f %f %f %f %f",
-      object_name,
-      &is_hidden,
-      &pos.x,
-      &pos.y,
-      &pos.z,
-      &rot.x,
-      &rot.y,
-      &rot.z
-    )
-  )
+  while (fgets(buffer, 128, fh) != NULL)
   {
-    
+    if ( sscanf(buffer, "%s %d %f %f %f %f %f %f", object_name, &is_hidden,
+        &pos.x, &pos.y, &pos.z, &rot.x, &rot.y, &rot.z) )
+    {
+      this->newObjectInstance(object_name, pos, rot);
+    }
   }
 
-
   fclose(fh);
+
+  return true;
 }

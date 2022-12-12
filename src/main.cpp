@@ -23,8 +23,8 @@
 
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GameEngine/GameEngine.h"
-#include "ui.h"
-#include "scene.h"
+#include "ui/ui.h"
+#include "scene/scene.h"
 
 
 
@@ -51,11 +51,11 @@ int ENTRY(int argc, char **argv)
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+  // SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
 
   gl_context = SDL_GL_CreateContext(window);
   SDL_GL_MakeCurrent(window, gl_context);
-  SDL_GL_SetSwapInterval(-1); // vsync
+  SDL_GL_SetSwapInterval(1); // vsync
   SDL_SetRelativeMouseMode(SDL_TRUE);
 
   if (glewInit() != GLEW_OK)
@@ -63,7 +63,7 @@ int ENTRY(int argc, char **argv)
 
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
-  glEnable(GL_MULTISAMPLE);
+  // glEnable(GL_MULTISAMPLE);
 
 
   SDL_Event event;
@@ -72,23 +72,30 @@ int ENTRY(int argc, char **argv)
 
   // RENDERER SETUP
   //----------------------------------------
-  Renderer ren, shadowren;
+  Renderer ren;
   Player player(&ren);
   player.pos->z = 6.0f;
   import_lighting_config(&ren);
 
-  ObjectHandler objhandler;
+  SceneGraph objhandler;
 
   Mesh sphere;  sphere.load("assets/sphere/", "sphere");
   
-  Model tree;            tree.load("assets/environment/tree/");
-  GameObject treeobj;    treeobj.addModel(&tree);
+  Model tree;               tree.load("assets/environment/tree/");
+  GameObject treeobj;       treeobj.addModel(&tree);
 
-  Model building;            building.load("assets/environment/building/");
-  GameObject buildingobj;    buildingobj.addModel(&building);
+  Model building;           building.load("assets/environment/building/");
+  GameObject buildingobj;   buildingobj.addModel(&building);
 
   Model terrain;            terrain.load("assets/environment/terrain1/");
   GameObject terrainobj;    terrainobj.addModel(&terrain);
+
+  Model fren;               fren.load("assets/npc/fren/");
+  GameObject frenobj;       frenobj.addModel(&fren);
+
+  Model baby;               baby.load("assets/environment/baby/");
+  GameObject babyobj;       babyobj.addModel(&baby);
+
 
   NavMesh nav1;
   nav1.load("assets/environment/terrain1/nav.obj");
@@ -97,6 +104,8 @@ int ENTRY(int argc, char **argv)
   objhandler.addObject(&treeobj);
   objhandler.addObject(&buildingobj);
   objhandler.addObject(&terrainobj);
+  objhandler.addObject(&frenobj);
+  objhandler.addObject(&babyobj);
 
 
   Scene scene_1;
@@ -134,9 +143,6 @@ int ENTRY(int argc, char **argv)
   if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
   glBindFramebuffer(GL_FRAMEBUFFER, 0);  
-
-
-
 
 
   Uint64 start = SDL_GetPerformanceCounter(), end = SDL_GetPerformanceCounter();

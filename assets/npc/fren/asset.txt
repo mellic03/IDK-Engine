@@ -1,0 +1,6 @@
+
+#ASSETNAME fren
+
+#NPC
+
+GEOMETRYMESH fren
