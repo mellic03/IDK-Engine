@@ -28,15 +28,7 @@ Camera::Camera()
 
 void Camera::init(void)
 {
-  // ShaderSource worldspace_src = parse_shader("assets/shaders/basic.glsl");
-  // Shader worldspace;
-  // worldspace.set(create_shader(worldspace_src.vertex_source, worldspace_src.fragment_source));
-  // this->shaders[SHADER_WORLDSPACE] = worldspace;
 
-  // ShaderSource viewspace_src = parse_shader("assets/shaders/basic_viewspace.glsl");
-  // Shader viewspace;
-  // viewspace.set(create_shader(viewspace_src.vertex_source, viewspace_src.fragment_source));
-  // this->shaders[SHADER_WEAPON] = viewspace;
 
 }
 
@@ -55,12 +47,15 @@ void Camera::input()
   this->dir->y = sin(glm::radians(this->pitch));
   this->dir->z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
 
-  this->front = glm::normalize(*this->dir);
-  this->right = glm::normalize(glm::cross(this->up, *this->dir));
+  glm::vec3 tempdir = this->modifier_matrix * glm::vec4(this->dir->x, this->dir->y, this->dir->z, 0.0f);
+
+  this->front = glm::normalize(tempdir);
+  this->right = glm::normalize(glm::cross(this->up, tempdir));
 
   this->view = glm::lookAt(
     *this->pos,
     *this->pos + this->front,
     this->up
   );
+
 }

@@ -28,10 +28,13 @@ class Camera {
   public:
     Camera();
 
+    glm::mat4 modifier_matrix = glm::mat4(1.0f);
+
     glm::mat4 view;
     glm::mat4 projection;
 
     glm::vec3 *pos = &this->m_default_pos;
+    glm::vec3 *pos_worldspace = &this->m_default_pos;
     glm::vec3 target;
     glm::vec3 *dir = &this->m_default_pos;
     glm::vec3 front;

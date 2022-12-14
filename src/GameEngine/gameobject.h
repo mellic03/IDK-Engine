@@ -9,6 +9,7 @@
 class GameObject {
 
   private:
+    std::string m_given_name = "DEFAULT";
     std::string m_name = "DEFAULT";
     int m_ID = 0;
 
@@ -54,6 +55,9 @@ class GameObject {
     AnimationController *getAnimController(void) /*..*/ { return &this->m_animation_controller; };
     std::string getName(void) /*.....................*/ { return this->m_name; };
     void setName(std::string name) /*................*/ { this->m_name = name; };
+    void setGivenName(std::string name)                 { this->m_given_name = name; };
+    std::string getGivenName(void)                      { return this->m_given_name; };
+    std::string *getGivenNamePtr(void)                   { return &this->m_given_name; };
     int getID(void) /*...............................*/ { return this->m_ID; };
     int *getIDptr(void) /*...........................*/ { return &this->m_ID; };
     void setID(int id) /*............................*/ { this->m_ID = id; };

@@ -227,7 +227,6 @@ void Renderer::sendLightsToShader(void)
 
   this->active_shader->setInt("depthMap", 10);
   this->active_shader->setFloat("far_plane",   25.0f);
-  this->active_shader->setVec3("viewPos", *this->cam.pos);
   
   this->active_shader->setFloat("bias", this->DIRBIAS);
   this->active_shader->setVec3( "pointlight.ambient", this->pointlights[0].ambient);
@@ -320,5 +319,5 @@ void Renderer::sendLightsToShader(void)
   }
 
   this->active_shader->setVec3("viewPos", *this->cam.pos);
-  this->active_shader->setVec3("viewDirection", *this->cam.dir);
+  this->active_shader->setVec3("viewDirection", glm::mat3(this->cam.modifier_matrix) * *this->cam.dir);
 }

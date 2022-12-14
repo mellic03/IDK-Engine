@@ -30,8 +30,8 @@ class Player {
     Camera *cam;
 
     glm::vec3 pos_worldspace = glm::vec3(0.0f);
-    glm::vec3 dir = glm::vec3(0.0f);
-    glm::vec3 vel = {0.0f, 0.0f, 0.0f};
+    glm::vec3 dir_worldspace = glm::vec3(0.0f);
+    glm::vec3 vel_worldspace = {0.0f, 0.0f, 0.0f};
 
 
     float height = 0.5f;

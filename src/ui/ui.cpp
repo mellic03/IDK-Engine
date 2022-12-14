@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "ui.h"
 
+#include "../include/imgui/imgui_stdlib.h"
+
 int selected_dirlight = 0;    const char *dir_options[4] = {"1"};
 int selected_pointlight = 0;  const char *point_options[4] = {"1", "2", "3", "4"};
 int selected_spotlight = 0;   const char *spot_options[4] = {"1", "2"};
@@ -79,6 +81,10 @@ void draw_transform_menu(Scene *scene, SceneGraph *handler, int selected_instanc
 
   GameObject *object = handler->objectPtr(selected_instance);
 
+  ImGui::InputText("Name", object->getGivenNamePtr());
+
+  ImGui::Separator();
+
   ImGui::Text("Transform");
   ImGui::Separator();
   ImGui::DragFloat3("Position", &object->getPos()->x, 0.01f, 0, 0, "%0.01f", 0);
@@ -102,6 +108,7 @@ void draw_transform_menu(Scene *scene, SceneGraph *handler, int selected_instanc
   if (object->isNPC())
     if (ImGui::Button("Seek Player"))
       object->setPath(scene->navmesh.path(*object->getPos(), *scene->player->getPos()));
+
 }
 
 void draw_new_instance_menu(SceneGraph *scenegraph, int *selected_instance)
@@ -170,9 +177,8 @@ void draw_entity_childnodes(SceneGraph *scenegraph, GameObject *object, int *sel
   if (*selected_instance == object->getID())
     flags |= ImGuiTreeNodeFlags_Selected;
 
-  if (ImGui::TreeNodeEx(std::string(object->getName() + " " + std::to_string(object->getID())).c_str(), flags))
+  if (ImGui::TreeNodeEx(object->getGivenName().c_str(), flags))
   {
-
     if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
     {
       ImGui::SetDragDropPayload("DND_DEMO_CELL", (const void *)object->getIDptr(), sizeof(int));

@@ -113,7 +113,7 @@ int ENTRY(int argc, char **argv)
 
   objhandler.newObjectInstance("empty");
   player.setObjectPtr(objhandler.frontObjectPtr());
-  player.objectPtr()->setName("Player");
+  player.objectPtr()->setGivenName("Player");
 
   objhandler.addObject(player.objectPtr());
 
@@ -163,7 +163,7 @@ int ENTRY(int argc, char **argv)
     glClearColor(ren.clearColor.x, ren.clearColor.y, ren.clearColor.z, 1.0f);
     draw_dev_ui(&ren, &scene_1);
 
-    ren.update(*player.getPos(), player.cam->front);
+    ren.update(player.pos_worldspace, player.cam->front);
 
     // Input
     //---------------------------------

@@ -57,19 +57,19 @@ void player_collide(Player *player, glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, g
 {
   glm::vec3 intersect_point;
 
-  bool intersects = ray_intersect_triangle(*player->getPos(), ray, v0, v1, v2, &intersect_point);
+  bool intersects = ray_intersect_triangle(player->pos_worldspace, ray, v0, v1, v2, &intersect_point);
 
 
   if (intersects)
   {
-    float dist = glm::distance(*player->getPos(), intersect_point);
+    float dist = glm::distance(player->pos_worldspace, intersect_point);
 
     if (0 < dist && dist < d)
     {
-      float impulse_1d = calculate_impulse(player->vel, normal, 0.5);
+      float impulse_1d = calculate_impulse(*player->getVel(), normal, 0.5);
       glm::vec3 impulse = impulse_1d * normal;
 
-      player->vel += (1.0f) * impulse;
+      *player->getVel() += (1.0f) * impulse;
       if (downwards)
       {
         // float overlap = d - dist;
@@ -80,7 +80,7 @@ void player_collide(Player *player, glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, g
 
       else
       {
-        *player->getPos() = *player->getPos() - (d-dist)*ray;
+        player->pos_worldspace = player->pos_worldspace - (d-dist)*ray;
       }
     }
 

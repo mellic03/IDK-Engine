@@ -26,6 +26,7 @@ class SceneGraph {
 
     GameObject *objectPtr(int object_id);
     GameObject *frontObjectPtr(void);
+    GameObject *rearObjectPtr(void);
 
     void newObjectInstance(std::string object_name, glm::vec3 pos = glm::vec3(0.0f), glm::vec3 rot = glm::vec3(0.0f));
     void deleteObjectInstance(std::string object_name, int instance);

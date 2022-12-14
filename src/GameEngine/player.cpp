@@ -9,9 +9,6 @@ Player::Player(Renderer *ren)
   this->cam = &ren->cam;
   this->cam->pos = this->getPos();
 
-  // this->pos = &this->cam->pos;
-  this->cam->dir = &this->dir;
-
   this->useWeapon(WEAPON_SHOTGUN);
   this->getWeapon()->loadModel("assets/player/gun/");
   this->getWeapon()->hip_pos = glm::vec3(+0.10f, -0.10f, -0.15f);
@@ -23,8 +20,7 @@ void Player::setObjectPtr(GameObject *ptr)
   this->m_gameobject = ptr;
 
   this->cam->pos = &this->pos_worldspace;
-  this->cam->dir = &this->dir;
-
+  this->cam->pos_worldspace = this->getPos();
 }
 
 void Player::changeState(PlayerState state)
@@ -53,16 +49,10 @@ void Player::collideWith(GameObject *object)
 
 void Player::perFrameUpdate(void)
 {
-
-  glm::vec3 ps = *this->getPos();
-
-  this->pos_worldspace = this->getTransform()->getModelMatrix() * glm::vec4(ps.x, ps.y, ps.z, 1.0f);
-
   float nearest_dist = INFINITY;
   int nearest_i = -1;
   int nearest_j = -1;
 
-  
   glm::vec3 ray_up    =  glm::vec3( 0.0f, +1.0f,  0.0f); 
   glm::vec3 ray_down  =  glm::vec3( 0.0f, -1.0f,  0.0f);
   glm::vec3 ray_left  = -this->cam->right;
@@ -70,7 +60,7 @@ void Player::perFrameUpdate(void)
   glm::vec3 ray_front =  this->cam->front;
   glm::vec3 ray_back  = -this->cam->front;
 
-  glm::vec3 ray_traveldir = glm::normalize(this->vel);
+  glm::vec3 ray_traveldir = glm::normalize(*this->getVel());
 
 
   for (int i=0; i<this->m_collision_meshes.size(); i++)
@@ -96,10 +86,10 @@ void Player::perFrameUpdate(void)
       if (glm::dot(ray_down, normal) <= 0)
       {
         glm::vec3 intersect_point;
-        bool intersects = ray_intersect_triangle(*this->getPos(), ray_down, v0, v1, v2, &intersect_point);
+        bool intersects = ray_intersect_triangle(this->pos_worldspace, ray_down, v0, v1, v2, &intersect_point);
         if (intersects)
         {
-          float dist = glm::distance(*this->getPos(), intersect_point);
+          float dist = glm::distance(this->pos_worldspace, intersect_point);
           if (dist < nearest_dist)
           {
             nearest_dist = dist;
@@ -162,28 +152,24 @@ void Player::key_input(Renderer *ren)
   switch (this->current_state)
   {
     case (PSTATE_FALLING):
-      this->vel.y -= ren->gravity * ren->deltaTime;
+      this->getVel()->y -= ren->gravity * ren->deltaTime;
       break;
 
     case (PSTATE_GROUNDED):
       if (state[SDL_SCANCODE_SPACE])
       {
-        this->vel.y += 25 * this->jump_force * ren->deltaTime;
+        this->getVel()->y += 25 * this->jump_force * ren->deltaTime;
         this->changeState(PSTATE_FALLING);
       }
       break;
   }
 
 
-  this->vel.y *= 0.999f;
+  this->getVel()->y *= 0.999f;
   float damping = 1 / (1 + (ren->deltaTime * this->friction));
-  this->vel.x *= damping;
-  this->vel.z *= damping;
+  this->getVel()->x *= damping;
+  this->getVel()->z *= damping;
 
-  this->vel = glm::clamp(this->vel, glm::vec3(-4.5, -INFINITY, -4.5), glm::vec3(4.5, INFINITY, 4.5));
-  *this->getPos() += this->vel * ren->deltaTime;
-
-  this->cam->input();
 
 
   glm::vec3 temp_front = { this->cam->front.x, 0.0f, this->cam->front.z };
@@ -193,29 +179,39 @@ void Player::key_input(Renderer *ren)
 
   if (state[SDL_SCANCODE_W])
   {
-    this->vel += this->move_speed * ren->deltaTime * temp_front;
+    *this->getVel() += this->move_speed * ren->deltaTime * temp_front;
     headbob = true;
   }
 
   if (state[SDL_SCANCODE_S])
   {
-    this->vel -= this->move_speed * ren->deltaTime * temp_front;
+    *this->getVel() -= this->move_speed * ren->deltaTime * temp_front;
     headbob = true;
   }
 
   if (state[SDL_SCANCODE_A])
   {
-    this->vel += this->move_speed * ren->deltaTime * ren->cam.right;
+    *this->getVel() += this->move_speed * ren->deltaTime * ren->cam.right;
     headbob = true;
   }
 
   if (state[SDL_SCANCODE_D])
   {
-    this->vel -= this->move_speed * ren->deltaTime * ren->cam.right;
+    *this->getVel() -= this->move_speed * ren->deltaTime * ren->cam.right;
     headbob = true;
   }
 
 
+  *this->getVel() = glm::clamp(*this->getVel(), glm::vec3(-4.5, -INFINITY, -4.5), glm::vec3(4.5, INFINITY, 4.5));
+
+  glm::vec3 tempvel = glm::inverse(this->getTransform()->getModelMatrix()) * glm::vec4(this->getVel()->x, this->getVel()->y, this->getVel()->z, 0.0f);
+
+  *this->getPos() += tempvel * ren->deltaTime;
+
+  this->pos_worldspace = this->getTransform()->getModelMatrix() * glm::vec4(1.0f);
+  this->cam->modifier_matrix = this->getTransform()->getModelMatrix();
+
+  this->cam->input();
 
 }
 

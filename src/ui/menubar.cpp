@@ -86,6 +86,7 @@ void draw_load_modal(bool draw, Scene *scene)
     if (ImGui::Button("Load", ImVec2(120, 0)))
     {
       scene->object_handler->importScene(load_path.c_str());
+      scene->player->setObjectPtr(scene->object_handler->rearObjectPtr());
       ImGui::CloseCurrentPopup();
     }
 

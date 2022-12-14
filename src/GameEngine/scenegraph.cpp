@@ -43,14 +43,18 @@ GameObject *SceneGraph::frontObjectPtr(void)
   return objptr;
 }
 
+GameObject *SceneGraph::rearObjectPtr(void)
+{
+  std::list<GameObject>::iterator ptr = this->m_object_instances.begin();
+
+  GameObject *objptr = &*ptr;
+
+  return objptr;
+}
+
+
 void SceneGraph::newObjectInstance(std::string object_name, glm::vec3 pos, glm::vec3 rot)
 {
-  if (this->objectExists(object_name) == false)
-  {
-    printf("ERROR: cannot create template of: %s\nObject does not exist within handler.\n", object_name.c_str());
-    exit(1);
-  }
-
   int index = this->indexOfObjectName(object_name);
 
   GameObject newobj = *this->m_object_templates[index];
@@ -58,6 +62,7 @@ void SceneGraph::newObjectInstance(std::string object_name, glm::vec3 pos, glm::
   *newobj.getRot() = rot;
   newobj.useModel(newobj.m_model);
   newobj.setID(this->m_num_entities);
+  newobj.setGivenName(object_name);
 
   this->m_object_instances.push_back(newobj);
 
@@ -90,10 +95,8 @@ void objectToFile(FILE *fh, GameObject *object)
   else
     fprintf(fh, "parent_ID: %d\n", object->getParent()->getID());
 
-  fprintf(fh, "ENV: %d, ANIM: %d\n", object->isEnvironmental(), object->isAnimated());
-  fprintf(fh, "NPC: %d, HIDDEN: %d\n", object->isNPC(), object->isHidden());
-
-
+  fprintf(fh, "given_name:\n%s\n", object->getGivenName().c_str());
+    
   glm::vec3 pos = *object->getPos();
   glm::vec3 vel = *object->getVel();
   glm::vec3 rot = *object->getRot();
@@ -123,6 +126,12 @@ void SceneGraph::objectFromFile(FILE *fh)
       pos = object->getPos();
       vel = object->getVel();
       rot = object->getRot();
+    }
+
+    if (sscanf(buffer, "given_name: %s", stringdata))
+    {
+      fgets(buffer, 256, fh);
+      object->setGivenName(std::string(buffer));
     }
 
     sscanf(buffer, "position: %f %f %f", &pos->x, &pos->y, &pos->z);
@@ -191,14 +200,13 @@ bool SceneGraph::importScene(std::string filepath)
   rewind(fh);
 
   // Second pass, apply parent-child relations
-
+  bool first_object = true;
   int child_id, parent_id;
   while (fgets(buffer, 256, fh) != NULL)
   {
     if (sscanf(buffer, "ID: %d\n", &child_id));
     if (sscanf(buffer, "parent_ID: %d\n", &parent_id))
     {
-
       if (parent_id >= 0)
       {
         GameObject *parent = this->objectPtr(parent_id);
@@ -206,8 +214,6 @@ bool SceneGraph::importScene(std::string filepath)
 
         parent->giveChild(child);
       }
-
-      printf("obj: %d, parent: %d\n", child_id, parent_id);
     }
 
   }
