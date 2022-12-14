@@ -107,7 +107,7 @@ void draw_transform_menu(Scene *scene, SceneGraph *handler, int selected_instanc
 
   if (object->isNPC())
     if (ImGui::Button("Seek Player"))
-      object->setPath(scene->navmesh.path(*object->getPos(), *scene->player->getPos()));
+      object->setPath(scene->navmesh.path(*object->getPos(), scene->player->pos_worldspace));
 
 }
 
