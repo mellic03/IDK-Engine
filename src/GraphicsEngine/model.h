@@ -16,8 +16,10 @@
 #include "animation.h"
 #include "renderer.h"
 
-#include "../GameEngine/player.h"
-class Player;
+#include "../transform.h"
+
+// #include "../GameEngine/player.h"
+// class Player;
 
 enum ModelState { MSTATE_NOANIM_PLAYING, MSTATE_ANIM_PLAYING };
 
@@ -45,22 +47,19 @@ class Model {
     ModelState m_state = MSTATE_NOANIM_PLAYING;
 
     AnimationType m_active_animation = ANIM_REST;
-    Animation animations[NUM_ANIMATION_TYPES];
+    std::vector<Animation> animations;
 
 
-    // DEFAULT VALUES
-    //----------------------------------------------
-    glm::vec3 m_default_position = glm::vec3(0.0f);
-    glm::vec3 m_default_rotation = glm::vec3(0.0f);
-    //----------------------------------------------
+    Transform *m_transform = nullptr;
+    AnimationController *m_animation_controller = nullptr;
 
   public:
 
-    glm::vec3 *position = &this->m_default_position;
-    glm::vec3 *rotation = &this->m_default_rotation;
-
-    Model() { };
-
+    Model()
+    {
+      for (int i=0; i<NUM_ANIMATION_TYPES; i++)
+        this->animations.push_back(Animation());
+    };
 
     // Member Access
     //--------------------------------------
@@ -72,6 +71,8 @@ class Model {
 
     std::string getName(void)  { return this->m_name; };
 
+    std::vector<Animation> getAnimations(void) { return this->animations; };
+
     void setModelMat(glm::mat4 mat) { this->m_model_mat = mat; this->m_model_mat_set_manually = true; };
     void setParentModelMat(glm::mat4 *mat) { this->m_parent_model_mat = mat; };
     glm::mat4 *getModelMat(void) { return &this->m_model_mat; };
@@ -82,10 +83,20 @@ class Model {
     void activeAnimation(AnimationType id);
     void playAnimation(Renderer *ren);
 
-    void collideWithPlayer(Player *player);
+    // void collideWithPlayer(Player *player);
 
-    void setPos(glm::vec3 *position);
-    void setRot(glm::vec3 *rotation);
+    void useTransform(Transform *transform)
+    {
+      this->m_transform = transform;
+      this->m_staticmesh.useTransform(transform);
+      for (auto &animation: this->animations)
+        animation.useTransform(transform);
+    };
+
+    void useAnimController(AnimationController *animation_controller)
+    {
+      this->m_animation_controller = animation_controller;
+    }
 
     void drawStaticMesh(Renderer *ren);
     void drawAnimatedMesh(Renderer *ren);

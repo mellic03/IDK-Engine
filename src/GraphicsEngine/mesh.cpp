@@ -72,7 +72,6 @@ void Mesh::load(const char *filepath, std::string name)
   glm::vec2 *uvs       = (glm::vec2 *)malloc(tex_count * sizeof(glm::vec2));
 
   // poly_count number of polys, each poly contains three vertices
-  this->vertices = (Vertex *)malloc(poly_count * 3 * sizeof(Vertex));
 
   int current_material_index = -1;
   std::vector<std::string> material_names;
@@ -155,6 +154,9 @@ void Mesh::load(const char *filepath, std::string name)
         f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y),
         f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z)
       };
+
+      for (int i=0; i<3; i++)
+        this->vertices.push_back(Vertex());
 
       this->vertices[poly_count+0].tangent = tangent;
       this->vertices[poly_count+1].tangent = tangent;
@@ -293,7 +295,7 @@ void Mesh::setBufferData(void)
   glBindVertexArray(this->VAO);
 
   glBindBuffer(GL_ARRAY_BUFFER, this->VBO); 
-  glBufferData(GL_ARRAY_BUFFER, this->num_vertices * sizeof(Vertex), this->vertices, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, this->num_vertices * sizeof(Vertex), &this->vertices[0], GL_STATIC_DRAW);
 
   // Position
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)0);
@@ -344,10 +346,18 @@ void unbindTextureUnit(GLenum texture_unit)
 
 void Mesh::draw(Renderer *ren)
 {
+
+  if (this->m_transform == nullptr)
+  {
+    printf("Mesh::m_transform == nullptr\n");
+    exit(1);
+  }
+
+
   glBindVertexArray(this->VAO);
 
   ren->active_shader->setVec3("diffuse", glm::vec3(0.0f, 0.0f, 0.0f));
-  ren->active_shader->setMat4("model", *this->m_model_mat);
+  ren->active_shader->setMat4("model", this->m_transform->getModelMatrix());
   ren->active_shader->setMat4("view", ren->cam.view);
   ren->active_shader->setMat4("projection", ren->cam.projection);
 

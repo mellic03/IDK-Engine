@@ -8,10 +8,12 @@ bool SceneGraph::objectExists(std::string object_name)
   return std::find(this->m_unique_object_names.begin(), this->m_unique_object_names.end(), object_name) != this->m_unique_object_names.end();
 }
 
+
 int SceneGraph::indexOfObjectName(std::string object_name)
 {
   return std::find(this->m_unique_object_names.begin(), this->m_unique_object_names.end(), object_name) - this->m_unique_object_names.begin();
 }
+
 
 void SceneGraph::addObject(GameObject *object)
 {
@@ -20,7 +22,25 @@ void SceneGraph::addObject(GameObject *object)
 
   this->m_unique_object_names.push_back(object->getName());
   this->m_object_templates.push_back(object);
-  this->m_object_instances.push_back(std::vector<GameObject>());
+}
+
+GameObject *SceneGraph::objectPtr(int object_id)
+{
+  for (auto &object: this->m_object_instances)
+    if (object.getID() == object_id)
+      return &object;
+
+  return nullptr;
+}
+
+GameObject *SceneGraph::frontObjectPtr(void)
+{
+  std::list<GameObject>::iterator ptr = this->m_object_instances.end();
+  ptr = std::prev(ptr);
+
+  GameObject *objptr = &*ptr;
+
+  return objptr;
 }
 
 void SceneGraph::newObjectInstance(std::string object_name, glm::vec3 pos, glm::vec3 rot)
@@ -32,22 +52,96 @@ void SceneGraph::newObjectInstance(std::string object_name, glm::vec3 pos, glm::
   }
 
   int index = this->indexOfObjectName(object_name);
-  this->m_object_instances[index].push_back(*this->m_object_templates[index]);
 
-  GameObject *object = &this->m_object_instances[index][this->m_object_instances[index].size()-1];
-  object->pos = pos;
-  object->rot = rot;
+  GameObject newobj = *this->m_object_templates[index];
+  *newobj.getPos() = pos;
+  *newobj.getRot() = rot;
+  newobj.useModel(newobj.m_model);
+  newobj.setID(this->m_num_entities);
 
+  this->m_object_instances.push_back(newobj);
 
-  object->addModel(object->m_model);
+  this->m_num_entities += 1;
 }
+
 
 void SceneGraph::deleteObjectInstance(std::string object_name, int instance)
 {
-  int object_type = this->indexOfObjectName(object_name);
-  this->m_object_instances[object_type].erase(this->m_object_instances[object_type].begin() + instance);
+
 }
 
+
+void SceneGraph::headerInfoToFile(FILE *fh)
+{
+  fprintf(fh, "#HEADER\n");
+  fprintf(fh, "num_entities: %d\n", this->m_num_entities);
+  fprintf(fh, "\n");
+}
+
+void objectToFile(FILE *fh, GameObject *object)
+{
+  fprintf(fh, "#START OBJECT\n");
+
+  fprintf(fh, "GameObject: %s\n", object->getName().c_str());
+  fprintf(fh, "ID: %d\n", object->getID());
+  
+  if (object->getTransform()->parent == nullptr)
+    fprintf(fh, "parent_ID: %d\n", -1);
+  else
+    fprintf(fh, "parent_ID: %d\n", object->getParent()->getID());
+
+  fprintf(fh, "ENV: %d, ANIM: %d\n", object->isEnvironmental(), object->isAnimated());
+  fprintf(fh, "NPC: %d, HIDDEN: %d\n", object->isNPC(), object->isHidden());
+
+
+  glm::vec3 pos = *object->getPos();
+  glm::vec3 vel = *object->getVel();
+  glm::vec3 rot = *object->getRot();
+  fprintf(fh, "position: %f %f %f\n", pos.x, pos.y, pos.z);
+  fprintf(fh, "velocity: %f %f %f\n", vel.x, vel.y, vel.z);
+  fprintf(fh, "rotation: %f %f %f\n", rot.x, rot.y, rot.z);
+
+  fprintf(fh, "#END OBJECT\n");
+
+  fprintf(fh, "\n");
+}
+
+void SceneGraph::objectFromFile(FILE *fh)
+{
+  char buffer[256];
+  char stringdata[256];
+
+  GameObject *object;
+  glm::vec3 *pos, *vel, *rot;
+
+  while (fgets(buffer, 256, fh) != NULL)
+  {
+    if (sscanf(buffer, "GameObject: %s", stringdata))
+    {
+      this->newObjectInstance(std::string(stringdata));
+      object = this->frontObjectPtr();
+      pos = object->getPos();
+      vel = object->getVel();
+      rot = object->getRot();
+    }
+
+    sscanf(buffer, "position: %f %f %f", &pos->x, &pos->y, &pos->z);
+    sscanf(buffer, "velocity: %f %f %f", &vel->x, &vel->y, &vel->z);
+    sscanf(buffer, "rotation: %f %f %f", &rot->x, &rot->y, &rot->z);
+
+    if (strcmp(buffer, "#END OBJECT\n") == 0)
+      return;
+  }
+
+}
+
+
+void SceneGraph::clearScene(void)
+{
+  this->m_object_instances.clear();
+
+  this->m_num_entities = 0;    
+}
 
 /** Save object handler data to file in the following format:
  * 
@@ -63,29 +157,11 @@ bool SceneGraph::exportScene(std::string filepath)
     printf("Error opening: %s\n", filepath.c_str());
     return false;
   }
+  
+  this->headerInfoToFile(fh);
 
-  int num_object_types = this->m_unique_object_names.size();
-
-  for (int i=0; i<num_object_types; i++)
-  {
-    
-    int num_instances = this->m_object_instances[i].size();
-    
-    for (int j=0; j<num_instances; j++)
-    {
-      fprintf(fh, "%s %d %f %f %f %f %f %f\n",
-        this->m_unique_object_names[i].c_str(),
-        this->m_object_instances[i][j].isHidden(),
-        this->m_object_instances[i][j].pos.x,
-        this->m_object_instances[i][j].pos.y,
-        this->m_object_instances[i][j].pos.z,
-        this->m_object_instances[i][j].rot.x,
-        this->m_object_instances[i][j].rot.y,
-        this->m_object_instances[i][j].rot.z
-      );
-    }
-
-  }
+  for (auto &obj: this->m_object_instances)
+    objectToFile(fh, &obj);
 
   fclose(fh);
 
@@ -95,6 +171,8 @@ bool SceneGraph::exportScene(std::string filepath)
 
 bool SceneGraph::importScene(std::string filepath)
 {
+  this->clearScene();
+
   FILE *fh = fopen(filepath.c_str(), "r");
   if (fh == NULL)
   {
@@ -102,25 +180,39 @@ bool SceneGraph::importScene(std::string filepath)
     return false;
   }
 
-  int num_object_types = this->m_unique_object_names.size();
+  printf("Successfully opened %s\n", filepath.c_str());
 
+  char buffer[256];
 
-  char object_name[64];
-  bool is_hidden;
-  glm::vec3 pos = glm::vec3(0.0f);
-  glm::vec3 rot = glm::vec3(0.0f);
+  while (fgets(buffer, 256, fh) != NULL)
+    if (strcmp(buffer, "#START OBJECT\n") == 0)
+      this->objectFromFile(fh);
 
-  int current_object_type = 0;
+  rewind(fh);
 
-  char buffer[128];
-  while (fgets(buffer, 128, fh) != NULL)
+  // Second pass, apply parent-child relations
+
+  int child_id, parent_id;
+  while (fgets(buffer, 256, fh) != NULL)
   {
-    if ( sscanf(buffer, "%s %d %f %f %f %f %f %f", object_name, &is_hidden,
-        &pos.x, &pos.y, &pos.z, &rot.x, &rot.y, &rot.z) )
+    if (sscanf(buffer, "ID: %d\n", &child_id));
+    if (sscanf(buffer, "parent_ID: %d\n", &parent_id))
     {
-      this->newObjectInstance(object_name, pos, rot);
+
+      if (parent_id >= 0)
+      {
+        GameObject *parent = this->objectPtr(parent_id);
+        GameObject *child = this->objectPtr(child_id);
+
+        parent->giveChild(child);
+      }
+
+      printf("obj: %d, parent: %d\n", child_id, parent_id);
     }
+
   }
+
+
 
   fclose(fh);
 

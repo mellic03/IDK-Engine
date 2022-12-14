@@ -72,44 +72,18 @@ void import_lighting_config(Renderer *ren)
   fclose(fh);
 }
 
-
-void draw_transform_menu(Scene *scene, SceneGraph *handler, int object_type)
+void draw_transform_menu(Scene *scene, SceneGraph *handler, int selected_instance)
 {
-  static int selected_instance = 0;
-  ImGui::ListBoxHeader("Instance", ImVec2(-FLT_MIN, 5 * ImGui::GetTextLineHeightWithSpacing()));
-  for (int i=0; i<handler->m_object_instances[object_type].size(); i++)
-  {
-    GameObject *object = &handler->m_object_instances[object_type][i];
-    if (ImGui::Selectable(std::to_string(i).c_str(), selected_instance == i, ImGuiSelectableFlags_SpanAllColumns))
-      selected_instance = i;
-  }
-  ImGui::ListBoxFooter();
-
-  if (ImGui::Button("New instance"))
-  {
-    handler->newObjectInstance(handler->m_object_templates[object_type]->getName());
-    selected_instance = handler->m_object_instances[object_type].size() - 1;
-  }
-  ImGui::SameLine();
-  if (ImGui::Button("Delete instance"))
-  {
-    handler->deleteObjectInstance(handler->m_unique_object_names[object_type], selected_instance);
-    selected_instance -= 1;
-  }
-
-
-  if (handler->m_object_instances[object_type].size() == 0)
+  if (handler->m_object_instances.size() == 0)
     return;
 
+  GameObject *object = handler->objectPtr(selected_instance);
 
-  GameObject *object = &handler->m_object_instances[object_type][selected_instance];
-
-  ImGui::Dummy(ImVec2(0.0f, 20.0f));
   ImGui::Text("Transform");
   ImGui::Separator();
-  ImGui::DragFloat3("Position", &object->pos[0], 0.01f, 0, 0, "%0.01f", 0);
-  ImGui::DragFloat3("Velocity", &object->vel[0], 0.01f, 0, 0, "%0.01f", 0);
-  ImGui::DragFloat3("Rotation", &object->rot[0], 0.1f,  0, 0, "%0.1f", 0);
+  ImGui::DragFloat3("Position", &object->getPos()->x, 0.01f, 0, 0, "%0.01f", 0);
+  ImGui::DragFloat3("Velocity", &object->getVel()->x, 0.01f, 0, 0, "%0.01f", 0);
+  ImGui::DragFloat3("Rotation", &object->getRot()->x, 0.1f,  0, 0, "%0.1f", 0);
 
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
   ImGui::Text("Other Stuff");
@@ -127,71 +101,157 @@ void draw_transform_menu(Scene *scene, SceneGraph *handler, int object_type)
 
   if (object->isNPC())
     if (ImGui::Button("Seek Player"))
-      object->setPath(scene->navmesh.path(object->pos, *scene->player->pos));
+      object->setPath(scene->navmesh.path(*object->getPos(), *scene->player->getPos()));
+}
 
-  if (ImGui::Button("Set Parent"))
+void draw_new_instance_menu(SceneGraph *scenegraph, int *selected_instance)
+{
+  if (ImGui::BeginMenu("New Instance"))
   {
-    object->setParent(&handler->m_object_instances[object_type][selected_instance-1]);
+    if (ImGui::BeginMenu("Environment"))
+    {
+      int iterator = 0;
+      for (auto &objtemplate: scenegraph->m_object_templates)
+      {
+        if (objtemplate->isEnvironmental() == false)
+          continue;
+        
+        if (ImGui::MenuItem(objtemplate->getName().c_str()))
+        {
+          scenegraph->newObjectInstance(objtemplate->getName());
+          *selected_instance = scenegraph->m_object_instances.size() - 1;
+        }
+
+        iterator += 1;
+      }
+      ImGui::EndMenu();
+    }
+
+    if (ImGui::BeginMenu("NPC"))
+    {
+      int iterator = 0;
+      for (auto &objtemplate: scenegraph->m_object_templates)
+      {
+        if (objtemplate->isNPC() == false)
+          continue;
+        
+        if (ImGui::MenuItem(objtemplate->getName().c_str()))
+        {
+          scenegraph->newObjectInstance(objtemplate->getName());
+          *selected_instance = scenegraph->m_object_instances.size() - 1;
+        }
+
+        iterator += 1;
+      }
+      ImGui::EndMenu();
+    }
+
+    if (ImGui::BeginMenu("Misc"))
+    {
+      if (ImGui::MenuItem("Empty"))
+      {
+        scenegraph->newObjectInstance("empty");
+        *selected_instance = scenegraph->m_object_instances.size() - 1;
+      }
+
+      ImGui::EndMenu();
+    }
+
+    ImGui::EndMenu();
   }
 }
 
-
-void draw_entities_tab(Renderer *ren, Scene *scene)
+void draw_entity_childnodes(SceneGraph *scenegraph, GameObject *object, int *selected_instance)
 {
-  static int selected_object_type = 0;
-  char buffer[64];
+  ImGui::PushID(object->getID());
 
-  ImGui::BeginChild("ChildL", ImVec2(ImGui::GetContentRegionAvail().x/4, 0), false, 0);
-  ImGui::Separator();
-  
-    if (ImGui::TreeNode("Environment"))
+  int flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow;
+
+  if (*selected_instance == object->getID())
+    flags |= ImGuiTreeNodeFlags_Selected;
+
+  if (ImGui::TreeNodeEx(std::string(object->getName() + " " + std::to_string(object->getID())).c_str(), flags))
+  {
+
+    if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
     {
-      for (int i=0; i<scene->object_handler->m_unique_object_names.size(); i++)
-      {
-        if (scene->object_handler->m_object_templates[i]->isEnvironmental() == false)
-          continue;
-        
-        sprintf(buffer, "%s", scene->object_handler->m_unique_object_names[i].c_str());
-        if (ImGui::Selectable(buffer, selected_object_type == i))
-          selected_object_type = i;
-      }
-      ImGui::TreePop();
-    }
-    
-    ImGui::Separator();
+      ImGui::SetDragDropPayload("DND_DEMO_CELL", (const void *)object->getIDptr(), sizeof(int));
 
-    if (ImGui::TreeNode("NPC"))
+      ImGui::EndDragDropSource();
+    }
+
+    if (ImGui::BeginDragDropTarget())
     {
-      for (int i=0; i<scene->object_handler->m_unique_object_names.size(); i++)
+      if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_DEMO_CELL"))
       {
-        if (scene->object_handler->m_object_templates[i]->isNPC() == false)
-          continue;
-
-        sprintf(buffer, "%s", scene->object_handler->m_unique_object_names[i].c_str());
-        if (ImGui::Selectable(buffer, selected_object_type == i))
-          selected_object_type = i;
+        IM_ASSERT(payload->DataSize == sizeof(int));
+        int selectedobj = *(int *)payload->Data;
+        object->giveChild(scenegraph->objectPtr(selectedobj));
       }
-      ImGui::TreePop();
+      ImGui::EndDragDropTarget();
     }
-    ImGui::Separator();
-
-  ImGui::EndChild();
 
 
-  ImGui::SameLine();
+    if (ImGui::IsItemClicked())
+    {
+      *selected_instance = object->getID();
+    }
 
-  ImGui::PushID(selected_object_type);
-  ImGui::BeginChild("ChildR", ImVec2(ImGui::GetContentRegionAvail().x, 0), true, 0);
-  draw_transform_menu(scene, scene->object_handler, selected_object_type);  
-  ImGui::EndChild();
+    std::vector<GameObject *> children = object->getChildren();
+    for (int i=0; i<children.size(); i++)
+    {
+      draw_entity_childnodes(scenegraph, children[i], selected_instance);
+    }
+
+
+    ImGui::TreePop();
+  }
+
   ImGui::PopID();
+}
 
-  static char buf1[64] = ""; ImGui::InputText("Filepath", buf1, 64);
-  if (ImGui::Button("Export"))
-    scene->object_handler->exportScene(std::string(buf1));
+void draw_scene_tab(Renderer *ren, Scene *scene)
+{
+  static int selected_instance = 0;
 
-  if (ImGui::Button("Import"))
-    scene->object_handler->importScene(std::string(buf1));
+  ImGui::BeginChild("entity-child", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - 50), false, 0);
+  {
+    ImGui::BeginChild("ChildL", ImVec2(ImGui::GetContentRegionAvail().x/3, 0), false, 0);
+    {
+      if (ImGui::TreeNodeEx("Scene Hierarchy", ImGuiTreeNodeFlags_DefaultOpen))
+      {
+        if (ImGui::BeginDragDropTarget())
+        {
+          if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_DEMO_CELL"))
+          {
+            IM_ASSERT(payload->DataSize == sizeof(int));
+            int selectedobj = *(int *)payload->Data;
+            scene->object_handler->objectPtr(selected_instance)->clearParent();
+          }
+          ImGui::EndDragDropTarget();
+        }
+
+        for (auto &object: scene->object_handler->m_object_instances)
+          if (object.hasParent() == false)
+            draw_entity_childnodes(scene->object_handler, &object, &selected_instance);
+
+        ImGui::TreePop();
+      }
+
+      ImGui::EndChild();
+    }
+
+    ImGui::SameLine();
+
+    ImGui::BeginChild("ChildR", ImVec2(ImGui::GetContentRegionAvail().x, 0), true, 0);
+    {
+      draw_transform_menu(scene, scene->object_handler, selected_instance);  
+      ImGui::EndChild();
+    }
+
+    ImGui::EndChild();
+  }
+  draw_new_instance_menu(scene->object_handler, &selected_instance);
 }
 
 void draw_lighting_tab(Renderer *ren)
@@ -376,20 +436,25 @@ void draw_dev_ui(Renderer *ren, Scene *scene)
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplSDL2_NewFrame();
   ImGui::NewFrame();
-  
+
+  draw_main_menu_bar(ren, scene);
+
   ImGui::Begin("Hello, world!");
+
+
 
   if (ImGui::Button("Demo Window"))
     show = !show;
   if (show)
     ImGui::ShowDemoWindow(&show);
 
+  ImGui::Text("state: %s\n", (scene->player->getState() == PSTATE_FALLING) ? "falling" : "grounded");
 
   if (ImGui::BeginTabBar("MyTabBar", 0))
   {
-    if (ImGui::BeginTabItem("Entities"))
+    if (ImGui::BeginTabItem("Scene"))
     {
-      draw_entities_tab(ren, scene);
+      draw_scene_tab(ren, scene);
       ImGui::EndTabItem();
     }
 
@@ -410,8 +475,6 @@ void draw_dev_ui(Renderer *ren, Scene *scene)
     }
     ImGui::EndTabBar();
   }
-
-  ImGui::Text("state: %s\n", (scene->player->getState() == PSTATE_FALLING) ? "falling" : "grounded");
 
   ImGui::End();
   ImGui::Render();

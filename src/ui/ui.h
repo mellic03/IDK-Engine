@@ -7,5 +7,8 @@
 #include "../GraphicsEngine/renderer.h"
 #include "../scene/scene.h"
 
+
+void draw_main_menu_bar(Renderer *ren, Scene *scene);
+
 void draw_dev_ui(Renderer *ren, Scene *scene);
 void import_lighting_config(Renderer *ren);

@@ -22,7 +22,7 @@ void Renderer::createShader(std::string filename, ShaderType type)
 Renderer::Renderer()
 {
   this->createShader("worldspace",     SHADER_WORLDSPACE);
-  this->createShader("viewspace",      SHADER_VIEWSPACE);
+  this->createShader("weapon",         SHADER_WEAPON);
   this->createShader("lightsource",    SHADER_LIGHTSOURCE);
   this->createShader("screenquad",     SHADER_SCREENQUAD);
 
@@ -224,6 +224,26 @@ void Renderer::sendLightsToShader(void)
 
   char buffer[64];
 
+
+  this->active_shader->setInt("depthMap", 10);
+  this->active_shader->setFloat("far_plane",   25.0f);
+  this->active_shader->setVec3("viewPos", *this->cam.pos);
+  
+  this->active_shader->setFloat("bias", this->DIRBIAS);
+  this->active_shader->setVec3( "pointlight.ambient", this->pointlights[0].ambient);
+  this->active_shader->setVec3( "pointlight.diffuse", this->pointlights[0].diffuse);
+  this->active_shader->setVec3( "pointlight.pos", this->pointlights[0].position);
+  this->active_shader->setVec3( "pointlight.tangent_pos", this->pointlights[0].position);
+  this->active_shader->setFloat("pointlight.constant", this->pointlights[0].constant);
+  this->active_shader->setFloat("pointlight.linear", this->pointlights[0].linear);
+  this->active_shader->setFloat("pointlight.quadratic", this->pointlights[0].quadratic);
+  this->active_shader->setFloat("pointlight.bias", this->pointlights[0].bias);
+  this->active_shader->setVec3( "clearColor", this->clearColor);
+  this->active_shader->setFloat("fog_start", this->fog_start);
+  this->active_shader->setFloat("fog_end", this->fog_end);
+
+
+
   // for (int i=0; i<this->NM_DIRLIGHTS; i++)
   // {
   //   sprintf(buffer, "dirlights[%d].direction", i);
@@ -299,6 +319,6 @@ void Renderer::sendLightsToShader(void)
     this->active_shader->setFloat(buffer,  this->shaderready_spotlights[i].intensity);
   }
 
-  this->active_shader->setVec3("viewPos", this->cam.pos);
-  this->active_shader->setVec3("viewDirection", this->cam.dir);
+  this->active_shader->setVec3("viewPos", *this->cam.pos);
+  this->active_shader->setVec3("viewDirection", *this->cam.dir);
 }

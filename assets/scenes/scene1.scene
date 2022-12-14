@@ -1,0 +1,91 @@
+#HEADER
+num_entities: 8
+
+#START OBJECT
+GameObject: empty
+ID: 0
+parent_ID: -1
+ENV: 1, ANIM: 0
+NPC: 0, HIDDEN: 0
+position: 0.000000 0.000000 0.000000
+velocity: 0.000000 0.000000 0.000000
+rotation: 0.000000 0.000000 0.000000
+#END OBJECT
+
+#START OBJECT
+GameObject: terrain1
+ID: 1
+parent_ID: 0
+ENV: 1, ANIM: 0
+NPC: 0, HIDDEN: 0
+position: 0.000000 0.000000 0.000000
+velocity: 0.000000 0.000000 0.000000
+rotation: 0.000000 0.000000 0.000000
+#END OBJECT
+
+#START OBJECT
+GameObject: building
+ID: 2
+parent_ID: 1
+ENV: 1, ANIM: 0
+NPC: 0, HIDDEN: 0
+position: 20.600000 -6.600000 0.000000
+velocity: 0.000000 0.000000 0.000000
+rotation: 14.500000 93.699997 0.000000
+#END OBJECT
+
+#START OBJECT
+GameObject: building
+ID: 3
+parent_ID: 2
+ENV: 1, ANIM: 0
+NPC: 0, HIDDEN: 0
+position: 0.000000 8.700000 0.000000
+velocity: 0.000000 0.000000 0.000000
+rotation: 0.000000 0.000000 0.000000
+#END OBJECT
+
+#START OBJECT
+GameObject: fren
+ID: 4
+parent_ID: 7
+ENV: 0, ANIM: 1
+NPC: 1, HIDDEN: 0
+position: 1.000000 0.000000 0.000000
+velocity: 0.000000 0.000000 0.000000
+rotation: 0.000000 0.000000 0.000000
+#END OBJECT
+
+#START OBJECT
+GameObject: fren
+ID: 5
+parent_ID: 7
+ENV: 0, ANIM: 1
+NPC: 1, HIDDEN: 0
+position: 0.000000 0.000000 0.000000
+velocity: 0.000000 0.000000 0.000000
+rotation: 0.000000 0.000000 0.000000
+#END OBJECT
+
+#START OBJECT
+GameObject: fren
+ID: 6
+parent_ID: 7
+ENV: 0, ANIM: 1
+NPC: 1, HIDDEN: 0
+position: -1.000000 0.000000 0.000000
+velocity: 0.000000 0.000000 0.000000
+rotation: 0.000000 0.000000 0.000000
+#END OBJECT
+
+#START OBJECT
+GameObject: empty
+ID: 7
+parent_ID: -1
+ENV: 1, ANIM: 0
+NPC: 0, HIDDEN: 0
+position: -0.600000 -4.400000 -8.000000
+velocity: 0.000000 0.000000 0.000000
+rotation: 0.000000 60.299999 0.000000
+#END OBJECT
+

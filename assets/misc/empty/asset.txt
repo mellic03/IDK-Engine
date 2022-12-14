@@ -1,0 +1,9 @@
+// #[attribute] [type] [name] [num keyframes] //
+
+#ASSETNAME empty
+
+#STATIC
+#ENVIRONMENTAL
+
+GEOMETRYMESH empty
+COLLISIONMESH empty

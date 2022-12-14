@@ -15,6 +15,8 @@
 #include "renderer.h"
 #include "material.h"
 
+#include "../transform.h"
+
 #define ELEMENTS_PER_VERTEX (3 + 3 + 3 + 2 + 3 + 1 + 3 + 3)
 
 struct Vertex {
@@ -32,9 +34,8 @@ struct Vertex {
 class Mesh {
 
   private:
-
-    glm::mat4 *m_model_mat = nullptr;
     bool m_model_mat_set_manually = false;
+    Transform *m_transform = nullptr;
 
   public:
     GLuint VAO, VBO, IBO0, IBO1;
@@ -44,7 +45,7 @@ class Mesh {
     std::vector<Material> materials;
 
     int num_polygons;
-    Vertex *vertices;
+    std::vector<Vertex> vertices;
     int num_vertices, num_indices;
 
     std::string m_name;
@@ -59,10 +60,7 @@ class Mesh {
     void setBufferData(void);
     void draw(Renderer *ren);
 
-    glm::mat4 getParentModelMat(void);
-
-    void setModelMat(glm::mat4 *matptr)  { this->m_model_mat = matptr; };
-
+    void useTransform(Transform *transform) { this->m_transform = transform; };
 
 };
 

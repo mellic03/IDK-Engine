@@ -1,0 +1,9 @@
+// #[attribute] [type] [name] [num keyframes] //
+
+
+#ASSETNAME baby
+
+#ANIMATED
+#NPC
+
+ANIMATION REST baby 3

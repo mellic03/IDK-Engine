@@ -1,9 +1,0 @@
-// #[attribute] [type] [name] [num keyframes] //
-
-
-#ASSETNAME baby
-
-#ANIMATED
-#ENVIRONMENTAL
-
-ANIMATION REST baby 3

@@ -25,25 +25,6 @@ bool Animation::loadKeyframes(std::string filepath, std::string name, int num_ke
 }
 
 
-void Animation::setPos(glm::vec3 *position)
-{
-  // for (int i=0; i<this->keyframes.size(); i++)
-  //   this->keyframes[i].setPos(position);
-}
-
-void Animation::setRot(glm::vec3 *rotation)
-{
-//   for (int i=0; i<this->keyframes.size(); i++)
-//     this->keyframes[i].setRot(rotation);
-}
-
-void Animation::setModelMat(glm::mat4 *mat)
-{
-  for (auto &keyframe: this->keyframes)
-    keyframe.setModelMat(mat);
-}
-
-
 void Animation::nextFrame(void)
 {
   this->m_active_keyframe = (this->m_active_keyframe + 1) % this->keyframes.size();

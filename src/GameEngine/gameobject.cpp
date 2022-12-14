@@ -6,41 +6,42 @@ void GameObject::attemptCollision(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm
 {
   glm::vec3 intersect_point;
 
-  bool intersects = ray_intersect_triangle(this->pos, ray, v0, v1, v2, &intersect_point);
+  bool intersects = ray_intersect_triangle(this->m_transform.position, ray, v0, v1, v2, &intersect_point);
 
 
   if (intersects)
   {
-    float dist = glm::distance(this->pos, intersect_point);
+    float dist = glm::distance(this->m_transform.position, intersect_point);
 
     if (0 < dist && dist < d)
     {
-      float impulse_1d = calculate_impulse(this->vel, normal, 0.5);
+      float impulse_1d = calculate_impulse(this->m_transform.velocity, normal, 0.5);
       glm::vec3 impulse = impulse_1d * normal;
 
       // if (downwards)
       // {
       //   float overlap = d - dist;
-      //   this->pos.y += overlap;
-      //   this->vel.y = 0;
+      //   this->m_transform.position.y += overlap;
+      //   this->m_transform.velocity.y = 0;
       // }
 
       // else
       // {
-        this->vel += (1.0f) * impulse;
-        this->pos = this->pos - (d-dist)*ray;
+        this->m_transform.velocity += (1.0f) * impulse;
+        this->m_transform.position = this->m_transform.position - (d-dist)*ray;
       // }
     }
   }
 }
 
-void GameObject::collideWithMesh(Mesh *collisionmesh, glm::vec3 mesh_pos)
+
+void GameObject::collideWithMesh(Mesh *collisionmesh)
 {
   for (int i=0; i<collisionmesh->num_vertices; i+=3)
   {
-    glm::vec3 v0 = collisionmesh->vertices[i+0].position + mesh_pos;
-    glm::vec3 v1 = collisionmesh->vertices[i+1].position + mesh_pos;
-    glm::vec3 v2 = collisionmesh->vertices[i+2].position + mesh_pos;
+    glm::vec3 v0 = collisionmesh->vertices[i+0].position;
+    glm::vec3 v1 = collisionmesh->vertices[i+1].position;
+    glm::vec3 v2 = collisionmesh->vertices[i+2].position;
 
     glm::vec3 normal = collisionmesh->vertices[i].face_normal;
 
@@ -61,6 +62,7 @@ void GameObject::collideWithMesh(Mesh *collisionmesh, glm::vec3 mesh_pos)
   }
 }
 
+
 std::string GameObject::physicsStateString(void)
 {
   switch (this->m_physics_state)
@@ -75,6 +77,7 @@ std::string GameObject::physicsStateString(void)
       return "falling";
   }
 }
+
 
 std::string GameObject::navigationStateString(void)
 {
@@ -91,16 +94,28 @@ std::string GameObject::navigationStateString(void)
   }
 }
 
+std::string GameObject::getStateString(StateType state_type)
+{
+  switch (state_type)
+  {
+    case (STATE_PHYSICS):       return this->physicsStateString();
+    case (STATE_NAVIGATION):    return this->navigationStateString();
+  }
+}
+
+
+
 void GameObject::changePhysState(PhysicsState new_state)
 {
   this->m_physics_state = new_state;
 
   switch (new_state)
   {
-    case (PHYSICS_GROUNDED): this->vel.y = 0.0f; break;
+    case (PHYSICS_GROUNDED): this->m_transform.velocity.y = 0.0f; break;
     case (PHYSICS_FALLING): break;
   }
 }
+
 
 void GameObject::changeNavState(NavigationState new_state)
 {
@@ -108,15 +123,22 @@ void GameObject::changeNavState(NavigationState new_state)
 
   switch (new_state)
   {
-    case (NAVIGATION_REST): break;
-    case (NAVIGATION_SEEK): break;
+    case (NAVIGATION_REST):
+      this->getAnimController()->useAnimation(ANIM_REST); 
+      break;
+    
+    
+    case (NAVIGATION_SEEK):
+      this->getAnimController()->useAnimation(ANIM_REST); 
+      break;
   }
 }
 
+
 void GameObject::perFrameUpdate(Renderer *ren)
 {
-  // Dont apply gravity to environmental objects.
-  if (this->m_is_environmental)
+  // Logic doesn't apply to environmental objects.
+  if (this->isEnvironmental())
     return;
 
   switch (this->m_physics_state)
@@ -125,29 +147,27 @@ void GameObject::perFrameUpdate(Renderer *ren)
 
     case (PHYSICS_GROUNDED):
       damping = 1 / (1 + (ren->deltaTime * 5.0f));
-      this->vel.x *= damping;
-      this->vel.z *= damping;
+      this->m_transform.velocity.x *= damping;
+      this->m_transform.velocity.z *= damping;
 
-      // this->vel = glm::clamp(this->vel, glm::vec3(-4.5), glm::vec3(4.5));
-      this->pos += this->vel * ren->deltaTime;
+      // this->m_transform.velocity = glm::clamp(this->m_transform.velocity, glm::vec3(-4.5), glm::vec3(4.5));
+      this->m_transform.position += this->m_transform.velocity * ren->deltaTime;
       break;
 
 
     case (PHYSICS_FALLING):
-      this->vel.y -= ren->gravity * ren->deltaTime;
+      this->m_transform.velocity.y -= ren->gravity * ren->deltaTime;
 
-      this->vel.y *= 0.999f;
+      this->m_transform.velocity.y *= 0.999f;
       damping = 1 / (1 + (ren->deltaTime * 5.0f));
-      this->vel.x *= damping;
-      this->vel.z *= damping;
+      this->m_transform.velocity.x *= damping;
+      this->m_transform.velocity.z *= damping;
 
-      // this->vel = glm::clamp(this->vel, glm::vec3(-4.5), glm::vec3(4.5));
-      this->pos += this->vel * ren->deltaTime;
+      // this->m_transform.velocity = glm::clamp(this->m_transform.velocity, glm::vec3(-4.5), glm::vec3(4.5));
+      this->m_transform.position += this->m_transform.velocity * ren->deltaTime;
 
       break;
   }
-
-
 
   switch (this->m_navigation_state)
   {
@@ -163,16 +183,16 @@ void GameObject::perFrameUpdate(Renderer *ren)
         break;
       }
 
-      if (glm::distance(this->pos, this->m_path[this->m_path.size()-1] + glm::vec3(0.0f, 0.5f, 0.0f)) < 0.5f)
+      if (glm::distance(this->m_transform.position, this->m_path[this->m_path.size()-1] + glm::vec3(0.0f, 0.5f, 0.0f)) < 0.5f)
       {
         this->m_path.pop_back();
       }
 
       else
       {
-        glm::vec3 move_towards_dir = 0.01f * glm::normalize(this->m_path[this->m_path.size()-1] - this->pos);
-        this->pos += move_towards_dir;
-        this->m_model->setModelMat(glm::inverse(glm::lookAt(this->pos, this->pos + move_towards_dir, {0.0f, 1.0f, 0.0f})));
+        glm::vec3 move_towards_dir = 0.01f * glm::normalize(this->m_path[this->m_path.size()-1] - this->m_transform.position);
+        this->m_transform.position += move_towards_dir;
+        this->m_model->setModelMat(glm::inverse(glm::lookAt(this->m_transform.position, this->m_transform.position + move_towards_dir, {0.0f, 1.0f, 0.0f})));
       }
   
       break;
@@ -180,70 +200,103 @@ void GameObject::perFrameUpdate(Renderer *ren)
 }
 
 
-void GameObject::addModel(Model *model)
+void GameObject::useModel(Model *model)
 {
-  model->setPos(&this->pos);
-  model->setRot(&this->rot);
+  this->m_name = model->getName();
+
+  model->useTransform(&this->m_transform);
   this->m_model = model;
   this->m_is_npc = model->isNPC();
+
   this->m_is_environmental = model->isEnvironmental();
-  if (this->isEnvironmental()) this->m_bounding_sphere_radius = INFINITY;
+  if (this->isEnvironmental())
+    this->m_bounding_sphere_radius = INFINITY;
+
   this->m_is_animated = model->isAnimated();
+  if (this->isAnimated())
+  {
+    this->m_model->useAnimController(this->getAnimController());
+    this->getAnimController()->assignAnimations(this->m_model->getAnimations());
+    this->getAnimController()->useAnimation(ANIM_REST);
+  }
+
   this->m_name = model->getName();
 }
 
-
-void GameObject::setSceneModelMat(void)
+void GameObject::clearParent(void)
 {
-  this->m_scenegraph_model_mat = glm::mat4(1.0f);
-  this->m_scenegraph_model_mat = glm::translate(this->m_scenegraph_model_mat, this->pos);
+  if (this->m_parent != nullptr)
+    this->m_parent->removeChild(this);
+  this->m_parent = nullptr;
+  this->m_transform.parent = nullptr;
+}
 
-  this->m_scenegraph_model_mat = glm::rotate(this->m_scenegraph_model_mat, glm::radians(this->rot.x), {1.0f, 0.0f, 0.0f});
-  this->m_scenegraph_model_mat = glm::rotate(this->m_scenegraph_model_mat, glm::radians(this->rot.y), {0.0f, 1.0f, 0.0f});
+void GameObject::giveChild(GameObject *child)
+{
+  // return if child is actually parent
+  if (child->isChild(this))
+    return;
+
+  this->m_children.push_back(child);
+  child->clearParent();
+  child->setParent(this);
+}
+
+void GameObject::removeChild(GameObject *child)
+{
+  for (int i=0; i<this->m_children.size(); i++)
+    if (this->m_children[i]->getID() == child->getID())
+      this->m_children.erase(std::next(this->m_children.begin(), i));
+}
+
+void GameObject::clearChildren(void)
+{
+  this->m_children.clear();
+}
+
+bool GameObject::isChild(GameObject *object)
+{
+  bool is_child = false;
+
+  for (auto &child: this->m_children)
+  {
+    if (child->getID() == object->getID())
+      return true;
+
+    if (child->isChild(object))
+      return true;
+  }
+
+  return is_child;
 }
 
 void GameObject::setParent(GameObject *parent)
 {
-  this->m_scenegraph_parent_model_mat = &parent->m_scenegraph_model_mat;
+  this->m_parent = parent;
+  this->m_transform.parent = &parent->m_transform;
 }
+
 
 /**     object.collideWithObject(ground);
  * E.g. cube.collideWithObject(terrain);
  */
 void GameObject::collideWithObject(GameObject *object)
 {
-  if (this->isEnvironmental())
+  if (this->isEnvironmental() || this == object)
     return;
 
-  if (glm::distance(this->pos, object->getPos()) > object->boundingSphereRadius())
-    return;
+  // if (glm::distance(this->m_transform.position, object->getPos()) > object->boundingSphereRadius())
+  //   return;
 
-  // this->collideWithMesh(object->m_model->getCollisionMesh(), object->getPos());
-}
-
-void GameObject::collideWithPlayer(Player *player)
-{
-  if (this->isEnvironmental())
-  {
-    this->m_model->collideWithPlayer(player);
-    return;
-  }
-
-  // if (glm::distance(this->pos, *player->pos) < this->boundingSphereRadius())
-  // {
-  //   glm::vec3 to_player = 0.5f * glm::normalize(*player->pos - this->pos);
-  //   player->vel += to_player;
-  // }
-
+  // this->collideWithMesh(object->getCollisionMesh());
 }
 
 
 void GameObject::draw(Renderer *ren)
 {
-  this->setSceneModelMat();
-  this->m_model->setParentModelMat(this->m_scenegraph_parent_model_mat);
-  this->m_model->setPos(&this->pos);
-  this->m_model->setRot(&this->rot);
+  this->getAnimController()->useTransform(this->getTransform());
+  this->m_model->useTransform(this->getTransform());
+  this->m_model->useAnimController(this->getAnimController());
   this->m_model->draw(ren);
 }
 

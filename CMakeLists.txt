@@ -6,6 +6,7 @@ add_compile_options(
   -g
 )
 
+set (CMAKE_CXX_FLAGS "-lstdc++fs -std=c++17")
 
 project(game)
 

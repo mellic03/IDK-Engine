@@ -1,21 +1,29 @@
 #include <functional>
 
 #include "physics.h"
-#include "../include/glm/gtx/matrix_interpolation.hpp"
+#include "state.h"
 
 
 Player::Player(Renderer *ren)
 {
   this->cam = &ren->cam;
+  this->cam->pos = this->getPos();
 
-  this->pos = &this->cam->pos;
-  this->dir = &this->cam->front;
+  // this->pos = &this->cam->pos;
+  this->cam->dir = &this->dir;
 
-  // this->active_weapon_type = SHOTGUN;
-  // this->active_weapon = &this->weapons[this->active_weapon_type];
-  // this->active_weapon->load_model("assets/gun/", "gun", ren);
-  // this->active_weapon->hip_pos = glm::vec3(+0.10f, -0.10f, -0.15f);
-  // this->active_weapon->aim_pos = glm::vec3( 0.00f, -0.015f, -0.10f);
+  this->useWeapon(WEAPON_SHOTGUN);
+  this->getWeapon()->loadModel("assets/player/gun/");
+  this->getWeapon()->hip_pos = glm::vec3(+0.10f, -0.10f, -0.15f);
+  this->getWeapon()->aim_pos = glm::vec3( 0.00f, -0.015f, -0.10f);
+}
+
+void Player::setObjectPtr(GameObject *ptr)
+{
+  this->m_gameobject = ptr;
+
+  this->cam->pos = &this->pos_worldspace;
+  this->cam->dir = &this->dir;
 
 }
 
@@ -32,6 +40,116 @@ void Player::changeState(PlayerState state)
       break;
   }
 
+}
+
+void Player::collideWith(GameObject *object)
+{
+  if (object->isEnvironmental())
+  {
+    this->m_collision_transforms.push_back(*object->getTransform());
+    this->m_collision_meshes.push_back(object->getCollisionMesh());
+  }
+}
+
+void Player::perFrameUpdate(void)
+{
+
+  glm::vec3 ps = *this->getPos();
+
+  this->pos_worldspace = this->getTransform()->getModelMatrix() * glm::vec4(ps.x, ps.y, ps.z, 1.0f);
+
+  float nearest_dist = INFINITY;
+  int nearest_i = -1;
+  int nearest_j = -1;
+
+  
+  glm::vec3 ray_up    =  glm::vec3( 0.0f, +1.0f,  0.0f); 
+  glm::vec3 ray_down  =  glm::vec3( 0.0f, -1.0f,  0.0f);
+  glm::vec3 ray_left  = -this->cam->right;
+  glm::vec3 ray_right =  this->cam->right;
+  glm::vec3 ray_front =  this->cam->front;
+  glm::vec3 ray_back  = -this->cam->front;
+
+  glm::vec3 ray_traveldir = glm::normalize(this->vel);
+
+
+  for (int i=0; i<this->m_collision_meshes.size(); i++)
+  {
+    Mesh *mesh = this->m_collision_meshes[i];
+    glm::mat4 model = this->m_collision_transforms[i].getModelMatrix();
+
+
+    for (int j=0; j<mesh->num_vertices; j+=3)
+    {
+      glm::vec3 v0 = mesh->vertices[j+0].position;
+      glm::vec3 v1 = mesh->vertices[j+1].position;
+      glm::vec3 v2 = mesh->vertices[j+2].position;
+
+      v0 = model * glm::vec4(v0.x, v0.y, v0.z, 1.0f);
+      v1 = model * glm::vec4(v1.x, v1.y, v1.z, 1.0f);
+      v2 = model * glm::vec4(v2.x, v2.y, v2.z, 1.0f);
+
+      glm::vec3 normal = glm::mat3(model) * mesh->vertices[j+2].face_normal;
+      glm::normalize(normal);
+
+      // Find nearest "down"
+      if (glm::dot(ray_down, normal) <= 0)
+      {
+        glm::vec3 intersect_point;
+        bool intersects = ray_intersect_triangle(*this->getPos(), ray_down, v0, v1, v2, &intersect_point);
+        if (intersects)
+        {
+          float dist = glm::distance(*this->getPos(), intersect_point);
+          if (dist < nearest_dist)
+          {
+            nearest_dist = dist;
+            nearest_i = i;
+            nearest_j = j;
+          }
+        }
+      }
+
+      if (glm::dot(ray_up, normal) <= 0)
+        player_collide(this, ray_up,      v0, v1, v2, normal, this->height/2, false);
+
+      if (glm::dot(ray_left, normal) <= 0)
+        player_collide(this, ray_left,    v0, v1, v2, normal, this->height/2, false);
+
+      if (glm::dot(ray_right, normal) <= 0)
+        player_collide(this, ray_right,   v0, v1, v2, normal, this->height/2, false);
+
+      if (glm::dot(ray_front, normal) <= 0)
+        player_collide(this, ray_front,   v0, v1, v2, normal, this->height/2, false);
+
+      if (glm::dot(ray_back, normal) <= 0)
+        player_collide(this, ray_back,    v0, v1, v2, normal, this->height/2, false);
+
+      // player_collide(player, ray_traveldir, v0, v1, v2, normal, player->height/2, false);
+    }
+  }
+
+  if (nearest_i == -1)
+  {
+    this->m_collision_transforms.clear();
+    this->m_collision_meshes.clear();
+    return;
+  }
+
+  glm::mat4 model = this->m_collision_transforms[nearest_i].getModelMatrix();
+
+  glm::vec3 v0 = this->m_collision_meshes[nearest_i]->vertices[nearest_j+0].position;
+  glm::vec3 v1 = this->m_collision_meshes[nearest_i]->vertices[nearest_j+1].position;
+  glm::vec3 v2 = this->m_collision_meshes[nearest_i]->vertices[nearest_j+2].position;
+  v0 = model * glm::vec4(v0.x, v0.y, v0.z, 1.0f);
+  v1 = model * glm::vec4(v1.x, v1.y, v1.z, 1.0f);
+  v2 = model * glm::vec4(v2.x, v2.y, v2.z, 1.0f);
+
+  glm::vec3 normal = glm::mat3(model) * this->m_collision_meshes[nearest_i]->vertices[nearest_j+2].face_normal;
+
+  player_collide(this, ray_down, v0, v1, v2, normal, this->height, true);
+
+  this->m_collision_transforms.clear();
+  this->m_collision_meshes.clear();
 }
 
 
@@ -63,7 +181,7 @@ void Player::key_input(Renderer *ren)
   this->vel.z *= damping;
 
   this->vel = glm::clamp(this->vel, glm::vec3(-4.5, -INFINITY, -4.5), glm::vec3(4.5, INFINITY, 4.5));
-  *this->pos += this->vel * ren->deltaTime;
+  *this->getPos() += this->vel * ren->deltaTime;
 
   this->cam->input();
 
@@ -109,8 +227,8 @@ void Player::mouse_input(Renderer *ren, SDL_Event *event)
     case SDL_MOUSEBUTTONDOWN:
       if (event->button.button == SDL_BUTTON_RIGHT)
       {
-        // this->active_weapon->aiming = true;
-        // this->active_weapon->sway /= 8;
+        this->getWeapon()->aiming = true;
+        this->getWeapon()->sway /= 8;
         this->move_speed /= 2;
       }
     break;
@@ -118,8 +236,8 @@ void Player::mouse_input(Renderer *ren, SDL_Event *event)
     case SDL_MOUSEBUTTONUP:
       if (event->button.button == SDL_BUTTON_RIGHT)
       {
-        // this->active_weapon->aiming = false;
-        // this->active_weapon->sway *= 8;
+        this->getWeapon()->aiming = false;
+        this->getWeapon()->sway *= 8;
         this->move_speed *= 2;
       }
     break;
@@ -129,8 +247,8 @@ void Player::mouse_input(Renderer *ren, SDL_Event *event)
   {
     this->cam->yaw   += this->cam->rot_speed * ren->deltaTime * event->motion.xrel;
     this->cam->pitch -= this->cam->rot_speed * ren->deltaTime * event->motion.yrel;
-    // this->active_weapon->movement_offset.x -= this->cam->rot_speed * ren->deltaTime * 0.001f * event->motion.xrel;
-    // this->active_weapon->movement_offset.y += this->cam->rot_speed * ren->deltaTime * 0.001f * event->motion.yrel;
+    this->getWeapon()->movement_offset.x -= this->cam->rot_speed * ren->deltaTime * 0.001f * event->motion.xrel;
+    this->getWeapon()->movement_offset.y += this->cam->rot_speed * ren->deltaTime * 0.001f * event->motion.yrel;
   }
 
   else if (event->type == SDL_KEYDOWN)
@@ -149,5 +267,5 @@ void Player::mouse_input(Renderer *ren, SDL_Event *event)
 
 void Player::draw(Renderer *ren)
 {
-  // this->active_weapon->draw(ren);
+  this->getWeapon()->draw(ren);
 }
