@@ -7,6 +7,8 @@ layout (location = 4) in vec3 aTangent;
 layout (location = 6) in vec3 aColor;
 
 layout (location = 7) in vec3 aAnimNextPos;
+layout (location = 8) in vec3 aAnimNextNormal;
+layout (location = 9) in vec3 aAnimNextTangent;
 
 out vec3 color;
 
@@ -42,19 +44,21 @@ uniform float lerp_value;
 void main()
 {
   vec3 outpos = mix(aPos, aAnimNextPos, lerp_value);
+  vec3 outNormal = mix(aNormal, aAnimNextNormal, lerp_value);
+  vec3 outTangent = mix(aTangent, aAnimNextTangent, lerp_value);
 
   color = aColor;
   vs_out.FragPos = vec3(model * vec4(outpos, 1.0));
   vs_out.viewPos = viewPos;
-  vs_out.Normal =  aNormal;
+  vs_out.Normal =  outNormal;
   vs_out.TexCoords = aTexCoords;
   gl_Position = projection * view * model * vec4(outpos, 1.0);
 
   // tangent-space to world-space transform
   //------------------------------------------------------------------
   mat3 normalMatrix = mat3(model);
-  vec3 T = normalize(normalMatrix * aTangent);
-  vec3 N = normalize(normalMatrix * aNormal);
+  vec3 T = normalize(normalMatrix * outTangent);
+  vec3 N = normalize(normalMatrix * outNormal);
   T = normalize(T - dot(T, N) * N);
   vec3 B = cross(N, T);
   vs_out.TBN = (mat3(T, B, N));

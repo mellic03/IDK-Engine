@@ -6,104 +6,179 @@ void GameObject::attemptCollision(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm
 {
   glm::vec3 intersect_point;
 
-  bool intersects = ray_intersect_triangle(this->m_transform.position, ray, v0, v1, v2, &intersect_point);
-
+  bool intersects = ray_intersect_triangle(this->pos_worldspace, ray, v0, v1, v2, &intersect_point);
 
   if (intersects)
   {
-    float dist = glm::distance(this->m_transform.position, intersect_point);
+    float dist = glm::distance(this->pos_worldspace, intersect_point);
 
     if (0 < dist && dist < d)
     {
-      float impulse_1d = calculate_impulse(this->m_transform.velocity, normal, 0.5);
+      float impulse_1d = calculate_impulse(*this->getVel(), normal, 0.5);
       glm::vec3 impulse = impulse_1d * normal;
 
-      // if (downwards)
-      // {
-      //   float overlap = d - dist;
-      //   this->m_transform.position.y += overlap;
-      //   this->m_transform.velocity.y = 0;
-      // }
+      *this->getVel() += (1.0f) * impulse;
 
-      // else
-      // {
-        this->m_transform.velocity += (1.0f) * impulse;
-        this->m_transform.position = this->m_transform.position - (d-dist)*ray;
-      // }
+      if (downwards)
+      {
+        float overlap = d - dist;
+        this->getPos()->y += overlap;
+        this->changePhysState(PHYSICS_GROUNDED);
+      }
+
+      else
+      {
+        glm::vec3 v = (d-dist)*ray;
+
+        *this->getPos() = *this->getPos() - this->getTransform()->worldToLocal({v.x, v.y, v.z, 0.0f});
+        // this->pos_worldspace = this->pos_worldspace - (d-dist)*ray;
+      }
+    }
+
+    else if (dist > d && downwards)
+      this->changePhysState(PHYSICS_FALLING);
+  }
+}
+
+void GameObject::collideWithMeshes(void)
+{
+  float nearest_dist = INFINITY;
+  int nearest_i = -1;
+  int nearest_j = -1;
+
+  glm::mat4 thismodelmat = this->getTransform()->getModelMatrix();
+
+  glm::vec3 ray_up    =  thismodelmat * glm::vec4( 0.0f, +1.0f,  0.0f,  0.0f);
+  glm::vec3 ray_down  =  thismodelmat * glm::vec4( 0.0f, -1.0f,  0.0f,  0.0f);
+  glm::vec3 ray_left  =  thismodelmat * glm::vec4(-1.0f,  0.0f,  0.0f,  0.0f);
+  glm::vec3 ray_right =  thismodelmat * glm::vec4( 1.0f,  0.0f,  0.0f,  0.0f);
+  glm::vec3 ray_front =  thismodelmat * glm::vec4( 0.0f,  0.0f,  1.0f,  0.0f);
+  glm::vec3 ray_back  =  thismodelmat * glm::vec4( 0.0f,  0.0f, -1.0f,  0.0f);
+
+  glm::vec3 ray_traveldir = glm::normalize(*this->getVel());
+
+
+  for (int i=0; i<this->m_collision_meshes.size(); i++)
+  {
+    Mesh *mesh = this->m_collision_meshes[i];
+    glm::mat4 model = this->m_collision_transforms[i].getModelMatrix();
+
+    for (int j=0; j<mesh->num_vertices; j+=3)
+    {
+      glm::vec3 v0 = mesh->vertices[j+0].position;
+      glm::vec3 v1 = mesh->vertices[j+1].position;
+      glm::vec3 v2 = mesh->vertices[j+2].position;
+      v0 = model * glm::vec4(v0.x, v0.y, v0.z, 1.0f);
+      v1 = model * glm::vec4(v1.x, v1.y, v1.z, 1.0f);
+      v2 = model * glm::vec4(v2.x, v2.y, v2.z, 1.0f);
+
+      glm::vec3 normal = glm::mat3(model) * mesh->vertices[j+2].face_normal;
+
+      glm::normalize(normal);
+
+      // Find nearest "down"
+      if (glm::dot(ray_down, normal) <= 0)
+      {
+        glm::vec3 intersect_point;
+        bool intersects = ray_intersect_triangle(this->pos_worldspace, ray_down, v0, v1, v2, &intersect_point);
+        if (intersects)
+        {
+          float dist = glm::distance(this->pos_worldspace, intersect_point);
+          if (dist < nearest_dist)
+          {
+            nearest_dist = dist;
+            nearest_i = i;
+            nearest_j = j;
+          }
+        }
+      }
+
+      if (glm::dot(ray_up, normal) <= 0)
+        this->attemptCollision( ray_up,     v0, v1, v2, normal, this->width, false);
+
+      if (glm::dot(ray_left, normal) <= 0)
+        this->attemptCollision( ray_left,   v0, v1, v2, normal, this->width, false);
+
+      if (glm::dot(ray_right, normal) <= 0)
+        this->attemptCollision( ray_right,  v0, v1, v2, normal, this->width, false);
+
+      if (glm::dot(ray_front, normal) <= 0)
+        this->attemptCollision( ray_front,  v0, v1, v2, normal, this->width, false);
+
+      if (glm::dot(ray_back, normal) <= 0)
+        this->attemptCollision( ray_back,   v0, v1, v2, normal, this->width, false);
+     
+      if (glm::dot(ray_traveldir, normal) <= 0)
+        this->attemptCollision( ray_traveldir,   v0, v1, v2, normal, this->width, false);
     }
   }
-}
 
-
-void GameObject::collideWithMesh(Mesh *collisionmesh)
-{
-  for (int i=0; i<collisionmesh->num_vertices; i+=3)
+  if (nearest_i == -1)
   {
-    glm::vec3 v0 = collisionmesh->vertices[i+0].position;
-    glm::vec3 v1 = collisionmesh->vertices[i+1].position;
-    glm::vec3 v2 = collisionmesh->vertices[i+2].position;
-
-    glm::vec3 normal = collisionmesh->vertices[i].face_normal;
-
-    if (glm::dot(normal, this->ray_down) <= 0)
-      this->attemptCollision(this->ray_down, v0, v1, v2, normal, 0.5, true);
-
-    if (glm::dot(normal, this->ray_left) <= 0)
-      this->attemptCollision(this->ray_left, v0, v1, v2, normal, 0.25, false);
-
-    if (glm::dot(normal, this->ray_right) <= 0)
-      this->attemptCollision(this->ray_right, v0, v1, v2, normal, 0.25, false);
-
-    if (glm::dot(normal, this->ray_front) <= 0)
-      this->attemptCollision(this->ray_front, v0, v1, v2, normal, 0.25, false);
-
-    if (glm::dot(normal, this->ray_back) <= 0)
-      this->attemptCollision(this->ray_back, v0, v1, v2, normal, 0.25, false);
+    this->changePhysState(PHYSICS_FALLING);
+    this->m_collision_transforms.clear();
+    this->m_collision_meshes.clear();
+    return;
   }
-}
 
+  glm::mat4 model = this->m_collision_transforms[nearest_i].getModelMatrix();
+  glm::mat4 inv_model = glm::inverse(model);
+  ray_down  =  thismodelmat * glm::vec4( 0.0f, -1.0f,  0.0f,  0.0f);
+
+  glm::vec3 v0 = this->m_collision_meshes[nearest_i]->vertices[nearest_j+0].position;
+  glm::vec3 v1 = this->m_collision_meshes[nearest_i]->vertices[nearest_j+1].position;
+  glm::vec3 v2 = this->m_collision_meshes[nearest_i]->vertices[nearest_j+2].position;
+  v0 = model * glm::vec4(v0.x, v0.y, v0.z, 1.0f);
+  v1 = model * glm::vec4(v1.x, v1.y, v1.z, 1.0f);
+  v2 = model * glm::vec4(v2.x, v2.y, v2.z, 1.0f);
+
+  glm::vec3 normal = glm::mat3(model) * this->m_collision_meshes[nearest_i]->vertices[nearest_j+2].face_normal;
+
+  this->attemptCollision( ray_down,   v0, v1, v2, normal, this->height/2, true);
+
+  this->m_collision_transforms.clear();
+  this->m_collision_meshes.clear();
+}
 
 std::string GameObject::physicsStateString(void)
 {
   switch (this->m_physics_state)
   {
-    default:
-      return "unknown";
-
-    case (PHYSICS_GROUNDED):
-      return "grounded";
-    
-    case (PHYSICS_FALLING):
-      return "falling";
+    default:                  return "unknown";
+    case (PHYSICS_GROUNDED):  return "grounded";
+    case (PHYSICS_FALLING):   return "falling";
   }
 }
-
 
 std::string GameObject::navigationStateString(void)
 {
   switch (this->m_navigation_state)
   {
-    default:
-      return "unknown";
-
-    case (NAVIGATION_REST):
-      return "rest";
-    
-    case (NAVIGATION_SEEK):
-      return "seek";
+    default:                  return "unknown";
+    case (NAVIGATION_REST):   return "rest";
+    case (NAVIGATION_SEEK):   return "seek";
   }
+}
+
+PhysicsState GameObject::getPhysState(void)
+{
+  return this->m_physics_state;
+}
+
+NavigationState GameObject::getNavState(void)
+{
+  return this->m_navigation_state;
 }
 
 std::string GameObject::getStateString(StateType state_type)
 {
   switch (state_type)
   {
-    case (STATE_PHYSICS):       return this->physicsStateString();
-    case (STATE_NAVIGATION):    return this->navigationStateString();
+    default:                  return "Unknown state";
+    case (STATE_PHYSICS):     return this->physicsStateString();
+    case (STATE_NAVIGATION):  return this->navigationStateString();
   }
 }
-
-
 
 void GameObject::changePhysState(PhysicsState new_state)
 {
@@ -111,11 +186,13 @@ void GameObject::changePhysState(PhysicsState new_state)
 
   switch (new_state)
   {
-    case (PHYSICS_GROUNDED): this->m_transform.velocity.y = 0.0f; break;
+    case (PHYSICS_GROUNDED):
+      this->getVel()->y = 0.0f;
+      break;
+
     case (PHYSICS_FALLING): break;
   }
 }
-
 
 void GameObject::changeNavState(NavigationState new_state)
 {
@@ -141,31 +218,32 @@ void GameObject::perFrameUpdate(Renderer *ren)
   if (this->isEnvironmental())
     return;
 
-  switch (this->m_physics_state)
+
+  // Per frame, add velocity to position, then check physics state
+  float damping;
+
+  this->getVel()->y *= 0.999f;
+  damping = 1 / (1 + (ren->deltaTime * 5.0f));
+  this->getVel()->x *= damping;
+  this->getVel()->z *= damping;
+  
+  glm::mat4 inv_model = glm::inverse(this->getTransform()->getModelMatrix());
+  glm::vec3 tempvel = inv_model * this->getTransform()->getVel_vec4();
+  *this->getPos() += tempvel * ren->deltaTime;
+
+  this->pos_worldspace = this->getTransform()->getPos_worldspace();
+
+
+  this->collideWithMeshes();
+
+
+  switch (this->getPhysState())
   {
-    float damping;
-
     case (PHYSICS_GROUNDED):
-      damping = 1 / (1 + (ren->deltaTime * 5.0f));
-      this->m_transform.velocity.x *= damping;
-      this->m_transform.velocity.z *= damping;
-
-      // this->m_transform.velocity = glm::clamp(this->m_transform.velocity, glm::vec3(-4.5), glm::vec3(4.5));
-      this->m_transform.position += this->m_transform.velocity * ren->deltaTime;
       break;
 
-
     case (PHYSICS_FALLING):
-      this->m_transform.velocity.y -= ren->gravity * ren->deltaTime;
-
-      this->m_transform.velocity.y *= 0.999f;
-      damping = 1 / (1 + (ren->deltaTime * 5.0f));
-      this->m_transform.velocity.x *= damping;
-      this->m_transform.velocity.z *= damping;
-
-      // this->m_transform.velocity = glm::clamp(this->m_transform.velocity, glm::vec3(-4.5), glm::vec3(4.5));
-      this->m_transform.position += this->m_transform.velocity * ren->deltaTime;
-
+      this->getVel()->y -= ren->gravity * ren->deltaTime;
       break;
   }
 
@@ -197,6 +275,7 @@ void GameObject::perFrameUpdate(Renderer *ren)
   
       break;
   }
+
 }
 
 
@@ -226,7 +305,11 @@ void GameObject::useModel(Model *model)
 void GameObject::clearParent(void)
 {
   if (this->m_parent != nullptr)
+  {
+    *this->getPos() = this->m_parent->getTransform()->localToWorld(this->getTransform()->getPos_vec4());
+    // *this->getRot() = this->m_parent->getTransform()->localToWorld(this->getTransform()->getRot_vec4());
     this->m_parent->removeChild(this);
+  }
   this->m_parent = nullptr;
   this->m_transform.parent = nullptr;
 }
@@ -236,6 +319,7 @@ void GameObject::giveChild(GameObject *child)
   // return if child is actually parent
   if (child->isChild(this))
     return;
+
 
   this->m_children.push_back(child);
   child->clearParent();
@@ -272,6 +356,9 @@ bool GameObject::isChild(GameObject *object)
 
 void GameObject::setParent(GameObject *parent)
 {
+  *this->getPos() = parent->getTransform()->worldToLocal(this->getTransform()->getPos_vec4());
+  // *this->getRot() = parent->getTransform()->worldToLocal(this->getTransform()->getRot_vec4());
+
   this->m_parent = parent;
   this->m_transform.parent = &parent->m_transform;
 }
@@ -282,13 +369,15 @@ void GameObject::setParent(GameObject *parent)
  */
 void GameObject::collideWithObject(GameObject *object)
 {
-  if (this->isEnvironmental() || this == object)
+  if (this->isEnvironmental() || this->isStatic() || this->getID() == object->getID())
     return;
 
   // if (glm::distance(this->m_transform.position, object->getPos()) > object->boundingSphereRadius())
   //   return;
 
-  // this->collideWithMesh(object->getCollisionMesh());
+  this->m_collision_meshes.push_back(object->getCollisionMesh());
+  this->m_collision_transforms.push_back(*object->getTransform());
+
 }
 
 

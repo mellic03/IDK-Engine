@@ -40,7 +40,6 @@ void Mesh::load(const char *filepath, std::string name)
   // normal_path.append(name + "_normal.png");
 
 
-
   FILE *fh = fopen(obj_path.c_str(), "r");
   if (fh == NULL)
   {
@@ -328,6 +327,14 @@ void Mesh::setBufferData(void)
   // Animation next frame position
   glVertexAttribPointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(17*sizeof(float) + 1*sizeof(int)));
   glEnableVertexAttribArray(7);
+
+  // Animation next frame normal
+  glVertexAttribPointer(8, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(20*sizeof(float) + 1*sizeof(int)));
+  glEnableVertexAttribArray(8);
+
+  // Animation next frame tangent
+  glVertexAttribPointer(9, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(23*sizeof(float) + 1*sizeof(int)));
+  glEnableVertexAttribArray(9);
 
   // Indexing
   for (int i=0; i<this->IBOS.size(); i++)

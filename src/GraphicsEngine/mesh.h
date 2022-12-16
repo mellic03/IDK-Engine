@@ -27,7 +27,10 @@ struct Vertex {
   glm::vec3 tangent;
   GLuint material_index;
   glm::vec3 color;
+
   glm::vec3 anim_next_pos;
+  glm::vec3 anim_next_normal;
+  glm::vec3 anim_next_tangent;
 };
 
 

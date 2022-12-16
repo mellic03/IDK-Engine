@@ -1,8 +1,6 @@
 #include "physics.h"
 #include "gameobject.h"
 
-
-
 bool ray_intersect_triangle(  glm::vec3 ray_pos, glm::vec3 ray_dir,
                               glm::vec3 v0, glm::vec3 v1, glm::vec3 v2,
                               glm::vec3 *intersect_point  )
@@ -51,44 +49,4 @@ float calculate_impulse(glm::vec3 vel, glm::vec3 face_normal, float mass)
 
   return j;
 }
-
-
-void player_collide(Player *player, glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal, float d, bool downwards)
-{
-  glm::vec3 intersect_point;
-
-  bool intersects = ray_intersect_triangle(player->pos_worldspace, ray, v0, v1, v2, &intersect_point);
-
-
-  if (intersects)
-  {
-    float dist = glm::distance(player->pos_worldspace, intersect_point);
-
-    if (0 < dist && dist < d)
-    {
-      float impulse_1d = calculate_impulse(*player->getVel(), normal, 0.5);
-      glm::vec3 impulse = impulse_1d * normal;
-
-      *player->getVel() += (1.0f) * impulse;
-      if (downwards)
-      {
-        // float overlap = d - dist;
-        // player->getPos()->y += overlap;
-        // player->vel.y = 0;
-        player->changeState(PSTATE_GROUNDED);
-      }
-
-      else
-      {
-        player->pos_worldspace = player->pos_worldspace - (d-dist)*ray;
-      }
-    }
-
-    else if (dist > d && downwards)
-      player->changeState(PSTATE_FALLING);
-  }
-}
-
-
-
 

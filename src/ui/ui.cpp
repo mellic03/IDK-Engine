@@ -107,7 +107,7 @@ void draw_transform_menu(Scene *scene, SceneGraph *handler, int selected_instanc
 
   if (object->isNPC())
     if (ImGui::Button("Seek Player"))
-      object->setPath(scene->navmesh.path(*object->getPos(), scene->player->pos_worldspace));
+      object->setPath(scene->navmesh.path(object->pos_worldspace, scene->player->pos_worldspace));
 
 }
 
@@ -447,14 +447,10 @@ void draw_dev_ui(Renderer *ren, Scene *scene)
 
   ImGui::Begin("Hello, world!");
 
-
-
   if (ImGui::Button("Demo Window"))
     show = !show;
   if (show)
     ImGui::ShowDemoWindow(&show);
-
-  ImGui::Text("state: %s\n", (scene->player->getState() == PSTATE_FALLING) ? "falling" : "grounded");
 
   if (ImGui::BeginTabBar("MyTabBar", 0))
   {

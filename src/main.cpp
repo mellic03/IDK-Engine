@@ -90,11 +90,15 @@ int ENTRY(int argc, char **argv)
   Model terrain;            terrain.load("assets/environment/terrain1/");
   GameObject terrainobj;    terrainobj.useModel(&terrain);
 
+  Model terrain2;            terrain2.load("assets/environment/ground/");
+  GameObject terrain2obj;    terrain2obj.useModel(&terrain2);
+
+
   Model fren;               fren.load("assets/npc/fren/");
   GameObject frenobj;       frenobj.useModel(&fren);
 
-  Model baby;               baby.load("assets/npc/baby/");
-  GameObject babyobj;       babyobj.useModel(&baby);
+  Model boye;               boye.load("assets/environment/boye/");
+  GameObject boyeobj;       boyeobj.useModel(&boye);
 
   Model empty;              empty.load("assets/misc/empty/");
   GameObject emptyobj;      emptyobj.useModel(&empty);
@@ -107,8 +111,9 @@ int ENTRY(int argc, char **argv)
   objhandler.addObject(&treeobj);
   objhandler.addObject(&buildingobj);
   objhandler.addObject(&terrainobj);
+  objhandler.addObject(&terrain2obj);
   objhandler.addObject(&frenobj);
-  objhandler.addObject(&babyobj);
+  objhandler.addObject(&boyeobj);
   objhandler.addObject(&emptyobj);
 
   objhandler.newObjectInstance("empty");

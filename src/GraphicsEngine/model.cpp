@@ -47,17 +47,20 @@ bool Model::load(std::string filepath)
   rewind(fh);
 
   bool collisionmesh_loaded = false;
+  bool animated = false;
+  std::string staticmesh_name;
 
   while (fgets(buffer, 64, fh) != NULL)
   {
     if (sscanf(buffer, "ANIMATION REST %s %d", stringdata, &intdata))
     {
+      staticmesh_name = std::string(stringdata);
       this->animations[ANIM_REST].loadKeyframes(filepath, stringdata, intdata);
-      this->animations[ANIM_REST].useTransform(this->m_transform);
     }
 
     else if (sscanf(buffer, "GEOMETRYMESH %s", stringdata))
     {
+      staticmesh_name = std::string(stringdata);
       this->m_staticmesh.load(filepath.c_str(), stringdata);
       this->m_staticmesh.useTransform(this->m_transform);
     }
@@ -74,8 +77,11 @@ bool Model::load(std::string filepath)
     }
   }
 
-  if (collisionmesh_loaded == false)
-    this->m_collision_mesh = this->m_staticmesh;
+  if (animated == true)
+    this->m_collision_mesh.load(filepath.c_str(), staticmesh_name + std::to_string(1));
+
+  else if (collisionmesh_loaded == false)
+    this->m_collision_mesh.load(filepath.c_str(), staticmesh_name);
 
   fclose(fh);
 

@@ -16,6 +16,7 @@ class GameObject {
     std::vector<GameObject *> m_children;
     GameObject *m_parent = nullptr;
 
+    bool m_is_static = false;
     bool m_is_environmental = false;
     bool m_is_animated = false;
     bool m_is_npc = false;
@@ -39,8 +40,15 @@ class GameObject {
     Transform m_transform;
     AnimationController m_animation_controller;
 
+    std::vector<Mesh *> m_collision_meshes;
+    std::vector<Transform> m_collision_transforms;
+
+    float height = 1.0f, width = 0.25f;
+
   public:
     Model *m_model;
+
+    glm::vec3 pos_worldspace = glm::vec3(0.0f);
 
     bool selected = false;
 
@@ -75,6 +83,7 @@ class GameObject {
 
     inline bool isNPC(void)           { return this->m_is_npc; };
     inline bool isEnvironmental(void) { return this->m_is_environmental; };
+    inline bool isStatic(void)        { return this->m_is_static; };
     inline bool isAnimated(void)      { return this->m_is_animated; };
     inline bool isHidden(void)        { return this->m_hidden; };
 
@@ -91,13 +100,15 @@ class GameObject {
     //---------------------------------------------------------------------------------------------
 
     void collideWithObject(GameObject *object);
-    void collideWithMesh(Mesh *collisionmesh);
+    void collideWithMeshes(void);
     void attemptCollision(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal, float d, bool downwards);
 
     void useModel(Model *model);
     
     void perFrameUpdate(Renderer *ren);
 
+    PhysicsState getPhysState(void);
+    NavigationState getNavState(void);
     void changePhysState(PhysicsState new_state);
     void changeNavState(NavigationState new_state);
 

@@ -89,8 +89,6 @@ class Model {
     {
       this->m_transform = transform;
       this->m_staticmesh.useTransform(transform);
-      for (auto &animation: this->animations)
-        animation.useTransform(transform);
     };
 
     void useAnimController(AnimationController *animation_controller)

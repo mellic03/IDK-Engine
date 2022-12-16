@@ -29,11 +29,8 @@ void Scene::draw(SDL_Event *event)
 
     obj1.perFrameUpdate(this->ren);
     obj1.draw(this->ren);
-    this->player->collideWith(&obj1);
   }
 
-
-  this->player->perFrameUpdate();
 
   // this->ren->useShader(SHADER_LIGHTSOURCE);
   // for (int i=0; i<5; i++)

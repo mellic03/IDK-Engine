@@ -1,0 +1,10 @@
+// #[attribute] [type] [name] [num keyframes] //
+
+#ASSETNAME boye
+
+#ANIMATED
+#ENVIRONMENTAL
+
+ANIMATION REST boye 25
+COLLISIONMESH collision
+

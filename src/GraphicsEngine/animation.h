@@ -15,30 +15,13 @@ class Animation {
     unsigned int m_anim_framecount = 0;
     unsigned int m_anim_framelength = 512;
     unsigned int m_active_keyframe = 0;
-  
-    bool m_looping = false;
 
-    Transform *m_transform = nullptr;
-  
   public:
     Animation() { };
-    void nextFrame(void);
 
     std::vector<Mesh> keyframes;
-
     bool loadKeyframes(std::string filepath, std::string name, int num_keyframes);
-
     std::vector<Mesh> getKeyframes(void) { return this->keyframes; };
-
-    void useTransform(Transform *transform)
-    {
-      for (auto &keyframe: this->keyframes)
-        keyframe.useTransform(transform);
-    };
-
-    void looping(bool loop) { this->m_looping = loop; };
-
-    void play(Renderer *ren);
 };
 
 
@@ -56,8 +39,11 @@ struct AnimationController {
   void useTransform(Transform *transform)
   {
     for (auto &animation: this->m_animations)
-      for (auto &keyframe: animation.keyframes)
-        keyframe.useTransform(transform);
+    {
+      animation.keyframes[this->active_keyframe].useTransform(transform);
+      animation.keyframes[(this->active_keyframe + 1) % animation.keyframes.size()].useTransform(transform);
+
+    }
   };
 
   void playAnimation(Renderer *ren)
@@ -65,16 +51,15 @@ struct AnimationController {
     float lerp_value = (float)this->framecount / (float)this->framelength;
     ren->active_shader->setFloat("lerp_value", lerp_value);
 
+    this->m_animations[this->m_animation_type].keyframes[this->active_keyframe].draw(ren);
 
     if (this->framecount >= this->framelength)
     {
       this->framecount = 0;
-      this->active_keyframe = (this->active_keyframe + 1) % this->m_animations[this->m_animation_type].getKeyframes().size();
+      this->active_keyframe = (this->active_keyframe + 1) % this->m_animations[this->m_animation_type].keyframes.size();
     }
+  
 
     this->framecount += 1;
-  
-    this->m_animations[this->m_animation_type].getKeyframes()[this->active_keyframe].draw(ren);
-
   };
 };

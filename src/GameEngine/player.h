@@ -34,16 +34,11 @@ class Player {
     glm::vec3 vel_worldspace = {0.0f, 0.0f, 0.0f};
 
 
-    float height = 0.5f;
-    glm::vec3 temp_pos;
-
     float move_speed = 8.0f;
     float jump_force = 8.0f;
     float friction = 5.0f;
 
-
     Player(Renderer *ren);
-
 
     // Member Access
     //----------------------------------------------------
@@ -64,13 +59,6 @@ class Player {
     void key_input(Renderer *ren);
     void mouse_input(Renderer *ren, SDL_Event *event);
 
-    void changeState(PlayerState state);
-    PlayerState getState(void) { return this->current_state; };
-    bool grounded(void) { return this->current_state == PSTATE_GROUNDED; };
-    bool ySinceGrounded(void) { return this->delta_pos.y; };
-
-    void perFrameUpdate(void);
-    void collideWith(GameObject *object);
 
     void draw(Renderer *ren);
 

@@ -7,8 +7,8 @@ ID: 0
 parent_ID: -1
 given_name:
 Player
-position: -3.306391 0.000000 -11.508448
-velocity: -0.000000 0.000000 -0.000000
+position: 5.569299 -5.396155 0.953531
+velocity: 0.000000 0.000000 -0.000000
 rotation: 0.000000 0.000000 0.000000
 #END OBJECT
 
@@ -17,20 +17,20 @@ GameObject: terrain1
 ID: 1
 parent_ID: -1
 given_name:
-terrain boyo
+terrain1
 position: 0.000000 0.000000 0.000000
 velocity: 0.000000 0.000000 0.000000
-rotation: 0.000000 2.300000 0.000000
+rotation: 0.000000 0.000000 0.000000
 #END OBJECT
 
 #START OBJECT
 GameObject: building
 ID: 2
-parent_ID: 1
+parent_ID: -1
 given_name:
-building boyo
-position: 0.000000 0.000000 16.600000
+building
+position: 9.400000 -6.000000 4.300000
 velocity: 0.000000 0.000000 0.000000
-rotation: 0.000000 0.000000 0.000000
+rotation: 0.000000 70.199997 0.000000
 #END OBJECT
 
