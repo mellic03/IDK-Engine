@@ -19,6 +19,8 @@ class Animation {
   public:
     Animation() { };
 
+    inline int frameLength(void)  { return this->m_anim_framelength; };
+
     std::vector<Mesh> keyframes;
     bool loadKeyframes(std::string filepath, std::string name, int num_keyframes);
     std::vector<Mesh> getKeyframes(void) { return this->keyframes; };
@@ -48,12 +50,12 @@ struct AnimationController {
 
   void playAnimation(Renderer *ren)
   {
-    float lerp_value = (float)this->framecount / (float)this->framelength;
+    float lerp_value = (float)this->framecount / (float)this->m_animations[this->m_animation_type].frameLength();
     ren->active_shader->setFloat("lerp_value", lerp_value);
 
     this->m_animations[this->m_animation_type].keyframes[this->active_keyframe].draw(ren);
 
-    if (this->framecount >= this->framelength)
+    if (this->framecount >= this->m_animations[this->m_animation_type].frameLength())
     {
       this->framecount = 0;
       this->active_keyframe = (this->active_keyframe + 1) % this->m_animations[this->m_animation_type].keyframes.size();
