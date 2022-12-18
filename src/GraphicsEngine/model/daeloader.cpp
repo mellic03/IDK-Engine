@@ -2,30 +2,14 @@
 
 using namespace std;
 
+
 ColladaEffect::ColladaEffect(rapidxml::xml_node<> *node)
 {
-  rapidxml::xml_node<> *original = node;
-
-  this->m_id = node->first_attribute()->value();
-
+  this->m_dae_id = node->first_attribute("id")->value();
+  this->m_dae_id = "#" + this->m_dae_id;
   node = node->first_node("profile_COMMON")->first_node("newparam");
   node = node->first_node("surface")->first_node("init_from");
-
-  cout << node->value() << endl;
-
-  this->_surface_init_from = node->value();
-  
-
-  node = original;
+  this->m_image_dae_id = node->value();
 }
 
-void loadLibraryImages(rapidxml::xml_node<> *node)
-{
-  rapidxml::xml_node<> *original = node;
-  
 
-  
-
-
-  node = original;
-}

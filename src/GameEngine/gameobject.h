@@ -53,7 +53,10 @@ class GameObject {
     bool selected = false;
 
     GameObject(): m_transform(&this->m_ID) {};
-      
+    GameObject(std::string directory);
+
+    
+
     // // Member access
     // //---------------------------------------------------------------------------------------------
     // glm::vec3 *getPos(void) /*.......................*/ { return &this->m_transform.position; };

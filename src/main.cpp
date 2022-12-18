@@ -56,7 +56,7 @@ int ENTRY(int argc, char **argv)
   gl_context = SDL_GL_CreateContext(window);
   SDL_GL_MakeCurrent(window, gl_context);
   SDL_GL_SetSwapInterval(1); // vsync
-  SDL_SetRelativeMouseMode(SDL_TRUE);
+  SDL_SetRelativeMouseMode(SDL_FALSE);
 
   if (glewInit() != GLEW_OK)
     return 1;
@@ -78,7 +78,7 @@ int ENTRY(int argc, char **argv)
 
   Model model1;
 
-  model1.loadDae("assets/environment/cube/cube.dae");
+  model1.loadDae("assets/environment/cube/", "cube.dae");
 
 
   Scene scene_1;
@@ -145,17 +145,17 @@ int ENTRY(int argc, char **argv)
 
     // Render depth map
     // ---------------------------------
-    // glViewport(0, 0, ren.SHADOW_WIDTH, ren.SHADOW_HEIGHT);
-    // glBindFramebuffer(GL_FRAMEBUFFER, ren.depthMapFBO);
-    // glBindTexture(GL_TEXTURE_CUBE_MAP, ren.depthCubemap);
-    // glClear(GL_DEPTH_BUFFER_BIT);
-    //     ren.useShader(SHADER_POINTSHADOW);
-    //     ren.setupDepthCubemap({0, 0, 0}, {0, 0, 0});
-    //     glDisable(GL_CULL_FACE);
-    //     // scene_1.draw(&event);
-    //     glEnable(GL_CULL_FACE);
-    // glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, ren.SHADOW_WIDTH, ren.SHADOW_HEIGHT);
+    glBindFramebuffer(GL_FRAMEBUFFER, ren.depthMapFBO);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, ren.depthCubemap);
+    glClear(GL_DEPTH_BUFFER_BIT);
+        ren.useShader(SHADER_POINTSHADOW);
+        ren.setupDepthCubemap({0, 0, 0}, {0, 0, 0});
+        glDisable(GL_CULL_FACE);
+        scene_1.draw(&event);
+        glEnable(GL_CULL_FACE);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     // ---------------------------------
 
 
@@ -172,8 +172,8 @@ int ENTRY(int argc, char **argv)
     glBindTexture(GL_TEXTURE_CUBE_MAP, ren.depthCubemap);
 
 
-    ren.useShader(SHADER_NORMALS);
-    // ren.sendLightsToShader();
+    ren.useShader(SHADER_WORLDSPACE);
+    ren.sendLightsToShader();
 
     ren.drawModel(&model1);
 

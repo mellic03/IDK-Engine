@@ -1,0 +1,19 @@
+
+
+
+#gameobject cube
+
+#interactivity environmental
+
+#geometry cube.dae
+
+#exit
+
+
+
+
+#gameobject [ OBJECT NAME ]
+
+#interactivity [ environmental | npc ]
+
+#geometry [ FILENAME ]

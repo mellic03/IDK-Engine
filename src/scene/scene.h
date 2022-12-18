@@ -15,7 +15,7 @@ class Scene {
   public:
     Player *player;
 
-    SceneGraph *object_handler;
+    SceneGraph *m_scenegraph;
     NavMesh navmesh;
 
     Scene() { };
@@ -24,7 +24,7 @@ class Scene {
     void usePlayer(Player *playerptr);
     void addLightsourceModel(Mesh *lightsource_model);
     
-    void addObjectHandler(SceneGraph *objectHandler) { this->object_handler = objectHandler; };
+    void useSceneGraph(SceneGraph *scenegraph) { this->m_scenegraph = scenegraph; };
 
     void draw(SDL_Event *event);    
 

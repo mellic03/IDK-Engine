@@ -2,6 +2,26 @@
 
 #include "physics.h"
 
+
+GameObject::GameObject(std::string directory)
+{
+  std::string filepath = directory + "asset.txt";
+
+  FILE *fh = fopen(filepath.c_str(), "r");
+
+  char buffer[256];
+  char stringdata[256];
+  int intdata;
+  while (fgets(buffer, 256, fh) != NULL)
+  {
+
+
+
+  }
+
+}
+
+
 // void GameObject::attemptCollision(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal, float d, bool downwards)
 // {
 //   glm::vec3 intersect_point;

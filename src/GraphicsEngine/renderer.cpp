@@ -338,23 +338,23 @@ void Renderer::drawModel(Model *model)
 
   for (auto &mesh: model->m_meshes)
   {
-
     glBindVertexArray(mesh.VAO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.VBO);
 
     // this->active_shader->setVec3("diffuse", glm::vec3(0.0f, 0.0f, 0.0f));
 
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, mesh.pos);
+    glm::mat4 model_mat = glm::mat4(1.0f);
+    model_mat = glm::translate(model_mat, mesh.pos);
 
-    this->active_shader->setMat4("model", model);
+    this->active_shader->setMat4("model", model_mat);
     this->active_shader->setMat4("view", this->cam.view);
     this->active_shader->setMat4("projection", this->cam.projection);
 
 
     char buffer[64];
 
-    // for (int i=0; i<mesh->IBOS.size(); i++)
-    // {
+    for (int i=0; i<mesh.IBOS.size(); i++)
+    {
       // mesh->materials[i].diffuse.bind(  GL_TEXTURE0 );
       // mesh->materials[i].specular.bind(  GL_TEXTURE1 );
       // mesh->materials[i].normal.bind(  GL_TEXTURE2 );
@@ -365,20 +365,20 @@ void Renderer::drawModel(Model *model)
       // this->active_shader->setInt("material.normalMap", 2);
       // this->active_shader->setInt("material.emissionMap", 3);
       // this->active_shader->setFloat("material.spec_exponent", mesh->materials[i].spec_exponent);
+      mesh.materials[i].diffuseMap->bind( GL_TEXTURE0 );
+      this->active_shader->setInt("diffuseMap", 0);
 
+      // glDrawArrays(GL_TRIANGLES, 0, mesh.vertices.size());
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBOS[i]);
+      glDrawElements(GL_TRIANGLES, mesh.indices[i].size(), GL_UNSIGNED_INT, (void *)0);
 
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.VBO);
-      glDrawArrays(GL_TRIANGLES, 0, mesh.vertices.size());
-      // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->IBOS[i]);
-      // glDrawElements(GL_TRIANGLES, mesh->indices[i].size(), GL_UNSIGNED_INT, (void *)0);
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-      // unbindTextureUnit(GL_TEXTURE0);
+      unbindTextureUnit(GL_TEXTURE0);
       // unbindTextureUnit(GL_TEXTURE1);
       // unbindTextureUnit(GL_TEXTURE2);
       // unbindTextureUnit(GL_TEXTURE3);
-    // }
+    }
 
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
   }
 

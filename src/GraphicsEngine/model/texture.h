@@ -14,12 +14,17 @@
 class Texture {
 
   public:
-    std::string m_filename;
+    std::string m_dae_id;
     GLenum m_texture_obj;
 
     Texture() {};
+    Texture(std::string filepath, std::string dae_id, bool useSRGB = false)
+    {
+      this->m_dae_id = dae_id;
+      this->load(filepath, useSRGB);
+    };
 
-    bool load(const char *filepath, bool useSRGB);
+    bool load(std::string filepath, bool useSRGB);
     void bind(GLenum texture_unit);
     void unbind(GLenum texture_unit);
 };

@@ -26,12 +26,12 @@ struct Vertex {
 class Mesh {
 
   private:
-    Transform *m_transform = nullptr;
-
-    std::vector<ColladaEffect> _collada_effects;
 
 
   public:
+
+    std::string m_dae_id;
+
     GLuint VAO, VBO;
     std::vector<GLuint> IBOS;
     std::vector<std::vector<GLuint>> indices;
@@ -43,7 +43,10 @@ class Mesh {
 
     Mesh(void);
 
+    void transformByMatrix(glm::mat4 matrix);
+
     void load(std::string filepath);
+    void genbuffers(void);
     void setBufferData(void);
 
     void draw(void);

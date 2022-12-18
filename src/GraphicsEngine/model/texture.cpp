@@ -1,18 +1,15 @@
 #include "texture.h"
 
-bool Texture::load(const char *filepath, bool useSRGB)
+bool Texture::load(std::string filepath, bool useSRGB)
 {
-  this->m_filename = std::string(filepath);
-
   stbi_set_flip_vertically_on_load(1);
   int width, height, bpp;
-  unsigned char *data = stbi_load(this->m_filename.c_str(), &width, &height, &bpp, STBI_rgb_alpha);
+  unsigned char *data = stbi_load(filepath.c_str(), &width, &height, &bpp, STBI_rgb_alpha);
   if (!data)
   {
-    printf("Error loading texture from \"%s\" --%s\n", this->m_filename.c_str(), stbi_failure_reason());
+    printf("Error loading texture from \"%s\" --%s\n", filepath.c_str(), stbi_failure_reason());
     exit(1);
   }
-  // printf("Width: %d, height: %d, bpp: %d\n", width, height, bpp);
 
   glGenTextures(1, &this->m_texture_obj);
   glBindTexture(GL_TEXTURE_2D, this->m_texture_obj);

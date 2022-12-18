@@ -30,6 +30,11 @@ void Scene::draw(SDL_Event *event)
   //   obj1.perFrameUpdate(this->ren);
   //   obj1.draw(this->ren);
   // }
+  // printf("size: %d\n", this->m_scenegraph->m_object_instances.size());
+  // for (auto &obj: this->m_scenegraph->m_object_instances)
+  // {
+  //   this->ren->drawModel(obj.m_model);
+  // }
 
 
   // this->ren->useShader(SHADER_LIGHTSOURCE);
