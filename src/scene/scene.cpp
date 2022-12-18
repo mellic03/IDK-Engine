@@ -19,17 +19,17 @@ void Scene::addLightsourceModel(Mesh *lightsource_model)
 void Scene::draw(SDL_Event *event)
 {
 
-  for (auto &obj1: this->object_handler->m_object_instances)
-  {
-    if (obj1.isHidden())
-      continue;
+  // for (auto &obj1: this->object_handler->m_object_instances)
+  // {
+  //   if (obj1.isHidden())
+  //     continue;
     
-    for (auto &obj2: this->object_handler->m_object_instances)
-      obj1.collideWithObject(&obj2);
+  //   for (auto &obj2: this->object_handler->m_object_instances)
+  //     obj1.collideWithObject(&obj2);
 
-    obj1.perFrameUpdate(this->ren);
-    obj1.draw(this->ren);
-  }
+  //   obj1.perFrameUpdate(this->ren);
+  //   obj1.draw(this->ren);
+  // }
 
 
   // this->ren->useShader(SHADER_LIGHTSOURCE);

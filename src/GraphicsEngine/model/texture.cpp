@@ -1,5 +1,4 @@
 #include "texture.h"
-#include "../include/stb_image/stb_image.h"
 
 bool Texture::load(const char *filepath, bool useSRGB)
 {

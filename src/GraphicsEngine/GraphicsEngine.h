@@ -1,5 +1,5 @@
 #pragma once
 
 #include "renderer.h"
-#include "model.h"
+#include "model/model.h"
 #include "camera.h"

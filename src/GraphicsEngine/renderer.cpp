@@ -26,6 +26,9 @@ Renderer::Renderer()
   this->createShader("lightsource",    SHADER_LIGHTSOURCE);
   this->createShader("screenquad",     SHADER_SCREENQUAD);
 
+  this->createShader("normals",        SHADER_NORMALS);
+
+
   ShaderSource pointshadow_src = parse_shader("assets/shaders/pointshadow.vs", "assets/shaders/pointshadow.fs", "assets/shaders/pointshadow.gs");
   Shader pointshadow;
   pointshadow.set(create_shader(pointshadow_src.vertex_source, pointshadow_src.fragment_source, pointshadow_src.geometry_source));
@@ -320,4 +323,63 @@ void Renderer::sendLightsToShader(void)
 
   this->active_shader->setVec3("viewPos", *this->cam.pos);
   this->active_shader->setVec3("viewDirection", glm::mat3(this->cam.modifier_matrix) * *this->cam.dir);
+}
+
+
+void unbindTextureUnit(GLenum texture_unit)
+{
+  glActiveTexture(texture_unit);
+  glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+
+void Renderer::drawModel(Model *model)
+{
+
+  for (auto &mesh: model->m_meshes)
+  {
+
+    glBindVertexArray(mesh.VAO);
+
+    // this->active_shader->setVec3("diffuse", glm::vec3(0.0f, 0.0f, 0.0f));
+
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, mesh.pos);
+
+    this->active_shader->setMat4("model", model);
+    this->active_shader->setMat4("view", this->cam.view);
+    this->active_shader->setMat4("projection", this->cam.projection);
+
+
+    char buffer[64];
+
+    // for (int i=0; i<mesh->IBOS.size(); i++)
+    // {
+      // mesh->materials[i].diffuse.bind(  GL_TEXTURE0 );
+      // mesh->materials[i].specular.bind(  GL_TEXTURE1 );
+      // mesh->materials[i].normal.bind(  GL_TEXTURE2 );
+      // mesh->materials[i].emission.bind(  GL_TEXTURE3 );
+    
+      // this->active_shader->setInt("material.diffuseMap", 0);
+      // this->active_shader->setInt("material.specularMap", 1);
+      // this->active_shader->setInt("material.normalMap", 2);
+      // this->active_shader->setInt("material.emissionMap", 3);
+      // this->active_shader->setFloat("material.spec_exponent", mesh->materials[i].spec_exponent);
+
+
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.VBO);
+      glDrawArrays(GL_TRIANGLES, 0, mesh.vertices.size());
+      // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->IBOS[i]);
+      // glDrawElements(GL_TRIANGLES, mesh->indices[i].size(), GL_UNSIGNED_INT, (void *)0);
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+      // unbindTextureUnit(GL_TEXTURE0);
+      // unbindTextureUnit(GL_TEXTURE1);
+      // unbindTextureUnit(GL_TEXTURE2);
+      // unbindTextureUnit(GL_TEXTURE3);
+    // }
+
+    glBindVertexArray(0);
+  }
+
 }

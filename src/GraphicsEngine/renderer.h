@@ -15,7 +15,7 @@
 #include "../include/glm/gtc/matrix_transform.hpp"
 #include "../include/glm/gtc/type_ptr.hpp"
 
-
+#include "model/model.h"
 #include "camera.h"
 #include "lightsource.h"
 #include "shader.h"
@@ -45,6 +45,8 @@ class Renderer {
     };
 
     void createShader(std::string filename, ShaderType type);
+
+    glm::mat4 m_active_model_matrix = glm::mat4(1.0f);
 
 
   public:
@@ -125,4 +127,13 @@ class Renderer {
 
     void update(glm::vec3 pos, glm::vec3 dir);
     void sendLightsToShader(void);
+
+
+    void useModelMatrix(glm::mat4 mat)  { this->m_active_model_matrix = mat; };
+
+    void draw(Model *model);
+
+    void drawMesh(Mesh *mesh);
+    void drawModel(Model *model);
+
 };

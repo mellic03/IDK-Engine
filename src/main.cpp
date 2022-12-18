@@ -74,62 +74,16 @@ int ENTRY(int argc, char **argv)
   //----------------------------------------
   Renderer ren;
   Player player(&ren);
-  player.getPos()->z = 6.0f;
-  import_lighting_config(&ren);
-
-  SceneGraph objhandler;
-
-  Mesh sphere;  sphere.load("assets/misc/sphere/", "sphere");
-  
-  Model tree;               tree.load("assets/environment/tree/");
-  GameObject treeobj;       treeobj.useModel(&tree);
-
-  Model building;           building.load("assets/environment/building/");
-  GameObject buildingobj;   buildingobj.useModel(&building);
-
-  Model terrain;            terrain.load("assets/environment/terrain1/");
-  GameObject terrainobj;    terrainobj.useModel(&terrain);
-
-  Model terrain2;            terrain2.load("assets/environment/ground/");
-  GameObject terrain2obj;    terrain2obj.useModel(&terrain2);
 
 
-  Model fren;               fren.load("assets/npc/fren/");
-  GameObject frenobj;       frenobj.useModel(&fren);
+  Model model1;
 
-  Model boye;               boye.load("assets/environment/boye/");
-  GameObject boyeobj;       boyeobj.useModel(&boye);
-
-  Model empty;              empty.load("assets/misc/empty/");
-  GameObject emptyobj;      emptyobj.useModel(&empty);
-
-
-  NavMesh nav1;
-  nav1.load("assets/environment/terrain1/nav.obj");
-
-
-  objhandler.addObject(&treeobj);
-  objhandler.addObject(&buildingobj);
-  objhandler.addObject(&terrainobj);
-  objhandler.addObject(&terrain2obj);
-  objhandler.addObject(&frenobj);
-  objhandler.addObject(&boyeobj);
-  objhandler.addObject(&emptyobj);
-
-  objhandler.newObjectInstance("empty");
-  player.setObjectPtr(objhandler.frontObjectPtr());
-  player.objectPtr()->setGivenName("Player");
-
-  objhandler.addObject(player.objectPtr());
+  model1.loadDae("assets/environment/cube/cube.dae");
 
 
   Scene scene_1;
   scene_1.useRenderer(&ren);
   scene_1.usePlayer(&player);
-  scene_1.addLightsourceModel(&sphere);
-  scene_1.addObjectHandler(&objhandler);
-  scene_1.navmesh = nav1;
-
   //----------------------------------------
 
   // IMGUI SETUP
@@ -168,7 +122,7 @@ int ENTRY(int argc, char **argv)
     glClearColor(ren.clearColor.x, ren.clearColor.y, ren.clearColor.z, 1.0f);
     draw_dev_ui(&ren, &scene_1);
 
-    ren.update(player.pos_worldspace, player.cam->front);
+    ren.update(player.pos, player.cam->front);
 
     // Input
     //---------------------------------
@@ -191,17 +145,17 @@ int ENTRY(int argc, char **argv)
 
     // Render depth map
     // ---------------------------------
-    glViewport(0, 0, ren.SHADOW_WIDTH, ren.SHADOW_HEIGHT);
-    glBindFramebuffer(GL_FRAMEBUFFER, ren.depthMapFBO);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, ren.depthCubemap);
-    glClear(GL_DEPTH_BUFFER_BIT);
-        ren.useShader(SHADER_POINTSHADOW);
-        ren.setupDepthCubemap({0, 0, 0}, {0, 0, 0});
-        glDisable(GL_CULL_FACE);
-        scene_1.draw(&event);
-        glEnable(GL_CULL_FACE);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // glViewport(0, 0, ren.SHADOW_WIDTH, ren.SHADOW_HEIGHT);
+    // glBindFramebuffer(GL_FRAMEBUFFER, ren.depthMapFBO);
+    // glBindTexture(GL_TEXTURE_CUBE_MAP, ren.depthCubemap);
+    // glClear(GL_DEPTH_BUFFER_BIT);
+    //     ren.useShader(SHADER_POINTSHADOW);
+    //     ren.setupDepthCubemap({0, 0, 0}, {0, 0, 0});
+    //     glDisable(GL_CULL_FACE);
+    //     // scene_1.draw(&event);
+    //     glEnable(GL_CULL_FACE);
+    // glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
     // ---------------------------------
 
 
@@ -218,15 +172,18 @@ int ENTRY(int argc, char **argv)
     glBindTexture(GL_TEXTURE_CUBE_MAP, ren.depthCubemap);
 
 
-    ren.useShader(SHADER_WORLDSPACE);
-    ren.sendLightsToShader();
-    scene_1.draw(&event);
+    ren.useShader(SHADER_NORMALS);
+    // ren.sendLightsToShader();
 
-    glClear(GL_DEPTH_BUFFER_BIT);
+    ren.drawModel(&model1);
 
-    ren.useShader(SHADER_WEAPON); // switch to viewspace shader
-    ren.sendLightsToShader();
-    player.draw(&ren); // draw weapon
+    // scene_1.draw(&event);
+
+    // glClear(GL_DEPTH_BUFFER_BIT);
+
+    // ren.useShader(SHADER_WEAPON); // switch to viewspace shader
+    // ren.sendLightsToShader();
+    // player.draw(&ren); // draw weapon
     
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);

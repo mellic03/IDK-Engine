@@ -35,6 +35,7 @@ file(
   "src/include/stb_image/*.cpp"
   "src/include/imgui/*.cpp"
   "src/GraphicsEngine/*.cpp"
+  "src/GraphicsEngine/model/*.cpp"
   "src/GameEngine/*.cpp"
   "src/ui/*.cpp"
   "src/scene/*.cpp"

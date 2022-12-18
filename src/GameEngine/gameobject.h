@@ -54,67 +54,67 @@ class GameObject {
 
     GameObject(): m_transform(&this->m_ID) {};
       
-    // Member access
-    //---------------------------------------------------------------------------------------------
-    glm::vec3 *getPos(void) /*.......................*/ { return &this->m_transform.position; };
-    glm::vec3 *getVel(void) /*.......................*/ { return &this->m_transform.velocity; };
-    glm::vec3 *getRot(void) /*.......................*/ { return &this->m_transform.rotation; };
-    Transform *getTransform(void) /*.................*/ { return &this->m_transform; };
-    AnimationController *getAnimController(void) /*..*/ { return &this->m_animation_controller; };
-    std::string getName(void) /*.....................*/ { return this->m_name; };
-    void setName(std::string name) /*................*/ { this->m_name = name; };
-    void setGivenName(std::string name)                 { this->m_given_name = name; };
-    std::string getGivenName(void)                      { return this->m_given_name; };
-    std::string *getGivenNamePtr(void)                   { return &this->m_given_name; };
-    int getID(void) /*...............................*/ { return this->m_ID; };
-    int *getIDptr(void) /*...........................*/ { return &this->m_ID; };
-    void setID(int id) /*............................*/ { this->m_ID = id; };
-    bool *getHidden(void) /*.........................*/ { return &this->m_hidden; };
+    // // Member access
+    // //---------------------------------------------------------------------------------------------
+    // glm::vec3 *getPos(void) /*.......................*/ { return &this->m_transform.position; };
+    // glm::vec3 *getVel(void) /*.......................*/ { return &this->m_transform.velocity; };
+    // glm::vec3 *getRot(void) /*.......................*/ { return &this->m_transform.rotation; };
+    // Transform *getTransform(void) /*.................*/ { return &this->m_transform; };
+    // AnimationController *getAnimController(void) /*..*/ { return &this->m_animation_controller; };
+    // std::string getName(void) /*.....................*/ { return this->m_name; };
+    // void setName(std::string name) /*................*/ { this->m_name = name; };
+    // void setGivenName(std::string name)                 { this->m_given_name = name; };
+    // std::string getGivenName(void)                      { return this->m_given_name; };
+    // std::string *getGivenNamePtr(void)                   { return &this->m_given_name; };
+    // int getID(void) /*...............................*/ { return this->m_ID; };
+    // int *getIDptr(void) /*...........................*/ { return &this->m_ID; };
+    // void setID(int id) /*............................*/ { this->m_ID = id; };
+    // bool *getHidden(void) /*.........................*/ { return &this->m_hidden; };
 
-    bool hasParent(void)                                { return this->m_parent != nullptr; };
-    bool hasChildren(void)                              { return this->m_children.size() > 0; };
-    std::vector<GameObject *> getChildren(void)         { return this->m_children; };
+    // bool hasParent(void)                                { return this->m_parent != nullptr; };
+    // bool hasChildren(void)                              { return this->m_children.size() > 0; };
+    // std::vector<GameObject *> getChildren(void)         { return this->m_children; };
 
-    float boundingSphereRadius(void)  { return this->m_bounding_sphere_radius; };
+    // float boundingSphereRadius(void)  { return this->m_bounding_sphere_radius; };
 
-    std::string physicsStateString(void);
-    std::string navigationStateString(void);
-    std::string getStateString(StateType state_type);
+    // std::string physicsStateString(void);
+    // std::string navigationStateString(void);
+    // std::string getStateString(StateType state_type);
 
-    inline bool isNPC(void)           { return this->m_is_npc; };
-    inline bool isEnvironmental(void) { return this->m_is_environmental; };
-    inline bool isStatic(void)        { return this->m_is_static; };
-    inline bool isAnimated(void)      { return this->m_is_animated; };
-    inline bool isHidden(void)        { return this->m_hidden; };
+    // inline bool isNPC(void)           { return this->m_is_npc; };
+    // inline bool isEnvironmental(void) { return this->m_is_environmental; };
+    // inline bool isStatic(void)        { return this->m_is_static; };
+    // inline bool isAnimated(void)      { return this->m_is_animated; };
+    // inline bool isHidden(void)        { return this->m_hidden; };
 
-    void setParent(GameObject *parent);
-    void clearParent(void);
-    void giveChild(GameObject *child);
-    void removeChild(GameObject *child);
-    void clearChildren(void);
-    bool isChild(GameObject *object);
+    // void setParent(GameObject *parent);
+    // void clearParent(void);
+    // void giveChild(GameObject *child);
+    // void removeChild(GameObject *child);
+    // void clearChildren(void);
+    // bool isChild(GameObject *object);
 
-    GameObject *getParent(void) { return this->m_parent; };
+    // GameObject *getParent(void) { return this->m_parent; };
     
-    Mesh *getCollisionMesh(void) { return this->m_model->getCollisionMesh(); };
+    // Mesh *getCollisionMesh(void) { return this->m_model->getCollisionMesh(); };
     //---------------------------------------------------------------------------------------------
 
-    void collideWithObject(GameObject *object);
-    void collideWithMeshes(void);
-    void attemptCollision(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal, float d, bool downwards);
+    // void collideWithObject(GameObject *object);
+    // void collideWithMeshes(void);
+    // void attemptCollision(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal, float d, bool downwards);
 
-    void useModel(Model *model);
+    // void useModel(Model *model);
     
-    void perFrameUpdate(Renderer *ren);
+    // void perFrameUpdate(Renderer *ren);
 
-    PhysicsState getPhysState(void);
-    NavigationState getNavState(void);
-    void changePhysState(PhysicsState new_state);
-    void changeNavState(NavigationState new_state);
+    // PhysicsState getPhysState(void);
+    // NavigationState getNavState(void);
+    // void changePhysState(PhysicsState new_state);
+    // void changeNavState(NavigationState new_state);
 
-    void setPath(std::vector<glm::vec3> path) { this->m_path = path; this->changeNavState(NAVIGATION_SEEK); };
+    // void setPath(std::vector<glm::vec3> path) { this->m_path = path; this->changeNavState(NAVIGATION_SEEK); };
 
-    void draw(Renderer *ren);
+    // void draw(Renderer *ren);
 
 };
 
