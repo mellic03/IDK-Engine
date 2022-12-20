@@ -7,7 +7,6 @@
 #define times ; i++)
 
 
-
 std::vector<glm::vec2> parseArray_vec2(std::string string_array)
 {
   std::vector<glm::vec2> vec2_array;
@@ -89,7 +88,6 @@ Mesh *Model::meshPtr(std::string dae_id)
 
 Texture *Model::texturePtr(std::string dae_id)
 {
-
   for (auto &texture: this->_collada_images)
   {
     if (texture.m_dae_id == dae_id)
@@ -138,11 +136,20 @@ ColladaEffect *Model::colladaEffectPtr(std::string dae_id)
 }
 
 
+ColladaEffect *Model::colladaEffectPtr_materialID(std::string dae_id)
+{
+  for (auto &effect: this->_collada_effects)
+    if (effect.m_material_dae_id == dae_id)
+      return &effect;
+
+  return nullptr;
+}
+
+
 void Model::constructMeshes(rapidxml::xml_document<> *doc)
 {
   rapidxml::xml_node<> *node = doc->first_node()->first_node("library_geometries");
   node = node->first_node("geometry");
-
 
   // For each "geometry"
   for (node; node != nullptr; node = node->next_sibling())
@@ -177,22 +184,13 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
 
 
 
-
-
-
-      ColladaMaterial *matptr = this->colladaMaterialPtr(nd->first_attribute("material")->value());
-
-      Texture *textureptr = matptr->m_parent_effect->m_imageptr;
-
+      ColladaEffect *effectptr = this->colladaEffectPtr_materialID(nd->first_attribute("material")->value());
 
       mesh->materials.push_back(Material());
-      mesh->materials[mesh->materials.size() - 1].diffuseMap = textureptr;
-      // std::cout << nd->first_attribute("material")->value() << std::endl;
-
-
-
-
-
+      mesh->materials[mesh->materials.size() - 1].diffuseMap  = *this->texturePtr(effectptr->m_image_dae_id);
+      mesh->materials[mesh->materials.size() - 1].specularMap = *this->texturePtr(effectptr->m_image_dae_id + "-specular");
+      mesh->materials[mesh->materials.size() - 1].emissionMap = *this->texturePtr(effectptr->m_image_dae_id + "-emission");
+      mesh->materials[mesh->materials.size() - 1].normalMap   = *this->texturePtr(effectptr->m_image_dae_id + "-normal");
 
 
 
@@ -216,6 +214,36 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
 
         mesh->indices[mesh->indices.size() - 1].push_back(mesh->vertices.size() - 1);
       }
+
+      // Calculate vertex tangents
+      //----------------------------------------------------
+      for (int i=0; i<mesh->vertices.size(); i+=3)
+      {
+        Vertex *v1 = &mesh->vertices[i+0];
+        Vertex *v2 = &mesh->vertices[i+1];
+        Vertex *v3 = &mesh->vertices[i+2];
+
+        glm::vec3 p1 = v1->position,  p2 = v2->position,  p3 = v3->position;
+        glm::vec2 t1 = v1->texcoords, t2 = v2->texcoords, t3 = v3->texcoords;
+
+        glm::vec3 edge1 = p2 - p1;
+        glm::vec3 edge2 = p3 - p1;
+        glm::vec2 deltaUV1 = t2 - t1;
+        glm::vec2 deltaUV2 = t3 - t1;
+
+        float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+        glm::vec3 tangent = {
+          f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x),
+          f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y),
+          f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z)
+        };
+
+        v1->tangent = tangent;
+        v2->tangent = tangent;
+        v3->tangent = tangent;
+      }
+      //----------------------------------------------------
+
 
       nd = nd->next_sibling();
     }
@@ -249,8 +277,6 @@ void Model::loadLibraryImages(rapidxml::xml_document<> *doc)
   rapidxml::xml_node<> *node = doc->first_node();
   node = node->first_node("library_images")->first_node("image");
 
-  auto &wee = this->_collada_images;
-
   while (node != nullptr)
   {
     std::string filepath = node->first_node("init_from")->value();
@@ -282,8 +308,6 @@ void Model::loadLibraryEffects(rapidxml::xml_document<> *doc)
   
   node = node->first_node("library_effects")->first_node("effect");
 
-  auto &wee = this->_collada_images;
-
   while (node != nullptr)
   {
     rapidxml::xml_node<> *tempnode = node;
@@ -307,18 +331,27 @@ void Model::loadLibraryMaterials(rapidxml::xml_document<> *doc)
   
   node = node->first_node("library_materials")->first_node("material");
 
-  auto &wee = this->_collada_images;
-
   while (node != nullptr)
   {
-    std::string effect_id = node->first_node("instance_effect")->first_attribute()->value();
     std::string self_id = node->first_attribute("id")->value();
-    this->_collada_materials.push_back(ColladaMaterial(self_id, &this->_collada_effects, effect_id));
+    std::string effect_id = node->first_node("instance_effect")->first_attribute()->value();
+
+
+    for (auto &effect: this->_collada_effects)
+    {
+      if (effect.m_dae_id == effect_id)
+      {
+        effect.m_material_dae_id = self_id;
+        break;
+      }
+    }
+
+
+
     node = node->next_sibling();
   }
 
 }
-
 
 
 int Model::colladaImageIndex(std::string dae_id)
@@ -331,7 +364,7 @@ int Model::colladaImageIndex(std::string dae_id)
 }
 
 
-void Model::loadDae(std::string directory, std::string filename)
+void Model::loadDae(std::string directory, std::string filename, int id)
 {
   std::ifstream fh;
   fh.open(directory + filename);
@@ -342,6 +375,8 @@ void Model::loadDae(std::string directory, std::string filename)
     exit(1);
   }
 
+  this->m_ID = id;
+  this->m_name = directory + filename;
   this->_directory = directory;
 
   std::string raw_document = "";

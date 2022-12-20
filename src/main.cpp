@@ -26,6 +26,9 @@
 #include "ui/ui.h"
 #include "scene/scene.h"
 
+#include "pyembed.h"
+
+
 
 
 int ENTRY(int argc, char **argv)
@@ -70,21 +73,61 @@ int ENTRY(int argc, char **argv)
 
 
 
+
+  Py_Initialize();
+
+  PyObject *locals = PyDict_New();
+  PyObject *globals = PyDict_New();
+
+  glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
+
+  c2p::vec3(pos, locals);
+
+  PyRun_FileExFlags(fopen("test.py", "r"), "test.py", Py_file_input, globals, locals, 1, NULL);
+
+  pos = p2c::vec3(locals);
+  printf("%f %f %f\n", pos.x, pos.y, pos.z);
+
+
+  Py_Finalize();
+
+
+
+
+
+
   // RENDERER SETUP
   //----------------------------------------
   Renderer ren;
   Player player(&ren);
 
+  SceneGraph scenegraph;
 
-  Model model1;
+  scenegraph.loadObject("assets/misc/empty/");
+  scenegraph.newObjectInstance("empty");
+  player.m_gameobject = scenegraph.rearObjectPtr();
+  player.m_gameobject->setName("Player");
+  player.m_gameobject->setInteractivity("player");
 
-  model1.loadDae("assets/environment/cube/", "cube.dae");
+
+  scenegraph.loadObject("assets/environment/building/");
+  scenegraph.loadObject("assets/environment/terrain0/");
+  scenegraph.loadObject("assets/environment/terrain1/");
+  scenegraph.loadObject("assets/npc/muscleskele/");
+
+
+
+  Model sphere;  sphere.loadDae("assets/misc/sphere/", "sphere.dae");  
 
 
   Scene scene_1;
+  import_lighting_config(&ren);
   scene_1.useRenderer(&ren);
   scene_1.usePlayer(&player);
+  scene_1.useSceneGraph(&scenegraph);
+  scene_1.addLightsourceModel(&sphere);
   //----------------------------------------
+
 
   // IMGUI SETUP
   //----------------------------------------
@@ -113,6 +156,8 @@ int ENTRY(int argc, char **argv)
   glBindFramebuffer(GL_FRAMEBUFFER, 0);  
 
 
+  int count = 0;
+
   Uint64 start = SDL_GetPerformanceCounter(), end = SDL_GetPerformanceCounter();
   while (1)
   {
@@ -122,7 +167,7 @@ int ENTRY(int argc, char **argv)
     glClearColor(ren.clearColor.x, ren.clearColor.y, ren.clearColor.z, 1.0f);
     draw_dev_ui(&ren, &scene_1);
 
-    ren.update(player.pos, player.cam->front);
+    ren.update(*player.getPos(), player.cam->front);
 
     // Input
     //---------------------------------
@@ -145,24 +190,30 @@ int ENTRY(int argc, char **argv)
 
     // Render depth map
     // ---------------------------------
-    glViewport(0, 0, ren.SHADOW_WIDTH, ren.SHADOW_HEIGHT);
-    glBindFramebuffer(GL_FRAMEBUFFER, ren.depthMapFBO);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, ren.depthCubemap);
-    glClear(GL_DEPTH_BUFFER_BIT);
-        ren.useShader(SHADER_POINTSHADOW);
-        ren.setupDepthCubemap({0, 0, 0}, {0, 0, 0});
-        glDisable(GL_CULL_FACE);
-        scene_1.draw(&event);
-        glEnable(GL_CULL_FACE);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    if (count == 1)
+    {
+      count = 0;
+      glViewport(0, 0, ren.SHADOW_WIDTH, ren.SHADOW_HEIGHT);
+      glBindFramebuffer(GL_FRAMEBUFFER, ren.depthMapFBO);
+      glBindTexture(GL_TEXTURE_CUBE_MAP, ren.depthCubemap);
+      glClear(GL_DEPTH_BUFFER_BIT);
+          ren.useShader(SHADER_POINTSHADOW);
+          ren.setupDepthCubemap({0, 0, 0}, {0, 0, 0});
+          glDisable(GL_CULL_FACE);
+          scene_1.draw(&event);
+          glEnable(GL_CULL_FACE);
+      glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    else
+      count += 1;
     // ---------------------------------
 
 
 
     // Draw scene normally
     // ---------------------------------
-
     glViewport(0, 0, x, y);
     glBindFramebuffer(GL_FRAMEBUFFER, ren.FBO);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -172,12 +223,10 @@ int ENTRY(int argc, char **argv)
     glBindTexture(GL_TEXTURE_CUBE_MAP, ren.depthCubemap);
 
 
-    ren.useShader(SHADER_WORLDSPACE);
+    ren.useShader(SHADER_TERRAIN);
     ren.sendLightsToShader();
 
-    ren.drawModel(&model1);
-
-    // scene_1.draw(&event);
+    scene_1.draw(&event);
 
     // glClear(GL_DEPTH_BUFFER_BIT);
 
@@ -195,7 +244,6 @@ int ENTRY(int argc, char **argv)
     
     // Draw to quad
     //---------------------------------
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glBindVertexArray(ren.quadVAO);
 
@@ -215,12 +263,10 @@ int ENTRY(int argc, char **argv)
   
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glEnable(GL_DEPTH_TEST);
-
     //---------------------------------
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////// Render stop
-
 
 
 

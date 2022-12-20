@@ -13,8 +13,8 @@
 
 
 struct Material {
-  Texture *diffuseMap, *specularMap, *emissionMap, *normalMap;
-  float spec_exponent = 0.5f;
+  Texture diffuseMap, specularMap, emissionMap, normalMap;
+  float spec_exponent = 64.0f;
 };
 
 

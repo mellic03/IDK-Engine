@@ -6,10 +6,7 @@
 
 struct Transform {
 
-  int *m_ID = nullptr;
-
-  Transform(void)    { this->m_ID = nullptr; };
-  Transform(int *id) { this->m_ID = id; };
+  Transform(void) { };
 
   Transform *parent = nullptr;
 

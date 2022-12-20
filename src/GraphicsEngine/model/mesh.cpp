@@ -40,14 +40,9 @@ void Mesh::setBufferData(void)
   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(6*sizeof(float)));
   glEnableVertexAttribArray(2);
 
-  // // Face normal
-  // glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(9*sizeof(float)));
-  // glEnableVertexAttribArray(3);
-
-
-  // // Tangent
-  // glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(11*sizeof(float)));
-  // glEnableVertexAttribArray(4);
+  // Tangent
+  glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(8*sizeof(float)));
+  glEnableVertexAttribArray(3);
 
 
   // Indexing

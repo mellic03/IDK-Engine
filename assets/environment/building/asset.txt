@@ -1,9 +1,11 @@
-// #[attribute] [type] [name] [num keyframes] //
 
-#ASSETNAME building
+#gameobject building
 
-#STATIC
-#ENVIRONMENTAL
+#interactivity environmental
 
-GEOMETRYMESH building
-COLLISIONMESH building
+#geometry building.dae
+
+#collision building.obj
+
+#exit
+

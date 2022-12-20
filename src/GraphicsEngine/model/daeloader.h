@@ -16,6 +16,7 @@ class ColladaEffect {
   public:
     
     std::string m_dae_id;
+    std::string m_material_dae_id;
     std::string m_image_dae_id = "DEFAULT";
     Texture *m_imageptr = nullptr;
 
@@ -28,26 +29,11 @@ class ColladaMaterial {
   private:
 
 
-
   public:
-    ColladaEffect *m_parent_effect;
 
     std::string m_dae_id;
+    ColladaEffect *m_parent_effect;
 
-    ColladaMaterial(std::string self_id, std::vector<ColladaEffect> *effects, std::string effect_id)
-    {
-      this->m_dae_id = self_id;
-
-      for (auto &effect: *effects)
-        if (effect.m_dae_id == effect_id)
-        {
-          this->m_parent_effect = &effect;
-          return;
-        }
-
-      printf("Couldn't find parent effect\n");
-      exit(1);
-
-    };
+    ColladaMaterial(std::string self_id)  { this->m_dae_id = self_id; };
 
 };

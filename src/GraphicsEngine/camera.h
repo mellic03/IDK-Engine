@@ -9,14 +9,22 @@
 #include "../include/glm/gtc/matrix_transform.hpp"
 #include "../include/glm/gtc/type_ptr.hpp"
 
+#include "../transform.h"
+
 
 class Camera {
 
   private:
     glm::vec3 m_default_pos = glm::vec3(0.0f, 0.0f, -10.0f);
 
+
   public:
+
+    Transform *m_transform;
+
+
     Camera();
+    void useTransform(Transform *transform)  { this->m_transform = transform; };
 
     glm::mat4 modifier_matrix = glm::mat4(1.0f);
 

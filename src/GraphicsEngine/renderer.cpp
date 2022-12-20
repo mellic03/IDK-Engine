@@ -21,6 +21,7 @@ void Renderer::createShader(std::string filename, ShaderType type)
 
 Renderer::Renderer()
 {
+  this->createShader("terrain",        SHADER_TERRAIN);
   this->createShader("worldspace",     SHADER_WORLDSPACE);
   this->createShader("weapon",         SHADER_WEAPON);
   this->createShader("lightsource",    SHADER_LIGHTSOURCE);
@@ -231,7 +232,6 @@ void Renderer::sendLightsToShader(void)
   this->active_shader->setInt("depthMap", 10);
   this->active_shader->setFloat("far_plane",   25.0f);
   
-  this->active_shader->setFloat("bias", this->DIRBIAS);
   this->active_shader->setVec3( "pointlight.ambient", this->pointlights[0].ambient);
   this->active_shader->setVec3( "pointlight.diffuse", this->pointlights[0].diffuse);
   this->active_shader->setVec3( "pointlight.pos", this->pointlights[0].position);
@@ -321,7 +321,7 @@ void Renderer::sendLightsToShader(void)
     this->active_shader->setFloat(buffer,  this->shaderready_spotlights[i].intensity);
   }
 
-  this->active_shader->setVec3("viewPos", *this->cam.pos);
+  this->active_shader->setVec3("viewPos", this->cam.m_transform->getPos_worldspace());
   this->active_shader->setVec3("viewDirection", glm::mat3(this->cam.modifier_matrix) * *this->cam.dir);
 }
 
@@ -335,51 +335,71 @@ void unbindTextureUnit(GLenum texture_unit)
 
 void Renderer::drawModel(Model *model)
 {
+  for (auto &mesh: model->m_meshes)
+  {
+    glBindVertexArray(mesh.VAO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.VBO);
+
+
+    this->active_shader->setMat4("model", model->getTransform()->getModelMatrix());
+    this->active_shader->setMat4("view", this->cam.view);
+    this->active_shader->setMat4("projection", this->cam.projection);
+
+
+    for (int i=0; i<mesh.IBOS.size(); i++)
+    {
+      mesh.materials[i].diffuseMap.bind( GL_TEXTURE0 );
+      mesh.materials[i].specularMap.bind(  GL_TEXTURE1 );
+      mesh.materials[i].normalMap.bind(  GL_TEXTURE2 );
+      mesh.materials[i].emissionMap.bind(  GL_TEXTURE3 );
+    
+      this->active_shader->setInt("material.diffuseMap", 0);
+      this->active_shader->setInt("material.specularMap", 1);
+      this->active_shader->setInt("material.normalMap", 2);
+      this->active_shader->setInt("material.emissionMap", 3);
+      this->active_shader->setFloat("material.spec_exponent", mesh.materials[i].spec_exponent);
+
+
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBOS[i]);
+      glDrawElements(GL_TRIANGLES, mesh.indices[i].size(), GL_UNSIGNED_INT, (void *)0);
+
+      unbindTextureUnit(GL_TEXTURE0);
+      unbindTextureUnit(GL_TEXTURE1);
+      unbindTextureUnit(GL_TEXTURE2);
+      unbindTextureUnit(GL_TEXTURE3);
+    }
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+  }
+}
+
+void Renderer::drawLightSource(Model *model, glm::vec3 diffuse_color, int index)
+{
+  if (this->pointlights_on[index] == false)
+    return;
 
   for (auto &mesh: model->m_meshes)
   {
     glBindVertexArray(mesh.VAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.VBO);
 
-    // this->active_shader->setVec3("diffuse", glm::vec3(0.0f, 0.0f, 0.0f));
 
-    glm::mat4 model_mat = glm::mat4(1.0f);
-    model_mat = glm::translate(model_mat, mesh.pos);
-
-    this->active_shader->setMat4("model", model_mat);
+    this->active_shader->setMat4("model", model->getTransform()->getModelMatrix());
     this->active_shader->setMat4("view", this->cam.view);
     this->active_shader->setMat4("projection", this->cam.projection);
 
 
-    char buffer[64];
-
     for (int i=0; i<mesh.IBOS.size(); i++)
     {
-      // mesh->materials[i].diffuse.bind(  GL_TEXTURE0 );
-      // mesh->materials[i].specular.bind(  GL_TEXTURE1 );
-      // mesh->materials[i].normal.bind(  GL_TEXTURE2 );
-      // mesh->materials[i].emission.bind(  GL_TEXTURE3 );
-    
-      // this->active_shader->setInt("material.diffuseMap", 0);
-      // this->active_shader->setInt("material.specularMap", 1);
-      // this->active_shader->setInt("material.normalMap", 2);
-      // this->active_shader->setInt("material.emissionMap", 3);
-      // this->active_shader->setFloat("material.spec_exponent", mesh->materials[i].spec_exponent);
-      mesh.materials[i].diffuseMap->bind( GL_TEXTURE0 );
-      this->active_shader->setInt("diffuseMap", 0);
+      this->active_shader->setVec3("diffuseColor", diffuse_color);
 
-      // glDrawArrays(GL_TRIANGLES, 0, mesh.vertices.size());
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBOS[i]);
       glDrawElements(GL_TRIANGLES, mesh.indices[i].size(), GL_UNSIGNED_INT, (void *)0);
 
-      unbindTextureUnit(GL_TEXTURE0);
-      // unbindTextureUnit(GL_TEXTURE1);
-      // unbindTextureUnit(GL_TEXTURE2);
-      // unbindTextureUnit(GL_TEXTURE3);
     }
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
   }
-
 }

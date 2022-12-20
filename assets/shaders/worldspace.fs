@@ -9,6 +9,7 @@ struct PointLight {
   vec3 ambient, diffuse;
   float constant, linear, quadratic;
 };
+uniform PointLight pointlight;
 
 struct SpotLight {
   vec3 position, direction;
@@ -26,8 +27,6 @@ in VS_OUT {
   vec3 Normal;
   vec2 TexCoords;
 
-  PointLight pointlight;
-
   mat3 TBN;
 
 } fs_in;
@@ -39,7 +38,6 @@ struct Material {
 };
 uniform Material material;
 
-in vec3 color;
 
 uniform samplerCube depthMap;
 uniform float bias;
@@ -51,7 +49,6 @@ uniform vec3 clearColor;
 
 
 uniform float far_plane;
-
 
 
 vec4 hash4( vec2 p ) { return fract(sin(vec4( 1.0+dot(p,vec2(37.0,17.0)), 
@@ -97,6 +94,7 @@ vec3 gridSamplingDisk[20] = vec3[]
    vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
    vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
 );
+
 
 float calculate_shadow(vec3 lightPos, vec3 viewPos, vec3 fragPos)
 {
@@ -150,7 +148,6 @@ vec3 calculate_pointlight(PointLight light, vec3 normal, vec3 fragPos, vec3 view
   return (ambient + (1.0 - shadow) * (diffuse + specular));
 }
 
-uniform float waa;
 
 vec3 calculate_spotlight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewPos)
 {
@@ -185,6 +182,7 @@ vec3 calculate_spotlight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewPo
   return (ambient + diffuse + specular);
 }
 
+
 void main()
 {
   vec3 normal = texture(material.normalMap, fs_in.TexCoords).rgb;
@@ -193,7 +191,7 @@ void main()
 
   vec3 result = texture(material.emissionMap, fs_in.TexCoords).rgb;
 
-  result += calculate_pointlight(fs_in.pointlight, normal, fs_in.FragPos, fs_in.viewPos);
+  result += calculate_pointlight(pointlight, normal, fs_in.FragPos, fs_in.viewPos);
 
   for (int i=0; i<num_active_spotlights; i++)
     result += calculate_spotlight(spotlights[i], normal, fs_in.FragPos, fs_in.viewPos);

@@ -69,7 +69,7 @@ class Renderer {
     float kernel_divisor = 1.0f, kernel_offset_divisor = 600.0f;
 
     glm::vec4 clearColor = {0.0, 0.0, 0.0, 1.0};
-    float fog_start = 10, fog_end = 25;
+    float fog_start = 10, fog_end = 1000;
     float exposure = 1.0f, gamma = 2.2f;
 
     int SCR_width = DEFAULT_SCREEN_WIDTH;
@@ -135,5 +135,5 @@ class Renderer {
 
     void drawMesh(Mesh *mesh);
     void drawModel(Model *model);
-
+    void drawLightSource(Model *model, glm::vec3 diffuse_color, int index);
 };
