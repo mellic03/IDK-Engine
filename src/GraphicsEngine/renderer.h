@@ -53,7 +53,7 @@ class Renderer {
     GLuint FBO;
     GLuint quadVAO, quadVBO, rbo;
     GLuint colorBuffers[2];
-    GLuint colorBuffer;
+    GLuint screenFBO, screenRBO, screenColorBuffers[1];
 
     // Camera/user-facing
     //---------------------------------------------------------------------

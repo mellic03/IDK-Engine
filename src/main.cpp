@@ -205,6 +205,7 @@ int ENTRY(int argc, char **argv)
     // ---------------------------------
     glViewport(0, 0, w, h);
     glBindFramebuffer(GL_FRAMEBUFFER, ren.FBO);
+    glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[0]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     
@@ -220,7 +221,6 @@ int ENTRY(int argc, char **argv)
     // player.draw(&ren); // draw weapon
     
 
-    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //---------------------------------
 
@@ -229,26 +229,29 @@ int ENTRY(int argc, char **argv)
     
     // Draw to quad
     //---------------------------------
-    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // glBindVertexArray(ren.quadVAO);
+    glBindVertexArray(ren.quadVAO);
+    glDisable(GL_DEPTH_TEST);
 
+    ren.useShader(SHADER_SCREENQUAD);
+    ren.postProcess();
 
-    // ren.useShader(SHADER_SCREENQUAD);
-    // ren.postProcess();
-    
-    // glDisable(GL_DEPTH_TEST);
-    // glActiveTexture(GL_TEXTURE10);
-    // glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[0]);
-    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-    // ren.active_shader->setInt("screenTexture", 10);
-
-
-    // glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindFramebuffer(GL_FRAMEBUFFER, ren.screenFBO);
+    glBindTexture(GL_TEXTURE_2D, ren.screenColorBuffers[0]);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
-    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    //---------------------------------
+    
+    glActiveTexture(GL_TEXTURE10);
+    glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[0]);
+    ren.active_shader->setInt("screenTexture", 10);
 
 
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+      glBindVertexArray(0);
+  
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // //---------------------------------
+
+    glEnable(GL_DEPTH_TEST);
     ///////////////////////////////////////////////////////////////////////////////////////////// Render stop
 
 

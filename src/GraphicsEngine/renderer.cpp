@@ -77,6 +77,35 @@ Renderer::Renderer()
 
   GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
   glDrawBuffers(2, attachments);
+
+
+
+
+  glGenFramebuffers(1, &this->screenFBO);
+  glBindFramebuffer(GL_FRAMEBUFFER, this->screenFBO);
+  glGenTextures(1, this->screenColorBuffers);
+  
+  glBindTexture(GL_TEXTURE_2D, this->screenColorBuffers[0]);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 2560, 2560, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->screenColorBuffers[0], 0);
+
+
+  glGenRenderbuffers(1, &this->screenRBO);
+  glBindRenderbuffer(GL_RENDERBUFFER, this->screenRBO); 
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 2560, 2560);  
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->screenRBO);
+
+  GLuint screenAttachments[1] = { GL_COLOR_ATTACHMENT0 };
+  glDrawBuffers(1, screenAttachments);
+
+
+
   //------------------------------------------------------
 
 
@@ -356,6 +385,40 @@ void Renderer::resize(int x, int y)
   glDrawBuffers(2, attachments);
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
+
+
+
+  glGenFramebuffers(1, &this->screenFBO);
+  glBindFramebuffer(GL_FRAMEBUFFER, this->screenFBO);
+  glGenTextures(1, this->screenColorBuffers);
+  
+  glBindTexture(GL_TEXTURE_2D, this->screenColorBuffers[0]);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->screenColorBuffers[0], 0);
+
+
+  glGenRenderbuffers(1, &this->screenRBO);
+  glBindRenderbuffer(GL_RENDERBUFFER, this->screenRBO); 
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, x, y);  
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->screenRBO);
+
+  GLuint screenAttachments[1] = { GL_COLOR_ATTACHMENT0 };
+  glDrawBuffers(1, screenAttachments);
+
+
+
+
+
+
 
   this->viewport_width = x;
   this->viewport_height = y;

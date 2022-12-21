@@ -3,6 +3,7 @@
 #define NUM_SPOTLIGHTS 2
 
 layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 FragColor2;
 
 struct PointLight {
   vec3 pos;
@@ -204,5 +205,5 @@ void main()
   float fog_factor = (dist - fog_start)/(fog_end-fog_start);
   fog_factor = 1.0 - clamp(fog_factor, 0, 1);
   FragColor = mix(vec4(clearColor, 1.0), FragColor, fog_factor);
-
+  FragColor2 = FragColor;
 }
