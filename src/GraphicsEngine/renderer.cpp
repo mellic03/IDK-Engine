@@ -54,9 +54,9 @@ Renderer::Renderer()
   //------------------------------------------------------
   glGenFramebuffers(1, &this->FBO);
   glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
-  glGenTextures(1, this->colorBuffers);
+  glGenTextures(2, this->colorBuffers);
   
-  for (GLuint i=0; i<1; i++)
+  for (GLuint i=0; i<2; i++)
   {
     glBindTexture(GL_TEXTURE_2D, this->colorBuffers[i]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 2560, 2560, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
@@ -75,8 +75,8 @@ Renderer::Renderer()
   glBindRenderbuffer(GL_RENDERBUFFER, 0);
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->rbo);
 
-  GLuint attachments[1] = { GL_COLOR_ATTACHMENT0 };
-  glDrawBuffers(1, attachments);
+  GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+  glDrawBuffers(2, attachments);
   //------------------------------------------------------
 
 
@@ -171,7 +171,7 @@ void Renderer::setupDepthCubemap(glm::vec3 pos, glm::vec3 dir)
 
 void Renderer::usePerspective(void)
 {
-  this->cam.projection = glm::perspective(glm::radians(this->fov), (float)this->SCR_width/(float)this->SCR_height, NEAR_PLANE_DIST, RENDER_DISTANCE);
+  this->cam.projection = glm::perspective(glm::radians(this->fov), (float)this->viewport_width/(float)this->viewport_height, NEAR_PLANE_DIST, RENDER_DISTANCE);
 }
 
 
@@ -228,7 +228,9 @@ void Renderer::sendLightsToShader(void)
 
   char buffer[64];
 
-
+  glActiveTexture(GL_TEXTURE10);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, this->depthCubemap);
+    
   this->active_shader->setInt("depthMap", 10);
   this->active_shader->setFloat("far_plane",   25.0f);
   
@@ -325,6 +327,41 @@ void Renderer::sendLightsToShader(void)
   this->active_shader->setVec3("viewDirection", glm::mat3(this->cam.modifier_matrix) * *this->cam.dir);
 }
 
+void Renderer::resize(int x, int y)
+{
+  glGenFramebuffers(1, &this->FBO);
+  glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
+  glGenTextures(2, this->colorBuffers);
+  
+  for (GLuint i=0; i<2; i++)
+  {
+    glBindTexture(GL_TEXTURE_2D, this->colorBuffers[i]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, this->colorBuffers[i], 0);
+  }
+
+
+  glGenRenderbuffers(1, &this->rbo);
+  glBindRenderbuffer(GL_RENDERBUFFER, this->rbo); 
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, x, y);  
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->rbo);
+
+  GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+  glDrawBuffers(2, attachments);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  this->viewport_width = x;
+  this->viewport_height = y;
+
+  this->cam.projection = glm::perspective(glm::radians(this->fov), (float)this->viewport_width/(float)this->viewport_height, NEAR_PLANE_DIST, RENDER_DISTANCE);
+}
 
 void unbindTextureUnit(GLenum texture_unit)
 {
@@ -379,16 +416,14 @@ void Renderer::drawLightSource(Model *model, glm::vec3 diffuse_color, int index)
   if (this->pointlights_on[index] == false)
     return;
 
+  this->active_shader->setMat4("model", model->getTransform()->getModelMatrix());
+  this->active_shader->setMat4("view", this->cam.view);
+  this->active_shader->setMat4("projection", this->cam.projection);
+
   for (auto &mesh: model->m_meshes)
   {
     glBindVertexArray(mesh.VAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.VBO);
-
-
-    this->active_shader->setMat4("model", model->getTransform()->getModelMatrix());
-    this->active_shader->setMat4("view", this->cam.view);
-    this->active_shader->setMat4("projection", this->cam.projection);
-
 
     for (int i=0; i<mesh.IBOS.size(); i++)
     {

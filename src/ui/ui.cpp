@@ -250,49 +250,102 @@ void draw_physics_tab(Renderer *ren)
   ImGui::Checkbox("Fly", &fly);
 }
 
-void draw_dev_ui(Renderer *ren, Scene *scene)
+void draw_dev_ui(Renderer *ren, Scene *scene, int *x, int *y, int *w, int *h)
 {
-  // Start the Dear ImGui frame
-  ImGui_ImplOpenGL3_NewFrame();
-  ImGui_ImplSDL2_NewFrame();
-  ImGui::NewFrame();
-
   // draw_main_menu_bar(ren, scene);
 
-  ImGui::Begin("Hello, world!");
+  ImGuiWindowFlags flags = 0;
+  flags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+  flags |= ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoFocusOnAppearing;
+  flags |= ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_MenuBar;
+  flags |= ImGuiWindowFlags_NoTitleBar;
 
-  if (ImGui::Button("Demo Window"))
-    show = !show;
-  if (show)
-    ImGui::ShowDemoWindow(&show);
+  ImGui::SetNextWindowPos({0, 0});
+  ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
 
-  if (ImGui::BeginTabBar("MyTabBar", 0))
+  ImGui::Begin("Root", NULL, flags);
+
+  static ImGuiTableFlags tableflags = ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_ContextMenuInBody;
+  if (ImGui::BeginTable("table1", 3, tableflags))
   {
-    if (ImGui::BeginTabItem("Scene"))
-    {
-      draw_scene_tab(ren, scene);
-      ImGui::EndTabItem();
-    }
+    ImGui::TableNextRow();
 
-    if (ImGui::BeginTabItem("Lighting"))
-    {
-      draw_lighting_tab(ren);
-      ImGui::EndTabItem();
-    }
-    if (ImGui::BeginTabItem("Render"))
-    {
-      draw_render_tab(ren);
-      ImGui::EndTabItem();
-    }
-    if (ImGui::BeginTabItem("Physics"))
-    {
-      draw_physics_tab(ren);
-      ImGui::EndTabItem();
-    }
-    ImGui::EndTabBar();
+      ImGui::TableSetColumnIndex(0);
+      {
+        if (ImGui::Button("Demo Window"))
+          show = !show;
+        if (show)
+          ImGui::ShowDemoWindow(&show);
+
+        if (ImGui::BeginTabBar("TabBar", 0))
+        {
+          if (ImGui::BeginTabItem("Scene"))
+          {
+            draw_scene_tab(ren, scene);
+            ImGui::EndTabItem();
+          }
+
+          if (ImGui::BeginTabItem("Lighting"))
+          {
+            draw_lighting_tab(ren);
+            ImGui::EndTabItem();
+          }
+          if (ImGui::BeginTabItem("Render"))
+          {
+            draw_render_tab(ren);
+            ImGui::EndTabItem();
+          }
+          if (ImGui::BeginTabItem("Physics"))
+          {
+            draw_physics_tab(ren);
+            ImGui::EndTabItem();
+          }
+          ImGui::EndTabBar();
+        }
+      }
+
+
+      ImGui::TableSetColumnIndex(1);
+      {
+
+
+        // *x = 0;//(int)ImGui::GetCursorPosX();
+        // *y = 0;//(int)ImGui::GetWindowPos().y;
+        *w = (int)ImGui::GetContentRegionAvail().x;
+        *h = (int)ImGui::GetContentRegionAvail().y;
+
+        ImVec2 viewportsize = ImGui::GetContentRegionAvail();
+
+        if (ren->viewport_width != *w || ren->viewport_height != *h)
+          ren->resize(*w, *h);
+
+
+        // ren->viewport_width = *w;
+        // ren->viewport_height = *h;
+
+        // printf("x: %d, y: %d, w: %d, h: %d\n", *x, *y, *w, *h);
+
+        ImGui::Image((ImTextureID)ren->colorBuffers[0], ImGui::GetContentRegionAvail(), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+
+      }
+
+      ImGui::TableSetColumnIndex(2);
+      {
+        
+      }
+
+
+    ImGui::EndTable();
   }
 
+
+
+
+
+
+
+
+
   ImGui::End();
-  ImGui::Render();
 
 }

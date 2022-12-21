@@ -34,7 +34,7 @@ void Camera::init(void)
 
 void Camera::input()
 {
-  this->projection = glm::perspective(glm::radians(this->fov), 1.0f, 0.1f, RENDER_DISTANCE);
+  // this->projection = glm::perspective(glm::radians(this->fov), 1.0f, 0.1f, RENDER_DISTANCE);
 
   const Uint8 *state = SDL_GetKeyboardState(NULL);
 

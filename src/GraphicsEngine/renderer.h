@@ -72,8 +72,8 @@ class Renderer {
     float fog_start = 10, fog_end = 1000;
     float exposure = 1.0f, gamma = 2.2f;
 
-    int SCR_width = DEFAULT_SCREEN_WIDTH;
-    int SCR_height = DEFAULT_SCREEN_HEIGHT;
+    int viewport_width = DEFAULT_SCREEN_WIDTH;
+    int viewport_height = DEFAULT_SCREEN_HEIGHT;
     //---------------------------------------------------------------------
 
 
@@ -136,4 +136,6 @@ class Renderer {
     void drawMesh(Mesh *mesh);
     void drawModel(Model *model);
     void drawLightSource(Model *model, glm::vec3 diffuse_color, int index);
+
+    void resize(int x, int y);
 };

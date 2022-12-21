@@ -26,7 +26,7 @@
 #include "ui/ui.h"
 #include "scene/scene.h"
 
-#include "pyembed.h"
+#include "LuaScripting/luascripting.h"
 
 
 
@@ -70,30 +70,6 @@ int ENTRY(int argc, char **argv)
 
 
   SDL_Event event;
-
-
-
-
-  Py_Initialize();
-
-  PyObject *locals = PyDict_New();
-  PyObject *globals = PyDict_New();
-
-  glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
-
-  c2p::vec3(pos, locals);
-
-  PyRun_FileExFlags(fopen("test.py", "r"), "test.py", Py_file_input, globals, locals, 1, NULL);
-
-  pos = p2c::vec3(locals);
-  printf("%f %f %f\n", pos.x, pos.y, pos.z);
-
-
-  Py_Finalize();
-
-
-
-
 
 
   // RENDERER SETUP
@@ -163,11 +139,18 @@ int ENTRY(int argc, char **argv)
   {
     start = end;
     end = SDL_GetPerformanceCounter();
-    SDL_GetWindowSize(window, &ren.SCR_width, &ren.SCR_height);
+    // SDL_GetWindowSize(window, &ren.viewport_width, &ren.viewport_height);
     glClearColor(ren.clearColor.x, ren.clearColor.y, ren.clearColor.z, 1.0f);
-    draw_dev_ui(&ren, &scene_1);
 
+    // Start the Dear ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+    ImGui::NewFrame();
+
+    int x, y, w, h;
+    draw_dev_ui(&ren, &scene_1, &x, &y, &w, &h);
     ren.update(*player.getPos(), player.cam->front);
+    ren.usePerspective();
 
     // Input
     //---------------------------------
@@ -183,9 +166,6 @@ int ENTRY(int argc, char **argv)
     //---------------------------------
 
     ///////////////////////////////////////////////////////////////////////////////////////////// Render start
-    int x = (int)io.DisplaySize.x, y = (int)io.DisplaySize.y;
-    ren.usePerspective();
-    glEnable(GL_DEPTH_TEST);
 
 
     // Render depth map
@@ -214,15 +194,11 @@ int ENTRY(int argc, char **argv)
 
     // Draw scene normally
     // ---------------------------------
-    glViewport(0, 0, x, y);
+    glViewport(0, 0, w, h);
     glBindFramebuffer(GL_FRAMEBUFFER, ren.FBO);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-    glActiveTexture(GL_TEXTURE10);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, ren.depthCubemap);
-
-
+    
     ren.useShader(SHADER_TERRAIN);
     ren.sendLightsToShader();
 
@@ -244,31 +220,31 @@ int ENTRY(int argc, char **argv)
     
     // Draw to quad
     //---------------------------------
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glBindVertexArray(ren.quadVAO);
+    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // glBindVertexArray(ren.quadVAO);
 
 
-    ren.useShader(SHADER_SCREENQUAD);
-    ren.postProcess();
+    // ren.useShader(SHADER_SCREENQUAD);
+    // ren.postProcess();
     
-    glDisable(GL_DEPTH_TEST);
-    glActiveTexture(GL_TEXTURE10);
-    glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    // glDisable(GL_DEPTH_TEST);
+    // glActiveTexture(GL_TEXTURE10);
+    // glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[0]);
+    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    // ren.active_shader->setInt("screenTexture", 10);
 
-    ren.active_shader->setInt("screenTexture", 10);
 
-
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    // glDrawArrays(GL_TRIANGLES, 0, 6);
   
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glEnable(GL_DEPTH_TEST);
+    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //---------------------------------
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////// Render stop
 
 
+
+    ImGui::Render();
 
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

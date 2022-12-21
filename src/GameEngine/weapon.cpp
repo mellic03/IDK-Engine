@@ -10,7 +10,7 @@
 
 // void Weapon::draw(Renderer *ren)
 // {
-//   ren->cam.projection = glm::perspective(glm::radians(ren->cam.fov), (float)ren->SCR_width/(float)ren->SCR_height, 0.001f, RENDER_DISTANCE);
+//   ren->cam.projection = glm::perspective(glm::radians(ren->cam.fov), (float)ren->viewport_width/(float)ren->viewport_height, 0.001f, RENDER_DISTANCE);
 
 //   this->movement_offset -= (1.0f / this->sway) * this->movement_offset; 
 //   this->movement_offset = glm::clamp(this->movement_offset, glm::vec3(-0.2, -0.1, 0.0), glm::vec3(0.05, 0.1, 0.0));
@@ -28,6 +28,6 @@
   
 //   this->getModel()->draw(ren);
 
-//   ren->cam.projection = glm::perspective(glm::radians(ren->cam.fov), (float)ren->SCR_width/(float)ren->SCR_height, NEAR_PLANE_DIST, RENDER_DISTANCE);
+//   ren->cam.projection = glm::perspective(glm::radians(ren->cam.fov), (float)ren->viewport_width/(float)ren->viewport_height, NEAR_PLANE_DIST, RENDER_DISTANCE);
 // }
 

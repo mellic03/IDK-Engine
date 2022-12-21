@@ -99,45 +99,40 @@ namespace fs = std::filesystem;
 // }
 
 
-// void draw_main_menu_bar(Renderer *ren, Scene *scene)
-// {
-
-//   bool show_save_modal = false;
-//   bool show_load_modal = false;
-
-
-//   if (ImGui::BeginMainMenuBar())
-//   {
-//     if (ImGui::BeginMenu("File"))
-//     {
-//       if (ImGui::MenuItem("Save", "CTRL+S"))
-//         show_save_modal = true;
-
-//       if (ImGui::MenuItem("Load", "CTRL+O"))
-//         show_load_modal = true;
-
-//       ImGui::EndMenu();
-//     }
+void draw_main_menu_bar(Renderer *ren, Scene *scene)
+{
+  bool show_save_modal = false;
+  bool show_load_modal = false;
 
 
-//     if (ImGui::BeginMenu("Edit"))
-//     {
-//       if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
-//       if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
-//       ImGui::Separator();
-//       if (ImGui::MenuItem("Cut", "CTRL+X")) {}
-//       if (ImGui::MenuItem("Copy", "CTRL+C")) {}
-//       if (ImGui::MenuItem("Paste", "CTRL+V")) {}
-//       ImGui::EndMenu();
-//     }
+  if (ImGui::BeginMainMenuBar())
+  {
+    if (ImGui::BeginMenu("File"))
+    {
+      if (ImGui::MenuItem("Save", "CTRL+S"))
+        show_save_modal = true;
 
-//     ImGui::EndMainMenuBar();
-//   }
+      if (ImGui::MenuItem("Load", "CTRL+O"))
+        show_load_modal = true;
 
-//   draw_save_modal(show_save_modal, scene);
-//   draw_load_modal(show_load_modal, scene);
+      ImGui::EndMenu();
+    }
 
 
+    if (ImGui::BeginMenu("Edit"))
+    {
+      if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
+      if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
+      ImGui::Separator();
+      if (ImGui::MenuItem("Cut", "CTRL+X")) {}
+      if (ImGui::MenuItem("Copy", "CTRL+C")) {}
+      if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+      ImGui::EndMenu();
+    }
 
+    ImGui::EndMainMenuBar();
+  }
 
-// }
+  // draw_save_modal(show_save_modal, scene);
+  // draw_load_modal(show_load_modal, scene);
+}
