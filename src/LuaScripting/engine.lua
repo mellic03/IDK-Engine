@@ -2,7 +2,7 @@ local lpath = "src/LuaScripting/"
 
 local this = { };
 
-  this.vector = require(lpath .. "engine/vector");
+  this.vector = require(lpath .. "engine/vector/vector");
 
 
   this.tableLength = function (table)

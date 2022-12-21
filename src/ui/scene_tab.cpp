@@ -35,7 +35,7 @@ void draw_properties_menu(Scene *scene, SceneGraph *handler, int selected_instan
   ImGui::Text("navigation_state:    %s", object->navStateString().c_str());
   ImGui::Text("has collision mesh:  %s", object->hasCollisionMesh() ? "true": "false");
 
-  ImGui::Text("\nLua access: worldData.attribute[%d]", selected_instance);
+  ImGui::Text("\nLua access: worldData.attribute[%d]", selected_instance + 1);
 
 
 
