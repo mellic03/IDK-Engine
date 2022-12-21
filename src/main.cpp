@@ -72,6 +72,12 @@ int ENTRY(int argc, char **argv)
   SDL_Event event;
 
 
+  luaTest();
+
+
+
+
+
   // RENDERER SETUP
   //----------------------------------------
   Renderer ren;
@@ -113,7 +119,10 @@ int ENTRY(int argc, char **argv)
   ImGui::StyleColorsDark();
   ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
   ImGui_ImplOpenGL3_Init("#version 330");
+  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
   //----------------------------------------
+
+
 
 
   // RENDER LOOP

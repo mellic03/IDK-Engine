@@ -15,6 +15,8 @@ class SceneGraph {
 
   public:
 
+    int m_selected_instance = 0;
+
     std::list<Model> m_models;
 
     std::vector<GameObject> m_object_templates;

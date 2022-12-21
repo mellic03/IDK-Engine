@@ -221,6 +221,7 @@ void draw_render_tab(Renderer *ren)
       ImGui::DragScalar("", ImGuiDataType_Float, &ren->image_kernel[3*row+2], 1.0f, 0);
       ImGui::PopID();
     }
+    ImGui::EndTable();
   }
 
   if (ImGui::Button("Invert"))
@@ -235,7 +236,6 @@ void draw_render_tab(Renderer *ren)
     ren->image_kernel[4] = 1.0f;
   }
 
-  ImGui::EndTable();
   ImGui::DragScalar("Divisor", ImGuiDataType_Float, &ren->kernel_divisor, 1.0f, NULL);
   ImGui::DragScalar("Pixel offset divisor", ImGuiDataType_Float, &ren->kernel_offset_divisor, 1.0f, NULL);
 
@@ -250,102 +250,89 @@ void draw_physics_tab(Renderer *ren)
   ImGui::Checkbox("Fly", &fly);
 }
 
+char script_buffer[1024];
+
 void draw_dev_ui(Renderer *ren, Scene *scene, int *x, int *y, int *w, int *h)
 {
-  // draw_main_menu_bar(ren, scene);
+  draw_main_menu_bar(ren, scene);
 
-  ImGuiWindowFlags flags = 0;
-  flags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-  flags |= ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoFocusOnAppearing;
-  flags |= ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_MenuBar;
-  flags |= ImGuiWindowFlags_NoTitleBar;
+  ImGuiInputTextFlags scriptflags = 0;
+  scriptflags |= ImGuiInputTextFlags_AllowTabInput;
+
+  ImGuiWindowFlags windowflags = 0;
+  windowflags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+  windowflags |= ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoFocusOnAppearing;
+  windowflags |= ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_MenuBar;
+  windowflags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBringToFrontOnFocus;
 
   ImGui::SetNextWindowPos({0, 0});
   ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
 
-  ImGui::Begin("Root", NULL, flags);
-
-  static ImGuiTableFlags tableflags = ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_ContextMenuInBody;
-  if (ImGui::BeginTable("table1", 3, tableflags))
+  ImGui::Begin("Root", NULL, windowflags);
   {
-    ImGui::TableNextRow();
-
-      ImGui::TableSetColumnIndex(0);
-      {
-        if (ImGui::Button("Demo Window"))
-          show = !show;
-        if (show)
-          ImGui::ShowDemoWindow(&show);
-
-        if (ImGui::BeginTabBar("TabBar", 0))
-        {
-          if (ImGui::BeginTabItem("Scene"))
-          {
-            draw_scene_tab(ren, scene);
-            ImGui::EndTabItem();
-          }
-
-          if (ImGui::BeginTabItem("Lighting"))
-          {
-            draw_lighting_tab(ren);
-            ImGui::EndTabItem();
-          }
-          if (ImGui::BeginTabItem("Render"))
-          {
-            draw_render_tab(ren);
-            ImGui::EndTabItem();
-          }
-          if (ImGui::BeginTabItem("Physics"))
-          {
-            draw_physics_tab(ren);
-            ImGui::EndTabItem();
-          }
-          ImGui::EndTabBar();
-        }
-      }
+    ImGui::DockSpace(ImGui::GetID("dock"));
 
 
-      ImGui::TableSetColumnIndex(1);
-      {
+    ImGui::Begin("Scene");
+    {
+      if (ImGui::Button("Demo Window"))
+        show = !show;
+      if (show)
+        ImGui::ShowDemoWindow(&show);
+
+      draw_scene_tab(ren, scene, &scene->m_scenegraph->m_selected_instance);
+
+      ImGui::End();
+    }
+
+    ImGui::Begin("Properties");
+    {
+      draw_properties_menu(scene, scene->m_scenegraph, scene->m_scenegraph->m_selected_instance);
+      ImGui::End();
+    }
+
+    ImGui::Begin("Lighting");
+    {
+      draw_lighting_tab(ren);
+      ImGui::End();
+    }
+  
+    ImGui::Begin("Render");
+    {
+      draw_render_tab(ren);
+      ImGui::End();
+    }
+
+    ImGui::Begin("Physics");
+    {
+      draw_physics_tab(ren);
+      ImGui::End();
+    }
 
 
-        // *x = 0;//(int)ImGui::GetCursorPosX();
-        // *y = 0;//(int)ImGui::GetWindowPos().y;
-        *w = (int)ImGui::GetContentRegionAvail().x;
-        *h = (int)ImGui::GetContentRegionAvail().y;
-
-        ImVec2 viewportsize = ImGui::GetContentRegionAvail();
-
-        if (ren->viewport_width != *w || ren->viewport_height != *h)
-          ren->resize(*w, *h);
+    ImGui::Begin("Scripting");
+    {
+      ImGui::InputTextMultiline("Script", script_buffer, 1024, ImGui::GetContentRegionAvail(), scriptflags);
+      ImGui::End();
+    }
 
 
-        // ren->viewport_width = *w;
-        // ren->viewport_height = *h;
+    ImGui::Begin("Viewport");
+    {
+      *w = (int)ImGui::GetContentRegionAvail().x;
+      *h = (int)ImGui::GetContentRegionAvail().y;
 
-        // printf("x: %d, y: %d, w: %d, h: %d\n", *x, *y, *w, *h);
+      ImVec2 viewportsize = ImGui::GetContentRegionAvail();
 
-        ImGui::Image((ImTextureID)ren->colorBuffers[0], ImGui::GetContentRegionAvail(), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+      if (ren->viewport_width != *w || ren->viewport_height != *h)
+        ren->resize(*w, *h);
 
-      }
-
-      ImGui::TableSetColumnIndex(2);
-      {
-        
-      }
+      ImGui::Image((ImTextureID)ren->colorBuffers[0], ImGui::GetContentRegionAvail(), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+  
+      ImGui::End();
+    }
 
 
-    ImGui::EndTable();
+    ImGui::End();
   }
-
-
-
-
-
-
-
-
-
-  ImGui::End();
-
 }

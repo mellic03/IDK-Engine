@@ -16,5 +16,6 @@ void import_lighting_config(Renderer *ren);
 
 // Scene tab
 //----------------------------------------------------------------------------------
-void draw_scene_tab(Renderer *ren, Scene *scene);
+void draw_scene_tab(Renderer *ren, Scene *scene, int *selected_instance);
+void draw_properties_menu(Scene *scene, SceneGraph *handler, int selected_instance);
 //----------------------------------------------------------------------------------

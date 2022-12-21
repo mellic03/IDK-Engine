@@ -10,13 +10,9 @@ local worldData = {
 engine.worldDataInit(worldData);
 ----------------------------------------
 
-for i, vec in pairs(worldData.positions) do
-  vec.x = math.random();
-  vec.y = math.random();
-  vec.z = math.random();
-end
 
-Scripts = { "default" };
+Scripts      = { "default" };
+ObjInstances = { 3 };
 
 for i = 1, engine.tableLength(Scripts), 1 do
 
@@ -27,7 +23,7 @@ for i = 1, engine.tableLength(Scripts), 1 do
   
   if (fh ~= nil)
     then
-      require(modulepath).main(worldData);
+      require(modulepath).main(worldData, ObjInstances[i]);
       io.close(fh);
     
     else

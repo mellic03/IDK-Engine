@@ -2,7 +2,7 @@
 #include "../include/imgui/imgui_stdlib.h"
 
 
-static void draw_transform_menu(Scene *scene, SceneGraph *handler, int selected_instance)
+void draw_properties_menu(Scene *scene, SceneGraph *handler, int selected_instance)
 {
   if (handler->m_object_instances.size() == 0)
     return;
@@ -153,13 +153,12 @@ static void draw_entity_childnodes(SceneGraph *scenegraph, GameObject *object, i
 }
 
 
-void draw_scene_tab(Renderer *ren, Scene *scene)
+void draw_scene_tab(Renderer *ren, Scene *scene, int *selected_instance)
 {
-  static int selected_instance = 0;
 
   ImGui::BeginChild("entity-child", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - 50), false, 0);
   {
-    ImGui::BeginChild("ChildL", ImVec2(ImGui::GetContentRegionAvail().x/3, 0), false, 0);
+    // ImGui::BeginChild("ChildL", ImVec2(ImGui::GetContentRegionAvail().x/3, 0), false, 0);
     {
       if (ImGui::TreeNodeEx("Scene Hierarchy", ImGuiTreeNodeFlags_DefaultOpen))
       {
@@ -169,30 +168,30 @@ void draw_scene_tab(Renderer *ren, Scene *scene)
           {
             IM_ASSERT(payload->DataSize == sizeof(int));
             int selectedobj = *(int *)payload->Data;
-            scene->m_scenegraph->objectPtr(selected_instance)->clearParent();
+            scene->m_scenegraph->objectPtr(*selected_instance)->clearParent();
           }
           ImGui::EndDragDropTarget();
         }
 
         for (auto &object: scene->m_scenegraph->m_object_instances)
           if (object.hasParent() == false)
-            draw_entity_childnodes(scene->m_scenegraph, &object, &selected_instance);
+            draw_entity_childnodes(scene->m_scenegraph, &object, selected_instance);
 
         ImGui::TreePop();
       }
 
-      ImGui::EndChild();
+      // ImGui::EndChild();
     }
 
     ImGui::SameLine();
 
-    ImGui::BeginChild("ChildR", ImVec2(ImGui::GetContentRegionAvail().x, 0), true, 0);
-    {
-      draw_transform_menu(scene, scene->m_scenegraph, selected_instance);  
-      ImGui::EndChild();
-    }
+    // ImGui::BeginChild("ChildR", ImVec2(ImGui::GetContentRegionAvail().x, 0), true, 0);
+    // {
+    //   draw_properties_menu(scene, scene->m_scenegraph, *selected_instance);  
+    //   ImGui::EndChild();
+    // }
 
     ImGui::EndChild();
   }
-  draw_new_instance_menu(scene->m_scenegraph, &selected_instance);
+  draw_new_instance_menu(scene->m_scenegraph, selected_instance);
 }
