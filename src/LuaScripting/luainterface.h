@@ -4,6 +4,7 @@
 #include <lua.hpp>
 #include <LuaCpp.hpp>
 
+#include "../GameEngine/GameEngine.h"
 #include "../include/glm/glm.hpp"
 
 using namespace LuaCpp;
@@ -28,6 +29,12 @@ namespace LuaInterface {
   extern std::unique_ptr<LuaState> L;
 
   extern std::vector<TableReference> table_references;
+
+
+  extern std::vector<int> IDs;
+  extern std::vector<std::string> scripts;
+  extern std::vector<glm::vec3> positions;
+  extern std::vector<glm::vec3> velocities;
   //--------------------------------------------------
 
 
@@ -37,7 +44,9 @@ namespace LuaInterface {
   //--------------------------------------------------
   void compile(void);
   void begin(void);
+  void sendVectors(void);
   void execute(void);
+  void retrieveVectors(void);
   LuaTTable *tablePtr(std::string name);
   //--------------------------------------------------
 
@@ -46,12 +55,16 @@ namespace LuaInterface {
   // Namespaces
   //--------------------------------------------------
   namespace ToLua {
+    void stdvec_int(std::vector<int> vecOfInt, std::string name);
+    void stdvec_stdstring(std::vector<std::string> vecOfString, std::string name);
     void stdvec_vec3(std::vector<glm::vec3> vecOfVec3, std::string name);
+    void gameobject(GameObject *object, int objectID);
   };
 
 
   namespace ToCPP {
     void stdvec_vec3(std::vector<glm::vec3> *vec, std::string name);
+    void gameobject(GameObject *object, int objectID);
   };
   //--------------------------------------------------
 

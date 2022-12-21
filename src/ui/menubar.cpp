@@ -12,13 +12,13 @@ void draw_directory(fs::path pth, fs::path *selected_filepath)
   {
     if (dir_entry.path().has_extension())
     {
-      ImGui::Text(dir_entry.path().filename().c_str());
+      ImGui::Text((const char *)dir_entry.path().filename().c_str());
       if (ImGui::IsItemClicked())
         *selected_filepath = dir_entry.path();
       continue;  
     }
     
-    if (ImGui::TreeNode(dir_entry.path().filename().c_str()))
+    if (ImGui::TreeNode((const char *)dir_entry.path().filename().c_str()))
     {
       draw_directory(pth / dir_entry.path(), selected_filepath);
       ImGui::TreePop();

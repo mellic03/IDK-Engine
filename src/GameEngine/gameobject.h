@@ -58,6 +58,7 @@ class GameObject {
 
     std::string m_given_name = "DEFAULT";
     std::string m_interactivity = "DEFAULT";
+    std::string m_script_name = "default";
 
     float m_sphere_collider_radius = 1.0f;
 

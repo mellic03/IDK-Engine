@@ -11,9 +11,6 @@ engine.worldDataInit(worldData);
 ----------------------------------------
 
 
-Scripts      = { "default" };
-ObjInstances = { 3 };
-
 for i = 1, engine.tableLength(Scripts), 1 do
 
   local modulepath = lpath .. "scripts/" .. Scripts[i];
@@ -23,7 +20,7 @@ for i = 1, engine.tableLength(Scripts), 1 do
   
   if (fh ~= nil)
     then
-      require(modulepath).main(worldData, ObjInstances[i]);
+      require(modulepath).main(worldData, IDs[i]);
       io.close(fh);
     
     else

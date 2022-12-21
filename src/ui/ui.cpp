@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "ui.h"
 
+#include <fstream>
+#include <sstream>
 
 int selected_dirlight = 0;    const char *dir_options[4] = {"1"};
 int selected_pointlight = 0;  const char *point_options[4] = {"1", "2", "3", "4"};
@@ -251,6 +253,7 @@ void draw_physics_tab(Renderer *ren)
 }
 
 char script_buffer[1024];
+bool first = true;
 
 void draw_dev_ui(Renderer *ren, Scene *scene, int *x, int *y, int *w, int *h)
 {
@@ -267,6 +270,23 @@ void draw_dev_ui(Renderer *ren, Scene *scene, int *x, int *y, int *w, int *h)
 
   ImGui::SetNextWindowPos({0, 0});
   ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+
+  if (first)
+  {
+    
+    std::ifstream fh;
+    fh.open("src/LuaScripting/scripts/default.lua");
+
+
+    std::string raw_file = "";
+    std::string line;
+    while (getline(fh, line))
+      raw_file += line + "\n";
+
+    strcpy(script_buffer, raw_file.c_str());
+
+    first = false;
+  }
 
   ImGui::Begin("Root", NULL, windowflags);
   {

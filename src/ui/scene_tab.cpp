@@ -11,6 +11,8 @@ void draw_properties_menu(Scene *scene, SceneGraph *handler, int selected_instan
 
   ImGui::InputText("Name", &object->m_given_name);
 
+  ImGui::InputText("Script", &object->m_script_name);
+
   ImGui::Separator();
 
   ImGui::Text("Transform");
@@ -32,6 +34,11 @@ void draw_properties_menu(Scene *scene, SceneGraph *handler, int selected_instan
   ImGui::Text("physics_state:       %s", object->physStateString().c_str());
   ImGui::Text("navigation_state:    %s", object->navStateString().c_str());
   ImGui::Text("has collision mesh:  %s", object->hasCollisionMesh() ? "true": "false");
+
+  ImGui::Text("\nLua access: worldData.attribute[%d]", selected_instance);
+
+
+
 
   // if (object->isNPC())
   //   if (ImGui::Button("Seek Player"))

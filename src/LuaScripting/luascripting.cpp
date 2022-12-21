@@ -41,6 +41,35 @@ void luaTest(void)
   for (auto &vec: velocities)
     printf("vel (post-lua): %f %f %f\n", vec.x, vec.y, vec.z);
 
-
 }
+
+
+void luaInit(void)
+{
+  LuaInterface::compile();
+}
+
+void luaMain(std::list<GameObject> *gameobjects)
+{
+  LuaInterface::begin();
+
+  auto element = gameobjects->begin();
+  for (int i=0; i<gameobjects->size(); i++)
+  {
+    LuaInterface::ToLua::gameobject(&*element, (*element).getID());
+    element = std::next(element);
+  }
+
+  LuaInterface::sendVectors();
+  LuaInterface::execute();
+  LuaInterface::retrieveVectors();
+
+  element = gameobjects->begin();
+  for (int i=0; i<gameobjects->size(); i++)
+  {
+    LuaInterface::ToCPP::gameobject(&*element, (*element).getID());
+    element = std::next(element);
+  }
+}
+
 

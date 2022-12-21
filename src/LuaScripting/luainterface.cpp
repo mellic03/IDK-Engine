@@ -6,6 +6,10 @@ std::unique_ptr<LuaState> LuaInterface::L;
 
 std::vector<LuaInterface::TableReference> LuaInterface::table_references;
 
+std::vector<int> LuaInterface::IDs;
+std::vector<std::string> LuaInterface::scripts;
+std::vector<glm::vec3> LuaInterface::positions;
+std::vector<glm::vec3> LuaInterface::velocities;
 
 
 LuaTTable *LuaInterface::tablePtr(std::string name)
@@ -23,7 +27,20 @@ void LuaInterface::compile(void)
 
 void LuaInterface::begin(void)
 {
+  LuaInterface::IDs.clear();
+  LuaInterface::scripts.clear();
+  LuaInterface::positions.clear();
+  LuaInterface::velocities.clear();
+
   LuaInterface::L = LuaInterface::context.newStateFor("main");
+}
+
+void LuaInterface::sendVectors(void)
+{
+  LuaInterface::ToLua::stdvec_int(LuaInterface::IDs, "IDs");
+  LuaInterface::ToLua::stdvec_stdstring(LuaInterface::scripts, "Scripts");
+  LuaInterface::ToLua::stdvec_vec3(LuaInterface::positions, "Positions");
+  LuaInterface::ToLua::stdvec_vec3(LuaInterface::velocities, "Velocities");
 }
 
 void LuaInterface::execute(void)
@@ -31,9 +48,37 @@ void LuaInterface::execute(void)
 	int res = lua_pcall(*L, 0, LUA_MULTRET, 0);
 }
 
+void LuaInterface::retrieveVectors(void)
+{
+  LuaInterface::ToCPP::stdvec_vec3(&LuaInterface::positions, "Positions");
+  LuaInterface::ToCPP::stdvec_vec3(&LuaInterface::velocities, "Velocities");
+}
 
 
+void LuaInterface::ToLua::stdvec_int(std::vector<int> vecOfInt, std::string name)
+{
+  LuaTTable table;
 
+  for (int i=0; i<vecOfInt.size(); i++)
+    table.setValue(Table::Key(i + 1), std::make_shared<LuaTNumber>(vecOfInt[i] + 1));
+
+  table.PushGlobal(*LuaInterface::L, name);
+
+  table_references.push_back( { name, table } );
+}
+
+
+void LuaInterface::ToLua::stdvec_stdstring(std::vector<std::string> vecOfString, std::string name)
+{
+  LuaTTable table;
+
+  for (int i=0; i<vecOfString.size(); i++)
+    table.setValue(Table::Key(i + 1), std::make_shared<LuaTString>(vecOfString[i]));
+
+  table.PushGlobal(*LuaInterface::L, name);
+
+  table_references.push_back( { name, table } );
+}
 
 void LuaInterface::ToLua::stdvec_vec3(std::vector<glm::vec3> vecOfVec3, std::string name)
 {
@@ -76,3 +121,18 @@ void LuaInterface::ToCPP::stdvec_vec3(std::vector<glm::vec3> *vecOfVec3, std::st
   }
 }
 
+
+void LuaInterface::ToLua::gameobject(GameObject *object, int objectID)
+{
+  LuaInterface::IDs.push_back(objectID);
+  LuaInterface::scripts.push_back(object->m_script_name);
+  LuaInterface::positions.push_back(*object->getPos());
+  LuaInterface::velocities.push_back(*object->getVel());
+}
+
+
+
+void LuaInterface::ToCPP::gameobject(GameObject *object, int objectID)
+{
+  *object->getPos() = LuaInterface::positions[objectID];
+}

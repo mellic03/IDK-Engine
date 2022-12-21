@@ -72,9 +72,7 @@ int ENTRY(int argc, char **argv)
   SDL_Event event;
 
 
-  luaTest();
-
-
+  luaInit();
 
 
 
@@ -263,6 +261,8 @@ int ENTRY(int argc, char **argv)
     SDL_GL_SwapWindow(window);
     double dtime_milliseconds = ((end - start)*1000 / (double)SDL_GetPerformanceFrequency() );
     ren.deltaTime = dtime_milliseconds / 1000;
+
+    luaMain(&scenegraph.m_object_instances);
 
   }
   //----------------------------------------
