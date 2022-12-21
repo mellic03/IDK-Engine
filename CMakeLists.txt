@@ -14,7 +14,7 @@ project(game)
 add_subdirectory (external)
 include_directories(
   external/glew-2.1.0/include/
-  external/luacpp/Source/
+  external/luacpp/
 )
 
 set(ALL_LIBS
@@ -44,9 +44,9 @@ file(
   "src/scene/*.cpp"
   "src/LuaScripting/*.cpp"
 
-  "external/luacpp/Source/*.cpp"
-  "external/luacpp/Source/Engine/*.cpp"
-  "external/luacpp/Source/Registry/*.cpp"
+  "external/luacpp/*.cpp"
+  "external/luacpp/Engine/*.cpp"
+  "external/luacpp/Registry/*.cpp"
 )
 
 
