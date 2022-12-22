@@ -92,21 +92,21 @@ void LuaContext::CompileFolder(const std::string &path, const std::string &prefi
 }
 
 void LuaContext::CompileFolder(const std::string &path, const std::string &prefix, bool recompile) {
-	for (const auto &entry : std::filesystem::directory_iterator(path)) {
-		if (entry.is_regular_file()){
-			std::filesystem::path path = entry.path();
-			if (path.extension() == ".lua") {
-				try {
-					if (prefix == "") {
-						CompileFile(path.stem().native() ,path, recompile);
-					} else {
-						CompileFile(prefix+"."+path.stem().native() ,path, recompile);
-					}
-				} catch (std::logic_error &e) {
-				}
-			}
-		}
-	}
+	// for (const auto &entry : std::filesystem::directory_iterator(path)) {
+	// 	if (entry.is_regular_file()){
+	// 		std::filesystem::path path = entry.path();
+	// 		if (path.extension() == ".lua") {
+	// 			try {
+	// 				if (prefix == "") {
+	// 					CompileFile(path.stem().native() ,path, recompile);
+	// 				} else {
+	// 					CompileFile(prefix+"."+path.stem().native() ,path, recompile);
+	// 				}
+	// 			} catch (std::logic_error &e) {
+	// 			}
+	// 		}
+	// 	}
+	// }
 }
 
 void LuaContext::CompileStringAndRun(const std::string &code) {
