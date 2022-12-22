@@ -263,12 +263,12 @@ void Model::applyMeshTransforms(rapidxml::xml_document<> *doc)
     glm::mat4 mat = parseArray_mat4(node->first_node("matrix")->value());
 
     std::string id = node->first_node("instance_geometry")->first_attribute("url")->value();
+    std::cout << id << std::endl;
     Mesh *mesh = this->meshPtr(id);
     mesh->transformByMatrix(mat);
 
     node = node->next_sibling();
   }
-
 }
 
 

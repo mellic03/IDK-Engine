@@ -10,16 +10,16 @@ void draw_properties_menu(Scene *scene, SceneGraph *handler, int selected_instan
   GameObject *object = handler->objectPtr(selected_instance);
 
   ImGui::InputText("Name", &object->m_given_name);
-
-  ImGui::InputText("Script", &object->m_script_name);
-
   ImGui::Separator();
-
+  
   ImGui::Text("Transform");
   ImGui::Separator();
-  ImGui::DragFloat3("Position", &object->getPos()->x, 0.01f, 0, 0, "%0.01f", 0);
-  ImGui::DragFloat3("Velocity", &object->getVel()->x, 0.01f, 0, 0, "%0.01f", 0);
-  ImGui::DragFloat3("Rotation", &object->getRot()->x, 0.1f,  0, 0, "%0.1f", 0);
+  ImGui::Text("Position"); ImGui::SameLine();
+  ImGui::DragFloat3("##1", &object->getPos()->x, 0.01f, 0, 0, "%0.01f", 0);
+  ImGui::Text("Velocity"); ImGui::SameLine();
+  ImGui::DragFloat3("##2", &object->getVel()->x, 0.01f, 0, 0, "%0.01f", 0);
+  ImGui::Text("Rotation"); ImGui::SameLine();
+  ImGui::DragFloat3("##3", &object->getRot()->x, 0.1f,  0, 0, "%0.1f", 0);
 
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
   ImGui::Text("Other Stuff");
@@ -35,8 +35,23 @@ void draw_properties_menu(Scene *scene, SceneGraph *handler, int selected_instan
   ImGui::Text("navigation_state:    %s", object->navStateString().c_str());
   ImGui::Text("has collision mesh:  %s", object->hasCollisionMesh() ? "true": "false");
 
-  ImGui::Text("\nLua access: worldData.attribute[%d]", selected_instance + 1);
+  ImGui::Dummy(ImVec2(0.0f, 20.0f));
+  ImGui::Text("Scripting");
+  ImGui::Separator();
+  ImGui::InputText("Script", &object->m_script_name);
 
+  ImGui::Text("\nLua access: worldData.attribute[%d]", selected_instance + 1);
+  std::filesystem::path selected_path;
+  bool changed = false;
+
+  draw_directory_recursive(fs::current_path()/"LuaScripting/scripts", &selected_path, &changed);
+  if (changed)
+  {
+    fs::path filepath = fs::relative(selected_path, ".");
+
+    object->m_script_name = filepath.string();
+    object->m_script_name.erase(object->m_script_name.size() - 4);
+  }
 
 
 

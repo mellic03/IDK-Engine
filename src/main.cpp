@@ -68,16 +68,12 @@ int ENTRY(int argc, char **argv)
   glEnable(GL_CULL_FACE);
   // glEnable(GL_MULTISAMPLE);
 
-
   SDL_Event event;
-
-
-  luaInit();
-
 
 
   // RENDERER SETUP
   //----------------------------------------
+  luaInit();
   Renderer ren;
   Player player(&ren);
 
@@ -94,7 +90,7 @@ int ENTRY(int argc, char **argv)
   scenegraph.loadObject("assets/environment/terrain0/");
   scenegraph.loadObject("assets/environment/terrain1/");
   scenegraph.loadObject("assets/npc/muscleskele/");
-
+  scenegraph.loadObject("assets/npc/fren/");
 
 
   Model sphere;  sphere.loadDae("assets/misc/sphere/", "sphere.dae");  
@@ -118,6 +114,7 @@ int ENTRY(int argc, char **argv)
   ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
   ImGui_ImplOpenGL3_Init("#version 330");
   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+  io.Fonts->AddFontFromFileTTF("./src/ui/fonts/OpenSans-VariableFont_wdth,wght.ttf", 18.0f);
   //----------------------------------------
 
 
@@ -261,7 +258,7 @@ int ENTRY(int argc, char **argv)
     double dtime_milliseconds = ((end - start)*1000 / (double)SDL_GetPerformanceFrequency() );
     ren.deltaTime = dtime_milliseconds / 1000;
 
-    luaMain(&scenegraph.m_object_instances);
+    luaMain(&ren, &scenegraph.m_object_instances);
   }
   //----------------------------------------
 

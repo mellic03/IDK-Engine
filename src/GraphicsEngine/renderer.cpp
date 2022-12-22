@@ -358,11 +358,19 @@ void Renderer::sendLightsToShader(void)
 
 void Renderer::resize(int x, int y)
 {
+  glDeleteTextures(1, &this->colorBuffers[0]);
+  glDeleteRenderbuffers(1, &this->rbo);
+  glDeleteFramebuffers(1, &this->FBO);
+
+  glDeleteTextures(1, &this->screenColorBuffers[0]);
+  glDeleteRenderbuffers(1, &this->screenRBO);
+  glDeleteFramebuffers(1, &this->screenFBO);
+
   glGenFramebuffers(1, &this->FBO);
   glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
   glGenTextures(2, this->colorBuffers);
   
-  for (GLuint i=0; i<2; i++)
+  for (GLuint i=0; i<1; i++)
   {
     glBindTexture(GL_TEXTURE_2D, this->colorBuffers[i]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);

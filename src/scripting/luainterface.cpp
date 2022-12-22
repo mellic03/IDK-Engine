@@ -131,7 +131,7 @@ void LuaInterface::ToLua::gameobject(GameObject *object, int objectID)
 {
   LuaInterface::IDs.push_back(objectID);
   LuaInterface::scripts.push_back(object->m_script_name);
-  LuaInterface::positions.push_back(*object->getPos());
+  LuaInterface::positions.push_back(*object->getTransform()->getPos());
   LuaInterface::velocities.push_back(*object->getVel());
 }
 

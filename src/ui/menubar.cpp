@@ -6,25 +6,7 @@
 
 namespace fs = std::filesystem;
 
-void draw_directory(fs::path pth, fs::path *selected_filepath)
-{
-  for (auto const& dir_entry : fs::directory_iterator{pth}) 
-  {
-    if (dir_entry.path().has_extension())
-    {
-      ImGui::Text((const char *)dir_entry.path().filename().c_str());
-      if (ImGui::IsItemClicked())
-        *selected_filepath = dir_entry.path();
-      continue;  
-    }
-    
-    if (ImGui::TreeNode((const char *)dir_entry.path().filename().c_str()))
-    {
-      draw_directory(pth / dir_entry.path(), selected_filepath);
-      ImGui::TreePop();
-    }
-  }
-}
+
 
 
 void draw_save_modal(bool draw, Scene *scene)
@@ -75,7 +57,8 @@ void draw_load_modal(bool draw, Scene *scene)
       static const std::filesystem::path workingdir = fs::current_path();
       std::filesystem::create_directories(workingdir / "assets" / "scenes" );
       static std::filesystem::path scenedir = workingdir / "assets" / "scenes";
-      draw_directory(scenedir, &selected_filepath);
+      bool wee;
+      draw_directory_recursive(scenedir, &selected_filepath, &wee);
 
       ImGui::EndChild();
     }

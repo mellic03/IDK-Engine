@@ -55,6 +55,13 @@ namespace LuaInterface {
   // Namespaces
   //--------------------------------------------------
   namespace ToLua {
+
+    template <typename T> void number(T value, std::string name)
+    {
+      LuaTNumber val(value);
+      val.PushGlobal(*LuaInterface::L, name);
+    }
+
     void stdvec_int(std::vector<int> vecOfInt, std::string name);
     void stdvec_stdstring(std::vector<std::string> vecOfString, std::string name);
     void stdvec_vec3(std::vector<glm::vec3> vecOfVec3, std::string name);
@@ -63,6 +70,14 @@ namespace LuaInterface {
 
 
   namespace ToCPP {
+
+    template <typename T> void number(T value, std::string name)
+    {
+      LuaTNumber val;
+      val.PopGlobal(*LuaInterface::L);
+      return (T)val.getValue();
+    }
+
     void stdvec_vec3(std::vector<glm::vec3> *vec, std::string name);
     void gameobject(GameObject *object, int objectID);
   };

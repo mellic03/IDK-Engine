@@ -14,14 +14,12 @@ local this = { };
 
   this.worldDataInit = function (worldData)
 
-    this.vector.initVectorArray(worldData[1], this.tableLength(worldData[1]));
-    this.vector.initVectorArray(worldData[2], this.tableLength(worldData[2]));
-    
     setmetatable(worldData, {
 
       __index = function (wData, key)
-        if      key == "positions"   then  return wData[1];
-        elseif  key == "velocities"  then  return wData[2];
+        if      key == "deltaTime"   then  return wData[1];
+        elseif  key == "positions"   then  return wData[2];
+        elseif  key == "velocities"  then  return wData[3];
         end;
       end;
 
@@ -41,6 +39,9 @@ local this = { };
 
     });
 
+    this.vector.initVectorArray(worldData.positions,  this.tableLength(worldData.positions));
+    this.vector.initVectorArray(worldData.velocities, this.tableLength(worldData.velocities));
+    
   end;
 
 

@@ -4,8 +4,11 @@
 #include <lua.hpp>
 #include <LuaCpp.hpp>
 
-#include "../GameEngine/GameEngine.h"
 #include "../include/glm/glm.hpp"
+
+#include "../GraphicsEngine/GraphicsEngine.h"
+#include "../GameEngine/GameEngine.h"
+
 #include "luainterface.h"
 
 using namespace LuaCpp;
@@ -20,4 +23,4 @@ using namespace LuaCpp::Engine;
 void luaTest(void);
 
 void luaInit(void);
-void luaMain(std::list<GameObject> *gameobjects);
+void luaMain(Renderer *ren, std::list<GameObject> *gameobjects);

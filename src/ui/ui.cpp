@@ -252,7 +252,7 @@ void draw_physics_tab(Renderer *ren)
   ImGui::Checkbox("Fly", &fly);
 }
 
-char script_buffer[1024];
+char script_buffer[2048];
 bool first = true;
 
 void draw_dev_ui(Renderer *ren, Scene *scene, int *x, int *y, int *w, int *h)
@@ -273,10 +273,8 @@ void draw_dev_ui(Renderer *ren, Scene *scene, int *x, int *y, int *w, int *h)
 
   if (first)
   {
-    
     std::ifstream fh;
-    fh.open("src/LuaScripting/scripts/default.lua");
-
+    fh.open("LuaScripting/scripts/default.lua");
 
     std::string raw_file = "";
     std::string line;
@@ -329,10 +327,40 @@ void draw_dev_ui(Renderer *ren, Scene *scene, int *x, int *y, int *w, int *h)
       ImGui::End();
     }
 
+    static std::filesystem::path selected_path("");
 
-    ImGui::Begin("Scripting");
+    ImGui::Begin("Scripts");
     {
-      ImGui::InputTextMultiline("Script", script_buffer, 1024, ImGui::GetContentRegionAvail(), scriptflags);
+      static bool changed = false;
+      draw_directory_recursive(fs::current_path()/"LuaScripting", &selected_path, &changed);
+      if (changed)
+      {
+        std::ifstream fh;
+        fh.open(fs::relative(selected_path, ".").c_str());
+        std::string raw_file = "";
+        std::string line;
+        while (getline(fh, line))
+          raw_file += line + "\n";
+
+        strcpy(script_buffer, raw_file.c_str());
+
+        changed = false;
+      }
+      ImGui::End();
+    }
+
+    ImGui::Begin("Script editor");
+    {
+      ImGui::InputTextMultiline("Script", script_buffer, 2048, ImVec2(-1, ImGui::GetContentRegionAvail().y-35.0f), scriptflags);
+      
+      if (ImGui::Button("Save"))
+      {
+        std::ofstream fh;
+        fh.open(selected_path.string(), std::ios::out);
+        fh << script_buffer;
+        fh.close();
+      }
+
       ImGui::End();
     }
 
