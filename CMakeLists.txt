@@ -42,7 +42,7 @@ file(
   "src/GameEngine/computemesh/*.cpp"
   "src/ui/*.cpp"
   "src/scene/*.cpp"
-  "src/LuaScripting/*.cpp"
+  "src/scripting/*.cpp"
 
   "external/luacpp/*.cpp"
   "external/luacpp/Engine/*.cpp"
@@ -73,4 +73,4 @@ target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARIES})
 
 
-set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+# set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")

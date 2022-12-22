@@ -1,4 +1,4 @@
-local lpath = "src/LuaScripting/"
+local lpath = "LuaScripting/"
 
 local this = { };
 
@@ -19,21 +19,21 @@ local this = { };
     
     setmetatable(worldData, {
 
-      __index = function (worldData, key)
-        if      key == "positions"   then  return worldData[1];
-        elseif  key == "velocities"  then  return worldData[2];
+      __index = function (wData, key)
+        if      key == "positions"   then  return wData[1];
+        elseif  key == "velocities"  then  return wData[2];
         end;
       end;
 
-      __tostring = function (worldData)
+      __tostring = function (wData)
         print("POSITIONS");
-        for i, vec in pairs(worldData.positions) do
+        for i, vec in pairs(wData.positions) do
           print(i..": ", vec.x, vec.y, vec.z);
         end;
         print("");
       
         print("VELOCITIES");
-        for i, vec in pairs(worldData.velocities) do
+        for i, vec in pairs(wData.velocities) do
           print(i..": ", vec.x, vec.y, vec.z);
         end;
         print("");

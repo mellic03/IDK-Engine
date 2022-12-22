@@ -1,5 +1,6 @@
-local lpath = "src/LuaScripting/";
-local engine = require(lpath .. "/engine");
+local lpath = "LuaScripting/";
+local engine = require(lpath .. "engine");
+
 
 
 -- External variables provided by engine
@@ -11,6 +12,7 @@ engine.worldDataInit(worldData);
 ----------------------------------------
 
 
+
 for i = 1, engine.tableLength(Scripts), 1 do
 
   local modulepath = lpath .. "scripts/" .. Scripts[i];
@@ -20,7 +22,7 @@ for i = 1, engine.tableLength(Scripts), 1 do
   
   if (fh ~= nil)
     then
-      require(modulepath).main(worldData, IDs[i]);
+      require(modulepath)(worldData, IDs[i]);
       io.close(fh);
     
     else

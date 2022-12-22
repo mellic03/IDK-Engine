@@ -26,7 +26,7 @@
 #include "ui/ui.h"
 #include "scene/scene.h"
 
-#include "LuaScripting/luascripting.h"
+#include "scripting/luascripting.h"
 
 
 

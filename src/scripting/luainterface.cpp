@@ -22,7 +22,7 @@ LuaTTable *LuaInterface::tablePtr(std::string name)
 
 void LuaInterface::compile(void)
 {
-	LuaInterface::context.CompileFile("main", "./src/LuaScripting/main.lua");
+	LuaInterface::context.CompileFile("main", "./LuaScripting/main.lua");
 }
 
 void LuaInterface::begin(void)
@@ -93,7 +93,6 @@ void LuaInterface::ToLua::stdvec_vec3(std::vector<glm::vec3> vecOfVec3, std::str
 
     table.setValue(Table::Key(i + 1), std::make_shared<LuaTTable>(vec));
   }
-
   table.PushGlobal(*LuaInterface::L, name);
 
   table_references.push_back( { name, table } );
