@@ -32,7 +32,7 @@ void LuaInterface::begin(void)
   LuaInterface::positions.clear();
   LuaInterface::velocities.clear();
 
-  LuaInterface::L = LuaInterface::context.newStateFor("main");
+	L = context.newStateFor("main");
 }
 
 void LuaInterface::sendVectors(void)
@@ -46,6 +46,9 @@ void LuaInterface::sendVectors(void)
 void LuaInterface::execute(void)
 {
 	int res = lua_pcall(*L, 0, LUA_MULTRET, 0);
+  if (res != LUA_OK ) {
+		std::cout << "Error Executing " << res << " " << lua_tostring(*L, 1) << std::endl;	
+	}
 }
 
 void LuaInterface::retrieveVectors(void)

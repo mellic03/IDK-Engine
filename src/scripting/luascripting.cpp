@@ -49,8 +49,10 @@ void luaInit(void)
   LuaInterface::compile();
 }
 
+
 void luaMain(std::list<GameObject> *gameobjects)
 {
+
   LuaInterface::begin();
 
   auto element = gameobjects->begin();
@@ -71,5 +73,4 @@ void luaMain(std::list<GameObject> *gameobjects)
     element = std::next(element);
   }
 }
-
 

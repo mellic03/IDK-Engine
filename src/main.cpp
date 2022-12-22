@@ -140,7 +140,6 @@ int ENTRY(int argc, char **argv)
 
 
   int count = 0;
-
   Uint64 start = SDL_GetPerformanceCounter(), end = SDL_GetPerformanceCounter();
   while (1)
   {
@@ -263,7 +262,6 @@ int ENTRY(int argc, char **argv)
     ren.deltaTime = dtime_milliseconds / 1000;
 
     luaMain(&scenegraph.m_object_instances);
-
   }
   //----------------------------------------
 
