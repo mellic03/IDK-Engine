@@ -6,7 +6,7 @@ mingw32-make
 
 cd ..
 
-copy build\game.exe output\game.exe
+copy build\CoomEngine.exe output\CoomEngine.exe
 xcopy assets output\assets\ /E /Y
 copy config.txt output\config.txt
 copy imgui.ini output\imgui.ini

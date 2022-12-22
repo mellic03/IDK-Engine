@@ -12,7 +12,7 @@ void draw_directory_recursive(fs::path pth, fs::path *selected_filepath, bool *c
     if (dir_entry.path().has_extension())
       continue;
 
-    if (ImGui::TreeNode(dir_entry.path().filename().c_str()))
+    if (ImGui::TreeNode(dir_entry.path().filename().string().c_str()))
     {
       draw_directory_recursive(pth / dir_entry.path(), selected_filepath, changed);
       ImGui::TreePop();
@@ -25,7 +25,7 @@ void draw_directory_recursive(fs::path pth, fs::path *selected_filepath, bool *c
     {
       bool s = (dir_entry.path().compare(*selected_filepath) == 0);
 
-      ImGui::Selectable(dir_entry.path().filename().c_str(), &s);
+      ImGui::Selectable(dir_entry.path().filename().string().c_str(), &s);
       if (ImGui::IsItemClicked())
       {
         *selected_filepath = dir_entry.path();
