@@ -8,7 +8,7 @@ add_compile_options(
 
 set (CMAKE_CXX_FLAGS "-lstdc++fs -std=c++17")
 
-project(game)
+project(CoomEngine)
 
 
 add_subdirectory (external)
@@ -73,4 +73,3 @@ target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARIES})
 
 
-# set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")

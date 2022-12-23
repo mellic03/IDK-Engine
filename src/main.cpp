@@ -43,7 +43,7 @@ int ENTRY(int argc, char **argv)
   }
 
   window = SDL_CreateWindow(
-    "Test OpenGL",
+    "Coom Engine",
     SDL_WINDOWPOS_CENTERED,
     SDL_WINDOWPOS_CENTERED,
     DEFAULT_SCREEN_WIDTH,
@@ -114,7 +114,7 @@ int ENTRY(int argc, char **argv)
   ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
   ImGui_ImplOpenGL3_Init("#version 330");
   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-  io.Fonts->AddFontFromFileTTF("./src/ui/fonts/OpenSans-VariableFont_wdth,wght.ttf", 18.0f);
+  io.Fonts->AddFontFromFileTTF("./assets/fonts/OpenSans-VariableFont_wdth,wght.ttf", 18.0f);
   //----------------------------------------
 
 
