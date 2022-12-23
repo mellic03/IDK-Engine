@@ -3,6 +3,7 @@
 #define NUM_SPOTLIGHTS 2
 
 layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 FragColor2;
 
 struct PointLight {
   vec3 pos;
@@ -39,10 +40,8 @@ struct Material {
 };
 uniform Material material;
 
-in vec3 color;
 
 uniform samplerCube depthMap;
-uniform float bias;
 
 
 // Fog
@@ -51,7 +50,6 @@ uniform vec3 clearColor;
 
 
 uniform float far_plane;
-
 
 
 vec4 hash4( vec2 p ) { return fract(sin(vec4( 1.0+dot(p,vec2(37.0,17.0)), 
@@ -98,7 +96,8 @@ vec3 gridSamplingDisk[20] = vec3[]
    vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
 );
 
-float calculate_shadow(vec3 lightPos, vec3 viewPos, vec3 fragPos)
+
+float calculate_shadow(vec3 lightPos, vec3 viewPos, vec3 fragPos, float bias)
 {
   vec3 fragToLight = fragPos - lightPos;
   float currentDepth = length(fragToLight);
@@ -145,12 +144,11 @@ vec3 calculate_pointlight(PointLight light, vec3 normal, vec3 fragPos, vec3 view
   diffuse  *= attenuation;
   specular *= attenuation;
 
-  float shadow = calculate_shadow(light.pos, viewPos, fragPos);
+  float shadow = calculate_shadow(light.pos, viewPos, fragPos, light.bias);
 
   return (ambient + (1.0 - shadow) * (diffuse + specular));
 }
 
-uniform float waa;
 
 vec3 calculate_spotlight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewPos)
 {
@@ -185,6 +183,7 @@ vec3 calculate_spotlight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewPo
   return (ambient + diffuse + specular);
 }
 
+
 void main()
 {
   vec3 normal = texture(material.normalMap, fs_in.TexCoords).rgb;
@@ -206,5 +205,5 @@ void main()
   float fog_factor = (dist - fog_start)/(fog_end-fog_start);
   fog_factor = 1.0 - clamp(fog_factor, 0, 1);
   FragColor = mix(vec4(clearColor, 1.0), FragColor, fog_factor);
-
+  FragColor2 = FragColor;
 }

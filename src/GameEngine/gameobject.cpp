@@ -2,145 +2,70 @@
 
 #include "physics.h"
 
-void GameObject::attemptCollision(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal, float d, bool downwards)
+namespace PE = PhysicsEngine;
+
+bool GameObject::_groundTest(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal)
 {
+  if (glm::dot(ray, normal) > 0)
+    return false;
+
   glm::vec3 intersect_point;
 
-  bool intersects = ray_intersect_triangle(this->pos_worldspace, ray, v0, v1, v2, &intersect_point);
+  bool intersects = PE::ray_intersect_triangle(this->pos_worldspace, ray, v0, v1, v2, &intersect_point);
 
   if (intersects)
   {
     float dist = glm::distance(this->pos_worldspace, intersect_point);
-
-    if (0 < dist && dist < d)
-    {
-      float impulse_1d = calculate_impulse(*this->getVel(), normal, 0.5);
-      glm::vec3 impulse = impulse_1d * normal;
-
-      *this->getVel() += (1.0f) * impulse;
-
-      if (downwards)
-      {
-        float overlap = d - dist;
-        this->getPos()->y += overlap;
-        this->changePhysState(PHYSICS_GROUNDED);
-      }
-
-      else
-      {
-        glm::vec3 v = (d-dist)*ray;
-
-        *this->getPos() = *this->getPos() - this->getTransform()->worldToLocal({v.x, v.y, v.z, 0.0f});
-        // this->pos_worldspace = this->pos_worldspace - (d-dist)*ray;
-      }
-    }
-
-    else if (dist > d && downwards)
-      this->changePhysState(PHYSICS_FALLING);
+    return (0 < dist) && (dist < this->m_sphere_collider_radius * 1.5f);
   }
+
+  return false;
 }
+
 
 void GameObject::collideWithMeshes(void)
 {
-  float nearest_dist = INFINITY;
-  int nearest_i = -1;
-  int nearest_j = -1;
-
   glm::mat4 thismodelmat = this->getTransform()->getModelMatrix();
+  glm::vec3 ray_down  =   glm::vec4( 0.0f, -1.0f,  0.0f,  0.0f);
 
-  glm::vec3 ray_up    =  thismodelmat * glm::vec4( 0.0f, +1.0f,  0.0f,  0.0f);
-  glm::vec3 ray_down  =  thismodelmat * glm::vec4( 0.0f, -1.0f,  0.0f,  0.0f);
-  glm::vec3 ray_left  =  thismodelmat * glm::vec4(-1.0f,  0.0f,  0.0f,  0.0f);
-  glm::vec3 ray_right =  thismodelmat * glm::vec4( 1.0f,  0.0f,  0.0f,  0.0f);
-  glm::vec3 ray_front =  thismodelmat * glm::vec4( 0.0f,  0.0f,  1.0f,  0.0f);
-  glm::vec3 ray_back  =  thismodelmat * glm::vec4( 0.0f,  0.0f, -1.0f,  0.0f);
+  this->changePhysState(PHYSICS_FALLING);
 
-  glm::vec3 ray_traveldir = glm::normalize(*this->getVel());
-
-
-  for (int i=0; i<this->m_collision_meshes.size(); i++)
+  for (int i=0; i<this->_collision_meshes.size(); i++)
   {
-    Mesh *mesh = this->m_collision_meshes[i];
-    glm::mat4 model = this->m_collision_transforms[i].getModelMatrix();
+    CollisionMesh *mesh = this->_collision_meshes[i];
+    glm::mat4 model = this->_collision_transforms[i].getModelMatrix();
 
-    for (int j=0; j<mesh->num_vertices; j+=3)
+    for (int j=0; j<mesh->m_vertices.size(); j+=3)
     {
-      glm::vec3 v0 = mesh->vertices[j+0].position;
-      glm::vec3 v1 = mesh->vertices[j+1].position;
-      glm::vec3 v2 = mesh->vertices[j+2].position;
-      v0 = model * glm::vec4(v0.x, v0.y, v0.z, 1.0f);
-      v1 = model * glm::vec4(v1.x, v1.y, v1.z, 1.0f);
-      v2 = model * glm::vec4(v2.x, v2.y, v2.z, 1.0f);
+      Vertex vert0 = mesh->m_vertices[j+0];
+      Vertex vert1 = mesh->m_vertices[j+1];
+      Vertex vert2 = mesh->m_vertices[j+2];
 
-      glm::vec3 normal = glm::mat3(model) * mesh->vertices[j+2].face_normal;
+      vert0.position = model * glm::vec4(vert0.position.x, vert0.position.y, vert0.position.z, 1.0f);
+      vert0.normal   = model * glm::vec4(vert0.normal.x, vert0.normal.y, vert0.normal.z, 0.0f);
+      vert1.position = model * glm::vec4(vert1.position.x, vert1.position.y, vert1.position.z, 1.0f);
+      vert2.position = model * glm::vec4(vert2.position.x, vert2.position.y, vert2.position.z, 1.0f);
 
-      glm::normalize(normal);
 
-      // Find nearest "down"
-      if (glm::dot(ray_down, normal) <= 0)
-      {
-        glm::vec3 intersect_point;
-        bool intersects = ray_intersect_triangle(this->pos_worldspace, ray_down, v0, v1, v2, &intersect_point);
-        if (intersects)
-        {
-          float dist = glm::distance(this->pos_worldspace, intersect_point);
-          if (dist < nearest_dist)
-          {
-            nearest_dist = dist;
-            nearest_i = i;
-            nearest_j = j;
-          }
-        }
-      }
-
-      if (glm::dot(ray_up, normal) <= 0)
-        this->attemptCollision( ray_up,     v0, v1, v2, normal, this->width, false);
-
-      if (glm::dot(ray_left, normal) <= 0)
-        this->attemptCollision( ray_left,   v0, v1, v2, normal, this->width, false);
-
-      if (glm::dot(ray_right, normal) <= 0)
-        this->attemptCollision( ray_right,  v0, v1, v2, normal, this->width, false);
-
-      if (glm::dot(ray_front, normal) <= 0)
-        this->attemptCollision( ray_front,  v0, v1, v2, normal, this->width, false);
-
-      if (glm::dot(ray_back, normal) <= 0)
-        this->attemptCollision( ray_back,   v0, v1, v2, normal, this->width, false);
-     
-      if (glm::dot(ray_traveldir, normal) <= 0)
-        this->attemptCollision( ray_traveldir,   v0, v1, v2, normal, this->width, false);
+      glm::vec3 dir;
+      bool edge_collision = false;
+      float dist = INFINITY;
+      if (PE::sphere_triangle_detect(this, vert0, vert1, vert2, &dist, &edge_collision, &dir))
+        PE::sphere_triangle_response(this, vert0, vert1, vert2, dist, edge_collision, dir);
+      
+      
+      if (this->getPhysState() == PHYSICS_FALLING)
+        if (this->_groundTest(ray_down, vert0.position, vert1.position, vert2.position, vert0.normal))
+          this->changePhysState(PHYSICS_GROUNDED);
     }
   }
 
-  if (nearest_i == -1)
-  {
-    this->changePhysState(PHYSICS_FALLING);
-    this->m_collision_transforms.clear();
-    this->m_collision_meshes.clear();
-    return;
-  }
-
-  glm::mat4 model = this->m_collision_transforms[nearest_i].getModelMatrix();
-  glm::mat4 inv_model = glm::inverse(model);
-  ray_down  =  thismodelmat * glm::vec4( 0.0f, -1.0f,  0.0f,  0.0f);
-
-  glm::vec3 v0 = this->m_collision_meshes[nearest_i]->vertices[nearest_j+0].position;
-  glm::vec3 v1 = this->m_collision_meshes[nearest_i]->vertices[nearest_j+1].position;
-  glm::vec3 v2 = this->m_collision_meshes[nearest_i]->vertices[nearest_j+2].position;
-  v0 = model * glm::vec4(v0.x, v0.y, v0.z, 1.0f);
-  v1 = model * glm::vec4(v1.x, v1.y, v1.z, 1.0f);
-  v2 = model * glm::vec4(v2.x, v2.y, v2.z, 1.0f);
-
-  glm::vec3 normal = glm::mat3(model) * this->m_collision_meshes[nearest_i]->vertices[nearest_j+2].face_normal;
-
-  this->attemptCollision( ray_down,   v0, v1, v2, normal, this->height/2, true);
-
-  this->m_collision_transforms.clear();
-  this->m_collision_meshes.clear();
+  this->_collision_transforms.clear();
+  this->_collision_meshes.clear();
 }
 
-std::string GameObject::physicsStateString(void)
+
+std::string GameObject::physStateString(void)
 {
   switch (this->m_physics_state)
   {
@@ -150,7 +75,7 @@ std::string GameObject::physicsStateString(void)
   }
 }
 
-std::string GameObject::navigationStateString(void)
+std::string GameObject::navStateString(void)
 {
   switch (this->m_navigation_state)
   {
@@ -175,8 +100,8 @@ std::string GameObject::getStateString(StateType state_type)
   switch (state_type)
   {
     default:                  return "Unknown state";
-    case (STATE_PHYSICS):     return this->physicsStateString();
-    case (STATE_NAVIGATION):  return this->navigationStateString();
+    case (STATE_PHYSICS):     return this->physStateString();
+    case (STATE_NAVIGATION):  return this->navStateString();
   }
 }
 
@@ -201,12 +126,10 @@ void GameObject::changeNavState(NavigationState new_state)
   switch (new_state)
   {
     case (NAVIGATION_REST):
-      this->getAnimController()->useAnimation(ANIM_REST); 
       break;
     
     
     case (NAVIGATION_SEEK):
-      this->getAnimController()->useAnimation(ANIM_REST); 
       break;
   }
 }
@@ -214,8 +137,7 @@ void GameObject::changeNavState(NavigationState new_state)
 
 void GameObject::perFrameUpdate(Renderer *ren)
 {
-  // Logic doesn't apply to environmental objects.
-  if (this->isEnvironmental())
+  if (!this->usePhysics())
     return;
 
 
@@ -242,16 +164,19 @@ void GameObject::perFrameUpdate(Renderer *ren)
     case (PHYSICS_GROUNDED):
       break;
 
+
     case (PHYSICS_FALLING):
       this->getVel()->y -= ren->gravity * ren->deltaTime;
       break;
   }
 
-  switch (this->m_navigation_state)
+
+  switch (this->getNavState())
   {
     case (NAVIGATION_REST):
 
       break;
+
 
     case (NAVIGATION_SEEK):
 
@@ -270,37 +195,13 @@ void GameObject::perFrameUpdate(Renderer *ren)
       {
         glm::vec3 move_towards_dir = 0.01f * glm::normalize(this->m_path[this->m_path.size()-1] - this->m_transform.position);
         this->m_transform.position += move_towards_dir;
-        this->m_model->setModelMat(glm::inverse(glm::lookAt(this->m_transform.position, this->m_transform.position + move_towards_dir, {0.0f, 1.0f, 0.0f})));
       }
   
       break;
   }
-
 }
 
 
-void GameObject::useModel(Model *model)
-{
-  this->m_name = model->getName();
-
-  model->useTransform(&this->m_transform);
-  this->m_model = model;
-  this->m_is_npc = model->isNPC();
-
-  this->m_is_environmental = model->isEnvironmental();
-  if (this->isEnvironmental())
-    this->m_bounding_sphere_radius = INFINITY;
-
-  this->m_is_animated = model->isAnimated();
-  if (this->isAnimated())
-  {
-    this->m_model->useAnimController(this->getAnimController());
-    this->getAnimController()->assignAnimations(this->m_model->getAnimations());
-    this->getAnimController()->useAnimation(ANIM_REST);
-  }
-
-  this->m_name = model->getName();
-}
 
 void GameObject::clearParent(void)
 {
@@ -369,23 +270,15 @@ void GameObject::setParent(GameObject *parent)
  */
 void GameObject::collideWithObject(GameObject *object)
 {
-  if (this->isEnvironmental() || this->isStatic() || this->getID() == object->getID())
+  if (this->isEnvironmental() || this->getID() == object->getID())
     return;
 
   // if (glm::distance(this->m_transform.position, object->getPos()) > object->boundingSphereRadius())
   //   return;
 
-  this->m_collision_meshes.push_back(object->getCollisionMesh());
-  this->m_collision_transforms.push_back(*object->getTransform());
+  this->_collision_meshes.push_back(object->getCollisionMesh());
+  this->_collision_transforms.push_back(*object->getTransform());
 
 }
 
-
-void GameObject::draw(Renderer *ren)
-{
-  this->getAnimController()->useTransform(this->getTransform());
-  this->m_model->useTransform(this->getTransform());
-  this->m_model->useAnimController(this->getAnimController());
-  this->m_model->draw(ren);
-}
 

@@ -1,0 +1,10 @@
+
+#gameobject terrain0
+
+#interactivity environmental
+
+#geometry ground.dae
+
+#collision collision.obj
+
+#exit

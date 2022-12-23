@@ -21,10 +21,14 @@ void Renderer::createShader(std::string filename, ShaderType type)
 
 Renderer::Renderer()
 {
+  this->createShader("terrain",        SHADER_TERRAIN);
   this->createShader("worldspace",     SHADER_WORLDSPACE);
   this->createShader("weapon",         SHADER_WEAPON);
   this->createShader("lightsource",    SHADER_LIGHTSOURCE);
   this->createShader("screenquad",     SHADER_SCREENQUAD);
+
+  this->createShader("normals",        SHADER_NORMALS);
+
 
   ShaderSource pointshadow_src = parse_shader("assets/shaders/pointshadow.vs", "assets/shaders/pointshadow.fs", "assets/shaders/pointshadow.gs");
   Shader pointshadow;
@@ -50,9 +54,9 @@ Renderer::Renderer()
   //------------------------------------------------------
   glGenFramebuffers(1, &this->FBO);
   glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
-  glGenTextures(1, this->colorBuffers);
+  glGenTextures(2, this->colorBuffers);
   
-  for (GLuint i=0; i<1; i++)
+  for (GLuint i=0; i<2; i++)
   {
     glBindTexture(GL_TEXTURE_2D, this->colorBuffers[i]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 2560, 2560, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
@@ -71,8 +75,37 @@ Renderer::Renderer()
   glBindRenderbuffer(GL_RENDERBUFFER, 0);
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->rbo);
 
-  GLuint attachments[1] = { GL_COLOR_ATTACHMENT0 };
-  glDrawBuffers(1, attachments);
+  GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+  glDrawBuffers(2, attachments);
+
+
+
+
+  glGenFramebuffers(1, &this->screenFBO);
+  glBindFramebuffer(GL_FRAMEBUFFER, this->screenFBO);
+  glGenTextures(1, this->screenColorBuffers);
+  
+  glBindTexture(GL_TEXTURE_2D, this->screenColorBuffers[0]);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 2560, 2560, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->screenColorBuffers[0], 0);
+
+
+  glGenRenderbuffers(1, &this->screenRBO);
+  glBindRenderbuffer(GL_RENDERBUFFER, this->screenRBO); 
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 2560, 2560);  
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->screenRBO);
+
+  GLuint screenAttachments[1] = { GL_COLOR_ATTACHMENT0 };
+  glDrawBuffers(1, screenAttachments);
+
+
+
   //------------------------------------------------------
 
 
@@ -167,7 +200,7 @@ void Renderer::setupDepthCubemap(glm::vec3 pos, glm::vec3 dir)
 
 void Renderer::usePerspective(void)
 {
-  this->cam.projection = glm::perspective(glm::radians(this->fov), (float)this->SCR_width/(float)this->SCR_height, NEAR_PLANE_DIST, RENDER_DISTANCE);
+  this->cam.projection = glm::perspective(glm::radians(this->fov), (float)this->viewport_width/(float)this->viewport_height, NEAR_PLANE_DIST, RENDER_DISTANCE);
 }
 
 
@@ -224,11 +257,12 @@ void Renderer::sendLightsToShader(void)
 
   char buffer[64];
 
-
+  glActiveTexture(GL_TEXTURE10);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, this->depthCubemap);
+    
   this->active_shader->setInt("depthMap", 10);
   this->active_shader->setFloat("far_plane",   25.0f);
   
-  this->active_shader->setFloat("bias", this->DIRBIAS);
   this->active_shader->setVec3( "pointlight.ambient", this->pointlights[0].ambient);
   this->active_shader->setVec3( "pointlight.diffuse", this->pointlights[0].diffuse);
   this->active_shader->setVec3( "pointlight.pos", this->pointlights[0].position);
@@ -318,6 +352,160 @@ void Renderer::sendLightsToShader(void)
     this->active_shader->setFloat(buffer,  this->shaderready_spotlights[i].intensity);
   }
 
-  this->active_shader->setVec3("viewPos", *this->cam.pos);
+  this->active_shader->setVec3("viewPos", this->cam.m_transform->getPos_worldspace());
   this->active_shader->setVec3("viewDirection", glm::mat3(this->cam.modifier_matrix) * *this->cam.dir);
+}
+
+void Renderer::resize(int x, int y)
+{
+  glDeleteTextures(1, &this->colorBuffers[0]);
+  glDeleteRenderbuffers(1, &this->rbo);
+  glDeleteFramebuffers(1, &this->FBO);
+
+  glDeleteTextures(1, &this->screenColorBuffers[0]);
+  glDeleteRenderbuffers(1, &this->screenRBO);
+  glDeleteFramebuffers(1, &this->screenFBO);
+
+  glGenFramebuffers(1, &this->FBO);
+  glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
+  glGenTextures(2, this->colorBuffers);
+  
+  for (GLuint i=0; i<1; i++)
+  {
+    glBindTexture(GL_TEXTURE_2D, this->colorBuffers[i]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, this->colorBuffers[i], 0);
+  }
+
+
+  glGenRenderbuffers(1, &this->rbo);
+  glBindRenderbuffer(GL_RENDERBUFFER, this->rbo); 
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, x, y);  
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->rbo);
+
+  GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+  glDrawBuffers(2, attachments);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
+
+
+
+  glGenFramebuffers(1, &this->screenFBO);
+  glBindFramebuffer(GL_FRAMEBUFFER, this->screenFBO);
+  glGenTextures(1, this->screenColorBuffers);
+  
+  glBindTexture(GL_TEXTURE_2D, this->screenColorBuffers[0]);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->screenColorBuffers[0], 0);
+
+
+  glGenRenderbuffers(1, &this->screenRBO);
+  glBindRenderbuffer(GL_RENDERBUFFER, this->screenRBO); 
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, x, y);  
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->screenRBO);
+
+  GLuint screenAttachments[1] = { GL_COLOR_ATTACHMENT0 };
+  glDrawBuffers(1, screenAttachments);
+
+
+
+
+
+
+
+  this->viewport_width = x;
+  this->viewport_height = y;
+
+  this->cam.projection = glm::perspective(glm::radians(this->fov), (float)this->viewport_width/(float)this->viewport_height, NEAR_PLANE_DIST, RENDER_DISTANCE);
+}
+
+void unbindTextureUnit(GLenum texture_unit)
+{
+  glActiveTexture(texture_unit);
+  glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+
+void Renderer::drawModel(Model *model)
+{
+  for (auto &mesh: model->m_meshes)
+  {
+    glBindVertexArray(mesh.VAO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.VBO);
+
+
+    this->active_shader->setMat4("model", model->getTransform()->getModelMatrix());
+    this->active_shader->setMat4("view", this->cam.view);
+    this->active_shader->setMat4("projection", this->cam.projection);
+
+
+    for (int i=0; i<mesh.IBOS.size(); i++)
+    {
+      mesh.materials[i].diffuseMap.bind( GL_TEXTURE0 );
+      mesh.materials[i].specularMap.bind(  GL_TEXTURE1 );
+      mesh.materials[i].normalMap.bind(  GL_TEXTURE2 );
+      mesh.materials[i].emissionMap.bind(  GL_TEXTURE3 );
+    
+      this->active_shader->setInt("material.diffuseMap", 0);
+      this->active_shader->setInt("material.specularMap", 1);
+      this->active_shader->setInt("material.normalMap", 2);
+      this->active_shader->setInt("material.emissionMap", 3);
+      this->active_shader->setFloat("material.spec_exponent", mesh.materials[i].spec_exponent);
+
+
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBOS[i]);
+      glDrawElements(GL_TRIANGLES, mesh.indices[i].size(), GL_UNSIGNED_INT, (void *)0);
+
+      unbindTextureUnit(GL_TEXTURE0);
+      unbindTextureUnit(GL_TEXTURE1);
+      unbindTextureUnit(GL_TEXTURE2);
+      unbindTextureUnit(GL_TEXTURE3);
+    }
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+  }
+}
+
+void Renderer::drawLightSource(Model *model, glm::vec3 diffuse_color, int index)
+{
+  if (this->pointlights_on[index] == false)
+    return;
+
+  this->active_shader->setMat4("model", model->getTransform()->getModelMatrix());
+  this->active_shader->setMat4("view", this->cam.view);
+  this->active_shader->setMat4("projection", this->cam.projection);
+
+  for (auto &mesh: model->m_meshes)
+  {
+    glBindVertexArray(mesh.VAO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.VBO);
+
+    for (int i=0; i<mesh.IBOS.size(); i++)
+    {
+      this->active_shader->setVec3("diffuseColor", diffuse_color);
+
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBOS[i]);
+      glDrawElements(GL_TRIANGLES, mesh.indices[i].size(), GL_UNSIGNED_INT, (void *)0);
+
+    }
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+  }
 }

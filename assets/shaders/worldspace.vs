@@ -1,18 +1,9 @@
 #version 330 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
-layout (location = 2) in vec3 aFaceNormal;
-layout (location = 3) in vec2 aTexCoords;
-layout (location = 4) in vec3 aTangent;
-layout (location = 6) in vec3 aColor;
+layout (location = 2) in vec2 aTexCoords;
+layout (location = 3) in vec3 aTangent;
 
-layout (location = 7) in vec3 aAnimNextPos;
-layout (location = 8) in vec3 aAnimNextNormal;
-layout (location = 9) in vec3 aAnimNextTangent;
-
-out vec3 color;
-
-out vec2 TexCoords;
 
 struct PointLight {
   vec3 pos;
@@ -27,8 +18,6 @@ out VS_OUT {
   vec3 Normal;
   vec2 TexCoords;
 
-  PointLight pointlight;
-
   mat3 TBN;
 
 } vs_out;
@@ -39,30 +28,23 @@ uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 model;
 
-uniform float lerp_value;
 
 void main()
 {
-  vec3 outpos = mix(aPos, aAnimNextPos, lerp_value);
-  vec3 outNormal = mix(aNormal, aAnimNextNormal, lerp_value);
-  vec3 outTangent = mix(aTangent, aAnimNextTangent, lerp_value);
-
-  color = aColor;
-  vs_out.FragPos = vec3(model * vec4(outpos, 1.0));
+  vs_out.FragPos = vec3(model * vec4(aPos, 1.0));
   vs_out.viewPos = viewPos;
-  vs_out.Normal =  outNormal;
+  vs_out.Normal =  aNormal;
   vs_out.TexCoords = aTexCoords;
-  gl_Position = projection * view * model * vec4(outpos, 1.0);
+  gl_Position = projection * view * model * vec4(aPos, 1.0);
 
   // tangent-space to world-space transform
   //------------------------------------------------------------------
   mat3 normalMatrix = mat3(model);
-  vec3 T = normalize(normalMatrix * outTangent);
-  vec3 N = normalize(normalMatrix * outNormal);
+  vec3 T = normalize(normalMatrix * aTangent);
+  vec3 N = normalize(normalMatrix * aNormal);
   T = normalize(T - dot(T, N) * N);
   vec3 B = cross(N, T);
   vs_out.TBN = (mat3(T, B, N));
   //------------------------------------------------------------------
 
-  vs_out.pointlight = pointlight;
 }

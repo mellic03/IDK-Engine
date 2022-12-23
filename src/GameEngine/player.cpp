@@ -1,25 +1,16 @@
-#include <functional>
+// #include <functional>
 
-#include "physics.h"
-#include "state.h"
 
+#include "player.h"
 
 Player::Player(Renderer *ren)
 {
   this->cam = &ren->cam;
-  this->cam->pos = this->getPos();
 
-  this->useWeapon(WEAPON_SHOTGUN);
-  this->getWeapon()->loadModel("assets/player/gun/");
-  this->getWeapon()->hip_pos = glm::vec3(+0.10f, -0.10f, -0.15f);
-  this->getWeapon()->aim_pos = glm::vec3( 0.00f, -0.015f, -0.10f);
-}
-
-void Player::setObjectPtr(GameObject *ptr)
-{
-  this->m_gameobject = ptr;
-
-  this->cam->pos = &this->pos_worldspace;
+  // this->useWeapon(WEAPON_SHOTGUN);
+  // this->getWeapon()->loadModel("assets/player/gun/");
+  // this->getWeapon()->hip_pos = glm::vec3(+0.10f, -0.10f, -0.15f);
+  // this->getWeapon()->aim_pos = glm::vec3( 0.00f, -0.015f, -0.10f);
 }
 
 
@@ -29,18 +20,19 @@ void Player::key_input(Renderer *ren)
 {
   const Uint8 *state = SDL_GetKeyboardState(NULL);
 
-  switch (this->objectPtr()->getPhysState())
+  switch (this->m_gameobject->getPhysState())
   {
     case (PHYSICS_GROUNDED):
       if (state[SDL_SCANCODE_SPACE])
       {
-        this->objectPtr()->changePhysState(PHYSICS_FALLING);
-        this->objectPtr()->getVel()->y = 25 * this->jump_force * ren->deltaTime;
+        this->m_gameobject->changePhysState(PHYSICS_FALLING);
+        this->m_gameobject->getVel()->y = 25 * this->jump_force * ren->deltaTime;
       }
       break;
   
   
     case (PHYSICS_FALLING):
+
       break;
   }
 
@@ -74,8 +66,13 @@ void Player::key_input(Renderer *ren)
     headbob = true;
   }
 
-  this->pos_worldspace = this->getTransform()->getPos_worldspace();
-  this->cam->modifier_matrix = this->getTransform()->getModelMatrix_noLocalTransform();
+  // *this->getPos() += 0.25f * *this->getVel();
+  // *this->getVel() *= 0.9f;
+
+  // this->pos_worldspace = this->getTransform()->getPos_worldspace();
+  // this->cam->modifier_matrix = this->getTransform()->getModelMatrix_noLocalTransform();
+
+  this->cam->useTransform(this->getTransform());
 
   this->cam->input();
 }
@@ -87,18 +84,18 @@ void Player::mouse_input(Renderer *ren, SDL_Event *event)
     case SDL_MOUSEBUTTONDOWN:
       if (event->button.button == SDL_BUTTON_RIGHT)
       {
-        this->getWeapon()->aiming = true;
-        this->getWeapon()->sway /= 8;
-        this->move_speed /= 2;
+        // this->getWeapon()->aiming = true;
+        // this->getWeapon()->sway /= 8;
+        // this->move_speed /= 2;
       }
     break;
   
     case SDL_MOUSEBUTTONUP:
       if (event->button.button == SDL_BUTTON_RIGHT)
       {
-        this->getWeapon()->aiming = false;
-        this->getWeapon()->sway *= 8;
-        this->move_speed *= 2;
+        // this->getWeapon()->aiming = false;
+        // this->getWeapon()->sway *= 8;
+        // this->move_speed *= 2;
       }
     break;
   }
@@ -107,8 +104,8 @@ void Player::mouse_input(Renderer *ren, SDL_Event *event)
   {
     this->cam->yaw   += this->cam->rot_speed * ren->deltaTime * event->motion.xrel;
     this->cam->pitch -= this->cam->rot_speed * ren->deltaTime * event->motion.yrel;
-    this->getWeapon()->movement_offset.x -= this->cam->rot_speed * ren->deltaTime * 0.001f * event->motion.xrel;
-    this->getWeapon()->movement_offset.y += this->cam->rot_speed * ren->deltaTime * 0.001f * event->motion.yrel;
+    // this->getWeapon()->movement_offset.x -= this->cam->rot_speed * ren->deltaTime * 0.001f * event->motion.xrel;
+    // this->getWeapon()->movement_offset.y += this->cam->rot_speed * ren->deltaTime * 0.001f * event->motion.yrel;
   }
 
   else if (event->type == SDL_KEYDOWN)
@@ -124,7 +121,7 @@ void Player::mouse_input(Renderer *ren, SDL_Event *event)
 }
 
 
-void Player::draw(Renderer *ren)
-{
-  this->getWeapon()->draw(ren);
-}
+// void Player::draw(Renderer *ren)
+// {
+//   this->getWeapon()->draw(ren);
+// }

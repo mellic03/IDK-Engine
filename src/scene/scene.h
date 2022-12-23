@@ -9,23 +9,24 @@ class Scene {
   private:
     
     Renderer *ren;
-    Mesh *lightsource_model;
+    Model *_lightsource_model;
 
 
   public:
     Player *player;
 
-    SceneGraph *object_handler;
+    Transform m_temptransform;
+
+    SceneGraph *m_scenegraph;
     NavMesh navmesh;
 
     Scene() { };
 
     void useRenderer(Renderer *renptr);
     void usePlayer(Player *playerptr);
-    void addLightsourceModel(Mesh *lightsource_model);
+    void useSceneGraph(SceneGraph *scenegraph);
+    void addLightsourceModel(Model *lightsource_model) { this->_lightsource_model = lightsource_model; };
     
-    void addObjectHandler(SceneGraph *objectHandler) { this->object_handler = objectHandler; };
-
     void draw(SDL_Event *event);    
 
 };

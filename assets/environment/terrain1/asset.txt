@@ -1,11 +1,10 @@
-// #[attribute] [type] [name] [num keyframes] //
 
-#ASSETNAME terrain1
+#gameobject terrain1
 
-#STATIC
-#ENVIRONMENTAL
+#interactivity environmental
 
-GEOMETRYMESH ground2
-COLLISIONMESH collision
+#geometry ground2.dae
 
-NAVMESH nav.obj
+#collision collision.obj
+
+#exit

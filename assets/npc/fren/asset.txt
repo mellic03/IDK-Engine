@@ -1,8 +1,5 @@
 
-#ASSETNAME fren
-
-#ANIMATED
-#NPC
-
-ANIMATION REST fren 6
-COLLISIONMESH fren
+#gameobject fren
+#interactivity npc
+#geometry fren.dae
+#exit

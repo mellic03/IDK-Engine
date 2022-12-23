@@ -11,36 +11,42 @@ void Scene::usePlayer(Player *playerptr)
   this->player = playerptr;
 }
 
-void Scene::addLightsourceModel(Mesh *lightsource_model)
+void Scene::useSceneGraph(SceneGraph *scenegraph)
 {
-  this->lightsource_model = lightsource_model;
+  this->m_scenegraph = scenegraph;
 }
+
 
 void Scene::draw(SDL_Event *event)
 {
 
-  for (auto &obj1: this->object_handler->m_object_instances)
+  for (auto &obj: this->m_scenegraph->m_object_instances)
   {
-    if (obj1.isHidden())
+    if (obj.isHidden())
       continue;
-    
-    for (auto &obj2: this->object_handler->m_object_instances)
-      obj1.collideWithObject(&obj2);
 
-    obj1.perFrameUpdate(this->ren);
-    obj1.draw(this->ren);
+    for (auto &obj2: this->m_scenegraph->m_object_instances)
+      obj.collideWithObject(&obj2);
+
+    obj.perFrameUpdate(this->ren);
+
+    if (obj.hasGeometry())
+    {
+      obj.m_model->setTransform(obj.getTransform());
+      this->ren->drawModel(obj.m_model);
+    }
   }
 
 
-  // this->ren->useShader(SHADER_LIGHTSOURCE);
-  // for (int i=0; i<5; i++)
-  // {
-  //   this->lightsource_model->materials[0].diffuse_color = this->ren->pointlights[i].diffuse;
-  //   this->lightsource_model->set_pos(this->ren->pointlights[i].position);
-  //   this->lightsource_model->draw(this->ren);
-  // }
-  // this->lightsource_model->set_pos(this->renderables.objects[0]->pos + this->renderables.objects[0]->ray_down);
-  // this->lightsource_model->draw(this->ren);
+  Shader *backupshader = this->ren->active_shader;
+  this->ren->useShader(SHADER_LIGHTSOURCE);
+  for (int i=0; i<this->ren->pointlights.size(); i++)
+  {
+    this->_lightsource_model->setTransform(&this->m_temptransform);
+    *this->_lightsource_model->getPos() = this->ren->pointlights[i].position;
+    this->ren->drawLightSource(this->_lightsource_model, this->ren->pointlights[i].diffuse, i);
+  }
+  this->ren->active_shader = backupshader;
 
 }
 

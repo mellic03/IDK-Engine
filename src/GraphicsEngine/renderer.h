@@ -15,7 +15,7 @@
 #include "../include/glm/gtc/matrix_transform.hpp"
 #include "../include/glm/gtc/type_ptr.hpp"
 
-
+#include "model/model.h"
 #include "camera.h"
 #include "lightsource.h"
 #include "shader.h"
@@ -46,12 +46,14 @@ class Renderer {
 
     void createShader(std::string filename, ShaderType type);
 
+    glm::mat4 m_active_model_matrix = glm::mat4(1.0f);
+
 
   public:
     GLuint FBO;
     GLuint quadVAO, quadVBO, rbo;
     GLuint colorBuffers[2];
-    GLuint colorBuffer;
+    GLuint screenFBO, screenRBO, screenColorBuffers[1];
 
     // Camera/user-facing
     //---------------------------------------------------------------------
@@ -67,11 +69,11 @@ class Renderer {
     float kernel_divisor = 1.0f, kernel_offset_divisor = 600.0f;
 
     glm::vec4 clearColor = {0.0, 0.0, 0.0, 1.0};
-    float fog_start = 10, fog_end = 25;
+    float fog_start = 10, fog_end = 1000;
     float exposure = 1.0f, gamma = 2.2f;
 
-    int SCR_width = DEFAULT_SCREEN_WIDTH;
-    int SCR_height = DEFAULT_SCREEN_HEIGHT;
+    int viewport_width = DEFAULT_SCREEN_WIDTH;
+    int viewport_height = DEFAULT_SCREEN_HEIGHT;
     //---------------------------------------------------------------------
 
 
@@ -125,4 +127,15 @@ class Renderer {
 
     void update(glm::vec3 pos, glm::vec3 dir);
     void sendLightsToShader(void);
+
+
+    void useModelMatrix(glm::mat4 mat)  { this->m_active_model_matrix = mat; };
+
+    void draw(Model *model);
+
+    void drawMesh(Mesh *mesh);
+    void drawModel(Model *model);
+    void drawLightSource(Model *model, glm::vec3 diffuse_color, int index);
+
+    void resize(int x, int y);
 };

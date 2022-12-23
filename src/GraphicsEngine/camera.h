@@ -1,12 +1,5 @@
 #pragma once
 
-#ifdef __unix__
-  #define ENTRY main
-#elif defined(_WIN32) || defined(WIN32)
-  #define ENTRY WinMain
-#endif
-
-
 #include <SDL2/SDL.h>
 
 #include <GL/glew.h>
@@ -16,17 +9,22 @@
 #include "../include/glm/gtc/matrix_transform.hpp"
 #include "../include/glm/gtc/type_ptr.hpp"
 
-#include "material.h"
-#include "shader.h"
-#include "lightsource.h"
+#include "../transform.h"
+
 
 class Camera {
 
   private:
-    glm::vec3 m_default_pos = glm::vec3(0.0f);
+    glm::vec3 m_default_pos = glm::vec3(0.0f, 0.0f, -10.0f);
+
 
   public:
+
+    Transform *m_transform;
+
+
     Camera();
+    void useTransform(Transform *transform)  { this->m_transform = transform; };
 
     glm::mat4 modifier_matrix = glm::mat4(1.0f);
 
@@ -47,8 +45,6 @@ class Camera {
 
 
     float fov = 90.0f;
-
-
 
 
     void init(void);

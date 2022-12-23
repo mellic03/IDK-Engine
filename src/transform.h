@@ -6,10 +6,7 @@
 
 struct Transform {
 
-  int *m_ID = nullptr;
-
-  Transform(void)    { this->m_ID = nullptr; };
-  Transform(int *id) { this->m_ID = id; };
+  Transform(void) { };
 
   Transform *parent = nullptr;
 
@@ -63,18 +60,24 @@ struct Transform {
 
 
 
-  /** Convert a vec4 from world space to local space */
   glm::vec3 worldToLocal(glm::vec4 vec)
   {
     return glm::inverse(this->getModelMatrix()) * vec;
   };
+  
+  glm::vec3 worldToLocal(glm::vec3 vec, bool directional)
+  {
+    return glm::inverse(this->getModelMatrix()) * glm::vec4(vec.x, vec.y, vec.z, (directional) ? 0.0f : 1.0f);
+  };
 
 
-  /** Convert a vec4 from local space to world space */
   glm::vec3 localToWorld(glm::vec4 vec)
   {
     return this->getModelMatrix() * vec;
   };
-
+  glm::vec3 localToWorld(glm::vec3 vec, bool directional)
+  {
+    return this->getModelMatrix() * glm::vec4(vec.x, vec.y, vec.z, (directional) ? 0.0f : 1.0f);;
+  };
 
 };

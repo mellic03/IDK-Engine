@@ -34,7 +34,7 @@ void Camera::init(void)
 
 void Camera::input()
 {
-  this->projection = glm::perspective(glm::radians(this->fov), 1.0f, 0.1f, RENDER_DISTANCE);
+  // this->projection = glm::perspective(glm::radians(this->fov), 1.0f, 0.1f, RENDER_DISTANCE);
 
   const Uint8 *state = SDL_GetKeyboardState(NULL);
 
@@ -47,14 +47,15 @@ void Camera::input()
   this->dir->y = sin(glm::radians(this->pitch));
   this->dir->z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
 
-  glm::vec3 tempdir = this->modifier_matrix * glm::vec4(this->dir->x, this->dir->y, this->dir->z, 0.0f);
+  glm::vec3 tempdir = this->m_transform->getModelMatrix_noLocalTransform() * glm::vec4(this->dir->x, this->dir->y, this->dir->z, 0.0f);
+  glm::vec3 p = this->m_transform->getPos_worldspace();
 
   this->front = glm::normalize(tempdir);
   this->right = glm::normalize(glm::cross(this->up, tempdir));
 
   this->view = glm::lookAt(
-    *this->pos,
-    *this->pos + this->front,
+    p,
+    p + this->front,
     this->up
   );
 

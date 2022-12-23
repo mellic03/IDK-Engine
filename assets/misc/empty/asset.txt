@@ -1,7 +1,8 @@
-// #[attribute] [type] [name] [num keyframes] //
 
-#ASSETNAME empty
+#gameobject empty
+
+#interactivity misc
 
 
-GEOMETRYMESH empty
-COLLISIONMESH empty
+#exit
+
