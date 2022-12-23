@@ -9,7 +9,7 @@
 #include "../../include/glm/gtc/matrix_transform.hpp"
 #include "../../include/glm/gtc/type_ptr.hpp"
 
-#include "../../include/stb_image/stb_image.h"
+#include "../../include/tiny_gltf/stb_image.h"
 
 class Texture {
 

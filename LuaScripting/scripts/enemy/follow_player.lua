@@ -14,8 +14,8 @@ return function(worldData, objectID)
 
   if dist > 3.5 then
     local dir = vlib.normalise(player_pos - pos) / 25.0;
-    pos.x = pos.x + dir.x * 30 * worldData.deltaTime;
-	pos.z = pos.z + dir.z * 30 * worldData.deltaTime;
+    vel.x = vel.x + dir.x * 200 * worldData.deltaTime;
+	  vel.z = vel.z + dir.z * 200 * worldData.deltaTime;
   end;  
 
   if dist < 3.0 then

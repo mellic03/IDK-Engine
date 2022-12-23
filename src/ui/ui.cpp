@@ -7,7 +7,6 @@
 int selected_dirlight = 0;    const char *dir_options[4] = {"1"};
 int selected_pointlight = 0;  const char *point_options[4] = {"1", "2", "3", "4"};
 int selected_spotlight = 0;   const char *spot_options[4] = {"1", "2"};
-bool show = false;
 
 
 void export_lighting_config(Renderer *ren)
@@ -293,11 +292,6 @@ void draw_dev_ui(Renderer *ren, Scene *scene, int *x, int *y, int *w, int *h)
 
     ImGui::Begin("Scene");
     {
-      if (ImGui::Button("Demo Window"))
-        show = !show;
-      if (show)
-        ImGui::ShowDemoWindow(&show);
-
       draw_scene_tab(ren, scene, &scene->m_scenegraph->m_selected_instance);
 
       ImGui::End();

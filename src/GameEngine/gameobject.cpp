@@ -16,7 +16,12 @@ bool GameObject::_groundTest(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec
   if (intersects)
   {
     float dist = glm::distance(this->pos_worldspace, intersect_point);
-    return (0 < dist) && (dist < this->m_sphere_collider_radius * 1.5f);
+    if (dist >= 0 && dist < this->m_sphere_collider_radius*1.15f)
+    {
+      float overlap = this->m_sphere_collider_radius*1.15f - dist;
+      this->getPos()->y += overlap / 2.0f;
+      return true;
+    }
   }
 
   return false;

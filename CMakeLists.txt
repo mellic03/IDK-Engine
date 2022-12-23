@@ -34,8 +34,6 @@ add_definitions(
 file(
   GLOB SOURCES
   "src/*.cpp"
-  "src/include/stb_image/*.cpp"
-  "src/include/imgui/*.cpp"
   "src/GraphicsEngine/*.cpp"
   "src/GraphicsEngine/model/*.cpp"
   "src/GameEngine/*.cpp"
@@ -43,6 +41,12 @@ file(
   "src/ui/*.cpp"
   "src/scene/*.cpp"
   "src/scripting/*.cpp"
+
+  "src/include/stb_image/*.cpp"
+  "src/include/imgui/*.cpp"
+  "src/include/tiny_gltf/*.h"
+  "src/include/tiny_gltf/*.hpp"
+  "src/include/tiny_gltf/*.cpp"
 
   "external/luacpp/*.cpp"
   "external/luacpp/Engine/*.cpp"

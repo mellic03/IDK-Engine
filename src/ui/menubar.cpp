@@ -87,7 +87,7 @@ void draw_main_menu_bar(Renderer *ren, Scene *scene)
 {
   bool show_save_modal = false;
   bool show_load_modal = false;
-
+  static bool show = false;
 
   if (ImGui::BeginMainMenuBar())
   {
@@ -105,7 +105,11 @@ void draw_main_menu_bar(Renderer *ren, Scene *scene)
 
     if (ImGui::BeginMenu("Edit"))
     {
-      if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
+      if (ImGui::MenuItem("Demo Window", ""))
+        show = !show;
+
+
+
       if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
       ImGui::Separator();
       if (ImGui::MenuItem("Cut", "CTRL+X")) {}
@@ -119,4 +123,7 @@ void draw_main_menu_bar(Renderer *ren, Scene *scene)
 
   draw_save_modal(show_save_modal, scene);
   draw_load_modal(show_load_modal, scene);
+
+  if (show)
+    ImGui::ShowDemoWindow(&show);
 }

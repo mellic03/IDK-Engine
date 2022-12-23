@@ -31,6 +31,7 @@ struct Transform {
   //-------------------------------------------------------------------------------------------------------------
   glm::vec3 getPos_worldspace(void)   { return this->getModelMatrix_noLocalTransform() * this->getPos_vec4(); };
 
+
   glm::mat4 getModelMatrix(void)
   {
     glm::mat4 model = glm::mat4(1.0f);

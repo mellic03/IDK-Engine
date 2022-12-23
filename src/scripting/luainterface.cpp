@@ -131,8 +131,12 @@ void LuaInterface::ToLua::gameobject(GameObject *object, int objectID)
 {
   LuaInterface::IDs.push_back(objectID);
   LuaInterface::scripts.push_back(object->m_script_name);
-  LuaInterface::positions.push_back(*object->getTransform()->getPos());
-  LuaInterface::velocities.push_back(*object->getVel());
+  LuaInterface::positions.push_back(object->getTransform()->getPos_worldspace());
+
+  glm::mat4 inv_model = glm::inverse(object->getTransform()->getModelMatrix());
+  glm::vec3 tempvel = inv_model * object->getTransform()->getVel_vec4();
+
+  LuaInterface::velocities.push_back(tempvel);
 }
 
 
@@ -140,5 +144,5 @@ void LuaInterface::ToLua::gameobject(GameObject *object, int objectID)
 void LuaInterface::ToCPP::gameobject(GameObject *object, int objectID)
 {
   *object->getPos() = LuaInterface::positions[objectID];
-  *object->getVel() = LuaInterface::velocities[objectID];
+  *object->getVel() = glm::mat3(object->getTransform()->getModelMatrix()) * LuaInterface::velocities[objectID];
 }

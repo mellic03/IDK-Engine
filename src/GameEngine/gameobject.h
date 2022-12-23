@@ -31,8 +31,6 @@ class GameObject {
 
     std::vector<glm::vec3> m_path;
 
-    float m_bounding_sphere_radius = 1.0f;
-    float height = 1.0f, width = 0.25f;
 
     glm::vec3 ray_up    = glm::vec3( 0.0f, +1.0f,  0.0f);
     glm::vec3 ray_down  = glm::vec3( 0.0f, -1.0f,  0.0f);
@@ -47,11 +45,14 @@ class GameObject {
     std::vector<Transform> _collision_transforms;
 
 
-
     bool _groundTest(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal);
 
 
   public:
+
+    float m_sphere_collider_radius = 0.5f;
+    float height = 0.5f, width = 0.1f;
+
 
     Model *m_model;
     CollisionMesh m_collision_mesh;
@@ -60,7 +61,6 @@ class GameObject {
     std::string m_interactivity = "DEFAULT";
     std::string m_script_name = "LuaScripting/scripts/default";
 
-    float m_sphere_collider_radius = 1.0f;
 
     glm::vec3 pos_worldspace = glm::vec3(0.0f);
 

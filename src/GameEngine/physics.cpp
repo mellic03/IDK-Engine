@@ -3,10 +3,9 @@
 
 #define Sq(n) ((n)*(n))
 
+using namespace glm;
 
-bool PhysicsEngine::ray_intersect_triangle(  glm::vec3 ray_pos, glm::vec3 ray_dir,
-                              glm::vec3 v0, glm::vec3 v1, glm::vec3 v2,
-                              glm::vec3 *intersect_point  )
+bool PhysicsEngine::ray_intersect_triangle(vec3 ray_pos, vec3 ray_dir, vec3 v0, vec3 v1, vec3 v2, vec3 *intersect_point)
 {
   const float EPSILON = 0.0000001;
   glm::vec3 edge1, edge2, h, s, q;
@@ -94,7 +93,6 @@ bool PhysicsEngine::sphere_triangle_detect(GameObject *obj, Vertex v0, Vertex v1
   // If center of sphere is closer to plane than its radius
   if (fabs(*plane_dist) <= obj->m_sphere_collider_radius)
   {
-
     glm::vec3 closest_point = *obj->getPos() + (*plane_dist * -v0.normal);
     glm::vec3 N1 = triangle_normal(v0.position, v1.position, closest_point);
     glm::vec3 N2 = triangle_normal(v1.position, v2.position, closest_point);
@@ -122,7 +120,6 @@ bool PhysicsEngine::sphere_triangle_detect(GameObject *obj, Vertex v0, Vertex v1
       *edge_collision = true;
       return true;
     }
-  
   }
 
   return false;
