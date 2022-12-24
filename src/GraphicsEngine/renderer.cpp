@@ -147,6 +147,7 @@ void Renderer::init(void)
 
   this->pointlights[0].diffuse  = {1.0, 1.0, 1.0};
   this->pointlights[0].specular = {0.15, 0.15, 0.15};
+  this->pointlights_on[0] = true;
   // this->pointlights[0].position = {1.0, 2.0, 1.0};
 
   for (int i=0; i<NUM_SPOTLIGHTS; i++)

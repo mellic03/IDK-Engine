@@ -109,7 +109,6 @@ void draw_main_menu_bar(Renderer *ren, Scene *scene)
         show = !show;
 
 
-
       if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
       ImGui::Separator();
       if (ImGui::MenuItem("Cut", "CTRL+X")) {}
