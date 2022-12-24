@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../GraphicsEngine/GraphicsEngine.h"
-#include "player.h"
+#include "./gameobject/gameobject.h"
 
 
 namespace PhysicsEngine {

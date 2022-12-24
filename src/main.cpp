@@ -74,34 +74,42 @@ int ENTRY(int argc, char **argv)
   // RENDERER SETUP
   //----------------------------------------
   luaInit();
-  Renderer ren;
-  Player player(&ren);
+  Renderer *ren = &Render::ren;
+  ren->init();
+  Player player(ren);
 
   SceneGraph scenegraph;
 
   scenegraph.loadObject("assets/misc/empty/");
+  
   scenegraph.newObjectInstance("empty");
   player.m_gameobject = scenegraph.rearObjectPtr();
   player.m_gameobject->setName("Player");
   player.m_gameobject->setInteractivity("player");
 
-
+  
   scenegraph.loadObject("assets/environment/building/");
   scenegraph.loadObject("assets/environment/terrain0/");
   scenegraph.loadObject("assets/environment/terrain1/");
   scenegraph.loadObject("assets/npc/muscleskele/");
   scenegraph.loadObject("assets/npc/fren/");
+  scenegraph.loadObject("assets/misc/sphere/");
 
 
-  Model sphere;  sphere.loadDae("assets/misc/sphere/", "sphere.dae");  
+  scenegraph.newObjectInstance("pointlight");
+  GameObject *light1 = scenegraph.rearObjectPtr();
+  light1->setName("Point light 1");
+  light1->lightsource_components.push_back(EntityComponent(COMPONENT_LIGHTSOURCE));
+  light1->hasGeometry(false);
+  scenegraph.m_lightsource_instances.push_back(light1);
+  ren->pointlights[0].m_transform = light1->getTransform();
 
 
   Scene scene_1;
-  import_lighting_config(&ren);
-  scene_1.useRenderer(&ren);
+  import_lighting_config(ren);
+  scene_1.useRenderer(ren);
   scene_1.usePlayer(&player);
   scene_1.useSceneGraph(&scenegraph);
-  scene_1.addLightsourceModel(&sphere);
   //----------------------------------------
 
 
@@ -142,8 +150,8 @@ int ENTRY(int argc, char **argv)
   {
     start = end;
     end = SDL_GetPerformanceCounter();
-    // SDL_GetWindowSize(window, &ren.viewport_width, &ren.viewport_height);
-    glClearColor(ren.clearColor.x, ren.clearColor.y, ren.clearColor.z, 1.0f);
+    // SDL_GetWindowSize(window, ren->viewport_width, ren->viewport_height);
+    glClearColor(ren->clearColor.x, ren->clearColor.y, ren->clearColor.z, 1.0f);
 
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
@@ -151,9 +159,9 @@ int ENTRY(int argc, char **argv)
     ImGui::NewFrame();
 
     int x, y, w, h;
-    draw_dev_ui(&ren, &scene_1, &x, &y, &w, &h);
-    ren.update(*player.getPos(), player.cam->front);
-    ren.usePerspective();
+    draw_dev_ui(ren, &scene_1, &x, &y, &w, &h);
+    ren->update(*player.getPos(), player.cam->front);
+    ren->usePerspective();
 
     // Input
     //---------------------------------
@@ -163,9 +171,9 @@ int ENTRY(int argc, char **argv)
         ImGui_ImplSDL2_ProcessEvent(&event);
       if (event.type == SDL_QUIT)
         exit(0);
-      player.mouse_input(&ren, &event);
+      player.mouse_input(ren, &event);
     }
-    player.key_input(&ren);
+    player.key_input(ren);
     //---------------------------------
 
     ///////////////////////////////////////////////////////////////////////////////////////////// Render start
@@ -176,12 +184,12 @@ int ENTRY(int argc, char **argv)
     if (count == 1)
     {
       count = 0;
-      glViewport(0, 0, ren.SHADOW_WIDTH, ren.SHADOW_HEIGHT);
-      glBindFramebuffer(GL_FRAMEBUFFER, ren.depthMapFBO);
-      glBindTexture(GL_TEXTURE_CUBE_MAP, ren.depthCubemap);
+      glViewport(0, 0, ren->SHADOW_WIDTH, ren->SHADOW_HEIGHT);
+      glBindFramebuffer(GL_FRAMEBUFFER, ren->depthMapFBO);
+      glBindTexture(GL_TEXTURE_CUBE_MAP, ren->depthCubemap);
       glClear(GL_DEPTH_BUFFER_BIT);
-          ren.useShader(SHADER_POINTSHADOW);
-          ren.setupDepthCubemap({0, 0, 0}, {0, 0, 0});
+          ren->useShader(SHADER_POINTSHADOW);
+          ren->setupDepthCubemap({0, 0, 0}, {0, 0, 0});
           glDisable(GL_CULL_FACE);
           scene_1.draw(&event);
           glEnable(GL_CULL_FACE);
@@ -198,21 +206,21 @@ int ENTRY(int argc, char **argv)
     // Draw scene normally
     // ---------------------------------
     glViewport(0, 0, w, h);
-    glBindFramebuffer(GL_FRAMEBUFFER, ren.FBO);
-    glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[0]);
+    glBindFramebuffer(GL_FRAMEBUFFER, ren->FBO);
+    glBindTexture(GL_TEXTURE_2D, ren->colorBuffers[0]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     
-    ren.useShader(SHADER_TERRAIN);
-    ren.sendLightsToShader();
+    ren->useShader(SHADER_TERRAIN);
+    ren->sendLightsToShader();
 
     scene_1.draw(&event);
 
     // glClear(GL_DEPTH_BUFFER_BIT);
 
-    // ren.useShader(SHADER_WEAPON); // switch to viewspace shader
-    // ren.sendLightsToShader();
-    // player.draw(&ren); // draw weapon
+    // ren->useShader(SHADER_WEAPON); // switch to viewspace shader
+    // ren->sendLightsToShader();
+    // player.draw(ren); // draw weapon
     
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -223,20 +231,20 @@ int ENTRY(int argc, char **argv)
     
     // Draw to quad
     //---------------------------------
-    glBindVertexArray(ren.quadVAO);
+    glBindVertexArray(ren->quadVAO);
     glDisable(GL_DEPTH_TEST);
 
-    ren.useShader(SHADER_SCREENQUAD);
-    ren.postProcess();
+    ren->useShader(SHADER_SCREENQUAD);
+    ren->postProcess();
 
-    glBindFramebuffer(GL_FRAMEBUFFER, ren.screenFBO);
-    glBindTexture(GL_TEXTURE_2D, ren.screenColorBuffers[0]);
+    glBindFramebuffer(GL_FRAMEBUFFER, ren->screenFBO);
+    glBindTexture(GL_TEXTURE_2D, ren->screenColorBuffers[0]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
     
     glActiveTexture(GL_TEXTURE10);
-    glBindTexture(GL_TEXTURE_2D, ren.colorBuffers[0]);
-    ren.active_shader->setInt("screenTexture", 10);
+    glBindTexture(GL_TEXTURE_2D, ren->colorBuffers[0]);
+    ren->active_shader->setInt("screenTexture", 10);
 
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -256,9 +264,9 @@ int ENTRY(int argc, char **argv)
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     SDL_GL_SwapWindow(window);
     double dtime_milliseconds = ((end - start)*1000 / (double)SDL_GetPerformanceFrequency() );
-    ren.deltaTime = dtime_milliseconds / 1000;
+    ren->deltaTime = dtime_milliseconds / 1000;
 
-    luaMain(&ren, &scenegraph.m_object_instances);
+    luaMain(ren, &scenegraph.m_object_instances);
   }
   //----------------------------------------
 

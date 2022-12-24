@@ -120,6 +120,8 @@ class Renderer {
 
     Renderer();
 
+    void init(void);
+
     void useShader(ShaderType shader);
     void postProcess(void);
     void setupDepthCubemap(glm::vec3 pos, glm::vec3 dir);
@@ -138,4 +140,11 @@ class Renderer {
     void drawLightSource(Model *model, glm::vec3 diffuse_color, int index);
 
     void resize(int x, int y);
+};
+
+
+namespace Render {
+
+  extern Renderer ren;
+
 };

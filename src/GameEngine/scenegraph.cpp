@@ -141,7 +141,10 @@ void SceneGraph::newObjectInstance(std::string object_name, glm::vec3 pos, glm::
 
   newobj.setName(object_name);
   newobj.setID(this->m_object_instances.size());
+  newobj.transform_components.push_back(EntityComponent(COMPONENT_TRANSFORM));
+
   this->m_object_instances.push_back(newobj);
+
 
   this->m_num_entities += 1;
 }

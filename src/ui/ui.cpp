@@ -1,4 +1,7 @@
 #include <stdio.h>
+
+#include "UIEngine.h"
+
 #include "ui.h"
 
 #include <fstream>
@@ -29,7 +32,7 @@ void export_lighting_config(Renderer *ren)
     fprintf(fh, "POINTLIGHT AMBIENT: %f %f %f\n", light->ambient.x, light->ambient.y, light->ambient.z);
     fprintf(fh, "POINTLIGHT DIFFUSE: %f %f %f\n", light->diffuse.x, light->diffuse.y, light->diffuse.z);
     fprintf(fh, "POINTLIGHT CONSTANT, LINEAR, QUADRATIC: %f %f %f\n", light->constant, light->linear, light->quadratic);
-    fprintf(fh, "POINTLIGHT POSITION: %f %f %f\n", light->position.x, light->position.y, light->position.z);
+    // fprintf(fh, "POINTLIGHT POSITION: %f %f %f\n", light->position.x, light->position.y, light->position.z);
   }
 
   fprintf(fh, "CLEAR COLOR: %f %f %f\n", ren->clearColor.x, ren->clearColor.y, ren->clearColor.z);
@@ -62,7 +65,7 @@ void import_lighting_config(Renderer *ren)
     fscanf(fh, "POINTLIGHT AMBIENT: %f %f %f\n", &light->ambient.x, &light->ambient.y, &light->ambient.z);
     fscanf(fh, "POINTLIGHT DIFFUSE: %f %f %f\n", &light->diffuse.x, &light->diffuse.y, &light->diffuse.z);
     fscanf(fh, "POINTLIGHT CONSTANT, LINEAR, QUADRATIC: %f %f %f\n", &light->constant, &light->linear, &light->quadratic);
-    fscanf(fh, "POINTLIGHT POSITION: %f %f %f\n", &light->position.x, &light->position.y, &light->position.z);
+    // fscanf(fh, "POINTLIGHT POSITION: %f %f %f\n", &light->position.x, &light->position.y, &light->position.z);
   }
 
   fscanf(fh, "CLEAR COLOR: %f %f %f\n", &ren->clearColor.x, &ren->clearColor.y, &ren->clearColor.z);
@@ -118,9 +121,9 @@ void draw_lighting_tab(Renderer *ren)
     ImGui::DragScalar("bias", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].bias, 0.001f, 0);
 
     ImGui::Text("Position");
-    ImGui::DragScalar("x", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.x, 0.05f, 0);
-    ImGui::DragScalar("y", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.y, 0.05f, 0);
-    ImGui::DragScalar("z", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.z, 0.05f, 0);
+    // ImGui::DragScalar("x", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.x, 0.05f, 0);
+    // ImGui::DragScalar("y", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.y, 0.05f, 0);
+    // ImGui::DragScalar("z", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.z, 0.05f, 0);
     ImGui::PopID();
     ImGui::TreePop();
   }
@@ -290,18 +293,11 @@ void draw_dev_ui(Renderer *ren, Scene *scene, int *x, int *y, int *w, int *h)
     ImGui::DockSpace(ImGui::GetID("dock"));
 
 
-    ImGui::Begin("Scene");
-    {
-      draw_scene_tab(ren, scene, &scene->m_scenegraph->m_selected_instance);
+    EngineUI::sceneHierarchy(ren, scene);
+    EngineUI::properties(scene);
+    EngineUI::scriptEditor();
 
-      ImGui::End();
-    }
 
-    ImGui::Begin("Properties");
-    {
-      draw_properties_menu(scene, scene->m_scenegraph, scene->m_scenegraph->m_selected_instance);
-      ImGui::End();
-    }
 
     ImGui::Begin("Lighting");
     {
@@ -323,25 +319,6 @@ void draw_dev_ui(Renderer *ren, Scene *scene, int *x, int *y, int *w, int *h)
 
     static std::filesystem::path selected_path("");
 
-    ImGui::Begin("Scripts");
-    {
-      static bool changed = false;
-      draw_directory_recursive(fs::current_path()/"LuaScripting", &selected_path, &changed);
-      if (changed)
-      {
-        std::ifstream fh;
-        fh.open(fs::relative(selected_path, ".").c_str());
-        std::string raw_file = "";
-        std::string line;
-        while (getline(fh, line))
-          raw_file += line + "\n";
-
-        strcpy(script_buffer, raw_file.c_str());
-
-        changed = false;
-      }
-      ImGui::End();
-    }
 
     ImGui::Begin("Script editor");
     {

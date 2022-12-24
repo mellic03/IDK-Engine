@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../include/glm/glm.hpp"
-#include "gameobject.h"
+#include "../../include/glm/glm.hpp"
+#include "../gameobject/gameobject.h"
 #include "weapon.h"
-#include "../transform.h"
+#include "../../transform.h"
 
 class Player {
   

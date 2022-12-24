@@ -27,21 +27,27 @@ add_definitions(
   -DTW_NO_LIB_PRAGMA
   -DTW_NO_DIRECT3D
   -DGLEW_STATIC
-  
 )
 
 
 file(
   GLOB SOURCES
   "src/*.cpp"
+
   "src/GraphicsEngine/*.cpp"
   "src/GraphicsEngine/model/*.cpp"
+  
   "src/GameEngine/*.cpp"
   "src/GameEngine/computemesh/*.cpp"
+  "src/GameEngine/gameobject/*.cpp"
+  "src/GameEngine/player/*.cpp"
+
   "src/ui/*.cpp"
+  "src/ui/tabs/*.cpp"
   "src/scene/*.cpp"
   "src/scripting/*.cpp"
 
+  
   "src/include/stb_image/*.cpp"
   "src/include/imgui/*.cpp"
   "src/include/tiny_gltf/*.h"

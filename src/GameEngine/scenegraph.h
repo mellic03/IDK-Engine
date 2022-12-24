@@ -2,7 +2,7 @@
 
 #include <list>
 
-#include "gameobject.h"
+#include "gameobject/gameobject.h"
 
 
 
@@ -21,6 +21,7 @@ class SceneGraph {
 
     std::vector<GameObject> m_object_templates;
     std::list<GameObject> m_object_instances;
+    std::vector<GameObject *> m_lightsource_instances;
 
 
     SceneGraph() { };

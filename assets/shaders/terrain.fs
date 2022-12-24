@@ -206,4 +206,5 @@ void main()
   fog_factor = 1.0 - clamp(fog_factor, 0, 1);
   FragColor = mix(vec4(clearColor, 1.0), FragColor, fog_factor);
   FragColor2 = FragColor;
+  
 }

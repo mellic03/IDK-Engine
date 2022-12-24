@@ -1,5 +1,4 @@
 #include "physics.h"
-#include "gameobject.h"
 
 #define Sq(n) ((n)*(n))
 

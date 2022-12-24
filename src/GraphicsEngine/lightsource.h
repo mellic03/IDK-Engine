@@ -13,7 +13,7 @@ struct DirLight {
 };
 
 struct PointLight {
-  glm::vec3 position = glm::vec3(0.0f);
+  Transform *m_transform;
   glm::vec3 ambient = glm::vec3(0.0f);
   glm::vec3 diffuse = glm::vec3(0.0f);
   glm::vec3 specular = glm::vec3(0.0f);

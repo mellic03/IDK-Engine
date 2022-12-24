@@ -58,7 +58,7 @@ void draw_load_modal(bool draw, Scene *scene)
       std::filesystem::create_directories(workingdir / "assets" / "scenes" );
       static std::filesystem::path scenedir = workingdir / "assets" / "scenes";
       bool wee;
-      draw_directory_recursive(scenedir, &selected_filepath, &wee);
+      EngineUI::draw_directory_recursive(scenedir, &selected_filepath, &wee);
 
       ImGui::EndChild();
     }

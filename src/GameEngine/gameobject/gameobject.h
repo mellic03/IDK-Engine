@@ -1,10 +1,11 @@
 #pragma once
 
-#include "../GraphicsEngine/GraphicsEngine.h"
-#include "./state.h"
-#include "../transform.h"
-#include "computemesh/computemesh.h"
+#include "../state.h"
+#include "../../transform.h"
 
+#include "../computemesh/computemesh.h"
+#include "entitycomponent.h"
+class EntityComponent;
 
 class GameObject {
 
@@ -49,6 +50,10 @@ class GameObject {
 
 
   public:
+
+    std::vector<EntityComponent> transform_components;
+    std::vector<EntityComponent> lightsource_components;
+    std::vector<EntityComponent> script_components;
 
     float m_sphere_collider_radius = 0.5f;
     float height = 0.5f, width = 0.1f;
@@ -120,7 +125,6 @@ class GameObject {
     void removeChild(GameObject *child);
     void clearChildren(void);
     bool isChild(GameObject *object);
-
 
 
     // Per-frame operations

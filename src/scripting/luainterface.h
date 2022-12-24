@@ -31,6 +31,7 @@ namespace LuaInterface {
   extern std::vector<TableReference> table_references;
 
 
+
   extern std::vector<int> IDs;
   extern std::vector<std::string> scripts;
   extern std::vector<glm::vec3> positions;

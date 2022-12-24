@@ -21,6 +21,11 @@ void Renderer::createShader(std::string filename, ShaderType type)
 
 Renderer::Renderer()
 {
+
+}
+
+void Renderer::init(void)
+{
   this->createShader("terrain",        SHADER_TERRAIN);
   this->createShader("worldspace",     SHADER_WORLDSPACE);
   this->createShader("weapon",         SHADER_WEAPON);
@@ -142,7 +147,7 @@ Renderer::Renderer()
 
   this->pointlights[0].diffuse  = {1.0, 1.0, 1.0};
   this->pointlights[0].specular = {0.15, 0.15, 0.15};
-  this->pointlights[0].position = {1.0, 2.0, 1.0};
+  // this->pointlights[0].position = {1.0, 2.0, 1.0};
 
   for (int i=0; i<NUM_SPOTLIGHTS; i++)
     this->spotlights.push_back(SpotLight());
@@ -178,12 +183,13 @@ void Renderer::setupDepthCubemap(glm::vec3 pos, glm::vec3 dir)
   glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, near, far);
 
   std::vector<glm::mat4> shadowTransforms;
-  shadowTransforms.push_back(shadowProj * glm::lookAt(this->pointlights[0].position, this->pointlights[0].position + glm::vec3( 1.0,  0.0,  0.0), glm::vec3(0.0, -1.0,  0.0)));
-  shadowTransforms.push_back(shadowProj * glm::lookAt(this->pointlights[0].position, this->pointlights[0].position + glm::vec3(-1.0,  0.0,  0.0), glm::vec3(0.0, -1.0,  0.0)));
-  shadowTransforms.push_back(shadowProj * glm::lookAt(this->pointlights[0].position, this->pointlights[0].position + glm::vec3( 0.0,  1.0,  0.0), glm::vec3(0.0,  0.0,  1.0)));
-  shadowTransforms.push_back(shadowProj * glm::lookAt(this->pointlights[0].position, this->pointlights[0].position + glm::vec3( 0.0, -1.0,  0.0), glm::vec3(0.0,  0.0, -1.0)));
-  shadowTransforms.push_back(shadowProj * glm::lookAt(this->pointlights[0].position, this->pointlights[0].position + glm::vec3( 0.0,  0.0,  1.0), glm::vec3(0.0, -1.0,  0.0)));
-  shadowTransforms.push_back(shadowProj * glm::lookAt(this->pointlights[0].position, this->pointlights[0].position + glm::vec3( 0.0,  0.0, -1.0), glm::vec3(0.0, -1.0,  0.0)));
+  glm::vec3 lightPos = *this->pointlights[0].m_transform->getPos();
+  shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 1.0,  0.0,  0.0), glm::vec3(0.0, -1.0,  0.0)));
+  shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0,  0.0,  0.0), glm::vec3(0.0, -1.0,  0.0)));
+  shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0,  1.0,  0.0), glm::vec3(0.0,  0.0,  1.0)));
+  shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0, -1.0,  0.0), glm::vec3(0.0,  0.0, -1.0)));
+  shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0,  0.0,  1.0), glm::vec3(0.0, -1.0,  0.0)));
+  shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0,  0.0, -1.0), glm::vec3(0.0, -1.0,  0.0)));
 
 
   char buffer[64];
@@ -193,9 +199,8 @@ void Renderer::setupDepthCubemap(glm::vec3 pos, glm::vec3 dir)
     this->active_shader->setMat4(buffer, shadowTransforms[i]);
   }
 
-  this->active_shader->setVec3("lightPos", this->pointlights[0].position);
+  this->active_shader->setVec3("lightPos", lightPos);
   this->active_shader->setFloat("far_plane", far);
-
 }
 
 void Renderer::usePerspective(void)
@@ -265,8 +270,8 @@ void Renderer::sendLightsToShader(void)
   
   this->active_shader->setVec3( "pointlight.ambient", this->pointlights[0].ambient);
   this->active_shader->setVec3( "pointlight.diffuse", this->pointlights[0].diffuse);
-  this->active_shader->setVec3( "pointlight.pos", this->pointlights[0].position);
-  this->active_shader->setVec3( "pointlight.tangent_pos", this->pointlights[0].position);
+  this->active_shader->setVec3( "pointlight.pos", *this->pointlights[0].m_transform->getPos());
+  this->active_shader->setVec3( "pointlight.tangent_pos", *this->pointlights[0].m_transform->getPos());
   this->active_shader->setFloat("pointlight.constant", this->pointlights[0].constant);
   this->active_shader->setFloat("pointlight.linear", this->pointlights[0].linear);
   this->active_shader->setFloat("pointlight.quadratic", this->pointlights[0].quadratic);
@@ -423,11 +428,6 @@ void Renderer::resize(int x, int y)
   glDrawBuffers(1, screenAttachments);
 
 
-
-
-
-
-
   this->viewport_width = x;
   this->viewport_height = y;
 
@@ -509,3 +509,6 @@ void Renderer::drawLightSource(Model *model, glm::vec3 diffuse_color, int index)
     glBindVertexArray(0);
   }
 }
+
+
+Renderer Render::ren;

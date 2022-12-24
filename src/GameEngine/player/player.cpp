@@ -1,6 +1,5 @@
 // #include <functional>
 
-
 #include "player.h"
 
 Player::Player(Renderer *ren)

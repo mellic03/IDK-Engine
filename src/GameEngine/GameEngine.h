@@ -1,8 +1,8 @@
 #pragma once
 
-#include "player.h"
+#include "player/player.h"
 #include "physics.h"
-#include "gameobject.h"
+#include "gameobject/gameobject.h"
 #include "scenegraph.h"
 #include "computemesh/computemesh.h"
 

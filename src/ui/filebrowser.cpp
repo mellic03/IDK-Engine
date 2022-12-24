@@ -3,7 +3,8 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
-void draw_directory_recursive(fs::path pth, fs::path *selected_filepath, bool *changed)
+
+void EngineUI::draw_directory_recursive(fs::path pth, fs::path *selected_filepath, bool *changed)
 {
   // Two passes, first showing directories, then files
 

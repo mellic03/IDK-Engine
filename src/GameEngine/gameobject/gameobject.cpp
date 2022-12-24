@@ -1,6 +1,6 @@
 #include "gameobject.h"
 
-#include "physics.h"
+#include "../physics.h"
 
 namespace PE = PhysicsEngine;
 
@@ -154,7 +154,8 @@ void GameObject::perFrameUpdate(Renderer *ren)
   this->getVel()->x *= damping;
   this->getVel()->z *= damping;
   
-  glm::mat4 inv_model = glm::inverse(this->getTransform()->getModelMatrix());
+
+  glm::mat4 inv_model = glm::inverse(this->getTransform()->getModelMatrix_noLocalTransform());
   glm::vec3 tempvel = inv_model * this->getTransform()->getVel_vec4();
   *this->getPos() += tempvel * ren->deltaTime;
 
@@ -205,7 +206,6 @@ void GameObject::perFrameUpdate(Renderer *ren)
       break;
   }
 }
-
 
 
 void GameObject::clearParent(void)

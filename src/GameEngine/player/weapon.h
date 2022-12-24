@@ -1,7 +1,6 @@
 #pragma once
 
-#include "../GraphicsEngine/GraphicsEngine.h"
-#include "./gameobject.h"
+#include "../gameobject/gameobject.h"
 
 
 enum WeaponType { WEAPON_SHOTGUN };

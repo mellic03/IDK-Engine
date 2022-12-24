@@ -7,7 +7,8 @@
 #include "../GraphicsEngine/renderer.h"
 #include "../scene/scene.h"
 
-#include <filesystem>
+#include "UIEngine.h"
+
 namespace fs = std::filesystem;
 
 void draw_main_menu_bar(Renderer *ren, Scene *scene);
@@ -19,8 +20,6 @@ void import_lighting_config(Renderer *ren);
 // Scene tab
 //----------------------------------------------------------------------------------
 void draw_scene_tab(Renderer *ren, Scene *scene, int *selected_instance);
-void draw_properties_menu(Scene *scene, SceneGraph *handler, int selected_instance);
 //----------------------------------------------------------------------------------
 
-void draw_directory_recursive(fs::path pth, fs::path *selected_filepath, bool *changed);
 

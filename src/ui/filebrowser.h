@@ -11,12 +11,17 @@ class FileBrowser {
 
   public:
 
-    fs::path m_selected_path;
+    fs::path selected_path;
 
     FileBrowser(void) { };
 
 
     void drawDirectory(fs::path directory_path);
 
-
 };
+
+
+namespace EngineUI {
+  void draw_directory_recursive(fs::path pth, fs::path *selected_filepath, bool *changed);
+};
+
