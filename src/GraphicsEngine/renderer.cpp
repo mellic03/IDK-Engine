@@ -163,6 +163,7 @@ void Renderer::useShader(ShaderType shader)
   glUseProgram(this->active_shader->id);
 }
 
+
 void Renderer::postProcess(void)
 {
   // this->active_shader.setInt("screenTexture", 0);
@@ -173,8 +174,10 @@ void Renderer::postProcess(void)
   this->active_shader->setFloat("gamma", this->gamma);
 }
 
+
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
+
 
 void Renderer::setupDepthCubemap(glm::vec3 pos, glm::vec3 dir)
 {
@@ -184,7 +187,7 @@ void Renderer::setupDepthCubemap(glm::vec3 pos, glm::vec3 dir)
   glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, near, far);
 
   std::vector<glm::mat4> shadowTransforms;
-  glm::vec3 lightPos = *this->pointlights[0].m_transform->getPos();
+  glm::vec3 lightPos = this->pointlights[0].m_transform->getPos_worldspace();
   shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 1.0,  0.0,  0.0), glm::vec3(0.0, -1.0,  0.0)));
   shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0,  0.0,  0.0), glm::vec3(0.0, -1.0,  0.0)));
   shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0,  1.0,  0.0), glm::vec3(0.0,  0.0,  1.0)));
@@ -280,7 +283,6 @@ void Renderer::sendLightsToShader(void)
   this->active_shader->setVec3( "clearColor", this->clearColor);
   this->active_shader->setFloat("fog_start", this->fog_start);
   this->active_shader->setFloat("fog_end", this->fog_end);
-
 
 
   // for (int i=0; i<this->NM_DIRLIGHTS; i++)

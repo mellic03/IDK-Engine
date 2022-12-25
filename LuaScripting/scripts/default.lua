@@ -1,11 +1,10 @@
 local engine = require("LuaScripting/engine");
-local vlib = engine.vector;
-
+local vlib = engine.vectorLibrary;
 
 return function(worldData, objectID)
 
 	local pos = worldData.positions[objectID];
-  -- print("pos: ", pos.x, pos.y, pos.z);
+	local vel = worldData.velocities[objectID];
 
 end;
 

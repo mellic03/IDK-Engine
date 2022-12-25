@@ -130,12 +130,6 @@ class Renderer {
     void update(glm::vec3 pos, glm::vec3 dir);
     void sendLightsToShader(void);
 
-
-    void useModelMatrix(glm::mat4 mat)  { this->m_active_model_matrix = mat; };
-
-    void draw(Model *model);
-
-    void drawMesh(Mesh *mesh);
     void drawModel(Model *model);
     void drawLightSource(Model *model, glm::vec3 diffuse_color, int index);
 

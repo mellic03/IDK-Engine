@@ -2,7 +2,7 @@ local lpath = "LuaScripting/"
 
 local this = { };
 
-  this.vector = require(lpath .. "engine/vector/vector");
+  this.vectorLibrary = require(lpath .. "engine/vector/vector");
 
 
   this.tableLength = function(table)
@@ -39,8 +39,8 @@ local this = { };
 
     });
 
-    this.vector.initVectorArray(worldData.positions,  this.tableLength(worldData.positions));
-    this.vector.initVectorArray(worldData.velocities, this.tableLength(worldData.velocities));
+    this.vectorLibrary.initVectorArray(worldData.positions,  this.tableLength(worldData.positions));
+    this.vectorLibrary.initVectorArray(worldData.velocities, this.tableLength(worldData.velocities));
     
   end;
 

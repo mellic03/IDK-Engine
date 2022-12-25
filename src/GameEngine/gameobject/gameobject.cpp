@@ -142,8 +142,6 @@ void GameObject::changeNavState(NavigationState new_state)
 
 void GameObject::perFrameUpdate(Renderer *ren)
 {
-  this->getTransform()->update();
-
   if (!this->usePhysics())
     return;
 
@@ -217,8 +215,7 @@ void GameObject::clearParent(void)
     printf("rot before: %f %f %f\n", rot->x, rot->y, rot->z);
 
     *this->getPos() = this->m_parent->getTransform()->localToWorld(this->getTransform()->getPos_vec4());
-    *this->getRot() = this->m_parent->getTransform()->localToWorld(this->getTransform()->getRot_vec4());
-
+    this->getTransform()->rotation_q = glm::inverse(this->m_parent->getTransform()->rotation_q) * this->getTransform()->rotation_q;
 
     printf("rot after: %f %f %f\n", rot->x, rot->y, rot->z);
 
@@ -271,7 +268,6 @@ bool GameObject::isChild(GameObject *object)
 void GameObject::setParent(GameObject *parent)
 {
   *this->getPos() = parent->getTransform()->worldToLocal(this->getTransform()->getPos_vec4());
-  *this->getRot() = parent->getTransform()->worldToLocal(this->getTransform()->getRot_vec4());
 
   this->m_parent = parent;
   this->_transform.parent = &parent->_transform;

@@ -89,6 +89,7 @@ int ENTRY(int argc, char **argv)
   player.cam->pitch = &player.getRot()->x;
   player.cam->roll = &player.getRot()->z;
   player.cam->yaw = &player.getRot()->y;
+  *player.cam->yaw = -90.0f;
 
   
   scenegraph.loadObject("assets/environment/building/");
@@ -104,8 +105,8 @@ int ENTRY(int argc, char **argv)
   light1->setName("Point light 1");
   light1->lightsource_components.push_back(EntityComponent(COMPONENT_LIGHTSOURCE));
   light1->hasGeometry(false);
-  scenegraph.m_lightsource_instances.push_back(light1);
   ren->pointlights[0].m_transform = light1->getTransform();
+  scenegraph.m_lightsource_instances.push_back(light1);
 
 
   Scene scene_1;
@@ -184,24 +185,17 @@ int ENTRY(int argc, char **argv)
 
     // Render depth map
     // ---------------------------------
-    if (count == 1)
-    {
-      count = 0;
-      glViewport(0, 0, ren->SHADOW_WIDTH, ren->SHADOW_HEIGHT);
-      glBindFramebuffer(GL_FRAMEBUFFER, ren->depthMapFBO);
-      glBindTexture(GL_TEXTURE_CUBE_MAP, ren->depthCubemap);
-      glClear(GL_DEPTH_BUFFER_BIT);
-          ren->useShader(SHADER_POINTSHADOW);
-          ren->setupDepthCubemap({0, 0, 0}, {0, 0, 0});
-          glDisable(GL_CULL_FACE);
-          scene_1.draw(&event);
-          glEnable(GL_CULL_FACE);
-      glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-      glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    }
-
-    else
-      count += 1;
+    glViewport(0, 0, ren->SHADOW_WIDTH, ren->SHADOW_HEIGHT);
+    glBindFramebuffer(GL_FRAMEBUFFER, ren->depthMapFBO);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, ren->depthCubemap);
+    glClear(GL_DEPTH_BUFFER_BIT);
+        ren->useShader(SHADER_POINTSHADOW);
+        ren->setupDepthCubemap({0, 0, 0}, {0, 0, 0});
+        glDisable(GL_CULL_FACE);
+        scene_1.draw(&event);
+        glEnable(GL_CULL_FACE);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     // ---------------------------------
 
 

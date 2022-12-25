@@ -18,32 +18,19 @@ struct Transform {
   glm::vec3 velocity = {0.0f, 0.0f, 0.0f};
   glm::vec3 rotation = {0.0f, 0.0f, 0.0f};
   glm::vec3 last_rotation  = {0.0f, 0.0f, 0.0f};
-  glm::quat rotation_q = glm::quat(this->rotation);
+  glm::quat rotation_q    = glm::quat();
 
-  // Direct member access
+  // Member access
   //-------------------------------------------------------------------------------------------------------------
   glm::vec3 *getPos(void)       { return &this->position; };
   glm::vec3 *getVel(void)       { return &this->velocity; };
-  glm::vec3 *getRot(void)       { return &this->rotation; };
+  glm::vec3 *getRot(void)       { this->rotation_q = glm::quat(this->rotation); return &this->rotation; };
   glm::quat *getRotQ(void)      { return &this->rotation_q; };
 
   glm::vec4 getPos_vec4(void)   { return glm::vec4(this->position.x, this->position.y, this->position.z, 1.0f); };
   glm::vec4 getVel_vec4(void)   { return glm::vec4(this->velocity.x, this->velocity.y, this->velocity.z, 0.0f); };
   glm::vec4 getRot_vec4(void)   { return glm::vec4(this->rotation.x, this->rotation.y, this->rotation.z, 0.0f); };
-  //-------------------------------------------------------------------------------------------------------------
 
-
-  void update(void)
-  {
-    glm::vec3 delta_rotation = this->rotation - this->last_rotation;
-    this->rotation_q = glm::rotate(this->rotation_q, glm::radians(delta_rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-    this->rotation_q = glm::rotate(this->rotation_q, glm::radians(delta_rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->last_rotation = this->rotation;
-  }
-
-
-  // Utility member access
-  //-------------------------------------------------------------------------------------------------------------
   glm::vec3 getPos_worldspace(void)   { return this->getModelMatrix_noLocalTransform() * this->getPos_vec4(); };
 
 
@@ -78,7 +65,6 @@ struct Transform {
   //-------------------------------------------------------------------------------------------------------------
 
 
-
   glm::vec3 worldToLocal(glm::vec4 vec)
   {
     return glm::inverse(this->getModelMatrix()) * vec;
@@ -100,7 +86,6 @@ struct Transform {
   };
 
 
-
   glm::vec3 localToWorld(glm::vec4 vec)
   {
     return this->getModelMatrix() * vec;
@@ -118,6 +103,5 @@ struct Transform {
   {
     return this->getModelMatrix_noLocalTransform() * glm::vec4(vec.x, vec.y, vec.z, (directional) ? 0.0f : 1.0f);;
   };
-
 
 };

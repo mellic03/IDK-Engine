@@ -19,9 +19,6 @@ void Scene::useSceneGraph(SceneGraph *scenegraph)
 
 void Scene::draw(SDL_Event *event)
 {
-
-  this->ren->useShader(SHADER_TERRAIN);
-
   for (auto &obj: this->m_scenegraph->m_object_instances)
   {
     if (obj.isHidden())
@@ -39,6 +36,9 @@ void Scene::draw(SDL_Event *event)
     }
   }
 
+
+  Shader *backup = this->ren->active_shader;
+
   this->ren->useShader(SHADER_LIGHTSOURCE);
 
   int i = 0;
@@ -46,10 +46,11 @@ void Scene::draw(SDL_Event *event)
   {
     this->ren->pointlights[0].m_transform = lightsource->getTransform();
     lightsource->m_model->setTransform(lightsource->getTransform());
-    this->ren->drawLightSource(lightsource->m_model, {1, 1, 1}, 0);
+    this->ren->drawLightSource(lightsource->m_model, this->ren->pointlights[0].diffuse, 0);
     i += 1;
   }
 
+  this->ren->active_shader = backup;
 
 }
 
