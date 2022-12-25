@@ -113,9 +113,6 @@ void LuaInterface::ToCPP::stdvec_vec3(std::vector<glm::vec3> *vecOfVec3, std::st
   {
     LuaTTable vec = *(LuaTTable *)&table->getValue(Table::Key(i+1));
 
-    // if (name == "Velocities")
-    //   std::cout << vec.ToString() << std::endl;
-
     *element = glm::vec3(
       (*(LuaTNumber *)&vec.getValue(Table::Key("x"))).getValue(),
       (*(LuaTNumber *)&vec.getValue(Table::Key("y"))).getValue(),
@@ -136,7 +133,7 @@ void LuaInterface::ToLua::gameobject(GameObject *object, int objectID)
     LuaInterface::scripts.push_back(component.script_name);
   }
 
-  LuaInterface::positions.push_back(*object->getTransform()->getPos());
+  LuaInterface::positions.push_back(object->getTransform()->getPos_worldspace());
   LuaInterface::velocities.push_back(*object->getTransform()->getVel());
 }
 
@@ -144,6 +141,6 @@ void LuaInterface::ToLua::gameobject(GameObject *object, int objectID)
 
 void LuaInterface::ToCPP::gameobject(GameObject *object, int objectID)
 {
-  *object->getPos() = LuaInterface::positions[objectID];
+  *object->getPos() = object->getTransform()->worldToLocal_noLocalTransform(LuaInterface::positions[objectID], false);
   *object->getVel() = LuaInterface::velocities[objectID];
 }

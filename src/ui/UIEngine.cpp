@@ -1,6 +1,5 @@
 #include "UIEngine.h"
 
-
 int EngineUI::selected_objectID = 0;
 FileBrowser EngineUI::filebrowser;
 
@@ -11,8 +10,6 @@ void EngineUI::vec3(std::string name, glm::vec3 *data, float step)
 
   ImGui::BeginTable(name.c_str(), 4);
   {
-
-
     ImGui::TableNextRow();
 
     ImGui::TableNextColumn();
@@ -40,7 +37,6 @@ void EngineUI::vec3(std::string name, glm::vec3 *data, float step)
         data->z = 0.0f;
       ImGui::SameLine();
       ImGui::DragFloat("##Z", &data->z, step, 0, 0, (data->z > -1.0f && data->z < 1.0f) ? "%0.3f" : "%0.1f");
-
 
     ImGui::PopStyleVar();
 

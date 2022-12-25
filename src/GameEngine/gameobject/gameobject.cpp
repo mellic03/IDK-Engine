@@ -31,7 +31,7 @@ bool GameObject::_groundTest(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec
 void GameObject::collideWithMeshes(void)
 {
   glm::mat4 thismodelmat = this->getTransform()->getModelMatrix();
-  glm::vec3 ray_down  =   glm::vec4( 0.0f, -1.0f,  0.0f,  0.0f);
+  glm::vec3 ray_down  =   glm::vec4(0.0f, -1.0f,  0.0f,  0.0f);
 
   this->changePhysState(PHYSICS_FALLING);
 
@@ -142,9 +142,10 @@ void GameObject::changeNavState(NavigationState new_state)
 
 void GameObject::perFrameUpdate(Renderer *ren)
 {
+  this->getTransform()->update();
+
   if (!this->usePhysics())
     return;
-
 
   // Per frame, add velocity to position, then check physics state
   float damping;
@@ -212,8 +213,15 @@ void GameObject::clearParent(void)
 {
   if (this->m_parent != nullptr)
   {
+    glm::vec3 *rot = this->getRot();
+    printf("rot before: %f %f %f\n", rot->x, rot->y, rot->z);
+
     *this->getPos() = this->m_parent->getTransform()->localToWorld(this->getTransform()->getPos_vec4());
-    // *this->getRot() = this->m_parent->getTransform()->localToWorld(this->getTransform()->getRot_vec4());
+    *this->getRot() = this->m_parent->getTransform()->localToWorld(this->getTransform()->getRot_vec4());
+
+
+    printf("rot after: %f %f %f\n", rot->x, rot->y, rot->z);
+
     this->m_parent->removeChild(this);
   }
   this->m_parent = nullptr;
@@ -263,7 +271,7 @@ bool GameObject::isChild(GameObject *object)
 void GameObject::setParent(GameObject *parent)
 {
   *this->getPos() = parent->getTransform()->worldToLocal(this->getTransform()->getPos_vec4());
-  // *this->getRot() = parent->getTransform()->worldToLocal(this->getTransform()->getRot_vec4());
+  *this->getRot() = parent->getTransform()->worldToLocal(this->getTransform()->getRot_vec4());
 
   this->m_parent = parent;
   this->_transform.parent = &parent->_transform;

@@ -40,7 +40,7 @@ class Camera {
     glm::vec3 right;
     float headbob_value = 0.0f;
 
-    float pitch = 0, roll = 0, yaw = -90;
+    float *pitch = nullptr, *roll = nullptr, *yaw = nullptr;
     float rot_speed = 5.0f;
 
 

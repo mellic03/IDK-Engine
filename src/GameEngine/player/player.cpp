@@ -6,6 +6,7 @@ Player::Player(Renderer *ren)
 {
   this->cam = &ren->cam;
 
+
   // this->useWeapon(WEAPON_SHOTGUN);
   // this->getWeapon()->loadModel("assets/player/gun/");
   // this->getWeapon()->hip_pos = glm::vec3(+0.10f, -0.10f, -0.15f);
@@ -101,8 +102,8 @@ void Player::mouse_input(Renderer *ren, SDL_Event *event)
 
   if (event->type == SDL_MOUSEMOTION && SDL_GetRelativeMouseMode())
   {
-    this->cam->yaw   += this->cam->rot_speed * ren->deltaTime * event->motion.xrel;
-    this->cam->pitch -= this->cam->rot_speed * ren->deltaTime * event->motion.yrel;
+    *this->cam->yaw   += this->cam->rot_speed * ren->deltaTime * event->motion.xrel;
+    *this->cam->pitch -= this->cam->rot_speed * ren->deltaTime * event->motion.yrel;
     // this->getWeapon()->movement_offset.x -= this->cam->rot_speed * ren->deltaTime * 0.001f * event->motion.xrel;
     // this->getWeapon()->movement_offset.y += this->cam->rot_speed * ren->deltaTime * 0.001f * event->motion.yrel;
   }

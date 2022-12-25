@@ -5,14 +5,14 @@ local this = { };
   this.vector = require(lpath .. "engine/vector/vector");
 
 
-  this.tableLength = function (table)
+  this.tableLength = function(table)
     local count = 0;
     for _ in pairs(table) do count = count + 1 end;
     return count;
   end;
 
 
-  this.worldDataInit = function (worldData)
+  this.worldDataInit = function(worldData)
 
     setmetatable(worldData, {
 

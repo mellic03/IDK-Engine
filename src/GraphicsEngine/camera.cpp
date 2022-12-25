@@ -38,14 +38,14 @@ void Camera::input()
 
   const Uint8 *state = SDL_GetKeyboardState(NULL);
 
-  if (this->pitch <= -85)
-    this->pitch = -85;
-  else if (this->pitch >= 85)
-    this->pitch = 85;
+  if (*this->pitch <= -85)
+    *this->pitch = -85;
+  else if (*this->pitch >= 85)
+    *this->pitch = 85;
 
-  this->dir->x = cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
-  this->dir->y = sin(glm::radians(this->pitch));
-  this->dir->z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
+  this->dir->x = cos(glm::radians(*this->yaw)) * cos(glm::radians(*this->pitch));
+  this->dir->y = sin(glm::radians(*this->pitch));
+  this->dir->z = sin(glm::radians(*this->yaw)) * cos(glm::radians(*this->pitch));
 
   glm::vec3 tempdir = this->m_transform->getModelMatrix_noLocalTransform() * glm::vec4(this->dir->x, this->dir->y, this->dir->z, 0.0f);
   glm::vec3 p = this->m_transform->getPos_worldspace();

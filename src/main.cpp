@@ -86,6 +86,9 @@ int ENTRY(int argc, char **argv)
   player.m_gameobject = scenegraph.rearObjectPtr();
   player.m_gameobject->setName("Player");
   player.m_gameobject->setInteractivity("player");
+  player.cam->pitch = &player.getRot()->x;
+  player.cam->roll = &player.getRot()->z;
+  player.cam->yaw = &player.getRot()->y;
 
   
   scenegraph.loadObject("assets/environment/building/");

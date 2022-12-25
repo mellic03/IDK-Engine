@@ -12,7 +12,16 @@ class Scene {
 
 
   public:
+
     Player *player;
+
+    // World
+    //-------------------------------------------------------
+    float gravity = 0.0f;
+    std::vector<PointLight> pointlights, sorted_pointlights;
+    //-------------------------------------------------------
+
+
 
     Transform m_temptransform;
 
