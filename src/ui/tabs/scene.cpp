@@ -1,5 +1,5 @@
-#include "../ui.h"
-
+#include "tabs.h"
+#include "../UIEngine.h"
 
 static void draw_new_instance_menu(SceneGraph *scenegraph, int *selected_instance)
 {

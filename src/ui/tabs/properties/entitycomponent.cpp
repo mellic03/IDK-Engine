@@ -1,4 +1,4 @@
-#include "entitycomponent.h"
+#include "../tabs.h"
 
 
 bool EntityComponentUI::newComponent(EntityComponentType *component_type)
@@ -16,7 +16,6 @@ bool EntityComponentUI::newComponent(EntityComponentType *component_type)
 
     ImGui::EndPopup();
   }
-
 
 
   return *component_type != COMPONENT_NONE;

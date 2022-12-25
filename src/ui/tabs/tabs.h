@@ -5,6 +5,9 @@
 #include "../../include/imgui/imgui_impl_opengl3.h"
 #include "../../include/imgui/imgui_stdlib.h"
 
+#include "../../GameEngine/GameEngine.h"
+#include "../../GraphicsEngine/GraphicsEngine.h"
+#include "../../scene/scene.h"
 
 
 namespace EngineUI {

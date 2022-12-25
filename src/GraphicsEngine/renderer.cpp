@@ -271,7 +271,7 @@ void Renderer::sendLightsToShader(void)
   
   this->active_shader->setVec3( "pointlight.ambient", this->pointlights[0].ambient);
   this->active_shader->setVec3( "pointlight.diffuse", this->pointlights[0].diffuse);
-  this->active_shader->setVec3( "pointlight.pos", *this->pointlights[0].m_transform->getPos());
+  this->active_shader->setVec3( "pointlight.pos", this->pointlights[0].m_transform->getPos_worldspace());
   this->active_shader->setVec3( "pointlight.tangent_pos", *this->pointlights[0].m_transform->getPos());
   this->active_shader->setFloat("pointlight.constant", this->pointlights[0].constant);
   this->active_shader->setFloat("pointlight.linear", this->pointlights[0].linear);

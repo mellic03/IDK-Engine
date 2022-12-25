@@ -44,6 +44,7 @@ file(
 
   "src/ui/*.cpp"
   "src/ui/tabs/*.cpp"
+  "src/ui/tabs/properties/*.cpp"
   "src/scene/*.cpp"
   "src/scripting/*.cpp"
 

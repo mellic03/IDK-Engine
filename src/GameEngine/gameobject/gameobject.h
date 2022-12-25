@@ -4,49 +4,47 @@
 #include "../../transform.h"
 
 #include "../computemesh/computemesh.h"
+
 #include "entitycomponent.h"
 class EntityComponent;
+
+
 
 class GameObject {
 
   private:
+
+    int m_ID = 0;
     std::string m_template_name = "DEFAULT";
 
     bool _has_geometry = false;
-    bool _has_collisionmesh = false;
-  
-    int m_ID = 0;
 
     std::vector<GameObject *> m_children;
     GameObject *m_parent = nullptr;
+    Transform _transform;
+
+    // Physics
+    //----------------------------------------------------
+    PhysicsState m_physics_state = PHYSICS_FALLING;
+    NavigationState m_navigation_state = NAVIGATION_REST;
+    std::vector<CollisionMesh *> _collision_meshes;
+    std::vector<Transform> _collision_transforms;
+    bool _has_collisionmesh = false;
+    //----------------------------------------------------
+
+    // Interactivity
+    //----------------------------------------------------
+    std::vector<glm::vec3> m_path;
 
     bool _is_static = false;
     bool _is_environmental = false;
     bool _is_animated = false;
     bool _is_npc = false;
-
     bool _hidden = false;
-
-    PhysicsState m_physics_state = PHYSICS_FALLING;
-    NavigationState m_navigation_state = NAVIGATION_REST;
-
-    std::vector<glm::vec3> m_path;
-
-
-    glm::vec3 ray_up    = glm::vec3( 0.0f, +1.0f,  0.0f);
-    glm::vec3 ray_down  = glm::vec3( 0.0f, -1.0f,  0.0f);
-    glm::vec3 ray_left  = glm::vec3(-1.0f,  0.0f,  0.0f);
-    glm::vec3 ray_right = glm::vec3(+1.0f,  0.0f,  0.0f);
-    glm::vec3 ray_front = glm::vec3( 0.0f,  0.0f, +1.0f);
-    glm::vec3 ray_back  = glm::vec3( 0.0f,  0.0f, -1.0f);
-
-    Transform m_transform;
-
-    std::vector<CollisionMesh *> _collision_meshes;
-    std::vector<Transform> _collision_transforms;
-
+    //----------------------------------------------------
 
     bool _groundTest(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal);
+
 
 
   public:
@@ -64,7 +62,6 @@ class GameObject {
 
     std::string m_given_name = "DEFAULT";
     std::string m_interactivity = "DEFAULT";
-    std::string m_script_name = "LuaScripting/scripts/default";
 
 
     glm::vec3 pos_worldspace = glm::vec3(0.0f);
@@ -74,10 +71,10 @@ class GameObject {
     GameObject(void) { };
 
 
-    Transform *getTransform(void)     { return &this->m_transform; };
-    glm::vec3 *getPos(void)           { return this->m_transform.getPos(); };
-    glm::vec3 *getVel(void)           { return this->m_transform.getVel(); };
-    glm::vec3 *getRot(void)           { return this->m_transform.getRot(); };
+    Transform *getTransform(void)     { return &this->_transform; };
+    glm::vec3 *getPos(void)           { return this->_transform.getPos(); };
+    glm::vec3 *getVel(void)           { return this->_transform.getVel(); };
+    glm::vec3 *getRot(void)           { return this->_transform.getRot(); };
 
 
     // Object ID
@@ -129,10 +126,6 @@ class GameObject {
 
     // Per-frame operations
     //---------------------------------------------------------------------------------------------
-
-    void attemptCollision(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal, float d);
-    void collideWithMeshes(void);
-
     void changePhysState(PhysicsState state);
     void changeNavState(NavigationState state);
 
@@ -145,6 +138,7 @@ class GameObject {
 
     CollisionMesh *getCollisionMesh(void)  { return &this->m_collision_mesh; };
     void collideWithObject(GameObject *object);
+    void collideWithMeshes(void);
 
     void perFrameUpdate(Renderer *ren);
     //---------------------------------------------------------------------------------------------

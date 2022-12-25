@@ -192,15 +192,15 @@ void GameObject::perFrameUpdate(Renderer *ren)
         break;
       }
 
-      if (glm::distance(this->m_transform.position, this->m_path[this->m_path.size()-1] + glm::vec3(0.0f, 0.5f, 0.0f)) < 0.5f)
+      if (glm::distance(this->_transform.position, this->m_path[this->m_path.size()-1] + glm::vec3(0.0f, 0.5f, 0.0f)) < 0.5f)
       {
         this->m_path.pop_back();
       }
 
       else
       {
-        glm::vec3 move_towards_dir = 0.01f * glm::normalize(this->m_path[this->m_path.size()-1] - this->m_transform.position);
-        this->m_transform.position += move_towards_dir;
+        glm::vec3 move_towards_dir = 0.01f * glm::normalize(this->m_path[this->m_path.size()-1] - this->_transform.position);
+        this->_transform.position += move_towards_dir;
       }
   
       break;
@@ -217,7 +217,7 @@ void GameObject::clearParent(void)
     this->m_parent->removeChild(this);
   }
   this->m_parent = nullptr;
-  this->m_transform.parent = nullptr;
+  this->_transform.parent = nullptr;
 }
 
 void GameObject::giveChild(GameObject *child)
@@ -266,7 +266,7 @@ void GameObject::setParent(GameObject *parent)
   // *this->getRot() = parent->getTransform()->worldToLocal(this->getTransform()->getRot_vec4());
 
   this->m_parent = parent;
-  this->m_transform.parent = &parent->m_transform;
+  this->_transform.parent = &parent->_transform;
 }
 
 
@@ -278,7 +278,7 @@ void GameObject::collideWithObject(GameObject *object)
   if (this->isEnvironmental() || this->getID() == object->getID())
     return;
 
-  // if (glm::distance(this->m_transform.position, object->getPos()) > object->boundingSphereRadius())
+  // if (glm::distance(this->_transform.position, object->getPos()) > object->boundingSphereRadius())
   //   return;
 
   this->_collision_meshes.push_back(object->getCollisionMesh());

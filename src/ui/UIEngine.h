@@ -18,4 +18,6 @@ namespace EngineUI {
 
   extern FileBrowser filebrowser;
 
+  void vec3(std::string name, glm::vec3 *data, float step);
+
 };

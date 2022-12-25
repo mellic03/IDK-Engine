@@ -1,5 +1,6 @@
 #include "entitycomponent.h"
 #include "../../GraphicsEngine/GraphicsEngine.h"
+#include "../../ui/UIEngine.h"
 
 namespace fs = std::filesystem;
 
@@ -48,12 +49,6 @@ EntityComponent::EntityComponent(EntityComponentType component_type)
 
 void EntityComponent::draw(GameObject *object)
 {
-  // std::function<void(int)> testfn = [](int a){ printf("testfn: %d\n", a); };
-
-  // std::vector<std::function<void(int)>> fvec;
-  // fvec.push_back(testfn);
-
-  // fvec[0](21);
   int selected_pointlight = 0;
 
   switch (this->_component_type)
@@ -64,16 +59,9 @@ void EntityComponent::draw(GameObject *object)
     case (COMPONENT_TRANSFORM):
       if (ImGui::CollapsingHeader("Transform"))
       {
-        ImGui::Indent(10.0f);
-        {
-          ImGui::Text("Position"); ImGui::SameLine();
-          ImGui::DragFloat3("##1", &object->getPos()->x, 0.01f, 0, 0, "%0.01f", 0);
-          ImGui::Text("Velocity"); ImGui::SameLine();
-          ImGui::DragFloat3("##2", &object->getVel()->x, 0.01f, 0, 0, "%0.01f", 0);
-          ImGui::Text("Rotation"); ImGui::SameLine();
-          ImGui::DragFloat3("##3", &object->getRot()->x, 0.1f,  0, 0, "%0.1f", 0);
-        }
-        ImGui::Unindent(10.0f);
+        EngineUI::vec3("Position", object->getPos(), 0.01f);
+        EngineUI::vec3("Velocity", object->getVel(), 0.01f);
+        EngineUI::vec3("Rotation", object->getRot(), 0.1f);
       }
       break;
 
@@ -82,30 +70,29 @@ void EntityComponent::draw(GameObject *object)
 
       if (ImGui::CollapsingHeader("Lightsource"))
       {
-        ImGui::Indent(10.0f);
-        {
-          ImGui::Checkbox("Enable", &Render::ren.pointlights_on[selected_pointlight]);
+        ImGui::Checkbox("Enable", &Render::ren.pointlights_on[selected_pointlight]);
 
-          ImGui::ColorEdit3("ambient", (float*)&Render::ren.pointlights[selected_pointlight].ambient);
-          ImGui::ColorEdit3("diffuse", (float*)&Render::ren.pointlights[selected_pointlight].diffuse);
+        ImGui::ColorEdit3("ambient", (float*)&Render::ren.pointlights[selected_pointlight].ambient);
+        ImGui::ColorEdit3("diffuse", (float*)&Render::ren.pointlights[selected_pointlight].diffuse);
 
-          ImGui::SliderFloat("constant", &Render::ren.pointlights[selected_pointlight].constant, 0.0f, 100.0f, "%0.4f", 0);
-          ImGui::DragScalar("linear", ImGuiDataType_Float, &Render::ren.pointlights[selected_pointlight].linear,       0.001f, 0);
-          ImGui::DragScalar("quadratic", ImGuiDataType_Float, &Render::ren.pointlights[selected_pointlight].quadratic, 0.001f, 0);
-          ImGui::DragScalar("bias", ImGuiDataType_Float, &Render::ren.pointlights[selected_pointlight].bias, 0.001f, 0);
-        }
-        ImGui::Unindent(10.0f);
+        ImGui::SliderFloat("constant", &Render::ren.pointlights[selected_pointlight].constant, 0.0f, 100.0f, "%0.4f", 0);
+        ImGui::DragScalar("linear", ImGuiDataType_Float, &Render::ren.pointlights[selected_pointlight].linear,       0.001f, 0);
+        ImGui::DragScalar("quadratic", ImGuiDataType_Float, &Render::ren.pointlights[selected_pointlight].quadratic, 0.001f, 0);
+        ImGui::DragScalar("bias", ImGuiDataType_Float, &Render::ren.pointlights[selected_pointlight].bias, 0.001f, 0);
       }
       break;
 
 
     case (COMPONENT_SCRIPT):
-      if (ImGui::CollapsingHeader("Script"))
+      if (ImGui::CollapsingHeader(std::string("Script        " + this->script_path.filename().string()).c_str()))
       {
-        ImGui::Indent(10.0f);
-        {
-          ImGui::Text("Path: %s", this->script_name.c_str());
+        if (ImGui::Button(std::string(this->script_name + ".lua").c_str()))
+          ImGui::OpenPopup("Change Script");
 
+
+        ImGui::SetNextWindowSize({300, 300});
+        if (ImGui::BeginPopup("Change Script"))
+        {
           bool changed = false;
           draw_directory_recursive(fs::current_path()/"LuaScripting/scripts", &this->script_path, &changed);
           if (changed)
@@ -115,11 +102,14 @@ void EntityComponent::draw(GameObject *object)
             this->script_name = filepath.string();
             this->script_name.erase(this->script_name.size() - 4);
           }
+
+          ImGui::EndPopup();
         }
-        ImGui::Unindent(10.0f);
+
       }
       break;
   }
+
 
 }
 

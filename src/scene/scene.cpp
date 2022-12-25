@@ -44,6 +44,7 @@ void Scene::draw(SDL_Event *event)
   int i = 0;
   for (auto &lightsource: this->m_scenegraph->m_lightsource_instances)
   {
+    this->ren->pointlights[0].m_transform = lightsource->getTransform();
     lightsource->m_model->setTransform(lightsource->getTransform());
     this->ren->drawLightSource(lightsource->m_model, {1, 1, 1}, 0);
     i += 1;
