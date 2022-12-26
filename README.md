@@ -8,9 +8,9 @@ Game engine wee woo text goes here boom bam.
 - [Lua API](#Lua-API)
 
 
-# Editor
 
-- The editor contains the following tabs:
+# Editor
+- The editor can be broken up into the following windows:
     - [Viewport](#Viewport)
     - [Scene Hierarchy](#Scene-Hierarchy)
     - [Render](#Render)
@@ -21,7 +21,7 @@ Game engine wee woo text goes here boom bam.
 
 
 
-# Editor Tabs
+# Editor Windows
 
 ## Viewport
 Some placeholder text.
