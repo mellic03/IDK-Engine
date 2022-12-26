@@ -81,10 +81,13 @@ Some placeholder text.
     ```Lua
     worldData = {
 
-      deltaTime = 0.01f,
+       deltaTime = 0.01f,
 
-      positions  = { {x, y, z}, {x, y, z}, ..., {x, y, z} },
-      velocities = { {x, y, z}, {x, y, z}, ..., {x, y, z} }
+    -- keyDown = { 0,     1,     2,     3,     ..., 127   }
+       keyDown = { false, false, false, false, ..., false },  
+
+       positions  = { {x, y, z}, {x, y, z}, ..., {x, y, z} },
+       velocities = { {x, y, z}, {x, y, z}, ..., {x, y, z} }
 
     };
     ```

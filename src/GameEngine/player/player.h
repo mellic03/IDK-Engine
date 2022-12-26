@@ -3,6 +3,8 @@
 #include "../../include/glm/glm.hpp"
 #include "../gameobject/gameobject.h"
 #include "weapon.h"
+
+#include "../../keylog.h"
 #include "../../transform.h"
 
 class Player {
@@ -14,8 +16,8 @@ class Player {
 
   public:
 
+    KeyLog keylog;
     Camera *cam;
-    
     GameObject *m_gameobject = nullptr;
 
     float move_speed = 8.0f;

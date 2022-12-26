@@ -20,6 +20,10 @@ void Player::key_input(Renderer *ren)
 {
   const Uint8 *state = SDL_GetKeyboardState(NULL);
 
+  this->keylog.clear();
+  this->keylog.log(state);
+
+
   switch (this->m_gameobject->getPhysState())
   {
     case (PHYSICS_GROUNDED):
@@ -30,9 +34,7 @@ void Player::key_input(Renderer *ren)
       }
       break;
   
-  
     case (PHYSICS_FALLING):
-
       break;
   }
 

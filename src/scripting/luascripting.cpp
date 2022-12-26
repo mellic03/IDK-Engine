@@ -50,7 +50,7 @@ void luaInit(void)
 }
 
 
-void luaMain(Renderer *ren, std::list<GameObject> *gameobjects)
+void luaMain(Renderer *ren, Player *player, std::list<GameObject> *gameobjects)
 {
 
   LuaInterface::begin();
@@ -63,7 +63,8 @@ void luaMain(Renderer *ren, std::list<GameObject> *gameobjects)
   }
 
   LuaInterface::sendVectors();
-  LuaInterface::ToLua::number(ren->deltaTime, "deltaTime");
+  LuaInterface::ToLua::number(ren->deltaTime, "DeltaTime");
+  LuaInterface::ToLua::keylog(player->keylog, "KeyPressed");
   LuaInterface::execute();
   LuaInterface::retrieveVectors();
 

@@ -4,7 +4,7 @@ local engine = require("LuaScripting/engine");
 
 -- External variables provided by engine
 local worldData = {
-  deltaTime,
+  DeltaTime,
   Positions,
   Velocities
 };

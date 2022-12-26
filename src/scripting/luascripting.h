@@ -23,4 +23,4 @@ using namespace LuaCpp::Engine;
 void luaTest(void);
 
 void luaInit(void);
-void luaMain(Renderer *ren, std::list<GameObject> *gameobjects);
+void luaMain(Renderer *ren, Player *player, std::list<GameObject> *gameobjects);

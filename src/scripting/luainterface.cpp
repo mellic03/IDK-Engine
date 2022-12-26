@@ -35,6 +35,7 @@ void LuaInterface::begin(void)
 	L = context.newStateFor("main");
 }
 
+
 void LuaInterface::sendVectors(void)
 {
   LuaInterface::ToLua::stdvec_int(LuaInterface::IDs, "IDs");
@@ -57,90 +58,3 @@ void LuaInterface::retrieveVectors(void)
   LuaInterface::ToCPP::stdvec_vec3(&LuaInterface::velocities, "Velocities");
 }
 
-
-void LuaInterface::ToLua::stdvec_int(std::vector<int> vecOfInt, std::string name)
-{
-  LuaTTable table;
-
-  for (int i=0; i<vecOfInt.size(); i++)
-    table.setValue(Table::Key(i + 1), std::make_shared<LuaTNumber>(vecOfInt[i] + 1));
-
-  table.PushGlobal(*LuaInterface::L, name);
-
-  table_references.push_back( { name, table } );
-}
-
-
-void LuaInterface::ToLua::stdvec_stdstring(std::vector<std::string> vecOfString, std::string name)
-{
-  LuaTTable table;
-
-  for (int i=0; i<vecOfString.size(); i++)
-    table.setValue(Table::Key(i + 1), std::make_shared<LuaTString>(vecOfString[i]));
-
-  table.PushGlobal(*LuaInterface::L, name);
-
-  table_references.push_back( { name, table } );
-}
-
-void LuaInterface::ToLua::stdvec_vec3(std::vector<glm::vec3> vecOfVec3, std::string name)
-{
-  LuaTTable table;
-
-  for (int i=0; i<vecOfVec3.size(); i++)
-  {
-    LuaTTable vec;
-    vec.setValue(Table::Key(1), std::make_shared<LuaTNumber>(vecOfVec3[i].x));
-    vec.setValue(Table::Key(2), std::make_shared<LuaTNumber>(vecOfVec3[i].y));
-    vec.setValue(Table::Key(3), std::make_shared<LuaTNumber>(vecOfVec3[i].z));
-
-    table.setValue(Table::Key(i + 1), std::make_shared<LuaTTable>(vec));
-  }
-  table.PushGlobal(*LuaInterface::L, name);
-
-  table_references.push_back( { name, table } );
-}
-
-
-void LuaInterface::ToCPP::stdvec_vec3(std::vector<glm::vec3> *vecOfVec3, std::string name)
-{
-  LuaTTable *table = tablePtr(name);
-  table->PopGlobal(*LuaInterface::L);
-
-  auto element = vecOfVec3->begin();
-
-  for (int i=0; i<vecOfVec3->size(); i++)
-  {
-    LuaTTable vec = *(LuaTTable *)&table->getValue(Table::Key(i+1));
-
-    *element = glm::vec3(
-      (*(LuaTNumber *)&vec.getValue(Table::Key("x"))).getValue(),
-      (*(LuaTNumber *)&vec.getValue(Table::Key("y"))).getValue(),
-      (*(LuaTNumber *)&vec.getValue(Table::Key("z"))).getValue()
-    );
-    
-    element = std::next(element);
-  }
-}
-
-
-void LuaInterface::ToLua::gameobject(GameObject *object, int objectID)
-{
-  for (auto component: object->script_components)
-  {
-    if (component.script_name != "LuaScripting/scripts/default");
-    LuaInterface::IDs.push_back(objectID);
-    LuaInterface::scripts.push_back(component.script_name);
-  }
-
-  LuaInterface::positions.push_back(object->getTransform()->getPos_worldspace());
-  LuaInterface::velocities.push_back(*object->getTransform()->getVel());
-}
-
-
-
-void LuaInterface::ToCPP::gameobject(GameObject *object, int objectID)
-{
-  *object->getPos() = object->getTransform()->worldToLocal_noLocalTransform(LuaInterface::positions[objectID], false);
-  *object->getVel() = LuaInterface::velocities[objectID];
-}

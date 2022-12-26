@@ -130,8 +130,6 @@ int ENTRY(int argc, char **argv)
   //----------------------------------------
 
 
-
-
   // RENDER LOOP
   //----------------------------------------
 
@@ -254,16 +252,14 @@ int ENTRY(int argc, char **argv)
     ///////////////////////////////////////////////////////////////////////////////////////////// Render stop
 
 
-
     ImGui::Render();
-
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     SDL_GL_SwapWindow(window);
     double dtime_milliseconds = ((end - start)*1000 / (double)SDL_GetPerformanceFrequency() );
     ren->deltaTime = dtime_milliseconds / 1000;
 
-    luaMain(ren, &scenegraph.m_object_instances);
+    luaMain(ren, &player, &scenegraph.m_object_instances);
   }
   //----------------------------------------
 

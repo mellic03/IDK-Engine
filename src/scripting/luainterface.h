@@ -64,9 +64,12 @@ namespace LuaInterface {
     }
 
     void stdvec_int(std::vector<int> vecOfInt, std::string name);
+    void stdvec_bool(std::vector<bool> vecOfBool, std::string name);
     void stdvec_stdstring(std::vector<std::string> vecOfString, std::string name);
+
     void stdvec_vec3(std::vector<glm::vec3> vecOfVec3, std::string name);
     void gameobject(GameObject *object, int objectID);
+    void keylog(KeyLog keylog, std::string name);
   };
 
 
