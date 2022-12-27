@@ -53,8 +53,8 @@ class GameObject {
     std::vector<EntityComponent> lightsource_components;
     std::vector<EntityComponent> script_components;
 
-    float m_sphere_collider_radius = 0.5f;
-    float height = 0.5f, width = 0.1f;
+    float m_sphere_collider_radius = 0.25f;
+    float height = 0.25f, width = 0.1f;
 
 
     Model *m_model;

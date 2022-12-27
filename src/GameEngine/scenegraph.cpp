@@ -141,7 +141,7 @@ void SceneGraph::newObjectInstance(std::string object_name, glm::vec3 pos, glm::
 
   GameObject newobj = *objectptr;
   *newobj.getPos() = pos;
-  *newobj.getRot() = rot;
+  // *newobj.getRot() = rot;
 
   newobj.setName(object_name);
   newobj.setID(this->m_object_instances.size());

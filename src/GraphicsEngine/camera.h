@@ -44,9 +44,7 @@ class Camera {
     float *pitch = nullptr, *roll = nullptr, *yaw = nullptr;
     float rot_speed = 5.0f;
 
-
     float fov = 90.0f;
-
 
     void init(void);
     void input();
