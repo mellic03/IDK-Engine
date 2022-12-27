@@ -1,5 +1,4 @@
-#include "../tabs.h"
-
+#include "../../UIEngine.h"
 
 bool EntityComponentUI::newComponent(EntityComponentType *component_type)
 {

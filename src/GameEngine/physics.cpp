@@ -151,3 +151,11 @@ void PhysicsEngine::sphere_triangle_response(GameObject *obj1, Vertex v0, Vertex
 
   *obj1->getPos() += 0.5f * overlap * v0.normal;
 }
+
+
+bool PhysicsEngine::capsule_triangle_detect(GameObject *obj, Vertex v0, Vertex v1, Vertex v2, float *plane_dist, bool *edge_collision, glm::vec3 *dir)
+{
+  
+}
+
+

@@ -6,7 +6,6 @@ Player::Player(Renderer *ren)
 {
   this->cam = &ren->cam;
 
-
   // this->useWeapon(WEAPON_SHOTGUN);
   // this->getWeapon()->loadModel("assets/player/gun/");
   // this->getWeapon()->hip_pos = glm::vec3(+0.10f, -0.10f, -0.15f);
@@ -22,6 +21,15 @@ void Player::key_input(Renderer *ren)
 
   this->keylog.clear();
   this->keylog.log(state);
+
+
+  if (this->fly && this->fly != this->fly_last)
+    this->m_gameobject->changePhysState(PHYSICS_NONE);
+
+  else if (!this->fly && this->fly != this->fly_last)
+    this->m_gameobject->changePhysState(PHYSICS_FALLING);
+
+  this->fly_last = this->fly;
 
 
   switch (this->m_gameobject->getPhysState())
@@ -44,6 +52,32 @@ void Player::key_input(Renderer *ren)
 
   bool headbob = false;
 
+  this->cam->input();
+
+  if (this->fly)
+  {
+    if (state[SDL_SCANCODE_W])
+      *this->getPos() += this->move_speed * ren->deltaTime * temp_front;
+
+    if (state[SDL_SCANCODE_S])
+      *this->getPos() -= this->move_speed * ren->deltaTime * temp_front;
+   
+    if (state[SDL_SCANCODE_A])
+      *this->getPos() -= this->move_speed * ren->deltaTime * ren->cam.right;
+   
+    if (state[SDL_SCANCODE_D])
+      *this->getPos() += this->move_speed * ren->deltaTime * ren->cam.right;
+
+    if (state[SDL_SCANCODE_LCTRL])
+      this->getPos()->y -= this->move_speed * ren->deltaTime;
+
+    if (state[SDL_SCANCODE_SPACE])
+      this->getPos()->y += this->move_speed * ren->deltaTime;
+    
+    return;
+  }
+  
+
   if (state[SDL_SCANCODE_W])
   {
     *this->getVel() += this->move_speed * ren->deltaTime * temp_front;
@@ -58,25 +92,16 @@ void Player::key_input(Renderer *ren)
 
   if (state[SDL_SCANCODE_A])
   {
-    *this->getVel() += this->move_speed * ren->deltaTime * ren->cam.right;
+    *this->getVel() -= this->move_speed * ren->deltaTime * ren->cam.right;
     headbob = true;
   }
 
   if (state[SDL_SCANCODE_D])
   {
-    *this->getVel() -= this->move_speed * ren->deltaTime * ren->cam.right;
+    *this->getVel() += this->move_speed * ren->deltaTime * ren->cam.right;
     headbob = true;
   }
 
-  // *this->getPos() += 0.25f * *this->getVel();
-  // *this->getVel() *= 0.9f;
-
-  // this->pos_worldspace = this->getTransform()->getPos_worldspace();
-  // this->cam->modifier_matrix = this->getTransform()->getModelMatrix_noLocalTransform();
-
-  this->cam->useTransform(this->getTransform());
-
-  this->cam->input();
 }
 
 void Player::mouse_input(Renderer *ren, SDL_Event *event)

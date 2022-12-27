@@ -1,5 +1,6 @@
 local engine = require("LuaScripting/engine");
-local vlib = engine.vectorLibrary;
+local vlib  = engine.vectorLibrary;
+local iolib = engine.ioLibrary;
 
 return function(worldData, objectID)
 

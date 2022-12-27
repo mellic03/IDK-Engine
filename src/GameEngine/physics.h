@@ -16,6 +16,9 @@ namespace PhysicsEngine {
   bool line_intersects_sphere(glm::vec3 A, glm::vec3 B, glm::vec3 P, float radius, glm::vec3 *dir);
   bool sphere_triangle_detect(GameObject *obj, Vertex v0, Vertex v1, Vertex v2, float *plane_dist, bool *edge_collision, glm::vec3 *dir);
   void sphere_triangle_response(GameObject *obj1, Vertex v0, Vertex v1, Vertex v2, float dist, bool edge_collision, glm::vec3 dir);
+
+  bool capsule_triangle_detect(GameObject *obj, Vertex v0, Vertex v1, Vertex v2, float *plane_dist, bool *edge_collision, glm::vec3 *dir);
+
 };
 
 

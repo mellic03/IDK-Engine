@@ -1,6 +1,18 @@
 #include "luainterface.h"
 
 
+void LuaInterface::ToLua::array_bool(bool arrOfBool[], int size, std::string name)
+{
+  LuaTTable table;
+
+  for (int i=0; i<size; i++)
+    table.setValue(Table::Key(i + 1), std::make_shared<LuaTBoolean>(arrOfBool[i]));
+
+  table.PushGlobal(*LuaInterface::L, name);
+
+  table_references.push_back( { name, table } );
+}
+
 
 void LuaInterface::ToLua::stdvec_int(std::vector<int> vecOfInt, std::string name)
 {
@@ -76,9 +88,6 @@ void LuaInterface::ToLua::gameobject(GameObject *object, int objectID)
 
 void LuaInterface::ToLua::keylog(KeyLog keylog, std::string name)
 {
-  std::vector<bool> keys_pressed;
-  for (int i=0; i<SDL_NUM_SCANCODES; i++)
-    keys_pressed.push_back(keylog.keys_pressed[i]);
-  LuaInterface::ToLua::stdvec_bool(keys_pressed, name);
+  LuaInterface::ToLua::array_bool(keylog.keys_pressed, SDL_NUM_SCANCODES, name);
 }
 

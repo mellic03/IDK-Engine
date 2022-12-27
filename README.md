@@ -74,23 +74,20 @@ Some placeholder text.
 # Lua API
 
 ## Structure
-
 - Scene data can be accessed in Lua through the <u>worldData</u> object.
 
     > /LuaScripting/main.lua
     ```Lua
     worldData = {
 
-       deltaTime = 0.01f,
-
-    -- keyDown = { 0,     1,     2,     3,     ..., 127   }
-       keyDown = { false, false, false, false, ..., false },  
-
-       positions  = { {x, y, z}, {x, y, z}, ..., {x, y, z} },
-       velocities = { {x, y, z}, {x, y, z}, ..., {x, y, z} }
+      deltaTime = 0.01f,
+      positions  = { {x, y, z}, {x, y, z}, ..., {x, y, z} },
+      velocities = { {x, y, z}, {x, y, z}, ..., {x, y, z} }
 
     };
     ```
+
+
 
 
 ## Default Script
@@ -99,7 +96,8 @@ Some placeholder text.
 
     ```Lua
     local engine = require("LuaScripting/engine");
-    local vlib = engine.vectorLibrary;
+    local vlib  = engine.vectorLibrary;
+    local iolib = engine.ioLibrary;
 
     return function(worldData, objectID)
 

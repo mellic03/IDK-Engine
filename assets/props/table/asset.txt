@@ -1,0 +1,6 @@
+
+#gameobject table
+#interactivity environmental
+#PhysicsState PHYSICS_NONE 
+#geometry table.dae
+#exit

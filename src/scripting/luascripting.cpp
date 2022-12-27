@@ -52,7 +52,6 @@ void luaInit(void)
 
 void luaMain(Renderer *ren, Player *player, std::list<GameObject> *gameobjects)
 {
-
   LuaInterface::begin();
 
   auto element = gameobjects->begin();

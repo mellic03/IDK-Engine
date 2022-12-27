@@ -127,6 +127,7 @@ class GameObject {
     // Per-frame operations
     //---------------------------------------------------------------------------------------------
     void changePhysState(PhysicsState state);
+    void changePhysState(std::string state);
     void changeNavState(NavigationState state);
 
     PhysicsState getPhysState(void);

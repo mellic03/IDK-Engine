@@ -8,6 +8,7 @@
 #include <string>
 #include <sstream>
 #include "renderer.h"
+#include "../scene/scene.h"
 
 void Renderer::createShader(std::string filename, ShaderType type)
 {
@@ -179,7 +180,7 @@ void Renderer::postProcess(void)
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 
-void Renderer::setupDepthCubemap(glm::vec3 pos, glm::vec3 dir)
+void Renderer::setupDepthCubemap(void)
 {
   float aspect = (float)this->SHADOW_WIDTH / (float)this->SHADOW_HEIGHT;
   float near = 1.0f;
@@ -187,7 +188,7 @@ void Renderer::setupDepthCubemap(glm::vec3 pos, glm::vec3 dir)
   glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, near, far);
 
   std::vector<glm::mat4> shadowTransforms;
-  glm::vec3 lightPos = this->pointlights[0].m_transform->getPos_worldspace();
+  glm::vec3 lightPos = World::scene.pointlights[0].m_transform->getPos_worldspace();
   shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 1.0,  0.0,  0.0), glm::vec3(0.0, -1.0,  0.0)));
   shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0,  0.0,  0.0), glm::vec3(0.0, -1.0,  0.0)));
   shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0,  1.0,  0.0), glm::vec3(0.0,  0.0,  1.0)));
@@ -285,44 +286,6 @@ void Renderer::sendLightsToShader(void)
   this->active_shader->setFloat("fog_end", this->fog_end);
 
 
-  // for (int i=0; i<this->NM_DIRLIGHTS; i++)
-  // {
-  //   sprintf(buffer, "dirlights[%d].direction", i);
-  //   this->active_shader.setVec3(buffer,  this->dirlights[i].direction);
-
-  //   sprintf(buffer, "dirlights[%d].ambient", i);
-  //   this->active_shader.setVec3(buffer,  this->dirlights[i].ambient);
-
-  //   sprintf(buffer, "dirlights[%d].diffuse", i);
-  //   this->active_shader.setVec3(buffer,  this->dirlights[i].diffuse);
-
-  //   sprintf(buffer, "dirlights[%d].specular", i);
-  //   this->active_shader.setVec3(buffer,  this->dirlights[i].specular);
-  // }
-
-  // for (int i=0; i<NUM_POINTLIGHTS; i++)
-  // {
-  //   sprintf(buffer, "pointlights[%d].position", i);
-  //   this->active_shader.setVec3(buffer,  this->pointlights[i].position);
-
-  //   sprintf(buffer, "pointlights[%d].ambient", i);
-  //   this->active_shader.setVec3(buffer,  this->pointlights[i].ambient);
-
-  //   sprintf(buffer, "pointlights[%d].diffuse", i);
-  //   this->active_shader.setVec3(buffer,  this->pointlights[i].diffuse);
-
-  //   sprintf(buffer, "pointlights[%d].specular", i);
-  //   this->active_shader.setVec3(buffer,  this->pointlights[i].specular);
-
-  //   sprintf(buffer, "pointlights[%d].constant", i);
-  //   this->active_shader.setFloat(buffer,  this->pointlights[i].constant); 
-
-  //   sprintf(buffer, "pointlights[%d].linear", i);
-  //   this->active_shader.setFloat(buffer,  this->pointlights[i].linear); 
-
-  //   sprintf(buffer, "pointlights[%d].quadratic", i);
-  //   this->active_shader.setFloat(buffer,  this->pointlights[i].quadratic); 
-  // }
 
   for (int i=0; i<NUM_SPOTLIGHTS; i++)
   {
@@ -485,11 +448,8 @@ void Renderer::drawModel(Model *model)
   }
 }
 
-void Renderer::drawLightSource(Model *model, glm::vec3 diffuse_color, int index)
+void Renderer::drawLightSource(Model *model, glm::vec3 diffuse_color)
 {
-  if (this->pointlights_on[index] == false)
-    return;
-
   this->active_shader->setMat4("model", model->getTransform()->getModelMatrix());
   this->active_shader->setMat4("view", this->cam.view);
   this->active_shader->setMat4("projection", this->cam.projection);

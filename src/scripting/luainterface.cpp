@@ -27,6 +27,7 @@ void LuaInterface::compile(void)
 
 void LuaInterface::begin(void)
 {
+  LuaInterface::table_references.clear();
   LuaInterface::IDs.clear();
   LuaInterface::scripts.clear();
   LuaInterface::positions.clear();
@@ -56,5 +57,6 @@ void LuaInterface::retrieveVectors(void)
 {
   LuaInterface::ToCPP::stdvec_vec3(&LuaInterface::positions, "Positions");
   LuaInterface::ToCPP::stdvec_vec3(&LuaInterface::velocities, "Velocities");
+  
 }
 

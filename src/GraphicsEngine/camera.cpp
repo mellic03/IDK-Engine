@@ -9,12 +9,12 @@ Camera::Camera()
   *this->pos = glm::vec3(0.0f, 0.0f, 3.0f);
   this->target = glm::vec3(0.0f, 0.0f, 0.0f);
   *this->dir = glm::normalize(*this->pos - this->target);
-  this->front = glm::vec3(0.0f, 0.0f, -1.0f);
+  this->front = glm::normalize(*this->dir);
 
   glm::vec3 temp_up = glm::vec3(0.0f, 1.0f, 0.0f);
-  this->right = glm::normalize(glm::cross(temp_up, *this->dir));
+  this->right = glm::normalize(glm::cross(*this->dir, temp_up));
 
-  this->up = glm::cross(*this->dir, this->right);
+  this->up = glm::cross(this->right, *this->dir);
 
   this->view = glm::lookAt(
     *this->pos,
@@ -49,7 +49,7 @@ void Camera::input()
   glm::vec3 p = this->m_transform->getPos_worldspace();
 
   this->front = glm::normalize(tempdir);
-  this->right = glm::normalize(glm::cross(this->up, tempdir));
+  this->right = glm::normalize(glm::cross(tempdir, this->up));
 
   this->view = glm::lookAt(
     p,

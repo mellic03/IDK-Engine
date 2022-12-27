@@ -18,13 +18,13 @@ struct Transform {
   glm::vec3 velocity = {0.0f, 0.0f, 0.0f};
   glm::vec3 rotation = {0.0f, 0.0f, 0.0f};
   glm::vec3 last_rotation  = {0.0f, 0.0f, 0.0f};
-  glm::quat rotation_q    = glm::quat();
+  glm::quat rotation_q     = glm::quat();
 
   // Member access
   //-------------------------------------------------------------------------------------------------------------
   glm::vec3 *getPos(void)       { return &this->position; };
   glm::vec3 *getVel(void)       { return &this->velocity; };
-  glm::vec3 *getRot(void)       { this->rotation_q = glm::quat(this->rotation); return &this->rotation; };
+  glm::vec3 *getRot(void)       { this->rotation_q = glm::quat(glm::radians(this->rotation)); return &this->rotation; };
   glm::quat *getRotQ(void)      { return &this->rotation_q; };
 
   glm::vec4 getPos_vec4(void)   { return glm::vec4(this->position.x, this->position.y, this->position.z, 1.0f); };
@@ -37,13 +37,6 @@ struct Transform {
   glm::mat4 getModelMatrix(void)
   {
     glm::mat4 model = glm::translate(glm::mat4(1.0f), this->position) * glm::toMat4(this->rotation_q);
-
-    // glm::mat4 model = glm::mat4(1.0f);
-    // model = glm::translate(model, this->position);
-
-    // model = glm::rotate(model, glm::radians(this->rotation.y), {0.0f, 1.0f, 0.0f});
-    // model = glm::rotate(model, glm::radians(this->rotation.x), {1.0f, 0.0f, 0.0f});
-
 
     if (this->parent != nullptr)
       return this->parent->getModelMatrix() * model;

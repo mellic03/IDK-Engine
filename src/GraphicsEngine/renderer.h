@@ -124,14 +124,14 @@ class Renderer {
 
     void useShader(ShaderType shader);
     void postProcess(void);
-    void setupDepthCubemap(glm::vec3 pos, glm::vec3 dir);
+    void setupDepthCubemap(void);
     void usePerspective(void);
 
     void update(glm::vec3 pos, glm::vec3 dir);
     void sendLightsToShader(void);
 
     void drawModel(Model *model);
-    void drawLightSource(Model *model, glm::vec3 diffuse_color, int index);
+    void drawLightSource(Model *model, glm::vec3 diffuse_color);
 
     void resize(int x, int y);
 };

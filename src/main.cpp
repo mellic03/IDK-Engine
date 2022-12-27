@@ -90,6 +90,7 @@ int ENTRY(int argc, char **argv)
   player.cam->roll = &player.getRot()->z;
   player.cam->yaw = &player.getRot()->y;
   *player.cam->yaw = -90.0f;
+  player.cam->useTransform(player.getTransform());
 
   
   scenegraph.loadObject("assets/environment/building/");
@@ -98,22 +99,23 @@ int ENTRY(int argc, char **argv)
   scenegraph.loadObject("assets/npc/muscleskele/");
   scenegraph.loadObject("assets/npc/fren/");
   scenegraph.loadObject("assets/misc/sphere/");
+  scenegraph.loadObject("assets/props/table/");
 
+  Scene *scene_1 = &World::scene;
 
   scenegraph.newObjectInstance("pointlight");
   GameObject *light1 = scenegraph.rearObjectPtr();
   light1->setName("Point light 1");
   light1->lightsource_components.push_back(EntityComponent(COMPONENT_LIGHTSOURCE));
   light1->hasGeometry(false);
-  ren->pointlights[0].m_transform = light1->getTransform();
+  scene_1->pointlights[0].m_transform = light1->getTransform();
   scenegraph.m_lightsource_instances.push_back(light1);
 
 
-  Scene scene_1;
   import_lighting_config(ren);
-  scene_1.useRenderer(ren);
-  scene_1.usePlayer(&player);
-  scene_1.useSceneGraph(&scenegraph);
+  scene_1->useRenderer(ren);
+  scene_1->usePlayer(&player);
+  scene_1->useSceneGraph(&scenegraph);
   //----------------------------------------
 
 
@@ -127,6 +129,7 @@ int ENTRY(int argc, char **argv)
   ImGui_ImplOpenGL3_Init("#version 330");
   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
   io.Fonts->AddFontFromFileTTF("./assets/fonts/OpenSans-VariableFont_wdth,wght.ttf", 18.0f);
+  ImGui::StyleColorsLight();
   //----------------------------------------
 
 
@@ -161,8 +164,7 @@ int ENTRY(int argc, char **argv)
     ImGui::NewFrame();
 
     int x, y, w, h;
-    draw_dev_ui(ren, &scene_1, &x, &y, &w, &h);
-    ren->update(*player.getPos(), player.cam->front);
+    draw_dev_ui(ren, scene_1, &player, &x, &y, &w, &h);
     ren->usePerspective();
 
     // Input
@@ -188,9 +190,9 @@ int ENTRY(int argc, char **argv)
     glBindTexture(GL_TEXTURE_CUBE_MAP, ren->depthCubemap);
     glClear(GL_DEPTH_BUFFER_BIT);
         ren->useShader(SHADER_POINTSHADOW);
-        ren->setupDepthCubemap({0, 0, 0}, {0, 0, 0});
+        ren->setupDepthCubemap();
         glDisable(GL_CULL_FACE);
-        scene_1.draw(&event);
+        scene_1->drawGeometry(&event);
         glEnable(GL_CULL_FACE);
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -207,16 +209,12 @@ int ENTRY(int argc, char **argv)
 
     
     ren->useShader(SHADER_TERRAIN);
-    ren->sendLightsToShader();
+    scene_1->updateLights();
+    scene_1->sendLightsToShader();
+    scene_1->drawGeometry(&event);
 
-    scene_1.draw(&event);
-
-    // glClear(GL_DEPTH_BUFFER_BIT);
-
-    // ren->useShader(SHADER_WEAPON); // switch to viewspace shader
-    // ren->sendLightsToShader();
-    // player.draw(ren); // draw weapon
-    
+    ren->useShader(SHADER_LIGHTSOURCE);
+    scene_1->drawLightsources(&event);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //---------------------------------

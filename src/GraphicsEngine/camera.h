@@ -15,7 +15,8 @@
 class Camera {
 
   private:
-    glm::vec3 m_default_pos = glm::vec3(0.0f, 0.0f, -10.0f);
+    glm::vec3 m_default_pos = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 m_default_dir = glm::vec3(0.0f, 0.0f, 0.0f);
 
 
   public:
@@ -34,7 +35,7 @@ class Camera {
     glm::vec3 *pos = &this->m_default_pos;
     glm::vec3 *pos_worldspace = &this->m_default_pos;
     glm::vec3 target;
-    glm::vec3 *dir = &this->m_default_pos;
+    glm::vec3 *dir = &this->m_default_dir;
     glm::vec3 front;
     glm::vec3 up;
     glm::vec3 right;

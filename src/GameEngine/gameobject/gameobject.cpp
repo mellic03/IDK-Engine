@@ -123,6 +123,29 @@ void GameObject::changePhysState(PhysicsState new_state)
     case (PHYSICS_FALLING): break;
   }
 }
+void GameObject::changePhysState(std::string new_state)
+{
+  PhysicsState state = PHYSICS_NONE;
+
+  if (new_state == "PHYSICS_NONE")
+    state = PHYSICS_NONE;
+  else if (new_state == "PHYSICS_GROUNDED")
+    state = PHYSICS_GROUNDED;
+  else if (new_state == "PHYSICS_FALLING")
+    state = PHYSICS_FALLING;
+
+  this->m_physics_state = state;
+
+  switch (state)
+  {
+    case (PHYSICS_GROUNDED):
+      this->getVel()->y = 0.0f;
+      break;
+
+    case (PHYSICS_FALLING):
+      break;
+  }
+}
 
 void GameObject::changeNavState(NavigationState new_state)
 {
@@ -142,7 +165,7 @@ void GameObject::changeNavState(NavigationState new_state)
 
 void GameObject::perFrameUpdate(Renderer *ren)
 {
-  if (!this->usePhysics())
+  if (this->getPhysState() == PHYSICS_NONE)
     return;
 
   // Per frame, add velocity to position, then check physics state
@@ -160,15 +183,12 @@ void GameObject::perFrameUpdate(Renderer *ren)
 
   this->pos_worldspace = this->getTransform()->getPos_worldspace();
 
-
   this->collideWithMeshes();
-
 
   switch (this->getPhysState())
   {
     case (PHYSICS_GROUNDED):
       break;
-
 
     case (PHYSICS_FALLING):
       this->getVel()->y -= ren->gravity * ren->deltaTime;
@@ -209,18 +229,21 @@ void GameObject::perFrameUpdate(Renderer *ren)
 
 void GameObject::clearParent(void)
 {
-  if (this->m_parent != nullptr)
-  {
-    glm::vec3 *rot = this->getRot();
-    printf("rot before: %f %f %f\n", rot->x, rot->y, rot->z);
+  if (this->m_parent == nullptr)
+    return;
 
-    *this->getPos() = this->m_parent->getTransform()->localToWorld(this->getTransform()->getPos_vec4());
-    this->getTransform()->rotation_q = glm::inverse(this->m_parent->getTransform()->rotation_q) * this->getTransform()->rotation_q;
+  *this->getPos() = this->m_parent->getTransform()->localToWorld(this->getTransform()->getPos_vec4());
+  // if (this->getID() != 0)
+  // {
+    Transform *thisTransform = this->getTransform();
+    thisTransform->rotation_q = this->m_parent->getTransform()->rotation_q * thisTransform->rotation_q;
+    thisTransform->rotation.x = glm::degrees(glm::pitch( thisTransform->rotation_q ));
+    thisTransform->rotation.y = glm::degrees(glm::yaw(   thisTransform->rotation_q ));
+    thisTransform->rotation.z = glm::degrees(glm::roll(  thisTransform->rotation_q ));
+  // }
 
-    printf("rot after: %f %f %f\n", rot->x, rot->y, rot->z);
+  this->m_parent->removeChild(this);
 
-    this->m_parent->removeChild(this);
-  }
   this->m_parent = nullptr;
   this->_transform.parent = nullptr;
 }
@@ -268,6 +291,14 @@ bool GameObject::isChild(GameObject *object)
 void GameObject::setParent(GameObject *parent)
 {
   *this->getPos() = parent->getTransform()->worldToLocal(this->getTransform()->getPos_vec4());
+  // if (this->getID() != 0)
+  // {
+    Transform *thisTransform = this->getTransform();
+    thisTransform->rotation_q = glm::inverse(parent->getTransform()->rotation_q) * thisTransform->rotation_q;
+    thisTransform->rotation.x = glm::degrees(glm::pitch( thisTransform->rotation_q ));
+    thisTransform->rotation.y = glm::degrees(glm::yaw(   thisTransform->rotation_q ));
+    thisTransform->rotation.z = glm::degrees(glm::roll(  thisTransform->rotation_q ));
+  // }
 
   this->m_parent = parent;
   this->_transform.parent = &parent->_transform;
@@ -279,7 +310,7 @@ void GameObject::setParent(GameObject *parent)
  */
 void GameObject::collideWithObject(GameObject *object)
 {
-  if (this->isEnvironmental() || this->getID() == object->getID())
+  if (this->getPhysState() == PHYSICS_NONE || this->getID() == object->getID())
     return;
 
   // if (glm::distance(this->_transform.position, object->getPos()) > object->boundingSphereRadius())

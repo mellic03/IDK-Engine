@@ -1,5 +1,5 @@
-#include "tabs.h"
 #include "../UIEngine.h"
+
 
 static void draw_new_instance_menu(SceneGraph *scenegraph, int *selected_instance)
 {
@@ -75,15 +75,21 @@ static void draw_entity_childnodes(SceneGraph *scenegraph, GameObject *object, i
 
   int flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow;
 
+  if (object->hasChildren() == false)
+    flags |= ImGuiTreeNodeFlags_Leaf;
+
   if (*selected_instance == object->getID())
     flags |= ImGuiTreeNodeFlags_Selected;
 
   if (ImGui::TreeNodeEx(object->m_given_name.c_str(), flags))
   {
+    if (ImGui::IsItemClicked())
+      *selected_instance = object->getID();
+
+
     if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
     {
       ImGui::SetDragDropPayload("DND_DEMO_CELL", (const void *)object->getIDptr(), sizeof(int));
-
       ImGui::EndDragDropSource();
     }
 
@@ -98,24 +104,18 @@ static void draw_entity_childnodes(SceneGraph *scenegraph, GameObject *object, i
       ImGui::EndDragDropTarget();
     }
 
-
-    if (ImGui::IsItemClicked())
-    {
-      *selected_instance = object->getID();
-    }
-
     std::vector<GameObject *> children = object->getChildren();
     for (int i=0; i<children.size(); i++)
     {
       draw_entity_childnodes(scenegraph, children[i], selected_instance);
     }
 
-
     ImGui::TreePop();
   }
 
   ImGui::PopID();
 }
+
 
 void EngineUI::sceneHierarchy(Renderer *ren, Scene *scene)
 {

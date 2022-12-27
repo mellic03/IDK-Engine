@@ -78,7 +78,7 @@ void import_lighting_config(Renderer *ren)
 }
 
 
-void draw_lighting_tab(Renderer *ren)
+void draw_lighting_tab(Renderer *ren, Scene *scene)
 {
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
@@ -110,15 +110,15 @@ void draw_lighting_tab(Renderer *ren)
 
     ImGui::PushID(1);
     
-    ImGui::Checkbox("Enable", &ren->pointlights_on[selected_pointlight]);
+    ImGui::Checkbox("Enable", &scene->pointlights_on[selected_pointlight]);
 
-    ImGui::ColorEdit3("ambient", (float*)&ren->pointlights[selected_pointlight].ambient);
-    ImGui::ColorEdit3("diffuse", (float*)&ren->pointlights[selected_pointlight].diffuse);
+    ImGui::ColorEdit3("ambient", (float*)&scene->pointlights[selected_pointlight].ambient);
+    ImGui::ColorEdit3("diffuse", (float*)&scene->pointlights[selected_pointlight].diffuse);
     
-    ImGui::SliderFloat("constant", &ren->pointlights[selected_pointlight].constant, 0.0f, 100.0f, "%0.4f", 0);
-    ImGui::DragScalar("linear", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].linear,       0.001f, 0);
-    ImGui::DragScalar("quadratic", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].quadratic, 0.001f, 0);
-    ImGui::DragScalar("bias", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].bias, 0.001f, 0);
+    ImGui::SliderFloat("constant", &scene->pointlights[selected_pointlight].constant, 0.0f, 100.0f, "%0.4f", 0);
+    ImGui::DragScalar("linear", ImGuiDataType_Float, &scene->pointlights[selected_pointlight].linear,       0.001f, 0);
+    ImGui::DragScalar("quadratic", ImGuiDataType_Float, &scene->pointlights[selected_pointlight].quadratic, 0.001f, 0);
+    ImGui::DragScalar("bias", ImGuiDataType_Float, &scene->pointlights[selected_pointlight].bias, 0.001f, 0);
 
     ImGui::Text("Position");
     // ImGui::DragScalar("x", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.x, 0.05f, 0);
@@ -132,39 +132,39 @@ void draw_lighting_tab(Renderer *ren)
   {
     ImGui::ListBox("Point light #", &selected_spotlight, spot_options, 2, -1);
 
-    ImGui::Checkbox("Enable", &ren->spotlights_on[selected_spotlight]);
+    ImGui::Checkbox("Enable", &scene->spotlights_on[selected_spotlight]);
 
     ImGui::PushID(3);
-    ImGui::ColorEdit3("ambient", (float*)&ren->spotlights[selected_spotlight].ambient);
-    ImGui::ColorEdit3("diffuse", (float*)&ren->spotlights[selected_spotlight].diffuse);
+    ImGui::ColorEdit3("ambient", (float*)&scene->spotlights[selected_spotlight].ambient);
+    ImGui::ColorEdit3("diffuse", (float*)&scene->spotlights[selected_spotlight].diffuse);
 
     // ImGui::DragScalar("constant", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].constant,   0.001f, NULL);
-    ImGui::SliderFloat("constant", &ren->spotlights[selected_spotlight].constant, 0.0f, 100.0f, "%0.4f", 0);
-    ImGui::DragScalar("linear", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].linear,       0.001f, 0);
-    ImGui::DragScalar("quadratic", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].quadratic, 0.001f, 0);
+    ImGui::SliderFloat("constant", &scene->spotlights[selected_spotlight].constant, 0.0f, 100.0f, "%0.4f", 0);
+    ImGui::DragScalar("linear", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].linear,       0.001f, 0);
+    ImGui::DragScalar("quadratic", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].quadratic, 0.001f, 0);
 
-    ImGui::DragScalar("intensity", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].intensity, 0.05f, 0);
-    ImGui::DragScalar("inner cutoff", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].inner_cutoff, 0.05f, 0);
-    ImGui::DragScalar("outer cutoff", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].outer_cutoff, 0.05f, 0);
-    ImGui::DragScalar("fov", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].fov, 0.05f, 0);
+    ImGui::DragScalar("intensity", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].intensity, 0.05f, 0);
+    ImGui::DragScalar("inner cutoff", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].inner_cutoff, 0.05f, 0);
+    ImGui::DragScalar("outer cutoff", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].outer_cutoff, 0.05f, 0);
+    ImGui::DragScalar("fov", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].fov, 0.05f, 0);
 
-    ImGui::Checkbox("follow", &ren->spotlights[selected_spotlight].follow);
+    ImGui::Checkbox("follow", &scene->spotlights[selected_spotlight].follow);
 
 
 
     ImGui::PushID(4);
     ImGui::Text("Position");
-    ImGui::DragScalar("x", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].position.x, 0.05f, 0);
-    ImGui::DragScalar("y", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].position.y, 0.05f, 0);
-    ImGui::DragScalar("z", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].position.z, 0.05f, 0);
+    ImGui::DragScalar("x", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].position.x, 0.05f, 0);
+    ImGui::DragScalar("y", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].position.y, 0.05f, 0);
+    ImGui::DragScalar("z", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].position.z, 0.05f, 0);
     ImGui::PopID();
     
     ImGui::PushID(5);
     ImGui::Text("Direction");
-    ImGui::DragScalar("x", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].direction.x, 0.05f, 0);
-    ImGui::DragScalar("y", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].direction.y, 0.05f, 0);
-    ImGui::DragScalar("z", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].direction.z, 0.05f, 0);
-    ren->spotlights[selected_spotlight].direction = glm::normalize(ren->spotlights[selected_spotlight].direction);
+    ImGui::DragScalar("x", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].direction.x, 0.05f, 0);
+    ImGui::DragScalar("y", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].direction.y, 0.05f, 0);
+    ImGui::DragScalar("z", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].direction.z, 0.05f, 0);
+    scene->spotlights[selected_spotlight].direction = glm::normalize(scene->spotlights[selected_spotlight].direction);
     ImGui::PopID();
     ImGui::PopID();
     ImGui::TreePop();
@@ -247,22 +247,16 @@ void draw_render_tab(Renderer *ren)
   ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 }
 
-void draw_physics_tab(Renderer *ren)
+void draw_physics_tab(Renderer *ren, Player *player)
 {
   ImGui::SliderFloat("Gravity", &ren->gravity, 0, 10);
-  bool fly = false;
-  ImGui::Checkbox("Fly", &fly);
+  ImGui::Checkbox("Fly", &player->fly);
 }
 
-char script_buffer[2048];
-bool first = true;
 
-void draw_dev_ui(Renderer *ren, Scene *scene, int *x, int *y, int *w, int *h)
+void draw_dev_ui(Renderer *ren, Scene *scene, Player *player, int *x, int *y, int *w, int *h)
 {
   draw_main_menu_bar(ren, scene);
-
-  ImGuiInputTextFlags scriptflags = 0;
-  scriptflags |= ImGuiInputTextFlags_AllowTabInput;
 
   ImGuiWindowFlags windowflags = 0;
   windowflags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
@@ -273,35 +267,18 @@ void draw_dev_ui(Renderer *ren, Scene *scene, int *x, int *y, int *w, int *h)
   ImGui::SetNextWindowPos({0, 0});
   ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
 
-  if (first)
-  {
-    std::ifstream fh;
-    fh.open("LuaScripting/scripts/default.lua");
-
-    std::string raw_file = "";
-    std::string line;
-    while (getline(fh, line))
-      raw_file += line + "\n";
-
-    strcpy(script_buffer, raw_file.c_str());
-
-    first = false;
-  }
-
   ImGui::Begin("Root", NULL, windowflags);
   {
     ImGui::DockSpace(ImGui::GetID("dock"));
 
-
     EngineUI::sceneHierarchy(ren, scene);
     EngineUI::properties(scene);
+    EngineUI::scriptBrowser();
     EngineUI::scriptEditor();
-
-
 
     ImGui::Begin("Lighting");
     {
-      draw_lighting_tab(ren);
+      draw_lighting_tab(ren, scene);
       ImGui::End();
     }
   
@@ -313,25 +290,7 @@ void draw_dev_ui(Renderer *ren, Scene *scene, int *x, int *y, int *w, int *h)
 
     ImGui::Begin("Physics");
     {
-      draw_physics_tab(ren);
-      ImGui::End();
-    }
-
-    static std::filesystem::path selected_path("");
-
-
-    ImGui::Begin("Script editor");
-    {
-      ImGui::InputTextMultiline("Script", script_buffer, 2048, ImVec2(-1, ImGui::GetContentRegionAvail().y-35.0f), scriptflags);
-      
-      if (ImGui::Button("Save"))
-      {
-        std::ofstream fh;
-        fh.open(selected_path.string(), std::ios::out);
-        fh << script_buffer;
-        fh.close();
-      }
-
+      draw_physics_tab(ren, player);
       ImGui::End();
     }
 

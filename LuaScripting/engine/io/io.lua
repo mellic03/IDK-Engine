@@ -58,7 +58,6 @@ this.scancodes = {
   KB_RGUI = 231, -- windows, command (apple), meta --
 
 
-
   __index = function (scancodeTable, key)
     return scancodeTable[this[key] + 1];
   end ;

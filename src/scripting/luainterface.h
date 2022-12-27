@@ -63,6 +63,9 @@ namespace LuaInterface {
       val.PushGlobal(*LuaInterface::L, name);
     }
 
+
+    void array_bool(bool arrOfBool[], int size, std::string name);
+
     void stdvec_int(std::vector<int> vecOfInt, std::string name);
     void stdvec_bool(std::vector<bool> vecOfBool, std::string name);
     void stdvec_stdstring(std::vector<std::string> vecOfString, std::string name);

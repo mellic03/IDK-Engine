@@ -3,6 +3,10 @@
 int EngineUI::selected_objectID = 0;
 FileBrowser EngineUI::filebrowser;
 
+char EngineUI::script_buffer[4096];
+ImGuiInputFlags EngineUI::script_flags = ImGuiInputTextFlags_AllowTabInput;
+
+std::stringstream EngineUI::string_stream;
 
 void EngineUI::vec3(std::string name, glm::vec3 *data, float step)
 {
@@ -25,7 +29,7 @@ void EngineUI::vec3(std::string name, glm::vec3 *data, float step)
         data->x = 0.0f;
       ImGui::SameLine();
       ImGui::DragFloat("##X", &data->x, step, 0, 0, (data->x > -1.0f && data->x < 1.0f) ? "%0.3f" : "%0.1f");
-
+      
       ImGui::TableNextColumn();
       if (ImGui::Button("Y", button_size))
         data->y = 0.0f;
@@ -45,3 +49,4 @@ void EngineUI::vec3(std::string name, glm::vec3 *data, float step)
 
   ImGui::PopStyleVar();
 }
+

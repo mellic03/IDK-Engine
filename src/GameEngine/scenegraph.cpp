@@ -84,6 +84,10 @@ void SceneGraph::loadObject(std::string directory)
     if (sscanf(buffer, "#interactivity %s", stringdata))
       object.setInteractivity(std::string(stringdata));
 
+    if (sscanf(buffer, "#interactivity %s", stringdata))
+      object.changePhysState(std::string(stringdata));
+
+
     if (sscanf(buffer, "#geometry %s", stringdata))
     {
       new_model.loadDae(directory, std::string(stringdata));

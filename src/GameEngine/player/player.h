@@ -20,6 +20,7 @@ class Player {
     Camera *cam;
     GameObject *m_gameobject = nullptr;
 
+    bool fly = true, fly_last = true, fly_changed = false;
     float move_speed = 8.0f;
     float jump_force = 8.0f;
     float friction = 5.0f;
