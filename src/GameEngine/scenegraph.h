@@ -22,6 +22,8 @@ class SceneGraph {
     std::vector<GameObject> m_object_templates;
     std::list<GameObject> m_object_instances;
     std::vector<GameObject *> m_lightsource_instances;
+    std::vector<GameObject *> m_pointlight_instances;
+    std::vector<GameObject *> m_spotlight_instances;
 
 
     SceneGraph() { };

@@ -1,27 +1,8 @@
 local engine = require("LuaScripting/engine");
 
-
-
--- -- External variables provided by engine
--- local worldData = {
---   DeltaTime,
---   Positions,
---   Velocities
--- };
--- engine.worldDataInit(worldData);
-
 DeltaTime = 0;
 IDs = {};
 Scripts = {};
-Positions = {};
-Velocities = {};
-
-local worldData = {
-  deltaTime = DeltaTime;
-  positions = Positions,
-  velocities = Velocities
-};
--- engine.worldDataInit(worldData);
 
 
 -- ----------------------------------------
@@ -37,7 +18,7 @@ function Main()
     
     if (fh ~= nil)
       then
-        require(modulepath)(worldData, IDs[i], engine);
+        require(modulepath)(IDs[i], engine);
         io.close(fh);
       
       else

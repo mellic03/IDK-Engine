@@ -275,6 +275,7 @@ void draw_dev_ui(Renderer *ren, Scene *scene, Player *player, int *x, int *y, in
     EngineUI::properties(scene);
     EngineUI::scriptBrowser();
     EngineUI::scriptEditor();
+    EngineUI::details(scene);
 
     ImGui::Begin("Lighting");
     {

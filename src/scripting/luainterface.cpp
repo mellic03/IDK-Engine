@@ -2,13 +2,18 @@
 
 
 lua_State *LuaInterface::L;
+SceneGraph *LuaInterface::scenegraph;
 // std::vector<int> LuaInterface::IDs;
 // std::vector<std::string> LuaInterface::scripts;
 // std::vector<glm::vec3> LuaInterface::positions;
 // std::vector<glm::vec3> LuaInterface::velocities;
 
 
+void LuaInterface::init(SceneGraph *graph)
+{
+  LuaInterface::scenegraph = graph;
 
+}
 
 void LuaInterface::compile(void)
 {
@@ -16,6 +21,7 @@ void LuaInterface::compile(void)
   luaL_openlibs(LuaInterface::L);
   int status = luaL_loadfile(LuaInterface::L, "LuaScripting/main.lua");
   lua_pcall(LuaInterface::L, 0, 0, 0);
+  printf("Lua compiled\n");
 }
 
 void LuaInterface::begin(void)
@@ -27,8 +33,12 @@ void LuaInterface::begin(void)
 
 }
 
+
+
 void LuaInterface::execute(void)
 {
+  register_library();
+
   lua_getglobal(L, "Main");
   if (lua_isfunction(L, -1))
   {

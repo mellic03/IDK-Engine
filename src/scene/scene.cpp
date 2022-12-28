@@ -92,7 +92,7 @@ void Scene::sendLightsToShader(void)
     this->ren->active_shader->setVec3(buffer,  this->sorted_spotlights[i].m_transform->getPos_worldspace());
 
     sprintf(buffer, "spotlights[%d].direction", i);
-    this->ren->active_shader->setVec3(buffer,  this->sorted_spotlights[i].direction);
+    this->ren->active_shader->setVec3(buffer,  *this->sorted_spotlights[i].m_transform->getRot());
 
     sprintf(buffer, "spotlights[%d].ambient", i);
     this->ren->active_shader->setVec3(buffer,  this->sorted_spotlights[i].ambient);
@@ -153,15 +153,27 @@ void Scene::drawGeometry(SDL_Event *event)
 void Scene::drawLightsources(SDL_Event *event)
 {
   int i = 0;
-  for (auto &lightsource: this->m_scenegraph->m_lightsource_instances)
+  for (auto &lightsource: this->m_scenegraph->m_pointlight_instances)
   {
-    if (this->pointlights_on[0] == false)
+    if (this->pointlights_on[i] == false)
       continue;
-    this->pointlights[0].m_transform = lightsource->getTransform();
+    this->pointlights[i].m_transform = lightsource->getTransform();
     lightsource->m_model->setTransform(lightsource->getTransform());
-    this->ren->drawLightSource(lightsource->m_model, this->pointlights[0].diffuse);
+    this->ren->drawLightSource(lightsource->m_model, this->pointlights[i].diffuse);
     i += 1;
   }
+
+  i = 0;
+  for (auto &lightsource: this->m_scenegraph->m_spotlight_instances)
+  {
+    if (this->spotlights_on[i] == false)
+      continue;
+    this->spotlights[i].m_transform = lightsource->getTransform();
+    lightsource->m_model->setTransform(lightsource->getTransform());
+    this->ren->drawLightSource(lightsource->m_model, this->spotlights[i].diffuse);
+    i += 1;
+  }
+
 }
 
 

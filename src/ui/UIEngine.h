@@ -7,6 +7,7 @@
 
 #include "../GraphicsEngine/renderer.h"
 #include "../scene/scene.h"
+#include "../scripting/luainterface.h"
 
 #include "filebrowser.h"
 
@@ -27,5 +28,6 @@ namespace EngineUI {
   void properties(Scene *scene);
   void scriptBrowser(void);
   void scriptEditor(void);
+  void details(Scene *scene);
 
 };

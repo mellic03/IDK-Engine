@@ -14,6 +14,14 @@ void EngineUI::scriptEditor(void)
       fh << script_buffer;
       fh.close();
     }
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Reload"))
+    {
+      LuaInterface::compile();
+    }
+    
     
     ImGui::End();
   }

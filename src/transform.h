@@ -18,7 +18,7 @@ struct Transform {
   glm::vec3 velocity = {0.0f, 0.0f, 0.0f};
   glm::vec3 rotation = {0.0f, 0.0f, 0.0f};
   glm::vec3 last_rotation  = {0.0f, 0.0f, 0.0f};
-  glm::quat rotation_q     = glm::quat();
+  glm::quat rotation_q     = glm::quat(glm::radians(this->rotation));
 
   // Member access
   //-------------------------------------------------------------------------------------------------------------

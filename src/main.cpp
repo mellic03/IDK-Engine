@@ -73,12 +73,12 @@ int ENTRY(int argc, char **argv)
 
   // RENDERER SETUP
   //----------------------------------------
-  luaInit();
   Renderer *ren = &Render::ren;
   ren->init();
   Player player(ren);
 
   SceneGraph scenegraph;
+  luaInit(&scenegraph);
 
   scenegraph.loadObject("assets/misc/empty/");
   
@@ -105,24 +105,34 @@ int ENTRY(int argc, char **argv)
 
   scenegraph.newObjectInstance("pointlight");
   GameObject *light1 = scenegraph.rearObjectPtr();
-  light1->setName("Point light 1");
+  light1->setName("Point light 0");
   light1->lightsource_components.push_back(EntityComponent(COMPONENT_LIGHTSOURCE, &scene_1->pointlights[0]));
   light1->hasGeometry(false);
   scene_1->pointlights[0].m_transform = light1->getTransform();
-  scenegraph.m_lightsource_instances.push_back(light1);
+  scenegraph.m_pointlight_instances.push_back(light1);
+
+  scenegraph.newObjectInstance("empty");
+  GameObject *empty = scenegraph.rearObjectPtr();
+  empty->setName("Point lights");
+  empty->transform_components.clear();
+  empty->giveChild(light1);
+
+  scenegraph.newObjectInstance("empty");
+  empty = scenegraph.rearObjectPtr();
+  empty->setName("Spot lights");
+  empty->transform_components.clear();
 
   for (int i=0; i<NUM_SPOTLIGHTS; i++)
   {
     scenegraph.newObjectInstance("pointlight");
     GameObject *spotlight = scenegraph.rearObjectPtr();
-    spotlight->setName("Spot light i");
+    spotlight->setName("Spot light " + std::to_string(i));
     spotlight->lightsource_components.push_back(EntityComponent(COMPONENT_LIGHTSOURCE, &scene_1->spotlights[i]));
     spotlight->hasGeometry(false);
     scene_1->spotlights[i].m_transform = spotlight->getTransform();
-    scenegraph.m_lightsource_instances.push_back(spotlight);
-
+    scenegraph.m_spotlight_instances.push_back(spotlight);
+    empty->giveChild(spotlight);
   }
-
 
 
   import_lighting_config(ren);

@@ -43,6 +43,7 @@ class EntityComponent {
   public:
     std::filesystem::path script_path;
     std::string script_name = "LuaScripting/scripts/default";
+    bool script_changed = false;
 
     EntityComponent(EntityComponentType component_type);
     EntityComponent(EntityComponentType component_type, PointLight *pointlight);

@@ -7,6 +7,9 @@
 #include "../include/glm/glm.hpp"
 
 
+void register_library(void);
+
+
 namespace LuaInterface {
 
   // Data Structures
@@ -18,6 +21,7 @@ namespace LuaInterface {
   // Variables
   //--------------------------------------------------
   extern lua_State *L;
+  extern SceneGraph *scenegraph;
   // extern std::vector<int> IDs;
   // extern std::vector<std::string> scripts;
   // extern std::vector<glm::vec3> positions;
@@ -29,6 +33,7 @@ namespace LuaInterface {
 
   // Methods
   //--------------------------------------------------
+  void init(SceneGraph *graph);
   void compile(void);
   void begin(void);
   void execute(void);
@@ -42,7 +47,8 @@ namespace LuaInterface {
 
     template <typename T> void number(T value, std::string name)
     {
-
+      lua_pushnumber(LuaInterface::L, value);
+      lua_setglobal(LuaInterface::L, name.c_str());
     }
 
     void array_bool(bool arrOfBool[], int size, std::string name);

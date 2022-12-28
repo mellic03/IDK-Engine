@@ -30,13 +30,13 @@ void EntityComponent::_draw_pointlight(void)
   {
     ImGui::Checkbox("Enable", &World::scene.pointlights_on[selected_pointlight]);
 
-    ImGui::ColorEdit3("ambient", (float*)&World::scene.pointlights[selected_pointlight].ambient);
-    ImGui::ColorEdit3("diffuse", (float*)&World::scene.pointlights[selected_pointlight].diffuse);
+    ImGui::ColorEdit3("ambient", (float*)&this->_pointlight->ambient);
+    ImGui::ColorEdit3("diffuse", (float*)&this->_pointlight->diffuse);
 
-    ImGui::SliderFloat("constant", &World::scene.pointlights[selected_pointlight].constant, 0.0f, 100.0f, "%0.4f", 0);
-    ImGui::DragScalar("linear", ImGuiDataType_Float, &World::scene.pointlights[selected_pointlight].linear,       0.001f, 0);
-    ImGui::DragScalar("quadratic", ImGuiDataType_Float, &World::scene.pointlights[selected_pointlight].quadratic, 0.001f, 0);
-    ImGui::DragScalar("bias", ImGuiDataType_Float, &World::scene.pointlights[selected_pointlight].bias, 0.001f, 0);
+    ImGui::SliderFloat("constant", &this->_pointlight->constant, 0.0f, 100.0f, "%0.4f", 0);
+    ImGui::DragScalar("linear", ImGuiDataType_Float, &this->_pointlight->linear,       0.001f, 0);
+    ImGui::DragScalar("quadratic", ImGuiDataType_Float, &this->_pointlight->quadratic, 0.001f, 0);
+    ImGui::DragScalar("bias", ImGuiDataType_Float, &this->_pointlight->bias, 0.001f, 0);
   }
 }
 
@@ -54,6 +54,11 @@ void EntityComponent::_draw_spotlight(void)
     ImGui::SliderFloat("constant", &this->_spotlight->constant, 0.0f, 100.0f, "%0.4f", 0);
     ImGui::DragScalar("linear", ImGuiDataType_Float, &this->_spotlight->linear,       0.001f, 0);
     ImGui::DragScalar("quadratic", ImGuiDataType_Float, &this->_spotlight->quadratic, 0.001f, 0);
+
+    ImGui::DragScalar("intensity", ImGuiDataType_Float, &this->_spotlight->intensity, 0.05f, 0);
+    ImGui::DragScalar("inner cutoff", ImGuiDataType_Float, &this->_spotlight->inner_cutoff, 0.05f, 0);
+    ImGui::DragScalar("outer cutoff", ImGuiDataType_Float, &this->_spotlight->outer_cutoff, 0.05f, 0);
+    ImGui::DragScalar("fov", ImGuiDataType_Float, &this->_spotlight->fov, 0.05f, 0);
   }
 }
 
@@ -82,6 +87,7 @@ void EntityComponent::_draw_transform(GameObject *object)
 
 void EntityComponent::_draw_script(GameObject *object)
 {
+  this->script_changed = false;
   if (ImGui::CollapsingHeader(std::string("Script        " + this->script_path.filename().string()).c_str()))
   {
     if (ImGui::Button(std::string(this->script_name + ".lua").c_str()))
@@ -95,6 +101,7 @@ void EntityComponent::_draw_script(GameObject *object)
       EngineUI::draw_directory_recursive(fs::current_path()/"LuaScripting/scripts", &this->script_path, &changed);
       if (changed)
       {
+        this->script_changed = true;
         fs::path filepath = fs::relative(this->script_path, ".");
 
         this->script_name = filepath.string();
