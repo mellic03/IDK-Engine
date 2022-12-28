@@ -31,6 +31,12 @@ struct PointLight {
 };
 
 struct SpotLight {
+  
+  private:
+    Transform _default_transform;
+
+  public:
+    Transform *m_transform = &this->_default_transform;
   glm::vec3 position = glm::vec3(0.0f);
   glm::vec3 direction = glm::vec3(0.0, -1.0, 0.0);
   glm::vec3 ambient = glm::vec3(0.0f);

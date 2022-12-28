@@ -2,40 +2,26 @@
 
 #include <iostream>
 #include <lua.hpp>
-#include <LuaCpp.hpp>
 
 #include "../GameEngine/GameEngine.h"
 #include "../include/glm/glm.hpp"
-
-using namespace LuaCpp;
-using namespace LuaCpp::Registry;
-using namespace LuaCpp::Engine;
-
 
 
 namespace LuaInterface {
 
   // Data Structures
   //--------------------------------------------------
-  struct TableReference {
-    std::string name;
-    LuaTTable table;
-  };
+
+
   //--------------------------------------------------
 
   // Variables
   //--------------------------------------------------
-  extern LuaContext context;
-  extern std::unique_ptr<LuaState> L;
-
-  extern std::vector<TableReference> table_references;
-
-
-
-  extern std::vector<int> IDs;
-  extern std::vector<std::string> scripts;
-  extern std::vector<glm::vec3> positions;
-  extern std::vector<glm::vec3> velocities;
+  extern lua_State *L;
+  // extern std::vector<int> IDs;
+  // extern std::vector<std::string> scripts;
+  // extern std::vector<glm::vec3> positions;
+  // extern std::vector<glm::vec3> velocities;
   //--------------------------------------------------
 
 
@@ -45,10 +31,7 @@ namespace LuaInterface {
   //--------------------------------------------------
   void compile(void);
   void begin(void);
-  void sendVectors(void);
   void execute(void);
-  void retrieveVectors(void);
-  LuaTTable *tablePtr(std::string name);
   //--------------------------------------------------
 
 
@@ -59,10 +42,8 @@ namespace LuaInterface {
 
     template <typename T> void number(T value, std::string name)
     {
-      LuaTNumber val(value);
-      val.PushGlobal(*LuaInterface::L, name);
-    }
 
+    }
 
     void array_bool(bool arrOfBool[], int size, std::string name);
 
@@ -80,9 +61,7 @@ namespace LuaInterface {
 
     template <typename T> void number(T value, std::string name)
     {
-      LuaTNumber val;
-      val.PopGlobal(*LuaInterface::L);
-      return (T)val.getValue();
+
     }
 
     void stdvec_vec3(std::vector<glm::vec3> *vec, std::string name);

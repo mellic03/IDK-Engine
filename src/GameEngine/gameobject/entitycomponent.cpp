@@ -46,15 +46,14 @@ void EntityComponent::_draw_spotlight(void)
   int selected_spotlight = 0;
   if (ImGui::CollapsingHeader("Spotlight"))
   {
-    ImGui::Checkbox("Enable", &World::scene.pointlights_on[selected_spotlight]);
+    ImGui::Checkbox("Enable", &World::scene.spotlights_on[selected_spotlight]);
 
-    ImGui::ColorEdit3("ambient", (float*)&World::scene.pointlights[selected_spotlight].ambient);
-    ImGui::ColorEdit3("diffuse", (float*)&World::scene.pointlights[selected_spotlight].diffuse);
+    ImGui::ColorEdit3("ambient", (float*)&this->_spotlight->ambient);
+    ImGui::ColorEdit3("diffuse", (float*)&this->_spotlight->diffuse);
 
-    ImGui::SliderFloat("constant", &World::scene.pointlights[selected_spotlight].constant, 0.0f, 100.0f, "%0.4f", 0);
-    ImGui::DragScalar("linear", ImGuiDataType_Float, &World::scene.pointlights[selected_spotlight].linear,       0.001f, 0);
-    ImGui::DragScalar("quadratic", ImGuiDataType_Float, &World::scene.pointlights[selected_spotlight].quadratic, 0.001f, 0);
-    ImGui::DragScalar("bias", ImGuiDataType_Float, &World::scene.pointlights[selected_spotlight].bias, 0.001f, 0);
+    ImGui::SliderFloat("constant", &this->_spotlight->constant, 0.0f, 100.0f, "%0.4f", 0);
+    ImGui::DragScalar("linear", ImGuiDataType_Float, &this->_spotlight->linear,       0.001f, 0);
+    ImGui::DragScalar("quadratic", ImGuiDataType_Float, &this->_spotlight->quadratic, 0.001f, 0);
   }
 }
 

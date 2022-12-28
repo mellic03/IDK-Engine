@@ -1,8 +1,6 @@
-local engine = require("LuaScripting/engine");
-local vlib = engine.vectorLibrary;
+return function(worldData, objectID, engine)
 
-
-return function(worldData, objectID)
+  local vlib = engine.vectorLibrary;
 
 	local pos = worldData.positions[objectID];
 	local vel  = worldData.velocities[objectID];

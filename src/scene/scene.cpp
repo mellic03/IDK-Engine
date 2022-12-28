@@ -89,7 +89,7 @@ void Scene::sendLightsToShader(void)
   for (int i=0; i<NUM_SPOTLIGHTS; i++)
   {
     sprintf(buffer, "spotlights[%d].position", i);
-    this->ren->active_shader->setVec3(buffer,  this->sorted_spotlights[i].position);
+    this->ren->active_shader->setVec3(buffer,  this->sorted_spotlights[i].m_transform->getPos_worldspace());
 
     sprintf(buffer, "spotlights[%d].direction", i);
     this->ren->active_shader->setVec3(buffer,  this->sorted_spotlights[i].direction);

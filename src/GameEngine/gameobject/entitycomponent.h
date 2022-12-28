@@ -29,8 +29,8 @@ class EntityComponent {
 
   private:
     EntityComponentType _component_type = COMPONENT_NONE;
-    PointLight *_pointlight;
-    SpotLight *_spotlight;
+    PointLight *_pointlight = nullptr;
+    SpotLight *_spotlight = nullptr;
 
     void _draw_pointlight(void);
     void _draw_spotlight(void);

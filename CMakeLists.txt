@@ -54,10 +54,6 @@ file(
   "src/include/tiny_gltf/*.h"
   "src/include/tiny_gltf/*.hpp"
   "src/include/tiny_gltf/*.cpp"
-
-  "external/luacpp/*.cpp"
-  "external/luacpp/Engine/*.cpp"
-  "external/luacpp/Registry/*.cpp"
 )
 
 

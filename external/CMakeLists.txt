@@ -11,8 +11,9 @@ include_directories(
 	glew-2.1.0/include/
 )
 
-set(GLEW_SOURCE
-glew-2.1.0/src/glew.c
+set(
+  GLEW_SOURCE
+  glew-2.1.0/src/glew.c
 )
 
 set(GLEW_HEADERS

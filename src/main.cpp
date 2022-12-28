@@ -106,10 +106,23 @@ int ENTRY(int argc, char **argv)
   scenegraph.newObjectInstance("pointlight");
   GameObject *light1 = scenegraph.rearObjectPtr();
   light1->setName("Point light 1");
-  light1->lightsource_components.push_back(EntityComponent(COMPONENT_LIGHTSOURCE));
+  light1->lightsource_components.push_back(EntityComponent(COMPONENT_LIGHTSOURCE, &scene_1->pointlights[0]));
   light1->hasGeometry(false);
   scene_1->pointlights[0].m_transform = light1->getTransform();
   scenegraph.m_lightsource_instances.push_back(light1);
+
+  for (int i=0; i<NUM_SPOTLIGHTS; i++)
+  {
+    scenegraph.newObjectInstance("pointlight");
+    GameObject *spotlight = scenegraph.rearObjectPtr();
+    spotlight->setName("Spot light i");
+    spotlight->lightsource_components.push_back(EntityComponent(COMPONENT_LIGHTSOURCE, &scene_1->spotlights[i]));
+    spotlight->hasGeometry(false);
+    scene_1->spotlights[i].m_transform = spotlight->getTransform();
+    scenegraph.m_lightsource_instances.push_back(spotlight);
+
+  }
+
 
 
   import_lighting_config(ren);

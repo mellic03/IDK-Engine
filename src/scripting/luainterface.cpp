@@ -1,62 +1,54 @@
 #include "luainterface.h"
 
 
-LuaContext LuaInterface::context;
-std::unique_ptr<LuaState> LuaInterface::L;
-
-std::vector<LuaInterface::TableReference> LuaInterface::table_references;
-
-std::vector<int> LuaInterface::IDs;
-std::vector<std::string> LuaInterface::scripts;
-std::vector<glm::vec3> LuaInterface::positions;
-std::vector<glm::vec3> LuaInterface::velocities;
+lua_State *LuaInterface::L;
+// std::vector<int> LuaInterface::IDs;
+// std::vector<std::string> LuaInterface::scripts;
+// std::vector<glm::vec3> LuaInterface::positions;
+// std::vector<glm::vec3> LuaInterface::velocities;
 
 
-LuaTTable *LuaInterface::tablePtr(std::string name)
-{
-  for (auto &ref: table_references)
-    if (ref.name == name)
-      return &ref.table;
-  return nullptr;
-}
+
 
 void LuaInterface::compile(void)
 {
-	LuaInterface::context.CompileFile("main", "./LuaScripting/main.lua");
+  LuaInterface::L = luaL_newstate();
+  luaL_openlibs(LuaInterface::L);
+  int status = luaL_loadfile(LuaInterface::L, "LuaScripting/main.lua");
+  lua_pcall(LuaInterface::L, 0, 0, 0);
 }
 
 void LuaInterface::begin(void)
 {
-  LuaInterface::table_references.clear();
-  LuaInterface::IDs.clear();
-  LuaInterface::scripts.clear();
-  LuaInterface::positions.clear();
-  LuaInterface::velocities.clear();
+  // LuaInterface::IDs.clear();
+  // LuaInterface::scripts.clear();
+  // LuaInterface::positions.clear();
+  // LuaInterface::velocities.clear();
 
-	L = context.newStateFor("main");
-}
-
-
-void LuaInterface::sendVectors(void)
-{
-  LuaInterface::ToLua::stdvec_int(LuaInterface::IDs, "IDs");
-  LuaInterface::ToLua::stdvec_stdstring(LuaInterface::scripts, "Scripts");
-  LuaInterface::ToLua::stdvec_vec3(LuaInterface::positions, "Positions");
-  LuaInterface::ToLua::stdvec_vec3(LuaInterface::velocities, "Velocities");
 }
 
 void LuaInterface::execute(void)
 {
-	int res = lua_pcall(*L, 0, LUA_MULTRET, 0);
-  if (res != LUA_OK ) {
-		std::cout << "Error Executing " << res << " " << lua_tostring(*L, 1) << std::endl;	
-	}
-}
+  lua_getglobal(L, "Main");
+  if (lua_isfunction(L, -1))
+  {
+    // printf("Is function\n");
+  }
+  else
+  {
+    printf("NOT A FUNCTION!!\n");
+  }
 
-void LuaInterface::retrieveVectors(void)
-{
-  LuaInterface::ToCPP::stdvec_vec3(&LuaInterface::positions, "Positions");
-  LuaInterface::ToCPP::stdvec_vec3(&LuaInterface::velocities, "Velocities");
-  
+	if (lua_pcall(L, 0, LUA_MULTRET, 0) == 0)
+  {
+    // std::cout << "Thing called all good" << std::endl;
+  }
+
+  else
+  {
+    std::cout << "Bad bad bad" << std::endl;
+    // lua_pop(L, 1);
+  }
+
 }
 
