@@ -188,7 +188,8 @@ void Renderer::setupDepthCubemap(void)
   glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, near, far);
 
   std::vector<glm::mat4> shadowTransforms;
-  glm::vec3 lightPos = World::scene.pointlights[0].m_transform->getPos_worldspace();
+  PointLight *pointlight = &World::scene.m_scenegraph->pointlights[0];
+  glm::vec3 lightPos = pointlight->m_transform->getPos_worldspace();
   shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 1.0,  0.0,  0.0), glm::vec3(0.0, -1.0,  0.0)));
   shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0,  0.0,  0.0), glm::vec3(0.0, -1.0,  0.0)));
   shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0,  1.0,  0.0), glm::vec3(0.0,  0.0,  1.0)));
@@ -448,8 +449,10 @@ void Renderer::drawModel(Model *model)
   }
 }
 
-void Renderer::drawLightSource(Model *model, glm::vec3 diffuse_color)
+void Renderer::drawLightSource(Model *model, glm::vec3 diffuse)
 {
+  
+
   this->active_shader->setMat4("model", model->getTransform()->getModelMatrix());
   this->active_shader->setMat4("view", this->cam.view);
   this->active_shader->setMat4("projection", this->cam.projection);
@@ -461,7 +464,7 @@ void Renderer::drawLightSource(Model *model, glm::vec3 diffuse_color)
 
     for (int i=0; i<mesh.IBOS.size(); i++)
     {
-      this->active_shader->setVec3("diffuseColor", diffuse_color);
+      this->active_shader->setVec3("diffuseColor", diffuse);
 
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBOS[i]);
       glDrawElements(GL_TRIANGLES, mesh.indices[i].size(), GL_UNSIGNED_INT, (void *)0);

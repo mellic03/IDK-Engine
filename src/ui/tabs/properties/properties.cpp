@@ -2,16 +2,16 @@
 
 void EngineUI::properties(Scene *scene)
 {
+  SceneGraph *scenegraph = scene->m_scenegraph;
+  if (scenegraph->m_object_instances.size() == 0)
+    return;
+
+  GameObject *object = scenegraph->objectPtr(EngineUI::selected_objectID);
+  if (object == nullptr)
+    return;
+  
   ImGui::Begin("Properties");
   {
-    SceneGraph *scenegraph = scene->m_scenegraph;
-
-    if (scenegraph->m_object_instances.size() == 0)
-      return;
-
-
-    GameObject *object = scenegraph->objectPtr(EngineUI::selected_objectID);
-
     ImGui::InputText("Name", &object->m_given_name);
     ImGui::Separator();
 

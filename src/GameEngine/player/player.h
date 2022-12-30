@@ -32,7 +32,6 @@ class Player {
     Transform *getTransform(void)       { return this->m_gameobject->getTransform(); };
     glm::vec3 *getPos(void)             { return this->m_gameobject->getPos(); };
     glm::vec3 *getVel(void)             { return this->m_gameobject->getVel(); };
-    glm::vec3 *getRot(void)             { return this->m_gameobject->getRot(); };
     //----------------------------------------------------
 
     void key_input(Renderer *ren);

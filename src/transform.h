@@ -16,27 +16,27 @@ struct Transform {
 
   glm::vec3 position = {0.0f, 0.0f, 0.0f};
   glm::vec3 velocity = {0.0f, 0.0f, 0.0f};
-  glm::vec3 rotation = {0.0f, 0.0f, 0.0f};
-  glm::vec3 last_rotation  = {0.0f, 0.0f, 0.0f};
-  glm::quat rotation_q     = glm::quat(glm::radians(this->rotation));
+  glm::quat orientation    = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
 
   // Member access
   //-------------------------------------------------------------------------------------------------------------
   glm::vec3 *getPos(void)       { return &this->position; };
   glm::vec3 *getVel(void)       { return &this->velocity; };
-  glm::vec3 *getRot(void)       { this->rotation_q = glm::quat(glm::radians(this->rotation)); return &this->rotation; };
-  glm::quat *getRotQ(void)      { return &this->rotation_q; };
+  void addRot(glm::vec3 rot)
+  {
+    glm::quat drot = glm::quat(rot);
+    this->orientation = drot * this->orientation;
+  }
 
   glm::vec4 getPos_vec4(void)   { return glm::vec4(this->position.x, this->position.y, this->position.z, 1.0f); };
   glm::vec4 getVel_vec4(void)   { return glm::vec4(this->velocity.x, this->velocity.y, this->velocity.z, 0.0f); };
-  glm::vec4 getRot_vec4(void)   { return glm::vec4(this->rotation.x, this->rotation.y, this->rotation.z, 0.0f); };
 
   glm::vec3 getPos_worldspace(void)   { return this->getModelMatrix_noLocalTransform() * this->getPos_vec4(); };
 
 
   glm::mat4 getModelMatrix(void)
   {
-    glm::mat4 model = glm::translate(glm::mat4(1.0f), this->position) * glm::toMat4(this->rotation_q);
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), this->position) * glm::toMat4(this->orientation);
 
     if (this->parent != nullptr)
       return this->parent->getModelMatrix() * model;

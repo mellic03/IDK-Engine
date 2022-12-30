@@ -29,7 +29,7 @@ void draw_save_modal(bool draw, Scene *scene)
 
     if (ImGui::Button("Save", ImVec2(120, 0)))
     {
-      // scene->m_scenegraph->exportScene(save_filepath.c_str());
+      scene->m_scenegraph->exportScene(save_filepath.c_str());
       ImGui::CloseCurrentPopup();
     }
 
@@ -69,7 +69,8 @@ void draw_load_modal(bool draw, Scene *scene)
 
     if (ImGui::Button("Load", ImVec2(120, 0)))
     {
-      // scene->m_scenegraph->importScene(load_path.c_str());
+      scene->importScene(load_path.c_str());
+      // scene->player->m_gameobject = scene->m_scenegraph->frontObjectPtr();
       // scene->player->setObjectPtr(scene->m_scenegraph->rearObjectPtr());
       ImGui::CloseCurrentPopup();
     }

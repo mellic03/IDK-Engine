@@ -129,8 +129,11 @@ void Player::mouse_input(Renderer *ren, SDL_Event *event)
 
   if (event->type == SDL_MOUSEMOTION && SDL_GetRelativeMouseMode())
   {
-    *this->cam->yaw   += this->cam->rot_speed * ren->deltaTime * event->motion.xrel;
-    *this->cam->pitch -= this->cam->rot_speed * ren->deltaTime * event->motion.yrel;
+    glm::quat dpitch = glm::angleAxis(this->cam->rot_speed * ren->deltaTime * event->motion.yrel, glm::vec3(1.0f, 0.0f, 0.0f));
+    glm::quat dyaw   = glm::angleAxis(this->cam->rot_speed * ren->deltaTime * event->motion.xrel, glm::vec3(0.0f, 1.0f, 0.0f));
+
+    this->getTransform()->orientation = dpitch * this->getTransform()->orientation * dyaw;
+
     // this->getWeapon()->movement_offset.x -= this->cam->rot_speed * ren->deltaTime * 0.001f * event->motion.xrel;
     // this->getWeapon()->movement_offset.y += this->cam->rot_speed * ren->deltaTime * 0.001f * event->motion.yrel;
   }

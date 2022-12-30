@@ -14,12 +14,14 @@ EntityComponent::EntityComponent(EntityComponentType component_type, PointLight 
 {
   this->_component_type = component_type;
   this->_pointlight = pointlight;
+  this->diffuse = &pointlight->diffuse;
 }
 
 EntityComponent::EntityComponent(EntityComponentType component_type, SpotLight *spotlight)
 {
   this->_component_type = component_type;
   this->_spotlight = spotlight;
+  this->diffuse = &spotlight->diffuse;
 }
 
 
@@ -28,7 +30,7 @@ void EntityComponent::_draw_pointlight(void)
   int selected_pointlight = 0;
   if (ImGui::CollapsingHeader("Pointlight"))
   {
-    ImGui::Checkbox("Enable", &World::scene.pointlights_on[selected_pointlight]);
+    ImGui::Checkbox("Enable", &this->_pointlight->active);
 
     ImGui::ColorEdit3("ambient", (float*)&this->_pointlight->ambient);
     ImGui::ColorEdit3("diffuse", (float*)&this->_pointlight->diffuse);
@@ -46,7 +48,7 @@ void EntityComponent::_draw_spotlight(void)
   int selected_spotlight = 0;
   if (ImGui::CollapsingHeader("Spotlight"))
   {
-    ImGui::Checkbox("Enable", &World::scene.spotlights_on[selected_spotlight]);
+    ImGui::Checkbox("Enable", &this->_spotlight->active);
 
     ImGui::ColorEdit3("ambient", (float*)&this->_spotlight->ambient);
     ImGui::ColorEdit3("diffuse", (float*)&this->_spotlight->diffuse);
@@ -80,7 +82,12 @@ void EntityComponent::_draw_transform(GameObject *object)
   {
     EngineUI::vec3("Position", object->getPos(), 0.01f);
     EngineUI::vec3("Velocity", object->getVel(), 0.01f);
-    EngineUI::vec3("Rotation", object->getRot(), 0.1f);
+
+    glm::quat q = object->getTransform()->orientation;
+    glm::vec3 drot1 = glm::degrees(glm::vec3(glm::pitch(q), glm::yaw(q), glm::roll(q)));
+    glm::vec3 drot2 = drot1;
+    EngineUI::vec3("Rotation", &drot1, 0.1f);
+    object->getTransform()->addRot(glm::radians(drot1 - drot2));
   }
 }
 

@@ -15,6 +15,7 @@
 class Camera {
 
   private:
+  
     glm::vec3 m_default_pos = glm::vec3(0.0f, 0.0f, 0.0f);
     glm::vec3 m_default_dir = glm::vec3(0.0f, 0.0f, 0.0f);
 
@@ -22,7 +23,6 @@ class Camera {
   public:
 
     Transform *m_transform;
-
 
     Camera();
     void useTransform(Transform *transform)  { this->m_transform = transform; };
@@ -42,7 +42,7 @@ class Camera {
     float headbob_value = 0.0f;
 
     float *pitch = nullptr, *roll = nullptr, *yaw = nullptr;
-    float rot_speed = 5.0f;
+    float rot_speed = 0.1f;
 
     float fov = 90.0f;
 

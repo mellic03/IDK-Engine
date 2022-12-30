@@ -1,36 +1,72 @@
-#HEADER
-num_entities: 3
+#GAMEOBJECT BEGIN
+objectID: 0
+parentID: -1
+m_template_name: empty
+m_given_name: Player
+position: -3.20213 0 8.63855
+velocity: 0 0 0
+orientation: 0 0 0 1
+#SCRIPTS BEGIN
+#SCRIPTS END
+#GAMEOBJECT END
 
-#START OBJECT
-GameObject: empty
-ID: 0
-parent_ID: -1
-given_name:
-Player
-position: 5.569299 -5.396155 0.953531
-velocity: 0.000000 0.000000 -0.000000
-rotation: 0.000000 0.000000 0.000000
-#END OBJECT
+#GAMEOBJECT BEGIN
+objectID: 1
+parentID: -1
+m_template_name: empty
+m_given_name: Point lights
+position: 0 0 0
+velocity: 0 0 0
+orientation: 0 0 0 1
+#SCRIPTS BEGIN
+#SCRIPTS END
+#GAMEOBJECT END
 
-#START OBJECT
-GameObject: terrain1
-ID: 1
-parent_ID: -1
-given_name:
-terrain1
-position: 0.000000 0.000000 0.000000
-velocity: 0.000000 0.000000 0.000000
-rotation: 0.000000 0.000000 0.000000
-#END OBJECT
+#GAMEOBJECT BEGIN
+objectID: 2
+parentID: -1
+m_template_name: empty
+m_given_name: Spot lights
+position: 0 0 0
+velocity: 0 0 0
+orientation: 0 0 0 1
+#SCRIPTS BEGIN
+#SCRIPTS END
+#GAMEOBJECT END
 
-#START OBJECT
-GameObject: building
-ID: 2
-parent_ID: -1
-given_name:
-building
-position: 9.400000 -6.000000 4.300000
-velocity: 0.000000 0.000000 0.000000
-rotation: 0.000000 70.199997 0.000000
-#END OBJECT
+#GAMEOBJECT BEGIN
+objectID: 3
+parentID: 0
+m_template_name: spotlight
+m_given_name: spotlight
+position: 0 0 0
+velocity: 0 0 0
+orientation: 0 0 0 1
+#SCRIPTS BEGIN
+#SCRIPTS END
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+objectID: 4
+parentID: 0
+m_template_name: pointlight
+m_given_name: pointlight
+position: 0 0 0
+velocity: 0 0 0
+orientation: 0 0 0 1
+#SCRIPTS BEGIN
+#SCRIPTS END
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+objectID: 5
+parentID: 0
+m_template_name: pointlight
+m_given_name: pointlight
+position: 0 0 0
+velocity: 0 0 0
+orientation: 0 0 0 1
+#SCRIPTS BEGIN
+#SCRIPTS END
+#GAMEOBJECT END
 

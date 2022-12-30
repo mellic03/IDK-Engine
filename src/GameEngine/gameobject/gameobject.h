@@ -14,9 +14,6 @@ class GameObject {
 
   private:
 
-    int m_ID = 0;
-    std::string m_template_name = "DEFAULT";
-
     bool _has_geometry = false;
 
     std::vector<GameObject *> m_children;
@@ -49,17 +46,21 @@ class GameObject {
 
   public:
 
+    int m_ID = 0;
+    int parentID = -1;
+
     std::vector<EntityComponent> transform_components;
     std::vector<EntityComponent> lightsource_components;
     std::vector<EntityComponent> script_components;
 
-    float m_sphere_collider_radius = 0.25f;
-    float height = 0.25f, width = 0.1f;
+    float m_sphere_collider_radius = 0.4f;
+    float height = 0.4f, width = 0.1f;
 
 
     Model *m_model;
     CollisionMesh m_collision_mesh;
 
+    std::string m_template_name = "DEFAULT";
     std::string m_given_name = "DEFAULT";
     std::string m_interactivity = "DEFAULT";
 
@@ -74,7 +75,6 @@ class GameObject {
     Transform *getTransform(void)     { return &this->_transform; };
     glm::vec3 *getPos(void)           { return this->_transform.getPos(); };
     glm::vec3 *getVel(void)           { return this->_transform.getVel(); };
-    glm::vec3 *getRot(void)           { return this->_transform.getRot(); };
 
 
     // Object ID
@@ -103,6 +103,8 @@ class GameObject {
 
     bool isHidden(void)           { return this->_hidden; };
     bool *isHiddenPtr(void)       { return &this->_hidden; };
+
+    GameObject *getParent(void)   { return this->m_parent; };
     //---------------------------------------------------------------------------------------------
 
 
@@ -111,6 +113,8 @@ class GameObject {
 
     bool hasCollisionMesh(void)                     { return this->_has_collisionmesh; };
     void hasCollisionMesh(bool has_collisionmesh)   { this->_has_collisionmesh = has_collisionmesh; };
+
+    bool hasLightSource(void)                       { return this->lightsource_components.size() > 0; };
 
 
     bool hasParent(void)                                { return this->m_parent != nullptr; };

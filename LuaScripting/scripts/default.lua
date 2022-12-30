@@ -1,8 +1,7 @@
 
-return function(worldData, objectID, engine)
+return function(objectID, engine)
 
-	local pos = worldData.positions[objectID];
-	local vel = worldData.velocities[objectID];
+
 
 end;
 

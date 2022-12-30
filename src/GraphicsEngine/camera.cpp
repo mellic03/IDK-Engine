@@ -36,25 +36,12 @@ void Camera::input()
 {
   const Uint8 *state = SDL_GetKeyboardState(NULL);
 
-  if (*this->pitch <= -85)
-    *this->pitch = -85;
-  else if (*this->pitch >= 85)
-    *this->pitch = 85;
+  glm::mat4 rotation = glm::mat4_cast(this->m_transform->orientation);
+  glm::mat4 translation = glm::translate(glm::mat4(1.0f), -this->m_transform->position);
 
-  this->dir->x = cos(glm::radians(*this->yaw)) * cos(glm::radians(*this->pitch));
-  this->dir->y = sin(glm::radians(*this->pitch));
-  this->dir->z = sin(glm::radians(*this->yaw)) * cos(glm::radians(*this->pitch));
+  this->view = rotation * translation;
 
-  glm::vec3 tempdir = this->m_transform->getModelMatrix_noLocalTransform() * glm::vec4(this->dir->x, this->dir->y, this->dir->z, 0.0f);
-  glm::vec3 p = this->m_transform->getPos_worldspace();
-
-  this->front = glm::normalize(tempdir);
-  this->right = glm::normalize(glm::cross(tempdir, this->up));
-
-  this->view = glm::lookAt(
-    p,
-    p + this->front,
-    this->up
-  );
+  this->front = glm::inverse(rotation) * glm::vec4(0.0f,  0.0f, -1.0f,  0.0f);
+  this->right = glm::inverse(rotation) * glm::vec4(1.0f,  0.0f,  0.0f,  0.0f);
 
 }

@@ -81,64 +81,24 @@ int ENTRY(int argc, char **argv)
   luaInit(&scenegraph);
 
   scenegraph.loadObject("assets/misc/empty/");
-  
-  scenegraph.newObjectInstance("empty");
-  player.m_gameobject = scenegraph.rearObjectPtr();
-  player.m_gameobject->setName("Player");
-  player.m_gameobject->setInteractivity("player");
-  player.cam->pitch = &player.getRot()->x;
-  player.cam->roll = &player.getRot()->z;
-  player.cam->yaw = &player.getRot()->y;
-  *player.cam->yaw = -90.0f;
-  player.cam->useTransform(player.getTransform());
-
-  
+  scenegraph.loadObject("assets/misc/pointlight/");
+  scenegraph.loadObject("assets/misc/spotlight/");
   scenegraph.loadObject("assets/environment/building/");
+  scenegraph.loadObject("assets/environment/building2/");
   scenegraph.loadObject("assets/environment/terrain0/");
   scenegraph.loadObject("assets/environment/terrain1/");
   scenegraph.loadObject("assets/npc/muscleskele/");
   scenegraph.loadObject("assets/npc/fren/");
-  scenegraph.loadObject("assets/misc/sphere/");
   scenegraph.loadObject("assets/props/table/");
 
   Scene *scene_1 = &World::scene;
-
-  scenegraph.newObjectInstance("pointlight");
-  GameObject *light1 = scenegraph.rearObjectPtr();
-  light1->setName("Point light 0");
-  light1->lightsource_components.push_back(EntityComponent(COMPONENT_LIGHTSOURCE, &scene_1->pointlights[0]));
-  light1->hasGeometry(false);
-  scene_1->pointlights[0].m_transform = light1->getTransform();
-  scenegraph.m_pointlight_instances.push_back(light1);
-
-  scenegraph.newObjectInstance("empty");
-  GameObject *empty = scenegraph.rearObjectPtr();
-  empty->setName("Point lights");
-  empty->transform_components.clear();
-  empty->giveChild(light1);
-
-  scenegraph.newObjectInstance("empty");
-  empty = scenegraph.rearObjectPtr();
-  empty->setName("Spot lights");
-  empty->transform_components.clear();
-
-  for (int i=0; i<NUM_SPOTLIGHTS; i++)
-  {
-    scenegraph.newObjectInstance("pointlight");
-    GameObject *spotlight = scenegraph.rearObjectPtr();
-    spotlight->setName("Spot light " + std::to_string(i));
-    spotlight->lightsource_components.push_back(EntityComponent(COMPONENT_LIGHTSOURCE, &scene_1->spotlights[i]));
-    spotlight->hasGeometry(false);
-    scene_1->spotlights[i].m_transform = spotlight->getTransform();
-    scenegraph.m_spotlight_instances.push_back(spotlight);
-    empty->giveChild(spotlight);
-  }
+  scene_1->useSceneGraph(&scenegraph);
+  scene_1->usePlayer(&player);
+  scene_1->clear();
 
 
   import_lighting_config(ren);
   scene_1->useRenderer(ren);
-  scene_1->usePlayer(&player);
-  scene_1->useSceneGraph(&scenegraph);
   //----------------------------------------
 
 

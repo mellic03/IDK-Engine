@@ -131,7 +131,7 @@ class Renderer {
     void sendLightsToShader(void);
 
     void drawModel(Model *model);
-    void drawLightSource(Model *model, glm::vec3 diffuse_color);
+    void drawLightSource(Model *model, glm::vec3 diffuse);
 
     void resize(int x, int y);
 };

@@ -41,6 +41,8 @@ class EntityComponent {
 
 
   public:
+  
+    glm::vec3 *diffuse = nullptr;
     std::filesystem::path script_path;
     std::string script_name = "LuaScripting/scripts/default";
     bool script_changed = false;

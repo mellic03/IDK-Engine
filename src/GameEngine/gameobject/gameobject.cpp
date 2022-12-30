@@ -236,15 +236,13 @@ void GameObject::clearParent(void)
   // if (this->getID() != 0)
   // {
     Transform *thisTransform = this->getTransform();
-    thisTransform->rotation_q = this->m_parent->getTransform()->rotation_q * thisTransform->rotation_q;
-    thisTransform->rotation.x = glm::degrees(glm::pitch( thisTransform->rotation_q ));
-    thisTransform->rotation.y = glm::degrees(glm::yaw(   thisTransform->rotation_q ));
-    thisTransform->rotation.z = glm::degrees(glm::roll(  thisTransform->rotation_q ));
+    thisTransform->orientation = this->m_parent->getTransform()->orientation * thisTransform->orientation;
   // }
 
   this->m_parent->removeChild(this);
 
   this->m_parent = nullptr;
+  this->parentID = -1;
   this->_transform.parent = nullptr;
 }
 
@@ -294,13 +292,11 @@ void GameObject::setParent(GameObject *parent)
   // if (this->getID() != 0)
   // {
     Transform *thisTransform = this->getTransform();
-    thisTransform->rotation_q = glm::inverse(parent->getTransform()->rotation_q) * thisTransform->rotation_q;
-    thisTransform->rotation.x = glm::degrees(glm::pitch( thisTransform->rotation_q ));
-    thisTransform->rotation.y = glm::degrees(glm::yaw(   thisTransform->rotation_q ));
-    thisTransform->rotation.z = glm::degrees(glm::roll(  thisTransform->rotation_q ));
+    thisTransform->orientation = glm::inverse(parent->getTransform()->orientation) * thisTransform->orientation;
   // }
 
   this->m_parent = parent;
+  this->parentID = parent->getID();
   this->_transform.parent = &parent->_transform;
 }
 

@@ -70,14 +70,13 @@ local this = { };
   end;
 
 
-
   this.mag = function(v1)
     return math.sqrt(v1.x*v1.x + v1.y*v1.y + v1.z*v1.z);
   end;
 
 
   this.dist = function(v1, v2)
-    return this.mag(v1 - v2);
+    return this.mag(this.newVector(v1.x-v2.x, v1.y-v2.y, v1.z-v2.z));
   end;
 
 

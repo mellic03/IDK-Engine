@@ -13,6 +13,7 @@ void EngineUI::scriptEditor(void)
       fh.open(EngineUI::filebrowser.selected_path.string(), std::ios::out);
       fh << script_buffer;
       fh.close();
+      LuaInterface::compile();
     }
 
     ImGui::SameLine();

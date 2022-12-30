@@ -7,17 +7,14 @@
 class Scene {
 
   private:
-    
+
     Renderer *ren;
 
-    int _num_active_pointlights;
-    int _num_active_spotlights;
+
+    std::vector<GameObject *> _lightsource_queue;
 
 
   public:
-
-    bool pointlights_on[NUM_POINTLIGHTS];
-    bool spotlights_on[NUM_SPOTLIGHTS];
 
     Player *player;
 
@@ -26,11 +23,8 @@ class Scene {
     float gravity = 0.0f;
 
     PointLight shadowmapped_pointlight;
-    PointLight pointlights[NUM_POINTLIGHTS]; std::vector<PointLight> sorted_pointlights;
-    SpotLight spotlights[NUM_SPOTLIGHTS];  std::vector<SpotLight> sorted_spotlights;
+
     //-------------------------------------------------------
-
-
 
     Transform m_temptransform;
 
@@ -39,7 +33,6 @@ class Scene {
 
     Scene(void);
 
-    void setupDepthCubemap(void);
     void updateLights(void);
     void sendLightsToShader(void);
 
@@ -47,6 +40,9 @@ class Scene {
     void usePlayer(Player *playerptr);
     void useSceneGraph(SceneGraph *scenegraph);
     
+    void clear(void);
+    void importScene(std::string filepath);
+
     void drawGeometry(SDL_Event *event);    
     void drawLightsources(SDL_Event *event);    
 
