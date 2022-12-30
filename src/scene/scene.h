@@ -41,7 +41,8 @@ class Scene {
     void useSceneGraph(SceneGraph *scenegraph);
     
     void clear(void);
-    void importScene(std::string filepath);
+    void defaultScene(void);
+    void importScene(std::string filepath, Player *player);
 
     void drawGeometry(SDL_Event *event);    
     void drawLightsources(SDL_Event *event);    

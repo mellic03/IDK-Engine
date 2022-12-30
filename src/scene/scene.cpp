@@ -55,7 +55,7 @@ void Scene::sendLightsToShader(void)
 
 
 
-  for (int i=0; i<NUM_SPOTLIGHTS; i++)
+  for (int i=0; i<this->m_scenegraph->_num_active_spotlights; i++)
   {
     sprintf(buffer, "spotlights[%d].position", i);
     this->ren->active_shader->setVec3(buffer,  this->m_scenegraph->sorted_spotlights[i]->m_transform->getPos_worldspace());
@@ -68,9 +68,6 @@ void Scene::sendLightsToShader(void)
 
     sprintf(buffer, "spotlights[%d].diffuse", i);
     this->ren->active_shader->setVec3(buffer,  this->m_scenegraph->sorted_spotlights[i]->diffuse);
-
-    sprintf(buffer, "spotlights[%d].specular", i);
-    this->ren->active_shader->setVec3(buffer,  this->m_scenegraph->sorted_spotlights[i]->specular);
 
     sprintf(buffer, "spotlights[%d].constant", i);
     this->ren->active_shader->setFloat(buffer,  this->m_scenegraph->sorted_spotlights[i]->constant);
@@ -99,49 +96,25 @@ void Scene::sendLightsToShader(void)
 
 void Scene::clear(void)
 {
-  this->m_scenegraph->clearScene();
-
   SceneGraph *scenegraph = this->m_scenegraph;
 
-  scenegraph->newObjectInstance("empty");
-  this->player->m_gameobject = scenegraph->rearObjectPtr();
-  this->player->m_gameobject->setName("Player");
-  this->player->m_gameobject->setInteractivity("player");
-  this->player->cam->useTransform(this->player->getTransform());
+  this->m_scenegraph->clearScene();
+}
 
+void Scene::defaultScene(void)
+{
+  this->m_scenegraph->defaultScene();
 
-
-
-  // scenegraph->newObjectInstance("pointlight");
-  // GameObject *light1 = scenegraph->rearObjectPtr();
-  // light1->setName("Point light 0");
-  // light1->lightsource_components.push_back(EntityComponent(COMPONENT_LIGHTSOURCE, &this->m_scenegraph->pointlights[0]));
-  // light1->hasGeometry(false);
-  // this->m_scenegraph->pointlights[0].m_transform = light1->getTransform();
-  // scenegraph->m_pointlight_instances.push_back(light1);
-
-  // pointlights->giveChild(light1);
-
-
-  // for (int i=0; i<NUM_SPOTLIGHTS; i++)
-  // {
-  //   scenegraph->newObjectInstance("spotlight");
-  //   GameObject *spotlight = scenegraph->rearObjectPtr();
-  //   spotlight->setName("Spot light " + std::to_string(i));
-  //   spotlight->lightsource_components.push_back(EntityComponent(COMPONENT_LIGHTSOURCE, &this->spotlights[i]));
-  //   spotlight->hasGeometry(false);
-  //   this->spotlights[i].m_transform = spotlight->getTransform();
-  //   scenegraph->m_spotlight_instances.push_back(spotlight);
-  //   spotlights->giveChild(spotlight);
-  // }
-
+  this->m_scenegraph->newObjectInstance("player");
+  GameObject *obj = this->m_scenegraph->rearObjectPtr();
+  this->player->useGameObject(obj);
 }
 
 
-void Scene::importScene(std::string filepath)
+void Scene::importScene(std::string filepath, Player *player)
 {
   this->clear();
-  this->m_scenegraph->importScene(filepath);
+  this->m_scenegraph->importScene(filepath, player);
 }
 
 

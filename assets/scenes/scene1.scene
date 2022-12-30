@@ -1,9 +1,9 @@
 #GAMEOBJECT BEGIN
+m_template_name: pointlightcontainer
+m_given_name: Point Lights
 objectID: 0
 parentID: -1
-m_template_name: empty
-m_given_name: Player
-position: -3.20213 0 8.63855
+position: 0 0 0
 velocity: 0 0 0
 orientation: 0 0 0 1
 #SCRIPTS BEGIN
@@ -11,10 +11,10 @@ orientation: 0 0 0 1
 #GAMEOBJECT END
 
 #GAMEOBJECT BEGIN
+m_template_name: spotlightcontainer
+m_given_name: Spot Lights
 objectID: 1
 parentID: -1
-m_template_name: empty
-m_given_name: Point lights
 position: 0 0 0
 velocity: 0 0 0
 orientation: 0 0 0 1
@@ -23,49 +23,101 @@ orientation: 0 0 0 1
 #GAMEOBJECT END
 
 #GAMEOBJECT BEGIN
+m_template_name: pointlight
+m_given_name: pointlight
 objectID: 2
-parentID: -1
-m_template_name: empty
-m_given_name: Spot lights
-position: 0 0 0
+parentID: 0
+position: -1.9 0.89 -1.9
 velocity: 0 0 0
 orientation: 0 0 0 1
 #SCRIPTS BEGIN
 #SCRIPTS END
+#LIGHTSOURCE BEGIN
+diffuse: 1 1 1
+ambient: 0 0 0
+constant: 0
+linear: 0.1
+quadratic: 0.1
+bias: 0.15
+#LIGHTSOURCE END
 #GAMEOBJECT END
 
 #GAMEOBJECT BEGIN
-objectID: 3
-parentID: 0
 m_template_name: spotlight
 m_given_name: spotlight
+objectID: 3
+parentID: 1
 position: 0 0 0
 velocity: 0 0 0
 orientation: 0 0 0 1
 #SCRIPTS BEGIN
 #SCRIPTS END
+#LIGHTSOURCE BEGIN
+diffuse: 0 0 0
+ambient: 0 0 0
+constant: 1
+linear: 0.09
+quadratic: 0.032
+inner_cutoff: 0.032
+outer_cutoff: 0.032
+intensity: 0.032
+#LIGHTSOURCE END
 #GAMEOBJECT END
 
 #GAMEOBJECT BEGIN
+m_template_name: spotlight
+m_given_name: spotlight
 objectID: 4
-parentID: 0
-m_template_name: pointlight
-m_given_name: pointlight
+parentID: 1
 position: 0 0 0
 velocity: 0 0 0
 orientation: 0 0 0 1
 #SCRIPTS BEGIN
 #SCRIPTS END
+#LIGHTSOURCE BEGIN
+diffuse: 0 0 0
+ambient: 0 0 0
+constant: 1
+linear: 0.09
+quadratic: 0.032
+inner_cutoff: 0.032
+outer_cutoff: 0.032
+intensity: 0.032
+#LIGHTSOURCE END
 #GAMEOBJECT END
 
 #GAMEOBJECT BEGIN
+m_template_name: player
+m_given_name: Player
 objectID: 5
-parentID: 0
-m_template_name: pointlight
-m_given_name: pointlight
+parentID: -1
+position: 1.60494 2.7444 0.906654
+velocity: 0.549489 0 0.564873
+orientation: 0.340195 -0.583429 -0.293387 0.676511
+#SCRIPTS BEGIN
+#SCRIPTS END
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+m_template_name: terrain1
+m_given_name: terrain1
+objectID: 6
+parentID: -1
 position: 0 0 0
 velocity: 0 0 0
-orientation: 0 0 0 1
+orientation: 0 -0.85238 0 -0.522923
+#SCRIPTS BEGIN
+#SCRIPTS END
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+m_template_name: building
+m_given_name: building
+objectID: 7
+parentID: 6
+position: -3.03096 -1.2 1.54055
+velocity: 0 0 0
+orientation: -0.670427 0 0 0.741976
 #SCRIPTS BEGIN
 #SCRIPTS END
 #GAMEOBJECT END

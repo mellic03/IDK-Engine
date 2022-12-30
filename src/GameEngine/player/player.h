@@ -29,6 +29,7 @@ class Player {
 
     // Member Access
     //----------------------------------------------------
+    void useGameObject(GameObject *gameobject);
     Transform *getTransform(void)       { return this->m_gameobject->getTransform(); };
     glm::vec3 *getPos(void)             { return this->m_gameobject->getPos(); };
     glm::vec3 *getVel(void)             { return this->m_gameobject->getVel(); };

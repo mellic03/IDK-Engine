@@ -51,10 +51,10 @@ class EntityComponent {
     EntityComponent(EntityComponentType component_type, PointLight *pointlight);
     EntityComponent(EntityComponentType component_type, SpotLight *spotlight);
 
-
-
     void draw(GameObject *object);
 
+    void toFile(std::ofstream &stream);
+    void fromFile(std::ifstream &stream);
 };
 
 

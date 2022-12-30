@@ -75,6 +75,7 @@ std::string GameObject::physStateString(void)
   switch (this->m_physics_state)
   {
     default:                  return "unknown";
+    case (PHYSICS_NONE):      return "none";
     case (PHYSICS_GROUNDED):  return "grounded";
     case (PHYSICS_FALLING):   return "falling";
   }
@@ -246,16 +247,16 @@ void GameObject::clearParent(void)
   this->_transform.parent = nullptr;
 }
 
-void GameObject::giveChild(GameObject *child)
+void GameObject::giveChild(GameObject *child, bool keepGlobalPos)
 {
   // return if child is actually parent
   if (child->isChild(this))
     return;
 
-
   this->m_children.push_back(child);
   child->clearParent();
-  child->setParent(this);
+
+  child->setParent(this, keepGlobalPos);
 }
 
 void GameObject::removeChild(GameObject *child)
@@ -286,14 +287,15 @@ bool GameObject::isChild(GameObject *object)
   return is_child;
 }
 
-void GameObject::setParent(GameObject *parent)
+void GameObject::setParent(GameObject *parent, bool keepGlobalPos)
 {
   *this->getPos() = parent->getTransform()->worldToLocal(this->getTransform()->getPos_vec4());
-  // if (this->getID() != 0)
-  // {
+
+  if (keepGlobalPos)
+  {
     Transform *thisTransform = this->getTransform();
     thisTransform->orientation = glm::inverse(parent->getTransform()->orientation) * thisTransform->orientation;
-  // }
+  }
 
   this->m_parent = parent;
   this->parentID = parent->getID();

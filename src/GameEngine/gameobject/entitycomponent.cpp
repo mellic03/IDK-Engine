@@ -145,3 +145,143 @@ void EntityComponent::draw(GameObject *object)
 }
 
 
+void EntityComponent::toFile(std::ofstream &stream)
+{
+  if (this->_pointlight != nullptr)
+  {
+    glm::vec3 v;
+    v = this->_pointlight->diffuse;
+    stream << "diffuse: " << v.x << " " << v.y << " " << v.z << "\n";
+    v = this->_pointlight->ambient;
+    stream << "ambient: " << v.x << " " << v.y << " " << v.z << "\n";
+    stream << "constant: "  << this->_pointlight->constant   << "\n";
+    stream << "linear: "    << this->_pointlight->linear     << "\n";
+    stream << "quadratic: " << this->_pointlight->quadratic  << "\n";
+    stream << "bias: "      << this->_pointlight->bias       << "\n";
+  }
+
+  else if (this->_spotlight != nullptr)
+  {
+    glm::vec3 v;
+    v = this->_spotlight->diffuse;
+    stream << "diffuse: " << v.x << " " << v.y << " " << v.z << "\n";
+    v = this->_spotlight->ambient;
+    stream << "ambient: " << v.x << " " << v.y << " " << v.z << "\n";
+    stream << "constant: "  << this->_spotlight->constant   << "\n";
+    stream << "linear: "    << this->_spotlight->linear     << "\n";
+    stream << "quadratic: " << this->_spotlight->quadratic  << "\n";
+
+    stream << "inner_cutoff: " << this->_spotlight->quadratic  << "\n";
+    stream << "outer_cutoff: " << this->_spotlight->quadratic  << "\n";
+    stream << "intensity: "    << this->_spotlight->quadratic  << "\n";
+  }
+
+}
+
+
+static glm::vec3 stringToVec3(std::string str)
+{
+  glm::vec3 v;
+
+  std::stringstream ss;
+  ss << str;
+
+  int count = 0;
+  float n;
+  while (ss >> n)
+  {
+    v[count] = n;
+    count += 1;
+  }
+  return v;
+}
+
+void EntityComponent::fromFile(std::ifstream &stream)
+{
+  std::string line;
+  std::stringstream ss;
+
+  if (this->_pointlight != nullptr)
+  {
+    while (getline(stream, line))
+    {
+      if (line.find("diffuse: ") != std::string::npos)
+      {
+        line.erase(0, std::string("diffuse: ").size());
+        this->_pointlight->diffuse = stringToVec3(line);        
+      }
+      else if (line.find("ambient: ") != std::string::npos)
+      {
+        line.erase(0, std::string("ambient: ").size());
+        this->_pointlight->ambient = stringToVec3(line);      
+      }
+      else if (line.find("constant: ") != std::string::npos)
+      {
+        line.erase(0, std::string("constant: ").size());
+        float f = std::stof(line);
+        this->_pointlight->constant = f;
+      }
+      else if (line.find("linear: ") != std::string::npos)
+      {
+        line.erase(0, std::string("linear: ").size());
+        float f = std::stof(line);
+        this->_pointlight->linear = f;
+      }
+      else if (line.find("quadratic: ") != std::string::npos)
+      {
+        line.erase(0, std::string("quadratic: ").size());
+        float f = std::stof(line);
+        this->_pointlight->quadratic = f;
+      }
+      else if (line.find("bias: ") != std::string::npos)
+      {
+        line.erase(0, std::string("bias: ").size());
+        float f = std::stof(line);
+        this->_pointlight->bias = f;
+      }
+
+      else if (line == "#LIGHTSOURCE END")
+        return;
+    }
+  }
+
+  // else if (this->_spotlight != nullptr)
+  // {
+  //   while (getline(stream, line))
+  //   {
+  //     if (line.find("diffuse: ") != std::string::npos)
+  //     {
+  //       line.erase(0, std::string("diffuse: ").size());
+  //       this->_pointlight->diffuse = stringToVec3(line);        
+  //     }
+  //     else if (line.find("ambient: ") != std::string::npos)
+  //     {
+  //       line.erase(0, std::string("ambient: ").size());
+  //       this->_pointlight->ambient = stringToVec3(line);      
+  //     }
+  //     else if (line.find("constant: ") != std::string::npos)
+  //     {
+  //       line.erase(0, std::string("constant: ").size());
+  //       ss << line;
+  //       ss >> this->_pointlight->constant;
+  //     }
+  //     else if (line.find("linear: ") != std::string::npos)
+  //     {
+  //       line.erase(0, std::string("linear: ").size());
+  //       ss << line;
+  //       ss >> this->_pointlight->linear;
+  //     }
+  //     else if (line.find("quadratic: ") != std::string::npos)
+  //     {
+  //       line.erase(0, std::string("quadratic: ").size());
+  //       ss << line;
+  //       ss >> this->_pointlight->quadratic;
+  //     }
+
+
+  //     else if (line == "#LIGHTSOURCE END")
+  //       return;
+  //   }
+  // }
+
+}

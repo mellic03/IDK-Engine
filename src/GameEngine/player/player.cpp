@@ -12,6 +12,15 @@ Player::Player(Renderer *ren)
   // this->getWeapon()->aim_pos = glm::vec3( 0.00f, -0.015f, -0.10f);
 }
 
+void Player::useGameObject(GameObject *gameobject)
+{
+  this->m_gameobject = gameobject;
+  this->m_gameobject->setName("Player");
+  this->m_gameobject->setInteractivity("player");
+  
+  this->cam->useTransform(this->getTransform());
+}
+
 
 SDL_bool mouse_capture = SDL_TRUE;
 

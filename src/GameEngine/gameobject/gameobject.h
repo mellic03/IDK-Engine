@@ -17,7 +17,6 @@ class GameObject {
     bool _has_geometry = false;
 
     std::vector<GameObject *> m_children;
-    GameObject *m_parent = nullptr;
     Transform _transform;
 
     // Physics
@@ -48,6 +47,7 @@ class GameObject {
 
     int m_ID = 0;
     int parentID = -1;
+    GameObject *m_parent = nullptr;
 
     std::vector<EntityComponent> transform_components;
     std::vector<EntityComponent> lightsource_components;
@@ -120,9 +120,9 @@ class GameObject {
     bool hasParent(void)                                { return this->m_parent != nullptr; };
     bool hasChildren(void)                              { return this->m_children.size() > 0; };
     std::vector<GameObject *> getChildren(void)         { return this->m_children; };
-    void setParent(GameObject *parent);
+    void setParent(GameObject *parent, bool keepGlobalPos = true);
     void clearParent(void);
-    void giveChild(GameObject *child);
+    void giveChild(GameObject *child, bool keepGlobalPos = true);
     void removeChild(GameObject *child);
     void clearChildren(void);
     bool isChild(GameObject *object);

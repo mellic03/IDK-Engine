@@ -147,13 +147,8 @@ void Renderer::init(void)
     this->pointlights.push_back(PointLight());
 
   this->pointlights[0].diffuse  = {1.0, 1.0, 1.0};
-  this->pointlights[0].specular = {0.15, 0.15, 0.15};
   this->pointlights_on[0] = true;
   // this->pointlights[0].position = {1.0, 2.0, 1.0};
-
-  for (int i=0; i<NUM_SPOTLIGHTS; i++)
-    this->spotlights.push_back(SpotLight());
-  this->spotlights[0].position = {-2.0f, 4.0f, -1.0f};
 
 }
 
@@ -217,115 +212,14 @@ void Renderer::usePerspective(void)
 
 void Renderer::update(glm::vec3 pos, glm::vec3 dir)
 { 
-  this->shaderready_pointlights.clear();
-  this->shaderready_spotlights.clear();
 
-  this->num_active_pointlights = 0;
-  this->num_active_spotlights = 0;
-
-  int count = 0;
-
-  for (int i=0; i<NUM_POINTLIGHTS; i++)
-    if (this->pointlights_on[i])
-    {
-      this->shaderready_pointlights.push_back(this->pointlights[i]);
-      this->num_active_pointlights += 1;
-    }
-  
-  for (int i=0; i<NUM_POINTLIGHTS; i++)
-    if (!this->pointlights_on[i])
-      this->shaderready_pointlights.push_back(this->pointlights[i]);
-  
-
-  for (int i=0; i<NUM_SPOTLIGHTS; i++)
-    if (this->spotlights_on[i])
-    {
-      this->shaderready_spotlights.push_back(this->spotlights[i]);
-      this->num_active_spotlights += 1;
-    }
-
-  for (int i=0; i<NUM_SPOTLIGHTS; i++)
-    if (!this->spotlights_on[i])
-      this->shaderready_spotlights.push_back(this->spotlights[i]);
-  
-
-  for (int i=0; i<NUM_SPOTLIGHTS; i++)
-  {
-    if (this->spotlights[i].follow)
-    {
-      this->spotlights[i].position = pos;
-      this->spotlights[i].direction = dir;
-    }
-  }
 
 }
 
 
 void Renderer::sendLightsToShader(void)
 {
-  this->active_shader->setInt("num_active_pointlights", this->num_active_pointlights);
-  this->active_shader->setInt("num_active_spotlights", this->num_active_spotlights);
 
-  char buffer[64];
-
-  glActiveTexture(GL_TEXTURE10);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, this->depthCubemap);
-    
-  this->active_shader->setInt("depthMap", 10);
-  this->active_shader->setFloat("far_plane",   25.0f);
-  
-  this->active_shader->setVec3( "pointlight.ambient", this->pointlights[0].ambient);
-  this->active_shader->setVec3( "pointlight.diffuse", this->pointlights[0].diffuse);
-  this->active_shader->setVec3( "pointlight.pos", this->pointlights[0].m_transform->getPos_worldspace());
-  this->active_shader->setVec3( "pointlight.tangent_pos", this->pointlights[0].m_transform->getPos_worldspace());
-  this->active_shader->setFloat("pointlight.constant", this->pointlights[0].constant);
-  this->active_shader->setFloat("pointlight.linear", this->pointlights[0].linear);
-  this->active_shader->setFloat("pointlight.quadratic", this->pointlights[0].quadratic);
-  this->active_shader->setFloat("pointlight.bias", this->pointlights[0].bias);
-  this->active_shader->setVec3( "clearColor", this->clearColor);
-  this->active_shader->setFloat("fog_start", this->fog_start);
-  this->active_shader->setFloat("fog_end", this->fog_end);
-
-
-
-  for (int i=0; i<NUM_SPOTLIGHTS; i++)
-  {
-    sprintf(buffer, "spotlights[%d].position", i);
-    this->active_shader->setVec3(buffer,  this->shaderready_spotlights[i].position);
-
-    sprintf(buffer, "spotlights[%d].direction", i);
-    this->active_shader->setVec3(buffer,  this->shaderready_spotlights[i].direction);
-
-    sprintf(buffer, "spotlights[%d].ambient", i);
-    this->active_shader->setVec3(buffer,  this->shaderready_spotlights[i].ambient);
-
-    sprintf(buffer, "spotlights[%d].diffuse", i);
-    this->active_shader->setVec3(buffer,  this->shaderready_spotlights[i].diffuse);
-
-    sprintf(buffer, "spotlights[%d].specular", i);
-    this->active_shader->setVec3(buffer,  this->shaderready_spotlights[i].specular);
-
-    sprintf(buffer, "spotlights[%d].constant", i);
-    this->active_shader->setFloat(buffer,  this->shaderready_spotlights[i].constant);
-
-    sprintf(buffer, "spotlights[%d].linear", i);
-    this->active_shader->setFloat(buffer,  this->shaderready_spotlights[i].linear);
-
-    sprintf(buffer, "spotlights[%d].quadratic", i);
-    this->active_shader->setFloat(buffer,  this->shaderready_spotlights[i].quadratic);
-
-    sprintf(buffer, "spotlights[%d].inner_cutoff", i);
-    this->active_shader->setFloat(buffer,  glm::cos(glm::radians(this->shaderready_spotlights[i].inner_cutoff)));
-
-    sprintf(buffer, "spotlights[%d].outer_cutoff", i);
-    this->active_shader->setFloat(buffer,  glm::cos(glm::radians(this->shaderready_spotlights[i].outer_cutoff)));
-
-    sprintf(buffer, "spotlights[%d].intensity", i);
-    this->active_shader->setFloat(buffer,  this->shaderready_spotlights[i].intensity);
-  }
-
-  this->active_shader->setVec3("viewPos", this->cam.m_transform->getPos_worldspace());
-  this->active_shader->setVec3("viewDirection", glm::mat3(this->cam.modifier_matrix) * *this->cam.dir);
 }
 
 void Renderer::resize(int x, int y)

@@ -1,0 +1,3 @@
+#gameobject pointlightcontainer
+#interactivity misc
+#exit

@@ -83,6 +83,9 @@ int ENTRY(int argc, char **argv)
   scenegraph.loadObject("assets/misc/empty/");
   scenegraph.loadObject("assets/misc/pointlight/");
   scenegraph.loadObject("assets/misc/spotlight/");
+  scenegraph.loadObject("assets/misc/pointlightcontainer/");
+  scenegraph.loadObject("assets/misc/spotlightcontainer/");
+  scenegraph.loadObject("assets/misc/player/");
   scenegraph.loadObject("assets/environment/building/");
   scenegraph.loadObject("assets/environment/building2/");
   scenegraph.loadObject("assets/environment/terrain0/");
@@ -94,7 +97,7 @@ int ENTRY(int argc, char **argv)
   Scene *scene_1 = &World::scene;
   scene_1->useSceneGraph(&scenegraph);
   scene_1->usePlayer(&player);
-  scene_1->clear();
+  scene_1->defaultScene();
 
 
   import_lighting_config(ren);

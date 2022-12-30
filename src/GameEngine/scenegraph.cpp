@@ -142,6 +142,7 @@ void SceneGraph::newObjectInstance(std::string object_name, glm::vec3 pos, glm::
   }
 
   GameObject newobj = *objectptr;
+  newobj.m_parent = nullptr;
   *newobj.getPos() = pos;
 
 
@@ -171,25 +172,45 @@ void SceneGraph::newObjectInstance(std::string object_name, glm::vec3 pos, glm::
     this->_num_spotlights += 1;
   }
 
+  if (object_name == "pointlightcontainer")
+  {
+    this->pointlight_parent = this->rearObjectPtr();
+    this->pointlight_parent->setName("Point Lights");
+    this->pointlight_parent->transform_components.clear();
+  }
+
+  if (object_name == "spotlightcontainer")
+  {
+    this->spotlight_parent = this->rearObjectPtr();
+    this->spotlight_parent->setName("Spot Lights");
+    this->spotlight_parent->transform_components.clear();
+  }
+
 }
 
 
 void SceneGraph::clearScene(void)
 {
   this->m_object_instances.clear();
+  this->_num_pointlights = 0;
+  this->_num_spotlights = 0;
+  this->_num_active_pointlights = 0;
+  this->_num_active_spotlights = 0;
 
-  this->newObjectInstance("empty");
-  this->pointlight_parent = this->rearObjectPtr();
-  this->pointlight_parent->setName("Point Lights");
-  
-  this->newObjectInstance("empty");
-  this->spotlight_parent = this->rearObjectPtr();
-  this->spotlight_parent->setName("Spot Lights");
+  this->pointlight_parent = nullptr;
+  this->spotlight_parent = nullptr;
+}
+
+void SceneGraph::defaultScene(void)
+{
+  this->clearScene();
+
+  this->newObjectInstance("pointlightcontainer");
+  this->newObjectInstance("spotlightcontainer");
 
   this->newObjectInstance("pointlight");
   this->newObjectInstance("spotlight");
   this->newObjectInstance("spotlight");
-
 }
 
 
@@ -233,14 +254,14 @@ void objectToFile(std::ofstream *stream, GameObject *object)
 {
   *stream << "#GAMEOBJECT BEGIN" << std::endl;
 
+  *stream << "m_template_name: " << object->getTemplateName() << std::endl;
+  *stream << "m_given_name: "    << object->getName() << std::endl;
+
   *stream << "objectID: " << object->getID() << std::endl;
   if (object->getParent() != nullptr)
     *stream << "parentID: " << object->getParent()->getID() << std::endl;
   else
     *stream << "parentID: -1" << std::endl;
-
-  *stream << "m_template_name: " << object->getTemplateName() << std::endl;
-  *stream << "m_given_name: "    << object->getName() << std::endl;
 
   
   glm::vec3 v;
@@ -251,49 +272,124 @@ void objectToFile(std::ofstream *stream, GameObject *object)
   *stream << "velocity: " << v.x << " " << v.y << " " << v.z << std::endl;
 
   glm::quat q = object->getTransform()->orientation;
-  *stream << "orientation: " << q.x << " " << q.y << " " << q.z << " " << q.w << std::endl;
+  *stream << "orientation: " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << std::endl;
 
   *stream << "#SCRIPTS BEGIN" << std::endl;
   for (int i=0; i<object->script_components.size(); i++)
     *stream << object->script_components[i].script_name << std::endl;
   *stream << "#SCRIPTS END" << std::endl;
 
+  if (object->lightsource_components.size() >= 1)
+  {
+    *stream << "#LIGHTSOURCE BEGIN" << std::endl;
+
+    object->lightsource_components[0].toFile(*stream);
+    
+    *stream << "#LIGHTSOURCE END" << std::endl;
+  }
+
   *stream << "#GAMEOBJECT END\n" << std::endl;
+ 
+}
+
+
+void SceneGraph::objectFromFile(std::ifstream &stream, std::string &line)
+{
 
 }
 
-void SceneGraph::objectFromFile(std::ifstream *stream)
+
+void SceneGraph::objectFromFile_headerData(std::ifstream &stream, std::string &line, Player *player)
 {
-  int objectID, parentID;
-  std::string line;
+  int objectID = -1, parentID = -1;
   GameObject *object;
 
-  while (getline(*stream, line))
+  while (getline(stream, line))
   {
     if (line.find("m_template_name") != std::string::npos)
     {
       line.erase(0, std::string("m_template_name").size() + 2);
-      this->newObjectInstance(line);
-      object = this->rearObjectPtr();
+
+      if (line == "player")
+      {
+        this->newObjectInstance("player");
+        object = this->rearObjectPtr();
+        player->useGameObject(object);
+      }
+
+      else
+      {
+        this->newObjectInstance(line);
+        object = this->rearObjectPtr();
+      }
     }
 
-    if (line.find("m_given_name") != std::string::npos)
+    else if (line.find("m_given_name") != std::string::npos)
     {
       line.erase(0, std::string("m_given_name").size() + 2);
       object->setName(line);
     }
 
-    if (line.find("objectID") != std::string::npos)
-    {
-      line.erase(0, std::string("objectID").size() + 2);
-      object->m_ID = std::stoi(line);
-    }
-
-    if (line.find("parentID") != std::string::npos)
+    else if (line.find("parentID") != std::string::npos)
     {
       line.erase(0, std::string("parentID").size() + 2);
       object->parentID = std::stoi(line);
     }
+
+    else if (line.find("position: ") != std::string::npos)
+    {
+      line.erase(0, std::string("position: ").size());
+      std::stringstream ss;
+      ss << line;
+      glm::vec3 v;
+      int count = 0;
+      float n;
+      while (ss >> n)
+      {
+        v[count] = n;
+        count += 1;
+      }
+      *object->getPos() = v;
+    }
+
+    else if (line.find("velocity: ") != std::string::npos)
+    {
+      line.erase(0, std::string("velocity: ").size());
+      std::stringstream ss;
+      ss << line;
+      glm::vec3 v;
+      int count = 0;
+      float n;
+      while (ss >> n)
+      {
+        v[count] = n;
+        count += 1;
+      }
+      *object->getVel() = v;
+    }
+
+    else if (line.find("orientation: ") != std::string::npos)
+    {
+      line.erase(0, std::string("orientation: ").size());
+      std::stringstream ss;
+      ss << line;
+      glm::quat q;
+      int count = 0;
+      float n;
+      while (ss >> n)
+      {
+        q[count] = n;
+        count += 1;
+      }
+
+      object->getTransform()->orientation = q;
+    }
+
+    else if (line == "#LIGHTSOURCE BEGIN")
+      object->lightsource_components[0].fromFile(stream);
+
+    else if (line.find("#GAMEOBJECT END") != std::string::npos)
+      return;
   }
 }
 
@@ -312,7 +408,7 @@ bool SceneGraph::exportScene(std::string filepath)
 }
 
 
-bool SceneGraph::importScene(std::string filepath)
+bool SceneGraph::importScene(std::string filepath, Player *player)
 {
   this->clearScene();
 
@@ -320,28 +416,18 @@ bool SceneGraph::importScene(std::string filepath)
   stream.open(filepath);
 
   std::string line;
+
+  // First five objects are always lights + player, load those first
   while (getline(stream, line))
   {
     if (line == "#GAMEOBJECT BEGIN")
-      this->objectFromFile(&stream);
+      this->objectFromFile_headerData(stream, line, player);
   }
 
   for (auto &object: this->m_object_instances)
   {
-    if (object.m_template_name == "pointlight")
-    {
-      this->pointlight_parent->giveChild(this->objectPtr(object.m_ID));
-      continue;
-    }
-
-    if (object.m_template_name == "spotlight")
-    {
-      this->spotlight_parent->giveChild(this->objectPtr(object.m_ID));
-      continue;
-    }
-
-    if (object.parentID != -1 && object.getParent() == nullptr)
-      this->objectPtr(object.parentID)->giveChild(this->objectPtr(object.m_ID));
+    if (object.parentID != -1)
+      this->objectPtr(object.parentID)->giveChild(this->objectPtr(object.m_ID), false);
   }
 
   stream.close();
