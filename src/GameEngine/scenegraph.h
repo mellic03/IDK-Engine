@@ -23,7 +23,7 @@ class SceneGraph {
     GameObject *pointlight_parent;
     GameObject *spotlight_parent;
     PointLight pointlights[1]; std::vector<PointLight> sorted_pointlights;
-    SpotLight spotlights[2];   std::vector<SpotLight> sorted_spotlights;
+    SpotLight spotlights[2];   std::vector<SpotLight *> sorted_spotlights;
     int _num_pointlights = 0,  _num_active_pointlights = 0;
     int _num_spotlights  = 0,  _num_active_spotlights  = 0;
 

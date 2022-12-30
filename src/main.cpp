@@ -192,7 +192,6 @@ int ENTRY(int argc, char **argv)
 
     
     ren->useShader(SHADER_TERRAIN);
-    scene_1->updateLights();
     scene_1->sendLightsToShader();
     scene_1->drawGeometry(&event);
 

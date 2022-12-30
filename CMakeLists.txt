@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
+set(CMAKE_BUILD_PARALLEL_LEVEL 8)
 
 add_compile_options(
   -g

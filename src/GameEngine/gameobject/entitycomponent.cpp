@@ -27,7 +27,6 @@ EntityComponent::EntityComponent(EntityComponentType component_type, SpotLight *
 
 void EntityComponent::_draw_pointlight(void)
 {
-  int selected_pointlight = 0;
   if (ImGui::CollapsingHeader("Pointlight"))
   {
     ImGui::Checkbox("Enable", &this->_pointlight->active);
@@ -45,7 +44,6 @@ void EntityComponent::_draw_pointlight(void)
 
 void EntityComponent::_draw_spotlight(void)
 {
-  int selected_spotlight = 0;
   if (ImGui::CollapsingHeader("Spotlight"))
   {
     ImGui::Checkbox("Enable", &this->_spotlight->active);

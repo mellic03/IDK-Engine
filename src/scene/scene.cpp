@@ -27,6 +27,8 @@ void Scene::updateLights(void)
 
 void Scene::sendLightsToShader(void)
 {
+  this->updateLights();
+
   this->ren->active_shader->setInt("num_active_pointlights", this->m_scenegraph->_num_active_pointlights);
   this->ren->active_shader->setInt("num_active_spotlights", this->m_scenegraph->_num_active_spotlights);
 
@@ -56,37 +58,37 @@ void Scene::sendLightsToShader(void)
   for (int i=0; i<NUM_SPOTLIGHTS; i++)
   {
     sprintf(buffer, "spotlights[%d].position", i);
-    this->ren->active_shader->setVec3(buffer,  this->m_scenegraph->sorted_spotlights[i].m_transform->getPos_worldspace());
+    this->ren->active_shader->setVec3(buffer,  this->m_scenegraph->sorted_spotlights[i]->m_transform->getPos_worldspace());
 
     sprintf(buffer, "spotlights[%d].direction", i);
-    this->ren->active_shader->setVec3(buffer,  {0.0f, 0.0f, 0.0f});
+    this->ren->active_shader->setVec3(buffer,  this->m_scenegraph->sorted_spotlights[i]->m_transform->getRot());
 
     sprintf(buffer, "spotlights[%d].ambient", i);
-    this->ren->active_shader->setVec3(buffer,  this->m_scenegraph->sorted_spotlights[i].ambient);
+    this->ren->active_shader->setVec3(buffer,  this->m_scenegraph->sorted_spotlights[i]->ambient);
 
     sprintf(buffer, "spotlights[%d].diffuse", i);
-    this->ren->active_shader->setVec3(buffer,  this->m_scenegraph->sorted_spotlights[i].diffuse);
+    this->ren->active_shader->setVec3(buffer,  this->m_scenegraph->sorted_spotlights[i]->diffuse);
 
     sprintf(buffer, "spotlights[%d].specular", i);
-    this->ren->active_shader->setVec3(buffer,  this->m_scenegraph->sorted_spotlights[i].specular);
+    this->ren->active_shader->setVec3(buffer,  this->m_scenegraph->sorted_spotlights[i]->specular);
 
     sprintf(buffer, "spotlights[%d].constant", i);
-    this->ren->active_shader->setFloat(buffer,  this->m_scenegraph->sorted_spotlights[i].constant);
+    this->ren->active_shader->setFloat(buffer,  this->m_scenegraph->sorted_spotlights[i]->constant);
 
     sprintf(buffer, "spotlights[%d].linear", i);
-    this->ren->active_shader->setFloat(buffer,  this->m_scenegraph->sorted_spotlights[i].linear);
+    this->ren->active_shader->setFloat(buffer,  this->m_scenegraph->sorted_spotlights[i]->linear);
 
     sprintf(buffer, "spotlights[%d].quadratic", i);
-    this->ren->active_shader->setFloat(buffer,  this->m_scenegraph->sorted_spotlights[i].quadratic);
+    this->ren->active_shader->setFloat(buffer,  this->m_scenegraph->sorted_spotlights[i]->quadratic);
 
     sprintf(buffer, "spotlights[%d].inner_cutoff", i);
-    this->ren->active_shader->setFloat(buffer,  glm::cos(glm::radians(this->m_scenegraph->sorted_spotlights[i].inner_cutoff)));
+    this->ren->active_shader->setFloat(buffer,  glm::cos(glm::radians(this->m_scenegraph->sorted_spotlights[i]->inner_cutoff)));
 
     sprintf(buffer, "spotlights[%d].outer_cutoff", i);
-    this->ren->active_shader->setFloat(buffer,  glm::cos(glm::radians(this->m_scenegraph->sorted_spotlights[i].outer_cutoff)));
+    this->ren->active_shader->setFloat(buffer,  glm::cos(glm::radians(this->m_scenegraph->sorted_spotlights[i]->outer_cutoff)));
 
     sprintf(buffer, "spotlights[%d].intensity", i);
-    this->ren->active_shader->setFloat(buffer,  this->m_scenegraph->sorted_spotlights[i].intensity);
+    this->ren->active_shader->setFloat(buffer,  this->m_scenegraph->sorted_spotlights[i]->intensity);
   }
 
   this->ren->active_shader->setVec3("viewPos", this->ren->cam.m_transform->getPos_worldspace());

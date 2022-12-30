@@ -155,20 +155,20 @@ void SceneGraph::newObjectInstance(std::string object_name, glm::vec3 pos, glm::
 
   if (object_name == "pointlight")
   {
-    this->_num_pointlights += 1;
     this->rearObjectPtr()->hasGeometry(false);
-    this->rearObjectPtr()->lightsource_components.push_back(EntityComponent(COMPONENT_LIGHTSOURCE, &this->pointlights[0]));
-    this->rearObjectPtr()->transform_components.push_back(EntityComponent(COMPONENT_TRANSFORM));
-    // this->pointlight_parent->giveChild(this->rearObjectPtr());
+    this->rearObjectPtr()->lightsource_components.push_back(EntityComponent(COMPONENT_LIGHTSOURCE, &this->pointlights[this->_num_pointlights]));
+    this->pointlights[this->_num_pointlights].m_transform = this->rearObjectPtr()->getTransform();
+    this->pointlight_parent->giveChild(this->rearObjectPtr());
+    this->_num_pointlights += 1;
   }
 
   if (object_name == "spotlight")
   {
-    this->_num_spotlights += 1;
     this->rearObjectPtr()->hasGeometry(false);
-    this->rearObjectPtr()->lightsource_components.push_back(EntityComponent(COMPONENT_LIGHTSOURCE, &this->spotlights[0]));
-    this->rearObjectPtr()->transform_components.push_back(EntityComponent(COMPONENT_TRANSFORM));
-    // this->spotlight_parent->giveChild(this->rearObjectPtr());
+    this->rearObjectPtr()->lightsource_components.push_back(EntityComponent(COMPONENT_LIGHTSOURCE, &this->spotlights[this->_num_spotlights]));
+    this->spotlights[this->_num_spotlights].m_transform = this->rearObjectPtr()->getTransform();
+    this->spotlight_parent->giveChild(this->rearObjectPtr());
+    this->_num_spotlights += 1;
   }
 
 }
@@ -178,15 +178,17 @@ void SceneGraph::clearScene(void)
 {
   this->m_object_instances.clear();
 
-  // this->newObjectInstance("empty");
-  // this->pointlight_parent = this->rearObjectPtr();
-  // this->pointlight_parent->setName("Point Lights");
+  this->newObjectInstance("empty");
+  this->pointlight_parent = this->rearObjectPtr();
+  this->pointlight_parent->setName("Point Lights");
   
-  // this->newObjectInstance("empty");
-  // this->spotlight_parent = this->rearObjectPtr();
-  // this->spotlight_parent->setName("Spot Lights");
+  this->newObjectInstance("empty");
+  this->spotlight_parent = this->rearObjectPtr();
+  this->spotlight_parent->setName("Spot Lights");
 
   this->newObjectInstance("pointlight");
+  this->newObjectInstance("spotlight");
+  this->newObjectInstance("spotlight");
 
 }
 
@@ -216,13 +218,13 @@ void SceneGraph::updateLights(void)
   for (int i=0; i<2; i++)
     if (this->spotlights[i].active)
     {
-      this->sorted_spotlights.push_back(this->spotlights[i]);
+      this->sorted_spotlights.push_back(&this->spotlights[i]);
       this->_num_active_spotlights += 1;
     }
 
   for (int i=0; i<2; i++)
     if (!this->spotlights[i].active)
-      this->sorted_spotlights.push_back(this->spotlights[i]);
+      this->sorted_spotlights.push_back(&this->spotlights[i]);
   
 }
 

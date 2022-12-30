@@ -22,6 +22,11 @@ struct Transform {
   //-------------------------------------------------------------------------------------------------------------
   glm::vec3 *getPos(void)       { return &this->position; };
   glm::vec3 *getVel(void)       { return &this->velocity; };
+  glm::vec3  getRot(void)
+  {
+    return glm::vec3(glm::pitch(this->orientation), glm::yaw(this->orientation), glm::roll(this->orientation));
+  };
+
   void addRot(glm::vec3 rot)
   {
     glm::quat drot = glm::quat(rot);
