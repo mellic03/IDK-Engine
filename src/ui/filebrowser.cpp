@@ -26,7 +26,7 @@ void EngineUI::draw_directory_recursive(fs::path pth, fs::path *selected_filepat
     {
       bool s = (dir_entry.path().compare(*selected_filepath) == 0);
 
-      ImGui::Selectable(dir_entry.path().filename().string().c_str(), &s);
+      ImGui::Selectable(dir_entry.path().filename().string().c_str(), &s, ImGuiSelectableFlags_DontClosePopups);
       if (ImGui::IsItemClicked())
       {
         *selected_filepath = dir_entry.path();

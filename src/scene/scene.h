@@ -44,8 +44,9 @@ class Scene {
     void defaultScene(void);
     void importScene(std::string filepath, Player *player);
 
-    void drawGeometry(SDL_Event *event);    
-    void drawLightsources(SDL_Event *event);    
+    void drawGeometry(SDL_Event *event);
+    void drawVolumetricLights(void);
+    void drawLightsources(SDL_Event *event);
 
 };
 

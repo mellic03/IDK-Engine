@@ -66,6 +66,8 @@ int ENTRY(int argc, char **argv)
 
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
   // glEnable(GL_MULTISAMPLE);
 
   SDL_Event event;
@@ -78,14 +80,15 @@ int ENTRY(int argc, char **argv)
   Player player(ren);
 
   SceneGraph scenegraph;
-  luaInit(&scenegraph);
 
+  scenegraph.loadObject("assets/misc/blendingtest/");
   scenegraph.loadObject("assets/misc/empty/");
   scenegraph.loadObject("assets/misc/pointlight/");
   scenegraph.loadObject("assets/misc/spotlight/");
   scenegraph.loadObject("assets/misc/pointlightcontainer/");
   scenegraph.loadObject("assets/misc/spotlightcontainer/");
   scenegraph.loadObject("assets/misc/player/");
+  scenegraph.loadObject("assets/environment/skybox/");
   scenegraph.loadObject("assets/environment/building/");
   scenegraph.loadObject("assets/environment/building2/");
   scenegraph.loadObject("assets/environment/terrain0/");
@@ -98,6 +101,10 @@ int ENTRY(int argc, char **argv)
   scene_1->useSceneGraph(&scenegraph);
   scene_1->usePlayer(&player);
   scene_1->defaultScene();
+
+  scene_1->m_scenegraph->importScene("assets/scenes/entry.scene", &player);
+
+  luaInit(scene_1, &scenegraph);
 
 
   import_lighting_config(ren);
@@ -180,6 +187,7 @@ int ENTRY(int argc, char **argv)
         glDisable(GL_CULL_FACE);
         scene_1->drawGeometry(&event);
         glEnable(GL_CULL_FACE);
+
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     // ---------------------------------
@@ -193,18 +201,18 @@ int ENTRY(int argc, char **argv)
     glBindTexture(GL_TEXTURE_2D, ren->colorBuffers[0]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    
     ren->useShader(SHADER_TERRAIN);
     scene_1->sendLightsToShader();
     scene_1->drawGeometry(&event);
+
+    ren->useShader(SHADER_VOLUMETRIC_LIGHT);
+    scene_1->drawVolumetricLights();
 
     ren->useShader(SHADER_LIGHTSOURCE);
     scene_1->drawLightsources(&event);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //---------------------------------
-
-
 
     
     // Draw to quad

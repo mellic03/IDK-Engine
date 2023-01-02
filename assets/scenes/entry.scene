@@ -1,0 +1,99 @@
+#GAMEOBJECT BEGIN
+m_template_name: pointlightcontainer
+m_given_name: Point Lights
+objectID: 0
+parentID: -1
+position: 0 0 0
+velocity: 0 0 0
+orientation: 0 0 0 1
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+m_template_name: spotlightcontainer
+m_given_name: Spot Lights
+objectID: 1
+parentID: -1
+position: 0 0 0
+velocity: 0 0 0
+orientation: 0 0 0 1
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+m_template_name: pointlight
+m_given_name: pointlight
+objectID: 2
+parentID: 0
+position: 0 0 0
+velocity: 0 0 0
+orientation: 0 0 0 1
+#LIGHTSOURCE BEGIN
+diffuse: 0 0 0
+ambient: 0 0 0
+constant: 1
+linear: 0.09
+quadratic: 0.032
+bias: 0.15
+#LIGHTSOURCE END
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+m_template_name: spotlight
+m_given_name: spotlight
+objectID: 3
+parentID: 1
+position: 0 0 0
+velocity: 0 0 0
+orientation: 0 0 0 1
+#LIGHTSOURCE BEGIN
+diffuse: 0 0 0
+ambient: 0 0 0
+constant: 1
+linear: 0.09
+quadratic: 0.032
+inner_cutoff: 0.032
+outer_cutoff: 0.032
+intensity: 0.032
+#LIGHTSOURCE END
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+m_template_name: spotlight
+m_given_name: spotlight
+objectID: 4
+parentID: 1
+position: 0 0 0
+velocity: 0 0 0
+orientation: 0 0 0 1
+#LIGHTSOURCE BEGIN
+diffuse: 0 0 0
+ambient: 0 0 0
+constant: 1
+linear: 0.09
+quadratic: 0.032
+inner_cutoff: 0.032
+outer_cutoff: 0.032
+intensity: 0.032
+#LIGHTSOURCE END
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+m_template_name: player
+m_given_name: Player
+objectID: 5
+parentID: -1
+position: 0 6.56375 1.80392
+velocity: 0 0 0
+orientation: 0 0 0 1
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+m_template_name: empty
+m_given_name: SceneEntry
+objectID: 6
+parentID: -1
+position: 0 0 0
+velocity: 0 0 0
+orientation: 0 0 0 1
+#SCRIPT: LuaScripting/scripts/scene_entry
+#GAMEOBJECT END
+

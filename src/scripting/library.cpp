@@ -86,10 +86,20 @@ extern "C" int addToVel(lua_State *LS)
 }
 
 
+extern "C" int loadScene(lua_State *LS)
+{
+  const char *scene_name = lua_tostring(LS, 1);
+  LuaInterface::scenegraph->importScene("assets/scenes/" + std::string(scene_name), LuaInterface::scene->player);
+
+  return 0;
+}
+
+
 void register_library(void)
 {
-  lua_register(LuaInterface::L, "getPos", getPos);
-  lua_register(LuaInterface::L, "setPos", setPos);
-  lua_register(LuaInterface::L, "getVel", getVel);
-  lua_register(LuaInterface::L, "setVel", setVel);
+  lua_register(LuaInterface::L, "GetPos", getPos);
+  lua_register(LuaInterface::L, "SetPos", setPos);
+  lua_register(LuaInterface::L, "GetVel", getVel);
+  lua_register(LuaInterface::L, "SetVel", setVel);
+  lua_register(LuaInterface::L, "LoadScene", loadScene);
 }

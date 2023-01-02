@@ -58,6 +58,7 @@ void SceneGraph::loadObject(std::string directory)
 
   GameObject object;
   Model new_model;
+  Model vlight_model;
 
   FILE *fh = fopen(filepath.c_str(), "r");
 
@@ -74,17 +75,23 @@ void SceneGraph::loadObject(std::string directory)
     if (sscanf(buffer, "#interactivity %s", stringdata))
       object.setInteractivity(std::string(stringdata));
 
-    if (sscanf(buffer, "#interactivity %s", stringdata))
+    if (sscanf(buffer, "#physics %s", stringdata))
       object.changePhysState(std::string(stringdata));
 
 
     if (sscanf(buffer, "#geometry %s", stringdata))
     {
       new_model.loadDae(directory, std::string(stringdata));
-
       this->m_models.push_back(new_model);
       object.m_model = &*std::prev(this->m_models.end());
-      
+      object.hasGeometry(true);
+    }
+
+    if (sscanf(buffer, "#volumetriclight %s", stringdata))
+    {
+      vlight_model.loadDae(directory, std::string(stringdata));
+      this->m_models.push_back(vlight_model);
+      object.m_volumetric_light_model = &*std::prev(this->m_models.end());
       object.hasGeometry(true);
     }
 
@@ -274,17 +281,16 @@ void objectToFile(std::ofstream *stream, GameObject *object)
   glm::quat q = object->getTransform()->orientation;
   *stream << "orientation: " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << std::endl;
 
-  *stream << "#SCRIPTS BEGIN" << std::endl;
   for (int i=0; i<object->script_components.size(); i++)
+  {
+    *stream << "#SCRIPT: ";
     *stream << object->script_components[i].script_name << std::endl;
-  *stream << "#SCRIPTS END" << std::endl;
+  }
 
   if (object->lightsource_components.size() >= 1)
   {
     *stream << "#LIGHTSOURCE BEGIN" << std::endl;
-
     object->lightsource_components[0].toFile(*stream);
-    
     *stream << "#LIGHTSOURCE END" << std::endl;
   }
 
@@ -315,6 +321,7 @@ void SceneGraph::objectFromFile_headerData(std::ifstream &stream, std::string &l
         this->newObjectInstance("player");
         object = this->rearObjectPtr();
         player->useGameObject(object);
+        player->m_gameobject->changePhysState(PHYSICS_FALLING);
       }
 
       else
@@ -385,6 +392,13 @@ void SceneGraph::objectFromFile_headerData(std::ifstream &stream, std::string &l
       object->getTransform()->orientation = q;
     }
 
+    else if (line.find("#SCRIPT: ") != std::string::npos)
+    {
+      object->script_components.push_back(EntityComponent(COMPONENT_SCRIPT));
+      line.erase(0, std::string("#SCRIPT: ").size());
+      object->script_components[object->script_components.size()-1].script_name = line;
+    }
+
     else if (line == "#LIGHTSOURCE BEGIN")
       object->lightsource_components[0].fromFile(stream);
 
@@ -396,6 +410,8 @@ void SceneGraph::objectFromFile_headerData(std::ifstream &stream, std::string &l
 
 bool SceneGraph::exportScene(std::string filepath)
 {
+  std::cout << "exporting scene to: " << filepath << std::endl;
+
   std::ofstream stream;
   stream.open(filepath);
 
@@ -410,6 +426,8 @@ bool SceneGraph::exportScene(std::string filepath)
 
 bool SceneGraph::importScene(std::string filepath, Player *player)
 {
+  printf("scene_name: %s\n", filepath.c_str());
+
   this->clearScene();
 
   std::ifstream stream;
@@ -426,7 +444,7 @@ bool SceneGraph::importScene(std::string filepath, Player *player)
 
   for (auto &object: this->m_object_instances)
   {
-    if (object.parentID != -1)
+    if (object.parentID != -1 && object.m_template_name != "spotlight")
       this->objectPtr(object.parentID)->giveChild(this->objectPtr(object.m_ID), false);
   }
 

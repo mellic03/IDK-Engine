@@ -3,7 +3,7 @@
 #define NUM_SPOTLIGHTS 2
 
 layout (location = 0) out vec4 FragColor;
-layout (location = 1) out vec4 FragColor2;
+layout (location = 1) out vec4 BrightColor;
 
 struct PointLight {
   vec3 pos;
@@ -89,12 +89,27 @@ vec4 textureNoTile( sampler2D samp, in vec2 uv )
 
 vec3 gridSamplingDisk[20] = vec3[]
 (
-   vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1), 
-   vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
-   vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
-   vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
-   vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
+  vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1), 
+  vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+  vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
+  vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
+  vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
 );
+
+
+bool in_shadow(vec3 lightPos, vec3 viewPos, vec3 fragPos)
+{
+  vec3 fragToLight = fragPos - lightPos;
+  // use the light to fragment vector to sample from the depth map    
+  float closestDepth = texture(depthMap, fragToLight).r;
+  // it is currently in linear range between [0,1]. Re-transform back to original value
+  closestDepth *= far_plane;
+  // now get current linear depth as the length between the fragment and light position
+  float currentDepth = length(fragToLight);
+  // now test for shadows
+  float bias = 0.05; 
+  return currentDepth - bias > closestDepth;
+}
 
 
 float calculate_shadow(vec3 lightPos, vec3 viewPos, vec3 fragPos, float bias)
@@ -103,7 +118,7 @@ float calculate_shadow(vec3 lightPos, vec3 viewPos, vec3 fragPos, float bias)
   float currentDepth = length(fragToLight);
 
   float shadow = 0.0;
-  int samples = 20;
+  int samples = 3;
   float viewDistance = length(viewPos - fragPos);
   float diskRadius = (1.0 + (viewDistance / far_plane)) / 25.0;
   for(int i = 0; i < samples; ++i)
@@ -146,7 +161,32 @@ vec3 calculate_pointlight(PointLight light, vec3 normal, vec3 fragPos, vec3 view
 
   float shadow = calculate_shadow(light.pos, viewPos, fragPos, light.bias);
 
-  return (ambient + (1.0 - shadow) * (diffuse + specular));
+
+
+  // for each step, move the endpoint of the ray towards the camera
+  vec3 vol = vec3(0, 0, 0);
+
+  int max_steps = 64;
+  vec3 ray = fs_in.viewPos;
+  vec3 ray_dir = normalize(fs_in.FragPos - fs_in.viewPos);
+  float step_size = 0.1;
+
+  for (int i=1; i<max_steps; i++)
+  {
+    ray += step_size * ray_dir;
+
+    float rayshadow = calculate_shadow(light.pos, viewPos, ray, light.bias);
+    float raylightlength = length(ray - pointlight.pos);
+
+    if (length(ray - fs_in.viewPos) > length(fs_in.FragPos - fs_in.viewPos))
+      break;
+
+    vol += (1.0 - rayshadow) * 0.032 * light.diffuse;
+
+  }
+
+
+  return (ambient + vol + (1.0 - shadow) * (diffuse + specular));
 }
 
 
@@ -197,14 +237,23 @@ void main()
   for (int i=0; i<num_active_spotlights; i++)
     result += calculate_spotlight(spotlights[i], normal, fs_in.FragPos, fs_in.viewPos);
 
-
   FragColor = vec4(result, 1.0);
 
+  float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
 
-  float dist = length(fs_in.FragPos - fs_in.viewPos);
-  float fog_factor = (dist - fog_start)/(fog_end-fog_start);
-  fog_factor = 1.0 - clamp(fog_factor, 0, 1);
-  FragColor = mix(vec4(clearColor, 1.0), FragColor, fog_factor);
-  FragColor2 = FragColor;
-  
+  if (brightness > 1.0)
+    BrightColor = FragColor;
+
+  else
+    BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
+
+
+
+  // float dist = length(fs_in.FragPos - fs_in.viewPos);
+  // float fog_factor = (dist - fog_start)/(fog_end-fog_start);
+  // fog_factor = 1.0 - clamp(fog_factor, 0, 1);
+
+  // FragColor = mix(vec4(clearColor, 1.0), FragColor, fog_factor);
+  // FragColor2 = FragColor;
+
 }

@@ -1,0 +1,119 @@
+#GAMEOBJECT BEGIN
+m_template_name: pointlightcontainer
+m_given_name: Point Lights
+objectID: 0
+parentID: -1
+position: 0 0 0
+velocity: 0 0 0
+orientation: 0 0 0 1
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+m_template_name: spotlightcontainer
+m_given_name: Spot Lights
+objectID: 1
+parentID: -1
+position: 0 4.4 0
+velocity: 0 0 0
+orientation: 0 0 0 1
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+m_template_name: pointlight
+m_given_name: pointlight
+objectID: 2
+parentID: 0
+position: 0 0 -3.1
+velocity: 0 0 0
+orientation: 0 0 0 1
+#SCRIPT: LuaScripting/scripts/default
+#LIGHTSOURCE BEGIN
+diffuse: 1 1 1
+ambient: 0.0501931 0.0501931 0.0501931
+constant: 1
+linear: 0.09
+quadratic: 0.032
+bias: 0.15
+#LIGHTSOURCE END
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+m_template_name: spotlight
+m_given_name: spotlight
+objectID: 3
+parentID: 1
+position: 0 4.4 0
+velocity: 0 0 0
+orientation: 0 0 0 1
+#LIGHTSOURCE BEGIN
+diffuse: 0 0 0
+ambient: 0 0 0
+constant: 1
+linear: 0.09
+quadratic: 0.032
+inner_cutoff: 0.032
+outer_cutoff: 0.032
+intensity: 0.032
+#LIGHTSOURCE END
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+m_template_name: spotlight
+m_given_name: spotlight
+objectID: 4
+parentID: 1
+position: 0 4.4 0
+velocity: 0 0 0
+orientation: 0 0 0 1
+#LIGHTSOURCE BEGIN
+diffuse: 0 0 0
+ambient: 0 0 0
+constant: 1
+linear: 0.09
+quadratic: 0.032
+inner_cutoff: 0.032
+outer_cutoff: 0.032
+intensity: 0.032
+#LIGHTSOURCE END
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+m_template_name: player
+m_given_name: Player
+objectID: 5
+parentID: -1
+position: -0.131833 -0.0400002 0.337288
+velocity: -7.40399e-09 0 2.36719e-07
+orientation: 0.0536208 0.0156144 0.000838829 0.998191
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+m_template_name: building2
+m_given_name: building2
+objectID: 6
+parentID: -1
+position: 0 0 0
+velocity: 0 0 0
+orientation: 0 0 0 1
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+m_template_name: table
+m_given_name: table
+objectID: 7
+parentID: -1
+position: 0.68 -0.67 -4.2
+velocity: 0 0 0
+orientation: 0.148191 -0.344992 0.0552587 0.925186
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+m_template_name: fren
+m_given_name: fren
+objectID: 8
+parentID: -1
+position: 0 0 -1.4
+velocity: 0 0 0
+orientation: 0 -0.93298 0 -0.35993
+#GAMEOBJECT END
+

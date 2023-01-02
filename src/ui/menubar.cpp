@@ -7,8 +7,6 @@
 namespace fs = std::filesystem;
 
 
-
-
 void draw_save_modal(bool draw, Scene *scene)
 {
   if (draw)
@@ -18,22 +16,35 @@ void draw_save_modal(bool draw, Scene *scene)
   ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
   if (ImGui::BeginPopupModal("Save Scene", NULL, 0))
   {
-    static const fs::path workingdir = fs::current_path();
+    static fs::path workingdir = fs::current_path();
     fs::create_directories(workingdir / "assets" / "scenes" );
-    static const fs::path save_path = workingdir / "assets" / "scenes";
+    static fs::path scene_path = workingdir / "assets" / "scenes";
+    static fs::path save_path;
 
-    static char buf1[64] = "scene1.scene"; ImGui::InputText("Filename", buf1, 64);
-    std::string save_filepath = save_path.string() + "/" + std::string(buf1);
-    ImGui::Text("Saving under: /assets/scenes/%s", buf1);
+    bool changed = false;
+    EngineUI::draw_directory_recursive(workingdir / "assets" / "scenes", &save_path, &changed);
+    if (changed)
+    {
+      printf("WEE\n");
+      save_path = save_path.parent_path();
+    }
+
+    static std::string filename;
+    ImGui::InputText("Filename", &filename, 64);
+    std::string save_filepath = save_path.string() + "/" + filename;
+    std::string relative_save_path = fs::relative(save_path, fs::current_path()).string() + "/" + filename;
+    ImGui::Text("Saving under: %s", relative_save_path.c_str());
 
 
     if (ImGui::Button("Save", ImVec2(120, 0)))
     {
-      scene->m_scenegraph->exportScene(save_filepath.c_str());
+      std::cout << "exporting scene to: " << relative_save_path << std::endl;
+      scene->m_scenegraph->exportScene(relative_save_path);
       ImGui::CloseCurrentPopup();
     }
 
     ImGui::SameLine();
+
     if (ImGui::Button("Cancel", ImVec2(120, 0)))
       ImGui::CloseCurrentPopup();
 
@@ -70,8 +81,6 @@ void draw_load_modal(bool draw, Scene *scene)
     if (ImGui::Button("Load", ImVec2(120, 0)))
     {
       scene->importScene(load_path.c_str(), scene->player);
-      // scene->player->m_gameobject = scene->m_scenegraph->frontObjectPtr();
-      // scene->player->setObjectPtr(scene->m_scenegraph->rearObjectPtr());
       ImGui::CloseCurrentPopup();
     }
 

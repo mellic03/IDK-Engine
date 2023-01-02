@@ -93,31 +93,37 @@ void EntityComponent::_draw_transform(GameObject *object)
 void EntityComponent::_draw_script(GameObject *object)
 {
   this->script_changed = false;
-  if (ImGui::CollapsingHeader(std::string("Script        " + this->script_path.filename().string()).c_str()))
+  
+  std::string title = "Script        " + this->script_path.filename().string();
+
+  if (ImGui::CollapsingHeader(title.c_str(), ImGuiTreeNodeFlags_AllowItemOverlap))
   {
     if (ImGui::Button(std::string(this->script_name + ".lua").c_str()))
       ImGui::OpenPopup("Change Script");
-
 
     ImGui::SetNextWindowSize({300, 300});
     if (ImGui::BeginPopup("Change Script"))
     {
       bool changed = false;
-      EngineUI::draw_directory_recursive(fs::current_path()/"LuaScripting/scripts", &this->script_path, &changed);
-      if (changed)
+      EngineUI::draw_directory_recursive(fs::current_path()/"LuaScripting/scripts", &this->script_path, &this->script_changed);
+      
+      if (this->script_changed)
       {
-        this->script_changed = true;
         fs::path filepath = fs::relative(this->script_path, ".");
-
         this->script_name = filepath.string();
         this->script_name.erase(this->script_name.size() - 4);
       }
+
       ImGui::EndPopup();
     }
   }
 }
 
 
+void EntityComponent::_draw_variable(GameObject *object)
+{
+
+}
 
 
 void EntityComponent::draw(GameObject *object)
@@ -139,6 +145,11 @@ void EntityComponent::draw(GameObject *object)
 
     case (COMPONENT_SCRIPT):
       this->_draw_script(object);
+      break;
+  
+
+    case (COMPONENT_VARIABLE):
+      this->_draw_variable(object);
       break;
   }
 

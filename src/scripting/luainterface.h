@@ -4,6 +4,7 @@
 #include <lua.hpp>
 
 #include "../GameEngine/GameEngine.h"
+#include "../scene/scene.h"
 #include "../include/glm/glm.hpp"
 
 
@@ -21,6 +22,7 @@ namespace LuaInterface {
   // Variables
   //--------------------------------------------------
   extern lua_State *L;
+  extern Scene *scene;
   extern SceneGraph *scenegraph;
   // extern std::vector<int> IDs;
   // extern std::vector<std::string> scripts;
@@ -33,7 +35,7 @@ namespace LuaInterface {
 
   // Methods
   //--------------------------------------------------
-  void init(SceneGraph *graph);
+  void init(Scene *scene, SceneGraph *graph);
   void compile(void);
   void begin(void);
   void execute(void);

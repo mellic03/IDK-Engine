@@ -16,13 +16,18 @@ function Main()
 
     local fh = io.open(filepath, "r");
     
-    if (fh ~= nil)
-      then
-        require(modulepath)(IDs[i], engine);
-        io.close(fh);
+    if (fh ~= nil) then
+
+      local returnValue = require(modulepath)(IDs[i], engine);
+      
+      if (returnValue == 1) then
+        return;
+      end;
+      io.close(fh);
       
       else
         print("Error opening file: ", filepath);
+
     end;
       
   end;

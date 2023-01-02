@@ -185,6 +185,11 @@ void draw_render_tab(Renderer *ren)
 {
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
+  if (ImGui::Button("Recompile Shaders"))
+  {
+    ren->compileShaders();
+  }
+
   ImGui::ColorEdit3("Clear colour", (float*)&ren->clearColor);
   ImGui::SliderFloat("Fog start", &ren->fog_start, 0.0f, 100.0f, "%0.1f", 0);
   ImGui::SliderFloat("Fog end",   &ren->fog_end,   0.0f, 1000.0f, "%0.1f", 0);

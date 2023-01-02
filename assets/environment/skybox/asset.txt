@@ -1,0 +1,5 @@
+#gameobject skybox
+#interactivity environmental
+#geometry skybox.dae
+#physics PHYSICS_NONE
+#exit

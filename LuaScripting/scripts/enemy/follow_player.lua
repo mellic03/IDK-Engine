@@ -1,24 +1,23 @@
-local engine = require("LuaScripting/engine");
-local vlib = engine.vectorLibrary;
 
+return function(objectID, engine)
+  local vlib = engine.vectorLibrary;
 
-return function(worldData, objectID)
+  local player_pos = GetPos(6);
 
-  local player_pos = worldData.positions[1];
-
-  local pos = worldData.positions[objectID];
-  local vel = worldData.velocities[objectID];
+  local pos = GetPos(objectID);
+  local vel = GetVel(objectID);
 
   local dist = vlib.dist(pos, player_pos);
+  local dir = vlib.newVector(0, 0, 0);
 
-  if dist > 2.5 then
-    local dir = vlib.normalise(player_pos - pos) / 50.0;
-    vlib.add(pos, dir);
-  end;  
+  if dist > 0.2 then
+    dir = vlib.normalise(vlib.sub(player_pos, pos)) / 250.0;
+  end;
 
   if dist < 2.0 then
-    local dir = vlib.normalise(pos - player_pos) / 25.0;
-    vlib.add(pos, dir);
+    -- dir = vlib.normalise(pos - player_pos);
   end;
+
+  SetPos(objectID, pos.x+dir.x, pos.y+dir.y, pos.z+dir.z);
 
 end;

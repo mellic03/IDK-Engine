@@ -21,7 +21,7 @@ class GameObject {
 
     // Physics
     //----------------------------------------------------
-    PhysicsState m_physics_state = PHYSICS_FALLING;
+    PhysicsState m_physics_state = PHYSICS_NONE;
     NavigationState m_navigation_state = NAVIGATION_REST;
     std::vector<CollisionMesh *> _collision_meshes;
     std::vector<Transform> _collision_transforms;
@@ -52,12 +52,14 @@ class GameObject {
     std::vector<EntityComponent> transform_components;
     std::vector<EntityComponent> lightsource_components;
     std::vector<EntityComponent> script_components;
+    std::vector<EntityComponent> variable_components;
 
     float m_sphere_collider_radius = 0.4f;
     float height = 0.4f, width = 0.1f;
 
 
     Model *m_model;
+    Model *m_volumetric_light_model = nullptr;
     CollisionMesh m_collision_mesh;
 
     std::string m_template_name = "DEFAULT";

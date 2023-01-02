@@ -25,7 +25,7 @@ Renderer::Renderer()
 
 }
 
-void Renderer::init(void)
+void Renderer::compileShaders(void)
 {
   this->createShader("terrain",        SHADER_TERRAIN);
   this->createShader("worldspace",     SHADER_WORLDSPACE);
@@ -33,14 +33,20 @@ void Renderer::init(void)
   this->createShader("lightsource",    SHADER_LIGHTSOURCE);
   this->createShader("screenquad",     SHADER_SCREENQUAD);
 
-  this->createShader("normals",        SHADER_NORMALS);
+  this->createShader("normals",           SHADER_NORMALS);
+  this->createShader("volumetriclights",  SHADER_VOLUMETRIC_LIGHT);
 
 
   ShaderSource pointshadow_src = parse_shader("assets/shaders/pointshadow.vs", "assets/shaders/pointshadow.fs", "assets/shaders/pointshadow.gs");
   Shader pointshadow;
   pointshadow.set(create_shader(pointshadow_src.vertex_source, pointshadow_src.fragment_source, pointshadow_src.geometry_source));
   this->shaders[SHADER_POINTSHADOW] = pointshadow;
+}
 
+void Renderer::init(void)
+{
+
+  this->compileShaders();
 
   // Generate screen quad
   //------------------------------------------------------

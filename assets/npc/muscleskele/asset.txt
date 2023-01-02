@@ -3,4 +3,5 @@
 #gameobject muscleskele
 #interactivity npc
 #geometry muscleskele.dae
+#physics PHYSICS_FALLING
 #exit

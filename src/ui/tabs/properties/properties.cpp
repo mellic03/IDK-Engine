@@ -41,6 +41,13 @@ void EngineUI::properties(Scene *scene)
       count += 1;
     }
 
+    for (auto &component: object->variable_components)
+    {
+      ImGui::PushID(count);
+      component.draw(object);
+      ImGui::PopID();
+      count += 1;
+    }
 
     ImGui::Dummy(ImVec2(0.0f, 20.0f));
     EntityComponentType component_type = COMPONENT_NONE;

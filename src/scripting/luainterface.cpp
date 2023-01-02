@@ -2,6 +2,7 @@
 
 
 lua_State *LuaInterface::L;
+Scene *LuaInterface::scene;
 SceneGraph *LuaInterface::scenegraph;
 // std::vector<int> LuaInterface::IDs;
 // std::vector<std::string> LuaInterface::scripts;
@@ -9,10 +10,10 @@ SceneGraph *LuaInterface::scenegraph;
 // std::vector<glm::vec3> LuaInterface::velocities;
 
 
-void LuaInterface::init(SceneGraph *graph)
+void LuaInterface::init(Scene *scene, SceneGraph *graph)
 {
+  LuaInterface::scene = scene;
   LuaInterface::scenegraph = graph;
-
 }
 
 void LuaInterface::compile(void)

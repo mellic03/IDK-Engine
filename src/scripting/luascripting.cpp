@@ -1,8 +1,8 @@
 #include "luascripting.h"
 
-void luaInit(SceneGraph *graph)
+void luaInit(Scene *scene, SceneGraph *graph)
 {
-  LuaInterface::init(graph);
+  LuaInterface::init(scene, graph);
   LuaInterface::compile();
 }
 

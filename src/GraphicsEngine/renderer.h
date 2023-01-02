@@ -122,6 +122,7 @@ class Renderer {
 
     void init(void);
 
+    void compileShaders(void);
     void useShader(ShaderType shader);
     void postProcess(void);
     void setupDepthCubemap(void);

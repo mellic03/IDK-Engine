@@ -1,8 +1,7 @@
-local lpath = "LuaScripting/"
 
 local this = { };
 
-  this.vectorLibrary = require(lpath .. "engine/vector/vector");
+  this.vectorLibrary = require("LuaScripting/engine/vector/vector");
   -- this.ioLibrary = require(lpath .. "engine/io/io");
 
 

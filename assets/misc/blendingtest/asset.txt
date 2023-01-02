@@ -1,0 +1,8 @@
+
+#gameobject blending_test
+#interactivity environmental
+#geometry building.dae
+#physics PHYSICS_NONE
+#volumetriclight light.dae
+#collision collision.obj
+#exit
