@@ -310,7 +310,7 @@ void draw_dev_ui(Renderer *ren, Scene *scene, Player *player, int *x, int *y, in
       if (ren->viewport_width != *w || ren->viewport_height != *h)
         ren->resize(*w, *h);
 
-      ImGui::Image((ImTextureID)ren->screenColorBuffers[0], ImGui::GetContentRegionAvail(), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+      ImGui::Image((ImTextureID)ren->screenQuadColorBuffers[0], ImGui::GetContentRegionAvail(), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
   
       ImGui::End();
     }

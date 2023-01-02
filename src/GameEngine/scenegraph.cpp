@@ -42,6 +42,16 @@ GameObject *SceneGraph::objectPtr(int object_id)
 }
 
 
+GameObject *SceneGraph::objectPtr(std::string object_name)
+{
+  for (auto &object: this->m_object_instances)
+    if (object.getName() == object_name)
+      return &object;
+
+  return nullptr;
+}
+
+
 GameObject *SceneGraph::templatePtr(std::string object_name)
 {
   for (auto &object: this->m_object_templates)

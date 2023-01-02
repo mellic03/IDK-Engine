@@ -38,6 +38,7 @@ class SceneGraph {
 
     Model *modelPtr(std::string model_name);
     GameObject *objectPtr(int object_id);
+    GameObject *objectPtr(std::string object_name);
     GameObject *templatePtr(std::string object_name);
     GameObject *frontObjectPtr(void);
     GameObject *rearObjectPtr(void);

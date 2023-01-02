@@ -147,21 +147,18 @@ void Scene::drawGeometry(SDL_Event *event)
 
 void Scene::drawVolumetricLights(void)
 {
-  // glCullFace(GL_BACK);
-  glDepthMask(GL_FALSE);
-  glDisable(GL_CULL_FACE);
-
   for (auto &obj: this->m_scenegraph->m_object_instances)
   {
-    if (obj.m_volumetric_light_model != nullptr)
+    if (obj.isHidden())
+      continue;
+
+    if (obj.hasGeometry())
     {
-      obj.m_volumetric_light_model->setTransform(obj.getTransform());
-      this->ren->drawModel(obj.m_volumetric_light_model);
+      obj.m_model->setTransform(obj.getTransform());
+      this->ren->drawModel(obj.m_model);
     }
   }
 
-  glDepthMask(GL_TRUE);
-  glEnable(GL_CULL_FACE);
 }
 
 

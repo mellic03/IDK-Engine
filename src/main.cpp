@@ -193,11 +193,11 @@ int ENTRY(int argc, char **argv)
     // ---------------------------------
 
 
-
+ 
     // Draw scene normally
     // ---------------------------------
     glViewport(0, 0, w, h);
-    glBindFramebuffer(GL_FRAMEBUFFER, ren->FBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, ren->colorFBO);
     glBindTexture(GL_TEXTURE_2D, ren->colorBuffers[0]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -205,32 +205,50 @@ int ENTRY(int argc, char **argv)
     scene_1->sendLightsToShader();
     scene_1->drawGeometry(&event);
 
-    ren->useShader(SHADER_VOLUMETRIC_LIGHT);
-    scene_1->drawVolumetricLights();
-
     ren->useShader(SHADER_LIGHTSOURCE);
     scene_1->drawLightsources(&event);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //---------------------------------
 
+
+    // Draw light shafts
+    //---------------------------------
+    glViewport(0, 0, w/2, h/2);
+    glBindFramebuffer(GL_FRAMEBUFFER, ren->lightshaftFBO);
+    glBindTexture(GL_TEXTURE_2D, ren->lightshaftColorBuffers[0]);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    ren->useShader(SHADER_VOLUMETRIC_LIGHT);
+    scene_1->sendLightsToShader();
+    scene_1->drawVolumetricLights();
+    //---------------------------------
+
+    // glBindTexture(GL_TEXTURE_2D, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     
+
+
     // Draw to quad
     //---------------------------------
+    glViewport(0, 0, w, h);
     glBindVertexArray(ren->quadVAO);
     glDisable(GL_DEPTH_TEST);
 
     ren->useShader(SHADER_SCREENQUAD);
     ren->postProcess();
 
-    glBindFramebuffer(GL_FRAMEBUFFER, ren->screenFBO);
-    glBindTexture(GL_TEXTURE_2D, ren->screenColorBuffers[0]);
+    glBindFramebuffer(GL_FRAMEBUFFER, ren->screenQuadFBO);
+    glBindTexture(GL_TEXTURE_2D, ren->screenQuadColorBuffers[0]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
     
     glActiveTexture(GL_TEXTURE10);
     glBindTexture(GL_TEXTURE_2D, ren->colorBuffers[0]);
     ren->active_shader->setInt("screenTexture", 10);
+
+    glActiveTexture(GL_TEXTURE11);
+    glBindTexture(GL_TEXTURE_2D, ren->lightshaftColorBuffers[0]);
+    ren->active_shader->setInt("volumetricLightsTexture", 11);
 
 
     glDrawArrays(GL_TRIANGLES, 0, 6);

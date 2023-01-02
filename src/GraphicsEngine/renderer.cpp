@@ -35,6 +35,7 @@ void Renderer::compileShaders(void)
 
   this->createShader("normals",           SHADER_NORMALS);
   this->createShader("volumetriclights",  SHADER_VOLUMETRIC_LIGHT);
+  this->createShader("skybox",            SHADER_SKYBOX);
 
 
   ShaderSource pointshadow_src = parse_shader("assets/shaders/pointshadow.vs", "assets/shaders/pointshadow.fs", "assets/shaders/pointshadow.gs");
@@ -64,59 +65,9 @@ void Renderer::init(void)
 
   // Create colour framebuffer
   //------------------------------------------------------
-  glGenFramebuffers(1, &this->FBO);
-  glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
-  glGenTextures(2, this->colorBuffers);
-  
-  for (GLuint i=0; i<2; i++)
-  {
-    glBindTexture(GL_TEXTURE_2D, this->colorBuffers[i]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 2560, 2560, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, this->colorBuffers[i], 0);
-  }
-
-
-  glGenRenderbuffers(1, &this->rbo);
-  glBindRenderbuffer(GL_RENDERBUFFER, this->rbo); 
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 2560, 2560);  
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->rbo);
-
-  GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-  glDrawBuffers(2, attachments);
-
-
-
-
-  glGenFramebuffers(1, &this->screenFBO);
-  glBindFramebuffer(GL_FRAMEBUFFER, this->screenFBO);
-  glGenTextures(1, this->screenColorBuffers);
-  
-  glBindTexture(GL_TEXTURE_2D, this->screenColorBuffers[0]);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 2560, 2560, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->screenColorBuffers[0], 0);
-
-
-  glGenRenderbuffers(1, &this->screenRBO);
-  glBindRenderbuffer(GL_RENDERBUFFER, this->screenRBO); 
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 2560, 2560);  
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->screenRBO);
-
-  GLuint screenAttachments[1] = { GL_COLOR_ATTACHMENT0 };
-  glDrawBuffers(1, screenAttachments);
-
-
+  this->genColorBuffer(2560, 2560);
+  this->genVolLightBuffer(2560, 2560);
+  this->genScreenQuadBuffer(2560, 2560);
 
   //------------------------------------------------------
 
@@ -228,71 +179,111 @@ void Renderer::sendLightsToShader(void)
 
 }
 
-void Renderer::resize(int x, int y)
+
+void Renderer::genColorBuffer(int x, int y)
 {
   glDeleteTextures(1, &this->colorBuffers[0]);
-  glDeleteRenderbuffers(1, &this->rbo);
-  glDeleteFramebuffers(1, &this->FBO);
+  glDeleteRenderbuffers(1, &this->colorRBO);
+  glDeleteFramebuffers(1, &this->colorFBO);
 
-  glDeleteTextures(1, &this->screenColorBuffers[0]);
-  glDeleteRenderbuffers(1, &this->screenRBO);
-  glDeleteFramebuffers(1, &this->screenFBO);
-
-  glGenFramebuffers(1, &this->FBO);
-  glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
-  glGenTextures(2, this->colorBuffers);
+  glGenFramebuffers(1, &this->colorFBO);
+  glBindFramebuffer(GL_FRAMEBUFFER, this->colorFBO);
+  glGenTextures(1, &this->colorBuffers[0]);
   
-  for (GLuint i=0; i<1; i++)
-  {
-    glBindTexture(GL_TEXTURE_2D, this->colorBuffers[i]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, this->colorBuffers[i], 0);
-  }
-
-
-  glGenRenderbuffers(1, &this->rbo);
-  glBindRenderbuffer(GL_RENDERBUFFER, this->rbo); 
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, x, y);  
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->rbo);
-
-  GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-  glDrawBuffers(2, attachments);
-
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-
-
-
-
-  glGenFramebuffers(1, &this->screenFBO);
-  glBindFramebuffer(GL_FRAMEBUFFER, this->screenFBO);
-  glGenTextures(1, this->screenColorBuffers);
-  
-  glBindTexture(GL_TEXTURE_2D, this->screenColorBuffers[0]);
+  glBindTexture(GL_TEXTURE_2D, this->colorBuffers[0]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
   glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->screenColorBuffers[0], 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->colorBuffers[0], 0);
 
 
-  glGenRenderbuffers(1, &this->screenRBO);
-  glBindRenderbuffer(GL_RENDERBUFFER, this->screenRBO); 
+  glGenRenderbuffers(1, &this->colorRBO);
+  glBindRenderbuffer(GL_RENDERBUFFER, this->colorRBO); 
   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, x, y);  
   glBindRenderbuffer(GL_RENDERBUFFER, 0);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->screenRBO);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->colorRBO);
 
-  GLuint screenAttachments[1] = { GL_COLOR_ATTACHMENT0 };
-  glDrawBuffers(1, screenAttachments);
+  GLuint attachments[1] = { GL_COLOR_ATTACHMENT0 };
+  glDrawBuffers(1, attachments);
+
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Renderer::genVolLightBuffer(int x, int y)
+{
+  glDeleteTextures(1, &this->lightshaftColorBuffers[0]);
+  glDeleteRenderbuffers(1, &this->lightshaftRBO);
+  glDeleteFramebuffers(1, &this->lightshaftFBO);
+
+  glGenFramebuffers(1, &this->lightshaftFBO);
+  glBindFramebuffer(GL_FRAMEBUFFER, this->lightshaftFBO);
+  glGenTextures(1, &this->lightshaftColorBuffers[0]);
+
+  glBindTexture(GL_TEXTURE_2D, this->lightshaftColorBuffers[0]);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 0, GL_TEXTURE_2D, this->lightshaftColorBuffers[0], 0);
+
+
+  glGenRenderbuffers(1, &this->lightshaftRBO);
+  glBindRenderbuffer(GL_RENDERBUFFER, this->lightshaftRBO); 
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, x, y);  
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->lightshaftRBO);
+
+  GLuint attachments[1] = { GL_COLOR_ATTACHMENT0 };
+  glDrawBuffers(1, attachments);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+
+void Renderer::genScreenQuadBuffer(int x, int y)
+{
+  glDeleteTextures(1, &this->screenQuadColorBuffers[0]);
+  glDeleteRenderbuffers(1, &this->screenQuadRBO);
+  glDeleteFramebuffers(1, &this->screenQuadFBO);
+
+  glGenFramebuffers(1, &this->screenQuadFBO);
+  glBindFramebuffer(GL_FRAMEBUFFER, this->screenQuadFBO);
+  glGenTextures(1, &this->screenQuadColorBuffers[0]);
+
+  glBindTexture(GL_TEXTURE_2D, this->screenQuadColorBuffers[0]);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 0, GL_TEXTURE_2D, this->screenQuadColorBuffers[0], 0);
+
+
+  glGenRenderbuffers(1, &this->screenQuadRBO);
+  glBindRenderbuffer(GL_RENDERBUFFER, this->screenQuadRBO); 
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, x, y);  
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->screenQuadRBO);
+
+  GLuint attachments[1] = { GL_COLOR_ATTACHMENT0 };
+  glDrawBuffers(1, attachments);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+
+void Renderer::resize(int x, int y)
+{
+  this->genColorBuffer(x, y);
+  this->genVolLightBuffer(x/2, y/2);
+  this->genScreenQuadBuffer(x, y);
 
 
   this->viewport_width = x;
@@ -310,16 +301,14 @@ void unbindTextureUnit(GLenum texture_unit)
 
 void Renderer::drawModel(Model *model)
 {
+  this->active_shader->setMat4("model", model->getTransform()->getModelMatrix());
+  this->active_shader->setMat4("view", this->cam.view);
+  this->active_shader->setMat4("projection", this->cam.projection);
+
   for (auto &mesh: model->m_meshes)
   {
     glBindVertexArray(mesh.VAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.VBO);
-
-
-    this->active_shader->setMat4("model", model->getTransform()->getModelMatrix());
-    this->active_shader->setMat4("view", this->cam.view);
-    this->active_shader->setMat4("projection", this->cam.projection);
-
 
     for (int i=0; i<mesh.IBOS.size(); i++)
     {

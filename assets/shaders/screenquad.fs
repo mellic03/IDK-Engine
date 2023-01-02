@@ -4,10 +4,11 @@ in vec2 TexCoords;
 out vec4 FragColor;
 
 uniform float kernel[9];
-uniform float kernelDivisor;
+float kernelDivisor = 16;
 uniform float kernelOffsetDivisor;
 
 uniform sampler2D screenTexture;
+uniform sampler2D volumetricLightsTexture;
 
 
 uniform float gamma;
@@ -32,22 +33,32 @@ void main()
       vec2( offset, -offset)  // bottom-right    
   );
 
-  float ImageKernel[9];
+  float ImageKernel[9] = float[](
+      1, // top-left
+      2, // top-center
+      1, // top-right
+      2,   // center-left
+      1,   // center-center
+      2,   // center-right
+      1, // bottom-left
+      2, // bottom-center
+      1  // bottom-right    
+  );
 
   for (int i=0; i<9; i++)
-    ImageKernel[i] = kernel[i]/kernelDivisor;
+    ImageKernel[i] = ImageKernel[i]/kernelDivisor;
 
   //-----------------------------------------
 
   vec3 sampleTex[9];
   for(int i = 0; i < 9; i++)
-    sampleTex[i] = vec3(texture(screenTexture, TexCoords.st + offsets[i]));
+    sampleTex[i] = vec3(texture(volumetricLightsTexture, TexCoords.st + offsets[i]));
 
   vec3 RenderWithKernel = vec3(0.0);
   for(int i = 0; i < 9; i++)
     RenderWithKernel += sampleTex[i] * ImageKernel[i];
   
-  vec3 hdrColor = RenderWithKernel;
+  vec3 hdrColor = RenderWithKernel + texture(screenTexture, TexCoords).rgb;
   vec3 result = vec3(1.0) - exp(-hdrColor * exposure);
   result = pow(result, vec3(1.0 / gamma));
 

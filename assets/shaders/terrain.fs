@@ -3,7 +3,6 @@
 #define NUM_SPOTLIGHTS 2
 
 layout (location = 0) out vec4 FragColor;
-layout (location = 1) out vec4 BrightColor;
 
 struct PointLight {
   vec3 pos;
@@ -118,7 +117,7 @@ float calculate_shadow(vec3 lightPos, vec3 viewPos, vec3 fragPos, float bias)
   float currentDepth = length(fragToLight);
 
   float shadow = 0.0;
-  int samples = 3;
+  int samples = 20;
   float viewDistance = length(viewPos - fragPos);
   float diskRadius = (1.0 + (viewDistance / far_plane)) / 25.0;
   for(int i = 0; i < samples; ++i)
@@ -161,32 +160,7 @@ vec3 calculate_pointlight(PointLight light, vec3 normal, vec3 fragPos, vec3 view
 
   float shadow = calculate_shadow(light.pos, viewPos, fragPos, light.bias);
 
-
-
-  // for each step, move the endpoint of the ray towards the camera
-  vec3 vol = vec3(0, 0, 0);
-
-  int max_steps = 64;
-  vec3 ray = fs_in.viewPos;
-  vec3 ray_dir = normalize(fs_in.FragPos - fs_in.viewPos);
-  float step_size = 0.1;
-
-  for (int i=1; i<max_steps; i++)
-  {
-    ray += step_size * ray_dir;
-
-    float rayshadow = calculate_shadow(light.pos, viewPos, ray, light.bias);
-    float raylightlength = length(ray - pointlight.pos);
-
-    if (length(ray - fs_in.viewPos) > length(fs_in.FragPos - fs_in.viewPos))
-      break;
-
-    vol += (1.0 - rayshadow) * 0.032 * light.diffuse;
-
-  }
-
-
-  return (ambient + vol + (1.0 - shadow) * (diffuse + specular));
+  return (ambient + (1.0 - shadow) * (diffuse + specular));
 }
 
 
@@ -239,13 +213,8 @@ void main()
 
   FragColor = vec4(result, 1.0);
 
-  float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
 
-  if (brightness > 1.0)
-    BrightColor = FragColor;
 
-  else
-    BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 
 
 
