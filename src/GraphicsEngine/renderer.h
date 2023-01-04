@@ -54,6 +54,8 @@ class Renderer {
     GLuint lightshaftFBO, lightshaftRBO, lightshaftColorBuffers[1];
     GLuint quadVAO, quadVBO;
     GLuint screenQuadFBO, screenQuadRBO, screenQuadColorBuffers[1];
+    GLuint pingPongFBO1, pingPongRBO1, pingPongColorBuffers1[1];
+    GLuint pingPongFBO2, pingPongRBO2, pingPongColorBuffers2[1];
 
     // Camera/user-facing
     //---------------------------------------------------------------------
@@ -79,20 +81,16 @@ class Renderer {
 
     // Lighting
     //---------------------------------------------------------------------
+    bool draw_volumetrics = true;
+    int volumetric_light_resolution = 1;
+    int volumetric_light_blur_passes = 1;
+
     float NM_DIRLIGHTS = 1;
     float NM_POINTLIGHTS = 5;
     float NM_SPOTLIGHTS = 2;
 
     Shader shaders[20];
     Shader *active_shader = &this->shaders[0];
-    
-    std::vector<DirLight>    dirlights;
-
-    std::vector<PointLight>  pointlights, shaderready_pointlights;
-    bool pointlights_on[NUM_POINTLIGHTS] = { false };  int num_active_pointlights = 0;
-
-    std::vector<SpotLight>   spotlights, shaderready_spotlights;
-    bool spotlights_on[NUM_SPOTLIGHTS] = { false };    int num_active_spotlights = 0;
     
     glm::vec3 ambient_light = {0.0, 0.0, 0.0};
     //---------------------------------------------------------------------
@@ -103,15 +101,11 @@ class Renderer {
     int SHADOW_WIDTH = 512;
     int SHADOW_HEIGHT = 512;
 
-    GLuint depthMapFBO, depthMap;
     glm::mat4 lightSpaceMatrix;
-    float DIRBIAS = 0.01f;
 
-    GLuint depthCubemap;
-
-    GLuint dirlightDepthMapFBO, dirlightDepthMap;
-    GLuint spotlightDepthMapFBO, spotlightDepthMap;
-    float spotlight_bias = 0.01f;
+    GLuint dirlight_depthmapFBO, dirlight_depthmap;
+    GLuint pointlight_depthmapFBO, pointlight_depthCubemap;
+    GLuint spotlight_depthmapFBO, spotlight_depthmap;
     //---------------------------------------------------------------------
 
 
@@ -125,7 +119,9 @@ class Renderer {
     void compileShaders(void);
     void useShader(ShaderType shader);
     void postProcess(void);
-    void setupDepthCubemap(void);
+
+    void setupDirLightDepthmap(glm::vec3 dirlightpos, glm::vec3 dirlightdir);
+    void setupPointLightDepthCubemap(void);
     void usePerspective(void);
 
     void update(glm::vec3 pos, glm::vec3 dir);
@@ -134,9 +130,12 @@ class Renderer {
     void drawModel(Model *model);
     void drawLightSource(Model *model, glm::vec3 diffuse);
 
+    void renderToQuad(void);
+
     void genColorBuffer(int x, int y);
     void genVolLightBuffer(int x, int y);
     void genScreenQuadBuffer(int x, int y);
+    void genPingPongBuffer(int x, int y);
     void resize(int x, int y);
 };
 

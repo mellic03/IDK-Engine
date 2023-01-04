@@ -144,10 +144,10 @@ GameObject *SceneGraph::frontObjectPtr(void)
 
 void SceneGraph::newObjectInstance(std::string object_name, glm::vec3 pos, glm::vec3 rot)
 {
-  if (object_name == "pointlight" && this->_num_pointlights >= 1)
+  if (object_name == "pointlight" && this->_num_pointlights >= MAX_POINTLIGHTS)
     return;
 
-  if (object_name == "spotlight" && this->_num_spotlights >= 2)
+  if (object_name == "spotlight" && this->_num_spotlights >= MAX_SPOTLIGHTS)
     return;
 
 
@@ -241,26 +241,26 @@ void SceneGraph::updateLights(void)
 
   int count = 0;
 
-  for (int i=0; i<1; i++)
+  for (int i=1; i<MAX_POINTLIGHTS; i++)
     if (this->pointlights[i].active)
     {
-      this->sorted_pointlights.push_back(this->pointlights[i]);
+      this->sorted_pointlights.push_back(&this->pointlights[i]);
       this->_num_active_pointlights += 1;
     }
   
-  for (int i=0; i<1; i++)
+  for (int i=1; i<MAX_POINTLIGHTS; i++)
     if (!this->pointlights[i].active)
-      this->sorted_pointlights.push_back(this->pointlights[i]);
+      this->sorted_pointlights.push_back(&this->pointlights[i]);
   
 
-  for (int i=0; i<2; i++)
+  for (int i=1; i<MAX_SPOTLIGHTS; i++)
     if (this->spotlights[i].active)
     {
       this->sorted_spotlights.push_back(&this->spotlights[i]);
       this->_num_active_spotlights += 1;
     }
 
-  for (int i=0; i<2; i++)
+  for (int i=1; i<MAX_SPOTLIGHTS; i++)
     if (!this->spotlights[i].active)
       this->sorted_spotlights.push_back(&this->spotlights[i]);
   

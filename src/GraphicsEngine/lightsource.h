@@ -7,11 +7,11 @@
 #include "../include/glm/gtc/type_ptr.hpp"
 
 struct DirLight {
-  glm::vec3 position = glm::vec3(0.0f);
+  glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
   glm::vec3 direction = glm::vec3(0.0, -1.0, 0.0);
-  glm::vec3 ambient = glm::vec3(0.0f);
-  glm::vec3 diffuse = glm::vec3(0.0f);
-  glm::vec3 specular = glm::vec3(0.0f);
+  glm::vec3 diffuse = glm::vec3(0.0f, 0.0f, 0.0f);
+  glm::vec3 ambient = glm::vec3(0.0f, 0.0f, 0.0f);
+  float bias = 0.15f;
 };
 
 struct PointLight {
@@ -28,6 +28,9 @@ struct PointLight {
     float linear = 0.09f;
     float quadratic = 0.032f;
     float bias = 0.15f;
+    float fog_constant = 1.0f;
+    float fog_linear = 0.0f;
+    float fog_quadratic = 1.0f;
 };
 
 struct SpotLight {

@@ -103,6 +103,9 @@ void draw_main_menu_bar(Renderer *ren, Scene *scene)
   {
     if (ImGui::BeginMenu("File"))
     {
+      if (ImGui::MenuItem("New", "CTRL+N"))
+        scene->defaultScene();
+
       if (ImGui::MenuItem("Save", "CTRL+S"))
         show_save_modal = true;
 

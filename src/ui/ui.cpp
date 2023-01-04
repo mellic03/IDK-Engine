@@ -12,172 +12,24 @@ int selected_pointlight = 0;  const char *point_options[4] = {"1", "2", "3", "4"
 int selected_spotlight = 0;   const char *spot_options[4] = {"1", "2"};
 
 
-void export_lighting_config(Renderer *ren)
-{
-  FILE *fh = fopen("config.txt", "w");
-  
-  for (int i=0; i<NUM_DIRLIGHTS; i++)
-  {
-    DirLight *light = &ren->dirlights[i];
-    fprintf(fh, "DIRLIGHT AMBIENT: %f %f %f\n", light->ambient.x, light->ambient.y, light->ambient.z);
-    fprintf(fh, "DIRLIGHT DIFFUSE: %f %f %f\n", light->diffuse.x, light->diffuse.y, light->diffuse.z);
-    fprintf(fh, "DIRLIGHT DIRECTION: %f %f %f\n", light->direction.x, light->direction.y, light->direction.z);
-    fprintf(fh, "DIRLIGHT BIAS: %f\n", ren->DIRBIAS);
-  }
-
-  for (int i=0; i<NUM_POINTLIGHTS; i++)
-  {
-    PointLight *light = &ren->pointlights[i];
-    fprintf(fh, "POINTLIGHT ENABLED: %d\n", ren->pointlights_on[i]);
-    fprintf(fh, "POINTLIGHT AMBIENT: %f %f %f\n", light->ambient.x, light->ambient.y, light->ambient.z);
-    fprintf(fh, "POINTLIGHT DIFFUSE: %f %f %f\n", light->diffuse.x, light->diffuse.y, light->diffuse.z);
-    fprintf(fh, "POINTLIGHT CONSTANT, LINEAR, QUADRATIC: %f %f %f\n", light->constant, light->linear, light->quadratic);
-    // fprintf(fh, "POINTLIGHT POSITION: %f %f %f\n", light->position.x, light->position.y, light->position.z);
-  }
-
-  fprintf(fh, "CLEAR COLOR: %f %f %f\n", ren->clearColor.x, ren->clearColor.y, ren->clearColor.z);
-  fprintf(fh, "FOG START, STOP: %f %f\n", ren->fog_start, ren->fog_end);
-  fprintf(fh, "FOV: %f\n", ren->fov);
-  fprintf(fh, "EXPOSURE: %f\n", ren->exposure);
-  fprintf(fh, "GAMMA: %f\n", ren->gamma);
-
-
-  fclose(fh);
-}
-
-void import_lighting_config(Renderer *ren)
-{
-  FILE *fh = fopen("config.txt", "r");
-  
-  for (int i=0; i<NUM_DIRLIGHTS; i++)
-  {
-    DirLight *light = &ren->dirlights[i];
-    fscanf(fh, "DIRLIGHT AMBIENT: %f %f %f\n", &light->ambient.x, &light->ambient.y, &light->ambient.z);
-    fscanf(fh, "DIRLIGHT DIFFUSE: %f %f %f\n", &light->diffuse.x, &light->diffuse.y, &light->diffuse.z);
-    fscanf(fh, "DIRLIGHT DIRECTION: %f %f %f\n", &light->direction.x, &light->direction.y, &light->direction.z);
-    fscanf(fh, "DIRLIGHT BIAS: %f\n", &ren->DIRBIAS);
-  }
-
-  for (int i=0; i<NUM_POINTLIGHTS; i++)
-  {
-    PointLight *light = &ren->pointlights[i];
-    fscanf(fh, "POINTLIGHT ENABLED: %d\n", &ren->pointlights_on[i]);
-    fscanf(fh, "POINTLIGHT AMBIENT: %f %f %f\n", &light->ambient.x, &light->ambient.y, &light->ambient.z);
-    fscanf(fh, "POINTLIGHT DIFFUSE: %f %f %f\n", &light->diffuse.x, &light->diffuse.y, &light->diffuse.z);
-    fscanf(fh, "POINTLIGHT CONSTANT, LINEAR, QUADRATIC: %f %f %f\n", &light->constant, &light->linear, &light->quadratic);
-    // fscanf(fh, "POINTLIGHT POSITION: %f %f %f\n", &light->position.x, &light->position.y, &light->position.z);
-  }
-
-  fscanf(fh, "CLEAR COLOR: %f %f %f\n", &ren->clearColor.x, &ren->clearColor.y, &ren->clearColor.z);
-  fscanf(fh, "FOG START, STOP: %f %f\n", &ren->fog_start, &ren->fog_end);
-  fscanf(fh, "FOV: %f\n", &ren->fov);
-  fscanf(fh, "EXPOSURE: %f\n", &ren->exposure);
-  fscanf(fh, "GAMMA: %f\n", &ren->gamma);
-
-  fclose(fh);
-}
-
-
 void draw_lighting_tab(Renderer *ren, Scene *scene)
 {
+  ImGui::Text("Directional Light");
+  ImGui::Separator();
+  ImGui::DragFloat3("Position", &scene->m_scenegraph->dirlight.position[0], 0.1f);
+  ImGui::DragFloat3("Direction", &scene->m_scenegraph->dirlight.direction[0], 0.1f);
+  ImGui::ColorEdit3("Diffuse", &scene->m_scenegraph->dirlight.diffuse[0], 0.1f);
+  ImGui::ColorEdit3("Ambient", &scene->m_scenegraph->dirlight.ambient[0], 0.1f);
+  scene->m_scenegraph->dirlight.direction = glm::normalize(scene->m_scenegraph->dirlight.direction);
+  // EngineUI::vec3("position", &scene->m_scenegraph->dirlight.position, 0.01f);
+  // EngineUI::vec3("direction", &scene->m_scenegraph->dirlight.direction, 0.001f);
+
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
-  char buffer[64];
-
-  if (ImGui::TreeNode("Directional Lights"))
-  {
-    ImGui::ListBox("Directional light #", &selected_dirlight, dir_options, 1, -1);
-
-    ImGui::PushID(1);
-    ImGui::ColorEdit3("ambient", (float*)&ren->dirlights[selected_dirlight].ambient);
-    ImGui::ColorEdit3("diffuse", (float*)&ren->dirlights[selected_dirlight].diffuse);
-    
-    ImGui::Text("Direction");
-    ImGui::DragScalar("x", ImGuiDataType_Float, &ren->dirlights[selected_dirlight].direction.x, 0.05f, NULL);
-    ImGui::DragScalar("y", ImGuiDataType_Float, &ren->dirlights[selected_dirlight].direction.y, 0.05f, NULL);
-    ImGui::DragScalar("z", ImGuiDataType_Float, &ren->dirlights[selected_dirlight].direction.z, 0.05f, NULL);
-    // ren->dirlights[0].direction = glm::normalize(ren->dirlights[0].direction);
-    ImGui::Dummy(ImVec2(0.0f, 20.0f));
-
-    ImGui::DragScalar("bias", ImGuiDataType_Float, &ren->DIRBIAS, 0.005f, NULL);
-    ImGui::PopID();
-    ImGui::TreePop();
-  }
-
-  // if (ImGui::TreeNode("Point Lights"))
-  // {
-  //   ImGui::ListBox("Point light #", &selected_pointlight, point_options, 4, -1);
-
-  //   ImGui::PushID(1);
-    
-  //   ImGui::Checkbox("Enable", &scene->pointlights_on[selected_pointlight]);
-
-  //   ImGui::ColorEdit3("ambient", (float*)&scene->pointlights[selected_pointlight].ambient);
-  //   ImGui::ColorEdit3("diffuse", (float*)&scene->pointlights[selected_pointlight].diffuse);
-    
-  //   ImGui::SliderFloat("constant", &scene->pointlights[selected_pointlight].constant, 0.0f, 100.0f, "%0.4f", 0);
-  //   ImGui::DragScalar("linear", ImGuiDataType_Float, &scene->pointlights[selected_pointlight].linear,       0.001f, 0);
-  //   ImGui::DragScalar("quadratic", ImGuiDataType_Float, &scene->pointlights[selected_pointlight].quadratic, 0.001f, 0);
-  //   ImGui::DragScalar("bias", ImGuiDataType_Float, &scene->pointlights[selected_pointlight].bias, 0.001f, 0);
-
-  //   ImGui::Text("Position");
-  //   // ImGui::DragScalar("x", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.x, 0.05f, 0);
-  //   // ImGui::DragScalar("y", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.y, 0.05f, 0);
-  //   // ImGui::DragScalar("z", ImGuiDataType_Float, &ren->pointlights[selected_pointlight].position.z, 0.05f, 0);
-  //   ImGui::PopID();
-  //   ImGui::TreePop();
-  // }
-
-  // if (ImGui::TreeNode("Spot Lights"))
-  // {
-  //   ImGui::ListBox("Point light #", &selected_spotlight, spot_options, 2, -1);
-
-  //   ImGui::Checkbox("Enable", &scene->spotlights_on[selected_spotlight]);
-
-  //   ImGui::PushID(3);
-  //   ImGui::ColorEdit3("ambient", (float*)&scene->spotlights[selected_spotlight].ambient);
-  //   ImGui::ColorEdit3("diffuse", (float*)&scene->spotlights[selected_spotlight].diffuse);
-
-  //   // ImGui::DragScalar("constant", ImGuiDataType_Float, &ren->spotlights[selected_spotlight].constant,   0.001f, NULL);
-  //   ImGui::SliderFloat("constant", &scene->spotlights[selected_spotlight].constant, 0.0f, 100.0f, "%0.4f", 0);
-  //   ImGui::DragScalar("linear", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].linear,       0.001f, 0);
-  //   ImGui::DragScalar("quadratic", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].quadratic, 0.001f, 0);
-
-  //   ImGui::DragScalar("intensity", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].intensity, 0.05f, 0);
-  //   ImGui::DragScalar("inner cutoff", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].inner_cutoff, 0.05f, 0);
-  //   ImGui::DragScalar("outer cutoff", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].outer_cutoff, 0.05f, 0);
-  //   ImGui::DragScalar("fov", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].fov, 0.05f, 0);
-
-  //   ImGui::Checkbox("follow", &scene->spotlights[selected_spotlight].follow);
-
-
-
-  //   ImGui::PushID(4);
-  //   ImGui::Text("Position");
-  //   ImGui::DragScalar("x", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].position.x, 0.05f, 0);
-  //   ImGui::DragScalar("y", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].position.y, 0.05f, 0);
-  //   ImGui::DragScalar("z", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].position.z, 0.05f, 0);
-  //   ImGui::PopID();
-    
-  //   ImGui::PushID(5);
-  //   ImGui::Text("Direction");
-  //   ImGui::DragScalar("x", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].direction.x, 0.05f, 0);
-  //   ImGui::DragScalar("y", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].direction.y, 0.05f, 0);
-  //   ImGui::DragScalar("z", ImGuiDataType_Float, &scene->spotlights[selected_spotlight].direction.z, 0.05f, 0);
-  //   scene->spotlights[selected_spotlight].direction = glm::normalize(scene->spotlights[selected_spotlight].direction);
-  //   ImGui::PopID();
-  //   ImGui::PopID();
-  //   ImGui::TreePop();
-  // }
-
-  // ImGui::Dummy(ImVec2(0.0f, 20.0f));
-
-  // if (ImGui::Button("Import"))
-  //   import_lighting_config(ren);
-  // ImGui::SameLine(ImGui::GetWindowWidth()-60);
-  // if (ImGui::Button("Export"))
-  //   export_lighting_config(ren);
-
+  ImGui::Text("Volumetrics");
+  ImGui::Separator();
+  ImGui::SliderInt("Resolution", &ren->volumetric_light_resolution, 1, 64);
+  ImGui::SliderInt("Blur passes", &ren->volumetric_light_blur_passes, 0, 64);
 
 }
 
@@ -281,6 +133,13 @@ void draw_dev_ui(Renderer *ren, Scene *scene, Player *player, int *x, int *y, in
     EngineUI::scriptBrowser();
     EngineUI::scriptEditor();
     EngineUI::details(scene);
+
+    ImGui::Begin("Depth Map");
+    {
+      ImGui::Image((ImTextureID)ren->dirlight_depthmap, ImGui::GetContentRegionAvail(), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+      
+      ImGui::End();
+    }
 
     ImGui::Begin("Lighting");
     {

@@ -29,32 +29,89 @@ void Scene::sendLightsToShader(void)
 {
   this->updateLights();
 
-  this->ren->active_shader->setInt("num_active_pointlights", this->m_scenegraph->_num_active_pointlights);
-  this->ren->active_shader->setInt("num_active_spotlights", this->m_scenegraph->_num_active_spotlights);
-
-  char buffer[64];
-
-  glActiveTexture(GL_TEXTURE10);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, this->ren->depthCubemap);
-    
-  this->ren->active_shader->setInt("depthMap", 10);
-  this->ren->active_shader->setFloat("far_plane",   25.0f);
-
-  // Shadow mapped pointlight
-  this->ren->active_shader->setVec3( "pointlight.ambient", this->m_scenegraph->pointlights[0].ambient);
-  this->ren->active_shader->setVec3( "pointlight.diffuse", this->m_scenegraph->pointlights[0].diffuse);
-  this->ren->active_shader->setVec3( "pointlight.pos", this->m_scenegraph->pointlights[0].m_transform->getPos_worldspace());
-  this->ren->active_shader->setVec3( "pointlight.tangent_pos", this->m_scenegraph->pointlights[0].m_transform->getPos_worldspace());
-  this->ren->active_shader->setFloat("pointlight.constant", this->m_scenegraph->pointlights[0].constant);
-  this->ren->active_shader->setFloat("pointlight.linear", this->m_scenegraph->pointlights[0].linear);
-  this->ren->active_shader->setFloat("pointlight.quadratic", this->m_scenegraph->pointlights[0].quadratic);
-  this->ren->active_shader->setFloat("pointlight.bias", this->m_scenegraph->pointlights[0].bias);
   this->ren->active_shader->setVec3( "clearColor", this->ren->clearColor);
   this->ren->active_shader->setFloat("fog_start", this->ren->fog_start);
   this->ren->active_shader->setFloat("fog_end", this->ren->fog_end);
+  this->ren->active_shader->setFloat( "far_plane",         25.0f );
+
+
+  // Shadow mapped dirlight
+  glActiveTexture(GL_TEXTURE10);
+  glBindTexture(GL_TEXTURE_2D, this->ren->dirlight_depthmap);
+  this->ren->active_shader->setInt(   "depthmap_dirlight", 10    );
+  this->ren->active_shader->setMat4("lightSpaceMatrix", this->ren->lightSpaceMatrix);
+
+  this->ren->active_shader->setVec3( "shadowmapped_dirlight.ambient", this->m_scenegraph->dirlight.ambient);
+  this->ren->active_shader->setVec3( "shadowmapped_dirlight.diffuse", this->m_scenegraph->dirlight.diffuse);
+  this->ren->active_shader->setVec3( "shadowmapped_dirlight.position", this->m_scenegraph->dirlight.position);
+  this->ren->active_shader->setVec3( "shadowmapped_dirlight.direction", this->m_scenegraph->dirlight.direction);
+  this->ren->active_shader->setFloat( "shadowmapped_dirlight.bias", this->m_scenegraph->dirlight.bias);
 
 
 
+  // Shadow mapped pointlight
+  glBindTexture(GL_TEXTURE_CUBE_MAP, this->ren->pointlight_depthCubemap);
+
+  this->ren->active_shader->setInt("depthmap_pointlight", 10);
+
+  this->ren->active_shader->setVec3( "shadowmapped_pointlight.ambient", this->m_scenegraph->pointlights[0].ambient);
+  this->ren->active_shader->setVec3( "shadowmapped_pointlight.diffuse", this->m_scenegraph->pointlights[0].diffuse);
+  this->ren->active_shader->setVec3( "shadowmapped_pointlight.position", this->m_scenegraph->pointlights[0].m_transform->getPos_worldspace());
+  this->ren->active_shader->setFloat("shadowmapped_pointlight.constant", this->m_scenegraph->pointlights[0].constant);
+  this->ren->active_shader->setFloat("shadowmapped_pointlight.linear", this->m_scenegraph->pointlights[0].linear);
+  this->ren->active_shader->setFloat("shadowmapped_pointlight.quadratic", this->m_scenegraph->pointlights[0].quadratic);
+  this->ren->active_shader->setFloat("shadowmapped_pointlight.bias", this->m_scenegraph->pointlights[0].bias);
+  this->ren->active_shader->setFloat("shadowmapped_pointlight.fog_constant", this->m_scenegraph->pointlights[0].fog_constant);
+  this->ren->active_shader->setFloat("shadowmapped_pointlight.fog_linear", this->m_scenegraph->pointlights[0].fog_linear);
+  this->ren->active_shader->setFloat("shadowmapped_pointlight.fog_quadratic", this->m_scenegraph->pointlights[0].fog_quadratic);
+
+  // Shadow mapped spotlight
+  // glActiveTexture(GL_TEXTURE11);
+  // this->ren->active_shader->setInt("depthmap_spotlight", 10);
+  // this->ren->active_shader->setFloat("far_plane",   25.0f);
+  // glBindTexture(GL_TEXTURE_2D, 0);
+
+  // this->ren->active_shader->setVec3( "shadowmapped_spotlight.ambient", this->m_scenegraph->spotlights[0].ambient);
+  // this->ren->active_shader->setVec3( "shadowmapped_spotlight.diffuse", this->m_scenegraph->spotlights[0].diffuse);
+  // this->ren->active_shader->setVec3( "shadowmapped_spotlight.position", this->m_scenegraph->spotlights[0].m_transform->getPos_worldspace());
+  // this->ren->active_shader->setFloat("shadowmapped_spotlight.constant", this->m_scenegraph->spotlights[0].constant);
+  // this->ren->active_shader->setFloat("shadowmapped_spotlight.linear", this->m_scenegraph->spotlights[0].linear);
+  // this->ren->active_shader->setFloat("shadowmapped_spotlight.quadratic", this->m_scenegraph->spotlights[0].quadratic);
+  // this->ren->active_shader->setFloat("shadowmapped_spotlight.inner_cutoff", this->m_scenegraph->spotlights[0].inner_cutoff);
+  // this->ren->active_shader->setFloat("shadowmapped_spotlight.outer_cutoff", this->m_scenegraph->spotlights[0].outer_cutoff);
+  // this->ren->active_shader->setFloat("shadowmapped_spotlight.intensity", this->m_scenegraph->spotlights[0].intensity);
+
+
+
+  char buffer[64];
+
+  this->ren->active_shader->setInt("num_active_pointlights", this->m_scenegraph->_num_active_pointlights);
+  for (int i=0; i<this->m_scenegraph->_num_active_pointlights; i++)
+  {
+    sprintf(buffer, "pointlights[%d].position", i);
+    this->ren->active_shader->setVec3(buffer,  this->m_scenegraph->sorted_pointlights[i]->m_transform->getPos_worldspace());
+
+    sprintf(buffer, "pointlights[%d].direction", i);
+    this->ren->active_shader->setVec3(buffer,  this->m_scenegraph->sorted_pointlights[i]->m_transform->getRot());
+
+    sprintf(buffer, "pointlights[%d].ambient", i);
+    this->ren->active_shader->setVec3(buffer,  this->m_scenegraph->sorted_pointlights[i]->ambient);
+
+    sprintf(buffer, "pointlights[%d].diffuse", i);
+    this->ren->active_shader->setVec3(buffer,  this->m_scenegraph->sorted_pointlights[i]->diffuse);
+
+    sprintf(buffer, "spotlights[%d].constant", i);
+    this->ren->active_shader->setFloat(buffer,  this->m_scenegraph->sorted_pointlights[i]->constant);
+
+    sprintf(buffer, "pointlights[%d].linear", i);
+    this->ren->active_shader->setFloat(buffer,  this->m_scenegraph->sorted_pointlights[i]->linear);
+
+    sprintf(buffer, "pointlights[%d].quadratic", i);
+    this->ren->active_shader->setFloat(buffer,  this->m_scenegraph->sorted_pointlights[i]->quadratic);
+  }
+
+
+  this->ren->active_shader->setInt("num_active_spotlights", this->m_scenegraph->_num_active_spotlights);
   for (int i=0; i<this->m_scenegraph->_num_active_spotlights; i++)
   {
     sprintf(buffer, "spotlights[%d].position", i);
@@ -89,8 +146,6 @@ void Scene::sendLightsToShader(void)
   }
 
   this->ren->active_shader->setVec3("viewPos", this->ren->cam.m_transform->getPos_worldspace());
-  this->ren->active_shader->setVec3("viewDirection", glm::vec3(glm::pitch(this->ren->cam.m_transform->orientation), 0.0f, 0.0f));
-
 }
 
 
@@ -100,6 +155,7 @@ void Scene::clear(void)
 
   this->m_scenegraph->clearScene();
 }
+
 
 void Scene::defaultScene(void)
 {
@@ -118,11 +174,51 @@ void Scene::importScene(std::string filepath, Player *player)
 }
 
 
-void Scene::drawGeometry(SDL_Event *event)
+void Scene::drawDirLightDepthmap(void)
+{
+  glViewport(0, 0, this->ren->SHADOW_WIDTH, this->ren->SHADOW_HEIGHT);
+  glBindFramebuffer(GL_FRAMEBUFFER, this->ren->dirlight_depthmapFBO);
+  glBindTexture(GL_TEXTURE_2D, this->ren->dirlight_depthmap);
+  glClear(GL_DEPTH_BUFFER_BIT);
+      this->ren->useShader(SHADER_DIRSHADOW);
+      this->ren->setupDirLightDepthmap(this->m_scenegraph->dirlight.position, this->m_scenegraph->dirlight.direction);
+      this->drawGeometry();
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+
+void Scene::drawPointLightDepthmap(void)
+{
+  glViewport(0, 0, this->ren->SHADOW_WIDTH, this->ren->SHADOW_HEIGHT);
+  glBindFramebuffer(GL_FRAMEBUFFER, this->ren->pointlight_depthmapFBO);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, this->ren->pointlight_depthCubemap);
+  glClear(GL_DEPTH_BUFFER_BIT);
+      this->ren->useShader(SHADER_POINTSHADOW);
+      this->ren->setupPointLightDepthCubemap();
+      this->drawGeometry();
+  glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Scene::drawDepthmaps(void)
+{
+  glDisable(GL_CULL_FACE);
+
+  this->drawDirLightDepthmap();
+  this->drawPointLightDepthmap();
+
+
+  glEnable(GL_CULL_FACE);
+}
+
+
+void Scene::drawGeometry()
 {
   for (auto &obj: this->m_scenegraph->m_object_instances)
   {
-    if (obj.isHidden())
+    if (obj.isHidden() || obj.getName() == "skybox")
       continue;
 
     for (auto &obj2: this->m_scenegraph->m_object_instances)

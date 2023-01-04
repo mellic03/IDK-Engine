@@ -91,6 +91,7 @@ int ENTRY(int argc, char **argv)
   scenegraph.loadObject("assets/environment/skybox/");
   scenegraph.loadObject("assets/environment/building/");
   scenegraph.loadObject("assets/environment/building2/");
+  scenegraph.loadObject("assets/environment/building3/");
   scenegraph.loadObject("assets/environment/terrain0/");
   scenegraph.loadObject("assets/environment/terrain1/");
   scenegraph.loadObject("assets/npc/muscleskele/");
@@ -107,7 +108,6 @@ int ENTRY(int argc, char **argv)
   luaInit(scene_1, &scenegraph);
 
 
-  import_lighting_config(ren);
   scene_1->useRenderer(ren);
   //----------------------------------------
 
@@ -176,26 +176,15 @@ int ENTRY(int argc, char **argv)
     ///////////////////////////////////////////////////////////////////////////////////////////// Render start
 
 
-    // Render depth map
-    // ---------------------------------
-    glViewport(0, 0, ren->SHADOW_WIDTH, ren->SHADOW_HEIGHT);
-    glBindFramebuffer(GL_FRAMEBUFFER, ren->depthMapFBO);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, ren->depthCubemap);
-    glClear(GL_DEPTH_BUFFER_BIT);
-        ren->useShader(SHADER_POINTSHADOW);
-        ren->setupDepthCubemap();
-        glDisable(GL_CULL_FACE);
-        scene_1->drawGeometry(&event);
-        glEnable(GL_CULL_FACE);
-
-    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    // ---------------------------------
-
-
+    // Render depthmaps
+    //---------------------------------
+    scene_1->drawDepthmaps();
+    //---------------------------------
+    
+    
  
     // Draw scene normally
-    // ---------------------------------
+    //---------------------------------
     glViewport(0, 0, w, h);
     glBindFramebuffer(GL_FRAMEBUFFER, ren->colorFBO);
     glBindTexture(GL_TEXTURE_2D, ren->colorBuffers[0]);
@@ -203,19 +192,17 @@ int ENTRY(int argc, char **argv)
 
     ren->useShader(SHADER_TERRAIN);
     scene_1->sendLightsToShader();
-    scene_1->drawGeometry(&event);
+    scene_1->drawGeometry();
 
     ren->useShader(SHADER_LIGHTSOURCE);
     scene_1->drawLightsources(&event);
-
     //---------------------------------
 
 
     // Draw light shafts
     //---------------------------------
-    glViewport(0, 0, w/2, h/2);
+    glViewport(0, 0, w/ren->volumetric_light_resolution, h/ren->volumetric_light_resolution);
     glBindFramebuffer(GL_FRAMEBUFFER, ren->lightshaftFBO);
-    glBindTexture(GL_TEXTURE_2D, ren->lightshaftColorBuffers[0]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     ren->useShader(SHADER_VOLUMETRIC_LIGHT);
@@ -223,10 +210,61 @@ int ENTRY(int argc, char **argv)
     scene_1->drawVolumetricLights();
     //---------------------------------
 
-    // glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     
 
+
+    // Blur volumetric light buffer
+    //---------------------------------
+    glViewport(0, 0, w, h);
+
+    ren->useShader(SHADER_BLUR);
+
+    glBindVertexArray(ren->quadVAO);
+    glDisable(GL_DEPTH_TEST);
+
+
+    bool horizontal = true;
+    bool first = true;
+
+    for (unsigned int i=0; i<ren->volumetric_light_blur_passes; i++)
+    {
+      if (horizontal)
+        glBindFramebuffer(GL_FRAMEBUFFER, ren->pingPongFBO1);
+      else
+        glBindFramebuffer(GL_FRAMEBUFFER, ren->pingPongFBO2);
+
+      glActiveTexture(GL_TEXTURE10);
+
+      if (first)
+      {
+        glBindTexture(GL_TEXTURE_2D, ren->lightshaftColorBuffers[0]);
+        ren->active_shader->setInt("image", 10);
+      }
+      else
+      {
+        if (!horizontal)
+          glBindTexture(GL_TEXTURE_2D, ren->pingPongColorBuffers1[0]);
+        else
+          glBindTexture(GL_TEXTURE_2D, ren->pingPongColorBuffers2[0]);
+
+        ren->active_shader->setInt("image", 10);
+      }
+
+      ren->active_shader->setInt("horizontal", horizontal);
+      
+      glDrawArrays(GL_TRIANGLES, 0, 6);
+      glBindVertexArray(0);
+
+      if (first)
+        first = false;
+
+      horizontal = !horizontal;
+    }
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    //---------------------------------
+  
 
     // Draw to quad
     //---------------------------------
@@ -247,9 +285,11 @@ int ENTRY(int argc, char **argv)
     ren->active_shader->setInt("screenTexture", 10);
 
     glActiveTexture(GL_TEXTURE11);
-    glBindTexture(GL_TEXTURE_2D, ren->lightshaftColorBuffers[0]);
+    // if (!horizontal)
+      glBindTexture(GL_TEXTURE_2D, ren->pingPongColorBuffers1[0]);
+    // else
+      // glBindTexture(GL_TEXTURE_2D, ren->pingPongColorBuffers2[0]);
     ren->active_shader->setInt("volumetricLightsTexture", 11);
-
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
       glBindVertexArray(0);
