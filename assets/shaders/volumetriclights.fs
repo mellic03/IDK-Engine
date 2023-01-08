@@ -6,6 +6,17 @@
 layout (location = 0) out vec4 FragColor;
 
 
+struct VolumetricData {
+  int num_samples;
+  float step_size;
+  float step_multiplier;
+  
+  int resolution_divisor;
+  int num_blur_passes;
+};
+uniform VolumetricData volumetrics;
+
+
 struct DirLight {
   vec3 position, direction;
   vec3 diffuse;
@@ -66,24 +77,25 @@ vec3 gridSamplingDisk[20] = vec3[]
   vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
 );
 
-bool in_shadow(vec3 lightPos, vec3 viewPos, vec3 fragPos)
+bool in_shadow(vec3 lightPos, vec3 fragPos)
 {
   vec3 fragToLight = fragPos - lightPos;
   float closestDepth = texture(depthmap_pointlight, fragToLight).r;
   closestDepth *= far_plane;
   float currentDepth = length(fragToLight);
-  float bias = 0.05; 
+  float bias = -0.0015; 
   return currentDepth - bias > closestDepth;
 }
 
-bool in_shadow_ortho(vec3 viewPos, vec3 fragPos)
+bool in_shadow_ortho(vec3 fragPos)
 {
   vec4 lspacepos = lightSpaceMatrix * vec4(fragPos, 1.0);
   vec3 projCoords = lspacepos.xyz / lspacepos.w;
   projCoords = projCoords * 0.5 + 0.5;
   float closestDepth = texture(depthmap_dirlight, projCoords.xy).r; 
   float currentDepth = projCoords.z;
-  return currentDepth > closestDepth;
+  float bias = -0.0015; 
+  return currentDepth - bias > closestDepth;
 }
 
 
@@ -92,26 +104,26 @@ vec3 calculate_dirlight(DirLight light, vec3 fragPos, vec3 viewPos)
   // for each step, move the endpoint of the ray towards the fragment
   vec3 vol = vec3(0, 0, 0);
 
-  float view_frag_length = length(fs_in.FragPos - fs_in.viewPos);
-  int max_steps = 128;
-  float step_size = view_frag_length / max_steps;
+  // float frag_dist = length(fs_in.FragPos - fs_in.viewPos);
+  // int max_steps = 512;
+  // float step_size = 0.1;
 
-  vec3 ray = fs_in.viewPos;
-  vec3 ray_dir = normalize(fs_in.FragPos - fs_in.viewPos);
+  // vec3 ray = fs_in.viewPos;
+  // vec3 ray_dir = normalize(fs_in.FragPos - fs_in.viewPos);
 
-  int i=0;
-  for (i=0; i<max_steps; i++)
-  {
-    ray += step_size * ray_dir;
+  // int i=0;
+  // for (i=0; i<max_steps; i++)
+  // {
+  //   ray += step_size * ray_dir;
 
-    if (length(ray - fs_in.viewPos) > view_frag_length)
-      break;
+  //   if (length(ray - fs_in.viewPos) > frag_dist)
+  //     break;
 
-    if (!in_shadow_ortho(viewPos, ray))
-      vol += step_size * 0.25 * light.diffuse;
-  }
+  //   if (!in_shadow_ortho(viewPos, ray))
+  //     vol += step_size * 0.25 * light.diffuse;
+  // }
 
-  return (vol);
+  return vol;
 }
 
 vec3 calculate_pointlight(PointLight light, vec3 fragPos, vec3 viewPos)
@@ -119,67 +131,72 @@ vec3 calculate_pointlight(PointLight light, vec3 fragPos, vec3 viewPos)
   // for each step, move the endpoint of the ray towards the fragment
   vec3 vol = vec3(0, 0, 0);
 
-  float view_frag_length = length(fs_in.FragPos - fs_in.viewPos);
-  int max_steps = 512;
-  float step_size = 0.1;
+  // float frag_dist = length(fs_in.FragPos - fs_in.viewPos);
+  // int max_steps = 512;
+  // float step_size = 0.1;
 
-  vec3 ray = fs_in.viewPos;
-  vec3 ray_dir = normalize(fs_in.FragPos - fs_in.viewPos);
+  // vec3 ray = fs_in.viewPos;
+  // vec3 ray_dir = normalize(fs_in.FragPos - fs_in.viewPos);
 
-  int i=0;
-  for (i=0; i<max_steps; i++)
-  {
-    ray += step_size * ray_dir;
+  // int i=0;
+  // for (i=0; i<max_steps; i++)
+  // {
+  //   ray += step_size * ray_dir;
 
-    if (length(ray - fs_in.viewPos) > view_frag_length)
-      break;
+  //   if (length(ray - fs_in.viewPos) > frag_dist)
+  //     break;
 
-    float light_ray_dist = length(ray - light.position);
-    float attenuation = 1.0 / (light.fog_constant + light.fog_linear * light_ray_dist + light.fog_quadratic * (light_ray_dist * light_ray_dist));
+  //   float light_dist = length(ray - light.position);
+  //   float attenuation = 1.0 / (light.fog_constant + light.fog_linear * light_dist + light.fog_quadratic * (light_dist * light_dist));
 
-    if (!in_shadow(light.position, viewPos, ray))
-      vol += step_size * 0.25 * attenuation * light.diffuse;
-  }
+  //   if (!in_shadow(light.position, viewPos, ray))
+  //     vol += step_size * 0.25 * attenuation * light.diffuse;
+  // }
 
-  return (vol);
+  return vol;
+}
+
+float rand(vec2 co)
+{
+  return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
 
 vec3 calculate_spotlight(SpotLight light, vec3 fragPos, vec3 viewPos)
 {
-  vec3 vol;
+  vec3 vol = vec3(0.0);
 
-  float view_frag_length = length(fs_in.FragPos - fs_in.viewPos);
-  int max_steps = 128;
-  float min_step_size = 0.01;
-  float step_size = view_frag_length / max_steps;
-  step_size = step_size > min_step_size ? step_size : min_step_size;
-  int steps = 0;
+  // float frag_dist = length(fs_in.FragPos - fs_in.viewPos);
+  // int max_steps = 128;
+  // float min_step_size = 0.01;
+  // float step_size = frag_dist / max_steps;
+  // step_size = step_size > min_step_size ? step_size : min_step_size;
+  // int steps = 0;
 
-  vec3 ray = fs_in.viewPos;
-  vec3 ray_dir = normalize(fs_in.FragPos - fs_in.viewPos);
+  // vec3 ray = fs_in.viewPos;
+  // vec3 ray_dir = normalize(fs_in.FragPos - fs_in.viewPos);
 
-  for (int i=0; i<max_steps; i++)
-  {
-    ray += step_size * ray_dir;
+  // for (int i=0; i<max_steps; i++)
+  // {
+  //   ray += step_size * ray_dir;
 
-    if (length(ray - fs_in.viewPos) > view_frag_length)
-      break;
+  //   if (length(ray - fs_in.viewPos) > frag_dist)
+  //     break;
 
 
-    vec3 lightDir = normalize(light.position - ray);
-    float theta = dot(lightDir, normalize(-light.direction));
-    float epsilon = light.inner_cutoff - light.outer_cutoff;
-    float intensity = clamp((theta - light.outer_cutoff) / epsilon, 0.0, 1.0); 
-    intensity *= light.intensity;
+  //   vec3 lightDir = normalize(light.position - ray);
+  //   float theta = dot(lightDir, normalize(-light.direction));
+  //   float epsilon = light.inner_cutoff - light.outer_cutoff;
+  //   float intensity = clamp((theta - light.outer_cutoff) / epsilon, 0.0, 1.0); 
+  //   intensity *= light.intensity;
 
-    float distance    = length(light.position - fragPos);
-    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
-    attenuation *= intensity;
+  //   float distance    = length(light.position - fragPos);
+  //   float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
+  //   attenuation *= intensity;
 
-    if (!in_shadow(light.position, viewPos, ray))
-      vol += 0.008 * attenuation * light.diffuse;
-  }
+  //   if (!in_shadow(light.position, viewPos, ray))
+  //     vol += 0.008 * attenuation * light.diffuse;
+  // }
 
   return vol;
 }
@@ -187,14 +204,53 @@ vec3 calculate_spotlight(SpotLight light, vec3 fragPos, vec3 viewPos)
 
 void main()
 {
+  float pointlight_vol = 0.0;
+  float dirlight_vol = 0.0;
+
+  float frag_dist = length(fs_in.FragPos - fs_in.viewPos);
+
+  float step_size = frag_dist / volumetrics.num_samples;
+  step_size = clamp(step_size, 0.0, 0.2);
+  // float step_size = frag_dist / volumetrics.num_samples;
+  float max_step_size = step_size;
+
+  vec3 ray = fs_in.viewPos;
+  vec3 ray_dir = normalize(fs_in.FragPos - fs_in.viewPos);
+
+  float ray_length = 0.0;
+
+  for (int i=0; i<volumetrics.num_samples; i++)
+  {
+    ray += step_size * ray_dir;
+    ray_length += step_size;
+
+    // step_size = max_step_size * (exp(ray_length / frag_dist));
+
+    if (ray_length > frag_dist)
+      break;
+
+    // Point light
+    //------------------------------------------------------------------
+    float light_dist = length(ray - shadowmapped_pointlight.position);
+    float attenuation = 1.0 / (shadowmapped_pointlight.fog_constant + shadowmapped_pointlight.fog_linear * light_dist + shadowmapped_pointlight.fog_quadratic * (light_dist * light_dist));
+
+    if (!in_shadow(shadowmapped_pointlight.position, ray))
+      pointlight_vol += attenuation * step_size;
+    //------------------------------------------------------------------
+
+
+    // Directional light
+    //------------------------------------------------------------------
+    if (!in_shadow_ortho(ray))
+      dirlight_vol += 0.05 * step_size;
+    //------------------------------------------------------------------
+
+  }
+
   vec3 result = vec3(0.0, 0.0, 0.0);
 
-  // result += calculate_pointlight(shadowmapped_pointlight, fs_in.FragPos, fs_in.viewPos);
-  result += calculate_dirlight(shadowmapped_dirlight, fs_in.FragPos, fs_in.viewPos);
-
-  // for (int i=0; i<num_active_spotlights; i++)
-  //   result += calculate_spotlight(spotlights[i], fs_in.FragPos, fs_in.viewPos);
-
+  result += pointlight_vol * shadowmapped_pointlight.diffuse;
+  result += dirlight_vol * shadowmapped_dirlight.diffuse;
+  
   FragColor = vec4(result, 1.0);
-
 }

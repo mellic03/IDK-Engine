@@ -120,17 +120,17 @@ float calculate_shadow_pointlight(vec3 lightPos, vec3 viewPos, vec3 fragPos, flo
   float currentDepth = length(fragToLight);
 
   float shadow = 0.0;
-  // int samples = 20;
-  // float viewDistance = length(viewPos - fragPos);
-  // float diskRadius = (1.0 + (viewDistance / far_plane)) / 25.0;
-  // for(int i = 0; i < samples; ++i)
-  // {
-  //   float closestDepth = texture(depthmap_pointlight, fragToLight + gridSamplingDisk[i] * diskRadius).r;
-  //   closestDepth *= far_plane;   // undo mapping [0;1]
-  //   if(currentDepth - bias > closestDepth)
-  //     shadow += 1.0;
-  // }
-  // shadow /= float(samples);
+  int samples = 20;
+  float viewDistance = length(viewPos - fragPos);
+  float diskRadius = (1.0 + (viewDistance / far_plane)) / 25.0;
+  for(int i = 0; i < samples; ++i)
+  {
+    float closestDepth = texture(depthmap_pointlight, fragToLight + gridSamplingDisk[i] * diskRadius).r;
+    closestDepth *= far_plane;   // undo mapping [0;1]
+    if(currentDepth - bias > closestDepth)
+      shadow += 1.0;
+  }
+  shadow /= float(samples);
 
   return shadow;
 }
@@ -150,8 +150,8 @@ float calculate_shadow_dirlight(vec3 pos, vec3 normal, vec3 lightDir, float bias
   float bb = mix(bias, 0.0, diffuseFactor);
 
   float shadow = 0.0;
-  vec2 texelSize = 1.0 / textureSize(depthmap_dirlight, 0);
-  const int halfkernelWidth = 3;
+  vec2 texelSize = 4.0 / textureSize(depthmap_dirlight, 1);
+  const int halfkernelWidth = 2;
   for(int x = -halfkernelWidth; x <= halfkernelWidth; ++x)
   {
     for(int y = -halfkernelWidth; y <= halfkernelWidth; ++y)
@@ -195,10 +195,13 @@ vec3 calculate_dirlight(DirLight light, vec3 normal, vec3 fragPos, vec3 viewPos)
   vec3 lightDir = normalize(light.position);  
   float diff = max(dot(normal, lightDir), 0.0);
   vec3 diffuse = light.diffuse * diff * texture(material.diffuseMap, fs_in.TexCoords).rgb;  
+
+  vec3 halfwayDir = normalize(lightDir + normalize(viewPos - fragPos));  
+  float spec = pow(max(dot(normal, halfwayDir), 0.0), material.spec_exponent);
+  vec3 specular = spec * texture(material.specularMap, fs_in.TexCoords).rgb;
   
-  
-  float shadow = calculate_shadow_dirlight(light.position, normal, normalize(-light.position), 0.01);
-  return (ambient + (1.0 - shadow) * (diffuse));
+  float shadow = calculate_shadow_dirlight(light.position, normal, normalize(-light.position), light.bias);
+  return (ambient + (1.0 - shadow) * (diffuse + specular));
 }
 
 

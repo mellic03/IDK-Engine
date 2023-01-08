@@ -56,7 +56,7 @@ void main()
   for(int i = 0; i < 9; i++)
     RenderWithKernel += sampleTex[i] * ImageKernel[i];
 
-  vec3 hdrColor = mix(RenderWithKernel, texture(screenTexture, TexCoords).rgb, 0.9);
+  vec3 hdrColor = mix(RenderWithKernel, texture(screenTexture, TexCoords).rgb, 0.8);
 
   vec3 result = vec3(1.0) - exp(-hdrColor * exposure);
   result = pow(result, vec3(1.0 / gamma));

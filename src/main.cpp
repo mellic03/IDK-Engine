@@ -66,7 +66,8 @@ int ENTRY(int argc, char **argv)
 
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
-  glEnable(GL_BLEND);
+  // glEnable(GL_BLEND);
+  glDisable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
   // glEnable(GL_MULTISAMPLE);
 
@@ -149,7 +150,7 @@ int ENTRY(int argc, char **argv)
     start = end;
     end = SDL_GetPerformanceCounter();
     // SDL_GetWindowSize(window, ren->viewport_width, ren->viewport_height);
-    glClearColor(ren->clearColor.x, ren->clearColor.y, ren->clearColor.z, 1.0f);
+    // glClearColor(ren->clearColor.x, ren->clearColor.y, ren->clearColor.z, 1.0f);
 
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
@@ -180,14 +181,26 @@ int ENTRY(int argc, char **argv)
     //---------------------------------
     scene_1->drawDepthmaps();
     //---------------------------------
-    
-    
- 
+
+
+    // G-Buffer
+    //---------------------------------
+    glViewport(0, 0, w, h);
+    glBindFramebuffer(GL_FRAMEBUFFER, ren->gbufferFBO);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  
+    ren->useShader(SHADER_GBUFFER);
+    scene_1->drawGeometry();
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    //---------------------------------
+
+
     // Draw scene normally
     //---------------------------------
     glViewport(0, 0, w, h);
     glBindFramebuffer(GL_FRAMEBUFFER, ren->colorFBO);
-    glBindTexture(GL_TEXTURE_2D, ren->colorBuffers[0]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     ren->useShader(SHADER_TERRAIN);
@@ -196,21 +209,28 @@ int ENTRY(int argc, char **argv)
 
     ren->useShader(SHADER_LIGHTSOURCE);
     scene_1->drawLightsources(&event);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //---------------------------------
+
 
 
     // Draw light shafts
     //---------------------------------
-    glViewport(0, 0, w/ren->volumetric_light_resolution, h/ren->volumetric_light_resolution);
+    ren->render_pass_timer.beginVolumetric();
+
+    glViewport(0, 0, w/ren->volumetrics.resolution_divisor, h/ren->volumetrics.resolution_divisor);
     glBindFramebuffer(GL_FRAMEBUFFER, ren->lightshaftFBO);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
     ren->useShader(SHADER_VOLUMETRIC_LIGHT);
     scene_1->sendLightsToShader();
     scene_1->drawVolumetricLights();
-    //---------------------------------
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    ren->render_pass_timer.endVolumetric();
+    //---------------------------------
     
 
 
@@ -223,45 +243,31 @@ int ENTRY(int argc, char **argv)
     glBindVertexArray(ren->quadVAO);
     glDisable(GL_DEPTH_TEST);
 
+    glActiveTexture(GL_TEXTURE10);
 
     bool horizontal = true;
     bool first = true;
 
-    for (unsigned int i=0; i<ren->volumetric_light_blur_passes; i++)
+    for (unsigned int i=0; i<ren->volumetrics.num_blur_passes; i++)
     {
-      if (horizontal)
-        glBindFramebuffer(GL_FRAMEBUFFER, ren->pingPongFBO1);
-      else
-        glBindFramebuffer(GL_FRAMEBUFFER, ren->pingPongFBO2);
-
-      glActiveTexture(GL_TEXTURE10);
+      glBindFramebuffer(GL_FRAMEBUFFER, ren->pingPongFBO[horizontal]);
 
       if (first)
-      {
         glBindTexture(GL_TEXTURE_2D, ren->lightshaftColorBuffers[0]);
-        ren->active_shader->setInt("image", 10);
-      }
       else
-      {
-        if (!horizontal)
-          glBindTexture(GL_TEXTURE_2D, ren->pingPongColorBuffers1[0]);
-        else
-          glBindTexture(GL_TEXTURE_2D, ren->pingPongColorBuffers2[0]);
-
-        ren->active_shader->setInt("image", 10);
-      }
-
+        glBindTexture(GL_TEXTURE_2D, ren->pingPongColorBuffers[!horizontal]);
+        
+      ren->active_shader->setInt("image", 10);
       ren->active_shader->setInt("horizontal", horizontal);
       
       glDrawArrays(GL_TRIANGLES, 0, 6);
-      glBindVertexArray(0);
 
-      if (first)
-        first = false;
-
+      first = false;
       horizontal = !horizontal;
     }
+    glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //---------------------------------
   
@@ -285,14 +291,14 @@ int ENTRY(int argc, char **argv)
     ren->active_shader->setInt("screenTexture", 10);
 
     glActiveTexture(GL_TEXTURE11);
-    // if (!horizontal)
-      glBindTexture(GL_TEXTURE_2D, ren->pingPongColorBuffers1[0]);
-    // else
-      // glBindTexture(GL_TEXTURE_2D, ren->pingPongColorBuffers2[0]);
+    if (ren->volumetrics.num_blur_passes > 0)
+      glBindTexture(GL_TEXTURE_2D, ren->pingPongColorBuffers[!horizontal]);
+    else
+      glBindTexture(GL_TEXTURE_2D, ren->lightshaftColorBuffers[0]);
     ren->active_shader->setInt("volumetricLightsTexture", 11);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
-      glBindVertexArray(0);
+    glBindVertexArray(0);
   
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     // //---------------------------------
@@ -307,7 +313,8 @@ int ENTRY(int argc, char **argv)
     SDL_GL_SwapWindow(window);
     double dtime_milliseconds = ((end - start)*1000 / (double)SDL_GetPerformanceFrequency() );
     ren->deltaTime = dtime_milliseconds / 1000;
-
+    ren->deltaTime = io.DeltaTime;
+    
     luaMain(ren, &player, &scenegraph.m_object_instances);
   }
   //----------------------------------------

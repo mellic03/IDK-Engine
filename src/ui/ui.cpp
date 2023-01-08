@@ -21,16 +21,19 @@ void draw_lighting_tab(Renderer *ren, Scene *scene)
   ImGui::ColorEdit3("Diffuse", &scene->m_scenegraph->dirlight.diffuse[0], 0.1f);
   ImGui::ColorEdit3("Ambient", &scene->m_scenegraph->dirlight.ambient[0], 0.1f);
   scene->m_scenegraph->dirlight.direction = glm::normalize(scene->m_scenegraph->dirlight.direction);
-  // EngineUI::vec3("position", &scene->m_scenegraph->dirlight.position, 0.01f);
-  // EngineUI::vec3("direction", &scene->m_scenegraph->dirlight.direction, 0.001f);
-
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
+
 
   ImGui::Text("Volumetrics");
   ImGui::Separator();
-  ImGui::SliderInt("Resolution", &ren->volumetric_light_resolution, 1, 64);
-  ImGui::SliderInt("Blur passes", &ren->volumetric_light_blur_passes, 0, 64);
+  ImGui::SliderInt("Resolution",  &ren->volumetrics.resolution_divisor, 1, 64);
+  ImGui::SliderInt("Blur passes", &ren->volumetrics.num_blur_passes, 0, 64);
+  
+  ImGui::DragInt("Samples",      &ren->volumetrics.num_samples);
+  ImGui::DragFloat("Step size",    &ren->volumetrics.step_size, 0.001f);
+  ImGui::DragFloat("Step multiplier",    &ren->volumetrics.step_multiplier, 0.001f);
 
+  ImGui::Text("Volumetric pass time: %lf\n", ren->render_pass_timer.getVolumetric());
 }
 
 void draw_render_tab(Renderer *ren)
@@ -136,7 +139,15 @@ void draw_dev_ui(Renderer *ren, Scene *scene, Player *player, int *x, int *y, in
 
     ImGui::Begin("Depth Map");
     {
-      ImGui::Image((ImTextureID)ren->dirlight_depthmap, ImGui::GetContentRegionAvail(), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+      ImVec2 viewportsize = ImGui::GetContentRegionAvail();
+      
+      ImGui::Image((ImTextureID)ren->gbuffer_position, {viewportsize.x/2, viewportsize.y/2}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+      ImGui::SameLine();
+      ImGui::Image((ImTextureID)ren->gbuffer_normal, {viewportsize.x/2, viewportsize.y/2}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+      
+      ImGui::Image((ImTextureID)ren->gbuffer_tangent, {viewportsize.x/2, viewportsize.y/2}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+      ImGui::SameLine();
+      ImGui::Image((ImTextureID)ren->gbuffer_albedospec, {viewportsize.x/2, viewportsize.y/2}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
       
       ImGui::End();
     }
@@ -163,8 +174,6 @@ void draw_dev_ui(Renderer *ren, Scene *scene, Player *player, int *x, int *y, in
     {
       *w = (int)ImGui::GetContentRegionAvail().x;
       *h = (int)ImGui::GetContentRegionAvail().y;
-
-      ImVec2 viewportsize = ImGui::GetContentRegionAvail();
 
       if (ren->viewport_width != *w || ren->viewport_height != *h)
         ren->resize(*w, *h);

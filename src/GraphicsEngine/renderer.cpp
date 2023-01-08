@@ -40,6 +40,7 @@ void Renderer::compileShaders(void)
   // Shadows 
   //------------------------------------------------------
   this->createShader("dirshadow",         SHADER_DIRSHADOW);
+  this->createShader("gbuffer",                SHADER_GBUFFER);
 
 
   ShaderSource pointshadow_src = parse_shader("assets/shaders/pointshadow.vs", "assets/shaders/pointshadow.fs", "assets/shaders/pointshadow.gs");
@@ -60,11 +61,12 @@ void Renderer::init(void)
   glGenBuffers(1, &this->quadVBO);
   glBindVertexArray(this->quadVAO);
   glBindBuffer(GL_ARRAY_BUFFER, this->quadVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &this->quadVertices, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(this->quadVertices), &this->quadVertices, GL_STATIC_DRAW);
+
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+  glEnableVertexAttribArray(2);
   //------------------------------------------------------
 
 
@@ -84,11 +86,11 @@ void Renderer::init(void)
   glGenTextures(1, &this->dirlight_depthmap);
   glGenTextures(1, &this->dirlight_depthmap);
   glBindTexture(GL_TEXTURE_2D, this->dirlight_depthmap);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, DIR_SHADOW_WIDTH, DIR_SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER); 
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
   glBindFramebuffer(GL_FRAMEBUFFER, this->dirlight_depthmapFBO);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this->dirlight_depthmap, 0);
@@ -105,7 +107,7 @@ void Renderer::init(void)
   glGenTextures(1, &this->pointlight_depthCubemap);
   glBindTexture(GL_TEXTURE_CUBE_MAP, this->pointlight_depthCubemap);
   for (unsigned int i = 0; i < 6; ++i)
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, POINT_SHADOW_WIDTH, POINT_SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -146,14 +148,14 @@ void Renderer::postProcess(void)
 
 void Renderer::setupDirLightDepthmap(glm::vec3 dirlightpos, glm::vec3 dirlightdir)
 {
-  float aspect = (float)this->SHADOW_WIDTH / (float)this->SHADOW_HEIGHT;
+  float aspect = (float)this->DIR_SHADOW_WIDTH / (float)this->DIR_SHADOW_HEIGHT;
   float near = 1.0f;
   float far = 25.0f;
   glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near, far);
   
-  glm::mat4 lightView = glm::lookAt(dirlightpos, 
-                                    glm::vec3( 0.0f, 0.0f, 0.0f ), 
-                                    glm::vec3( 0.0f, 1.0f,  0.0f));
+  glm::mat4 lightView = glm::lookAt( this->cam.m_transform->getPos_worldspace() + dirlightpos, 
+                                     this->cam.m_transform->getPos_worldspace(),
+                                     glm::vec3( 0.0f, 1.0f,  0.0f));
 
   this->lightSpaceMatrix = lightProjection * lightView;
   this->active_shader->setMat4("lightSpaceMatrix", this->lightSpaceMatrix);
@@ -162,7 +164,7 @@ void Renderer::setupDirLightDepthmap(glm::vec3 dirlightpos, glm::vec3 dirlightdi
 
 void Renderer::setupPointLightDepthCubemap(void)
 {
-  float aspect = (float)this->SHADOW_WIDTH / (float)this->SHADOW_HEIGHT;
+  float aspect = (float)this->POINT_SHADOW_WIDTH / (float)this->POINT_SHADOW_HEIGHT;
   float near = 1.0f;
   float far = 25.0f;
   glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, near, far);
@@ -208,6 +210,76 @@ void Renderer::sendLightsToShader(void)
 }
 
 
+void Renderer::sendVolumetricData(void)
+{
+  this->active_shader->setInt("volumetrics.num_samples",         this->volumetrics.num_samples);
+  this->active_shader->setFloat("volumetrics.step_size",         this->volumetrics.step_size);
+  this->active_shader->setFloat("volumetrics.step_multiplier",   this->volumetrics.step_multiplier);
+  this->active_shader->setInt("volumetrics.resolution_divisor",  this->volumetrics.resolution_divisor);
+  this->active_shader->setInt("volumetrics.num_blur_passes",     this->volumetrics.num_blur_passes);
+}
+
+
+void Renderer::genGBuffer(int x, int y)
+{
+  glDeleteTextures(1, &this->gbuffer_position);
+  glDeleteTextures(1, &this->gbuffer_normal);
+  glDeleteTextures(1, &this->gbuffer_albedospec);
+
+  glDeleteRenderbuffers(1, &this->gbufferRBO);
+  glDeleteFramebuffers(1, &this->gbufferFBO);
+
+  glGenFramebuffers(1, &this->gbufferFBO);
+  glBindFramebuffer(GL_FRAMEBUFFER, this->gbufferFBO);
+    
+  // - position color buffer
+  glGenTextures(1, &this->gbuffer_position);
+  glBindTexture(GL_TEXTURE_2D, this->gbuffer_position);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->gbuffer_position, 0);
+    
+  // - normal color buffer
+  glGenTextures(1, &this->gbuffer_normal);
+  glBindTexture(GL_TEXTURE_2D, this->gbuffer_normal);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, this->gbuffer_normal, 0);
+
+  // - tangent color buffer
+  glGenTextures(1, &this->gbuffer_tangent);
+  glBindTexture(GL_TEXTURE_2D, this->gbuffer_tangent);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, this->gbuffer_tangent, 0);
+    
+  // - color + specular color buffer
+  glGenTextures(1, &this->gbuffer_albedospec);
+  glBindTexture(GL_TEXTURE_2D, this->gbuffer_albedospec);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, this->gbuffer_albedospec, 0);
+    
+  // - tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
+  unsigned int attachments[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+  glDrawBuffers(4, attachments);
+
+
+  glGenRenderbuffers(1, &this->gbufferRBO);
+  glBindRenderbuffer(GL_RENDERBUFFER, this->gbufferRBO); 
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, x, y);  
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->gbufferRBO);
+
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+
 void Renderer::genColorBuffer(int x, int y)
 {
   glDeleteTextures(1, &this->colorBuffers[0]);
@@ -234,17 +306,18 @@ void Renderer::genColorBuffer(int x, int y)
   glBindRenderbuffer(GL_RENDERBUFFER, 0);
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->colorRBO);
 
+
   GLuint attachments[1] = { GL_COLOR_ATTACHMENT0 };
   glDrawBuffers(1, attachments);
-
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+
 void Renderer::genVolLightBuffer(int x, int y)
 {
   glDeleteTextures(1, &this->lightshaftColorBuffers[0]);
-  glDeleteRenderbuffers(1, &this->lightshaftRBO);
+  glDeleteRenderbuffers(1, &this->colorRBO);
   glDeleteFramebuffers(1, &this->lightshaftFBO);
 
   glGenFramebuffers(1, &this->lightshaftFBO);
@@ -261,11 +334,12 @@ void Renderer::genVolLightBuffer(int x, int y)
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 0, GL_TEXTURE_2D, this->lightshaftColorBuffers[0], 0);
 
 
-  glGenRenderbuffers(1, &this->lightshaftRBO);
-  glBindRenderbuffer(GL_RENDERBUFFER, this->lightshaftRBO); 
+  glGenRenderbuffers(1, &this->colorRBO);
+  glBindRenderbuffer(GL_RENDERBUFFER, this->colorRBO); 
   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, x, y);  
   glBindRenderbuffer(GL_RENDERBUFFER, 0);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->lightshaftRBO);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->colorRBO);
+
 
   GLuint attachments[1] = { GL_COLOR_ATTACHMENT0 };
   glDrawBuffers(1, attachments);
@@ -277,12 +351,12 @@ void Renderer::genVolLightBuffer(int x, int y)
 void Renderer::genScreenQuadBuffer(int x, int y)
 {
   glDeleteTextures(1, &this->screenQuadColorBuffers[0]);
-  glDeleteRenderbuffers(1, &this->screenQuadRBO);
   glDeleteFramebuffers(1, &this->screenQuadFBO);
 
   glGenFramebuffers(1, &this->screenQuadFBO);
-  glBindFramebuffer(GL_FRAMEBUFFER, this->screenQuadFBO);
   glGenTextures(1, &this->screenQuadColorBuffers[0]);
+  
+  glBindFramebuffer(GL_FRAMEBUFFER, this->screenQuadFBO);
 
   glBindTexture(GL_TEXTURE_2D, this->screenQuadColorBuffers[0]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
@@ -290,15 +364,7 @@ void Renderer::genScreenQuadBuffer(int x, int y)
   glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 0, GL_TEXTURE_2D, this->screenQuadColorBuffers[0], 0);
-
-
-  glGenRenderbuffers(1, &this->screenQuadRBO);
-  glBindRenderbuffer(GL_RENDERBUFFER, this->screenQuadRBO); 
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, x, y);  
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->screenQuadRBO);
 
   GLuint attachments[1] = { GL_COLOR_ATTACHMENT0 };
   glDrawBuffers(1, attachments);
@@ -309,73 +375,35 @@ void Renderer::genScreenQuadBuffer(int x, int y)
 
 void Renderer::genPingPongBuffer(int x, int y)
 {
-  glDeleteTextures(1, &this->pingPongColorBuffers1[0]);
-  glDeleteRenderbuffers(1, &this->pingPongRBO1);
-  glDeleteFramebuffers(1, &this->pingPongFBO1);
+  glDeleteFramebuffers(2, this->pingPongFBO);
+  glDeleteTextures(2, this->pingPongColorBuffers);
 
-  glGenFramebuffers(1, &this->pingPongFBO1);
-  glBindFramebuffer(GL_FRAMEBUFFER, this->pingPongFBO1);
-  glGenTextures(1, &this->pingPongColorBuffers1[0]);
+  glGenFramebuffers(2, this->pingPongFBO);
+  glGenTextures(2, this->pingPongColorBuffers);
 
-  glBindTexture(GL_TEXTURE_2D, this->pingPongColorBuffers1[0]);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  for (unsigned int i = 0; i < 2; i++)
+  {
+    glBindFramebuffer(GL_FRAMEBUFFER, this->pingPongFBO[i]);
+    glBindTexture(GL_TEXTURE_2D, this->pingPongColorBuffers[i]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->pingPongColorBuffers[i], 0);
 
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 0, GL_TEXTURE_2D, this->pingPongColorBuffers1[0], 0);
+    GLuint attachments[1] = { GL_COLOR_ATTACHMENT0 };
+    glDrawBuffers(1, attachments);
 
-
-  glGenRenderbuffers(1, &this->pingPongRBO1);
-  glBindRenderbuffer(GL_RENDERBUFFER, this->pingPongRBO1); 
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, x, y);  
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->pingPongRBO1);
-
-  GLuint attachments[1] = { GL_COLOR_ATTACHMENT0 };
-  glDrawBuffers(1, attachments);
-
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-
-
-  glDeleteTextures(1, &this->pingPongColorBuffers2[0]);
-  glDeleteRenderbuffers(1, &this->pingPongRBO2);
-  glDeleteFramebuffers(1, &this->pingPongFBO2);
-
-  glGenFramebuffers(1, &this->pingPongFBO2);
-  glBindFramebuffer(GL_FRAMEBUFFER, this->pingPongFBO2);
-  glGenTextures(1, &this->pingPongColorBuffers2[0]);
-
-  glBindTexture(GL_TEXTURE_2D, this->pingPongColorBuffers2[0]);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 0, GL_TEXTURE_2D, this->pingPongColorBuffers1[0], 0);
-
-
-  glGenRenderbuffers(1, &this->pingPongRBO2);
-  glBindRenderbuffer(GL_RENDERBUFFER, this->pingPongRBO2); 
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, x, y);  
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->pingPongRBO2);
-
-  glDrawBuffers(1, attachments);
-
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  }
 }
 
 
 void Renderer::resize(int x, int y)
 {
   this->genColorBuffer(x, y);
-  this->genVolLightBuffer(x/this->volumetric_light_resolution, y/this->volumetric_light_resolution);
+  this->genVolLightBuffer(x/this->volumetrics.resolution_divisor, y/this->volumetrics.resolution_divisor);
   this->genPingPongBuffer(x, y);
   this->genScreenQuadBuffer(x, y);
 
@@ -432,10 +460,9 @@ void Renderer::drawModel(Model *model)
   }
 }
 
+
 void Renderer::drawLightSource(Model *model, glm::vec3 diffuse)
 {
-  
-
   this->active_shader->setMat4("model", model->getTransform()->getModelMatrix());
   this->active_shader->setMat4("view", this->cam.view);
   this->active_shader->setMat4("projection", this->cam.projection);

@@ -6,6 +6,17 @@
 #include "../include/glm/gtc/matrix_transform.hpp"
 #include "../include/glm/gtc/type_ptr.hpp"
 
+
+struct VolumetricData {
+  int num_samples = 128;
+  float step_size = 0.05;
+  float step_multiplier = 1.01;
+  
+  int resolution_divisor = 2;
+  int num_blur_passes = 1;
+};
+
+
 struct DirLight {
   glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
   glm::vec3 direction = glm::vec3(0.0, -1.0, 0.0);

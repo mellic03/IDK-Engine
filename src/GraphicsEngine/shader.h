@@ -23,7 +23,8 @@ enum ShaderType {
   SHADER_TERRAIN,
   SHADER_NORMALS,
   SHADER_VOLUMETRIC_LIGHT,
-  SHADER_BLUR
+  SHADER_BLUR,
+  SHADER_GBUFFER
 };
 
 struct ShaderSource {

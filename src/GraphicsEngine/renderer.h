@@ -31,31 +31,68 @@
 #define NUM_SPOTLIGHTS 2
 
 
+struct RenderPassTimer {
+  int frames_passed = 0;
+  clock_t t;
+
+  double color = 0.0;
+
+  double volumetric = 0.0;
+  double volumetric_blur = 0.0;
+
+
+  void beginVolumetric(void)
+  {
+    this->t = clock();
+  };
+
+  void endVolumetric(void)
+  {
+    if (this->frames_passed >= 60)
+    {
+      this->frames_passed = 0;
+      this->volumetric = 0.0;
+    }
+
+    this->volumetric += (clock() - this->t);
+    this->frames_passed += 1;
+  };
+
+  double getVolumetric(void)
+  {
+    return (this->volumetric / this->frames_passed) / ((double)t/CLOCKS_PER_SEC);
+  };
+
+};
+
+
 class Renderer {
   
   private:
-    float quadVertices[24] = {
-      -1.0f,  1.0f, 0.0f, 1.0f,
-      -1.0f, -1.0f, 0.0f, 0.0f,
-       1.0f, -1.0f, 1.0f, 0.0f,
+    float quadVertices[30] = {
+      -1.0f,  1.0f,  -0.999f,  0.0f,  1.0f,
+      -1.0f, -1.0f,  -0.999f,  0.0f,  0.0f,
+       1.0f, -1.0f,  -0.999f,  1.0f,  0.0f,
 
-      -1.0f,  1.0f, 0.0f, 1.0f,
-       1.0f, -1.0f, 1.0f, 0.0f,
-       1.0f,  1.0f, 1.0f, 1.0f
+      -1.0f,  1.0f,  -0.999f,  0.0f,  1.0f,
+       1.0f, -1.0f,  -0.999f,  1.0f,  0.0f,
+       1.0f,  1.0f,  -0.999f,  1.0f,  1.0f
     };
 
     void createShader(std::string filename, ShaderType type);
 
-    glm::mat4 m_active_model_matrix = glm::mat4(1.0f);
-
 
   public:
+
+    RenderPassTimer render_pass_timer;
+
+    GLuint gbufferFBO, gbufferRBO, gbuffer_position, gbuffer_normal, gbuffer_tangent, gbuffer_albedospec;
+
     GLuint colorFBO, colorRBO, colorBuffers[2];
     GLuint lightshaftFBO, lightshaftRBO, lightshaftColorBuffers[1];
     GLuint quadVAO, quadVBO;
     GLuint screenQuadFBO, screenQuadRBO, screenQuadColorBuffers[1];
-    GLuint pingPongFBO1, pingPongRBO1, pingPongColorBuffers1[1];
-    GLuint pingPongFBO2, pingPongRBO2, pingPongColorBuffers2[1];
+    GLuint pingPongFBO[2], pingPingRBO[2], pingPongColorBuffers[2];
 
     // Camera/user-facing
     //---------------------------------------------------------------------
@@ -81,9 +118,7 @@ class Renderer {
 
     // Lighting
     //---------------------------------------------------------------------
-    bool draw_volumetrics = true;
-    int volumetric_light_resolution = 1;
-    int volumetric_light_blur_passes = 1;
+    VolumetricData volumetrics;
 
     float NM_DIRLIGHTS = 1;
     float NM_POINTLIGHTS = 5;
@@ -98,8 +133,10 @@ class Renderer {
 
     // Shadows
     //---------------------------------------------------------------------
-    int SHADOW_WIDTH = 512;
-    int SHADOW_HEIGHT = 512;
+    int DIR_SHADOW_WIDTH = 2048;
+    int DIR_SHADOW_HEIGHT = 2048;
+    int POINT_SHADOW_WIDTH = 512;
+    int POINT_SHADOW_HEIGHT = 512;
 
     glm::mat4 lightSpaceMatrix;
 
@@ -126,12 +163,14 @@ class Renderer {
 
     void update(glm::vec3 pos, glm::vec3 dir);
     void sendLightsToShader(void);
+    void sendVolumetricData(void);
 
     void drawModel(Model *model);
     void drawLightSource(Model *model, glm::vec3 diffuse);
 
     void renderToQuad(void);
 
+    void genGBuffer(int x, int y);
     void genColorBuffer(int x, int y);
     void genVolLightBuffer(int x, int y);
     void genScreenQuadBuffer(int x, int y);
