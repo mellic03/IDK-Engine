@@ -54,7 +54,7 @@ class GameObject {
     std::vector<EntityComponent> script_components;
     std::vector<EntityComponent> variable_components;
 
-    float m_sphere_collider_radius = 0.4f;
+    float m_sphere_collider_radius = 1.7 / 1.3;
     float height = 0.4f, width = 0.1f;
 
 

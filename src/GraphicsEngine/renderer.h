@@ -86,13 +86,14 @@ class Renderer {
 
     RenderPassTimer render_pass_timer;
 
-    GLuint gbufferFBO, gbufferRBO, gbuffer_position, gbuffer_normal, gbuffer_tangent, gbuffer_albedospec;
+    GLuint gbufferFBO, gbufferRBO, gbuffer_position, gbuffer_normal, gbuffer_albedospec, gbuffer_emission;
 
     GLuint colorFBO, colorRBO, colorBuffers[2];
-    GLuint lightshaftFBO, lightshaftRBO, lightshaftColorBuffers[1];
+    GLuint lightshaftFBO, lightshaftRBO, lightshaftColorBuffer;
     GLuint quadVAO, quadVBO;
     GLuint screenQuadFBO, screenQuadRBO, screenQuadColorBuffers[1];
     GLuint pingPongFBO[2], pingPingRBO[2], pingPongColorBuffers[2];
+    GLuint generalFBO, generalRBO, generalColorBuffer;
 
     // Camera/user-facing
     //---------------------------------------------------------------------
@@ -119,6 +120,7 @@ class Renderer {
     // Lighting
     //---------------------------------------------------------------------
     VolumetricData volumetrics;
+    BloomData bloomData;
 
     float NM_DIRLIGHTS = 1;
     float NM_POINTLIGHTS = 5;
@@ -153,8 +155,11 @@ class Renderer {
 
     void init(void);
 
+    Shader createShader(std::string filename);
+
     void compileShaders(void);
     void useShader(ShaderType shader);
+    void useShader(Shader *shader);
     void postProcess(void);
 
     void setupDirLightDepthmap(glm::vec3 dirlightpos, glm::vec3 dirlightdir);
@@ -168,9 +173,13 @@ class Renderer {
     void drawModel(Model *model);
     void drawLightSource(Model *model, glm::vec3 diffuse);
 
-    void renderToQuad(void);
+
+    void copyTexture(GLuint src, GLuint dest);
+    void blurTexture(GLuint framebuffer, GLuint texture, int num_passes, float texel_size, float x_strength, float y_strength);
+    void additiveBlend(GLuint texture_1, GLuint texture_2);
 
     void genGBuffer(int x, int y);
+    void genGeneralBuffer(int x, int y);
     void genColorBuffer(int x, int y);
     void genVolLightBuffer(int x, int y);
     void genScreenQuadBuffer(int x, int y);

@@ -9,6 +9,7 @@ uniform float kernelOffsetDivisor;
 
 uniform sampler2D screenTexture;
 uniform sampler2D volumetricLightsTexture;
+uniform sampler2D bloomTexture;
 
 
 uniform float gamma;
@@ -44,19 +45,22 @@ void main()
       0  // bottom-right    
   );
 
-  for (int i=0; i<9; i++)
-    ImageKernel[i] = ImageKernel[i]/kernelDivisor;
+  // for (int i=0; i<9; i++)
+  //   ImageKernel[i] = ImageKernel[i]/kernelDivisor;
 
-  vec3 sampleTex[9];
-  for(int i = 0; i < 9; i++)
-    sampleTex[i] = vec3(texture(volumetricLightsTexture, TexCoords.st + offsets[i]));
+  // vec3 sampleTex[9];
+  // for(int i = 0; i < 9; i++)
+  //   sampleTex[i] = vec3(texture(volumetricLightsTexture, TexCoords.st + offsets[i]));
 
-  vec3 RenderWithKernel = vec3(0.0);
+  // vec3 RenderWithKernel = vec3(0.0);
 
-  for(int i = 0; i < 9; i++)
-    RenderWithKernel += sampleTex[i] * ImageKernel[i];
+  // for(int i = 0; i < 9; i++)
+  //   RenderWithKernel += sampleTex[i] * ImageKernel[i];
 
-  vec3 hdrColor = mix(RenderWithKernel, texture(screenTexture, TexCoords).rgb, 0.8);
+  vec3 hdrColor = vec3(0.0, 0.0, 0.0);
+  hdrColor += texture(screenTexture, TexCoords).rgb;
+  hdrColor = mix(hdrColor, texture(volumetricLightsTexture, TexCoords).rgb, 0.5);
+  // hdrColor = mix(hdrColor, texture(bloomTexture, TexCoords).rgb, 0.5);
 
   vec3 result = vec3(1.0) - exp(-hdrColor * exposure);
   result = pow(result, vec3(1.0 / gamma));

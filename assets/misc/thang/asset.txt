@@ -1,0 +1,5 @@
+#gameobject thang
+#interactivity npc
+#geometry thang.dae
+#physics PHYSICS_NONE
+#exit

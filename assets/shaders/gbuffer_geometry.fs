@@ -1,7 +1,7 @@
 #version 330 core
 
 layout (location = 0) out vec4 gPosition;
-layout (location = 1) out vec3 gNormal;
+layout (location = 1) out vec4 gNormal;
 layout (location = 2) out vec4 gAlbedoSpec;
 layout (location = 3) out vec3 gEmission;
 
@@ -17,7 +17,6 @@ struct Material {
 };
 uniform Material material;
 
-uniform vec3 diffuseColor;
 
 void main()
 {
@@ -26,9 +25,9 @@ void main()
   vec3 normal = texture(material.normalMap, TexCoords).rgb;
   normal = normal * 2.0 - 1.0; 
   normal = normalize(TBN * normal);
-  gNormal = normal;
+  gNormal = vec4(normal, 1.0);
   
-  gAlbedoSpec.rgb = diffuseColor;
+  gAlbedoSpec.rgb = texture(material.diffuseMap, TexCoords).rgb + texture(material.emissionMap, TexCoords).rgb;
   gAlbedoSpec.a = 1.0;//texture(material.specularMap, TexCoords).r;
 
   gEmission = texture(material.emissionMap, TexCoords).rgb;

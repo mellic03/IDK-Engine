@@ -1,5 +1,3 @@
-
-
 #gameobject muscleskele
 #interactivity npc
 #geometry muscleskele.dae

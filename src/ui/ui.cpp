@@ -17,23 +17,36 @@ void draw_lighting_tab(Renderer *ren, Scene *scene)
   ImGui::Text("Directional Light");
   ImGui::Separator();
   ImGui::DragFloat3("Position", &scene->m_scenegraph->dirlight.position[0], 0.1f);
-  ImGui::DragFloat3("Direction", &scene->m_scenegraph->dirlight.direction[0], 0.1f);
   ImGui::ColorEdit3("Diffuse", &scene->m_scenegraph->dirlight.diffuse[0], 0.1f);
   ImGui::ColorEdit3("Ambient", &scene->m_scenegraph->dirlight.ambient[0], 0.1f);
-  scene->m_scenegraph->dirlight.direction = glm::normalize(scene->m_scenegraph->dirlight.direction);
+  ImGui::DragFloat("Fog intensity", &scene->m_scenegraph->dirlight.fog_intensity, 0.01f);    
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
 
   ImGui::Text("Volumetrics");
   ImGui::Separator();
   ImGui::SliderInt("Resolution",  &ren->volumetrics.resolution_divisor, 1, 64);
-  ImGui::SliderInt("Blur passes", &ren->volumetrics.num_blur_passes, 0, 64);
-  
+  ImGui::DragInt("Blur passes ##volumetric", &ren->volumetrics.num_blur_passes, 1.0f, 0, 64);
+  ImGui::DragFloat("Texel size ##volumetric", &ren->volumetrics.texel_size, 0.01f, 0, 256);
+  ImGui::DragFloat("Horizontal strength ##volumetric", &ren->volumetrics.x_strength, 0.01f, 0, 256);
+  ImGui::DragFloat("Vertical strength ##volumetric",   &ren->volumetrics.y_strength, 0.01f, 0, 256);
+
   ImGui::DragInt("Samples",      &ren->volumetrics.num_samples);
   ImGui::DragFloat("Step size",    &ren->volumetrics.step_size, 0.001f);
   ImGui::DragFloat("Step multiplier",    &ren->volumetrics.step_multiplier, 0.001f);
 
   ImGui::Text("Volumetric pass time: %lf\n", ren->render_pass_timer.getVolumetric());
+  ImGui::Dummy(ImVec2(0.0f, 20.0f));
+
+
+
+  ImGui::Text("Bloom");
+  ImGui::Separator();
+  ImGui::DragInt("Blur passes ##bloom",           &ren->bloomData.num_blur_passes, 1.0f, 0, 256);
+  ImGui::DragFloat("Texel size ##bloom",          &ren->bloomData.texel_size, 0.01f, 0, 256);
+  ImGui::DragFloat("Horizontal strength ##bloom", &ren->bloomData.x_strength, 0.01f, 0, 256);
+  ImGui::DragFloat("Vertical strength ##bloom",   &ren->bloomData.y_strength, 0.01f, 0, 256);
+
 }
 
 void draw_render_tab(Renderer *ren)
@@ -141,14 +154,52 @@ void draw_dev_ui(Renderer *ren, Scene *scene, Player *player, int *x, int *y, in
     {
       ImVec2 viewportsize = ImGui::GetContentRegionAvail();
       
-      ImGui::Image((ImTextureID)ren->gbuffer_position, {viewportsize.x/2, viewportsize.y/2}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+      ImGui::BeginGroup();
+      ImGui::Text("position");
+      ImGui::Image((ImTextureID)ren->gbuffer_position, {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+      ImGui::EndGroup();
+
       ImGui::SameLine();
-      ImGui::Image((ImTextureID)ren->gbuffer_normal, {viewportsize.x/2, viewportsize.y/2}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
-      
-      ImGui::Image((ImTextureID)ren->gbuffer_tangent, {viewportsize.x/2, viewportsize.y/2}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+
+      ImGui::BeginGroup();
+      ImGui::Text("normal");
+      ImGui::Image((ImTextureID)ren->gbuffer_normal, {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+      ImGui::EndGroup();
+
       ImGui::SameLine();
-      ImGui::Image((ImTextureID)ren->gbuffer_albedospec, {viewportsize.x/2, viewportsize.y/2}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+
+      ImGui::BeginGroup();
+      ImGui::Text("albedo");
+      ImGui::Image((ImTextureID)ren->gbuffer_albedospec, {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+      ImGui::EndGroup();
+
+
+
+      ImGui::BeginGroup();
+      ImGui::Text("bloom");
+      ImGui::Image((ImTextureID)ren->colorBuffers[1], {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+      ImGui::EndGroup();
+
+      ImGui::SameLine();
       
+      ImGui::BeginGroup();
+      ImGui::Text("volumetrics");
+      ImGui::Image((ImTextureID)ren->lightshaftColorBuffer, {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+      ImGui::EndGroup();
+
+      ImGui::SameLine();
+
+      ImGui::BeginGroup();
+      ImGui::Text("general");
+      ImGui::Image((ImTextureID)ren->generalColorBuffer, {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+      ImGui::EndGroup();
+
+
+      ImGui::BeginGroup();
+      ImGui::Text("Dirlight depthmap");
+      ImGui::Image((ImTextureID)ren->dirlight_depthmap, {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+      ImGui::EndGroup();
+
       ImGui::End();
     }
 

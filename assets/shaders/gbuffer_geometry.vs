@@ -8,7 +8,6 @@ layout (location = 3) in vec3 aTangent;
 
 out vec2 TexCoords;
 out vec3 FragPos;
-out vec3 Normal;
 out mat3 TBN;
 
 
@@ -19,11 +18,11 @@ uniform mat4 model;
 
 void main()
 {
-  FragPos = vec3(model * vec4(aPos, 1.0));
-  Normal =  aNormal;
+  vec4 worldPos = model * vec4(aPos, 1.0);
+  FragPos = worldPos.xyz;
   TexCoords = aTexCoords;
 
-  gl_Position = projection * view * model * vec4(aPos, 1.0);
+  gl_Position = projection * view * worldPos;
 
   // tangent-space to world-space transform
   //------------------------------------------------------------------

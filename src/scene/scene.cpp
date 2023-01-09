@@ -39,13 +39,14 @@ void Scene::sendLightsToShader(void)
   glActiveTexture(GL_TEXTURE10);
   glBindTexture(GL_TEXTURE_2D, this->ren->dirlight_depthmap);
   this->ren->active_shader->setInt(   "depthmap_dirlight", 10    );
-  this->ren->active_shader->setMat4(  "lightSpaceMatrix", this->ren->lightSpaceMatrix);
+  this->ren->active_shader->setMat4(  "dir_lightSpaceMatrix", this->ren->lightSpaceMatrix);
 
   this->ren->active_shader->setVec3(  "shadowmapped_dirlight.ambient", this->m_scenegraph->dirlight.ambient);
   this->ren->active_shader->setVec3(  "shadowmapped_dirlight.diffuse", this->m_scenegraph->dirlight.diffuse);
   this->ren->active_shader->setVec3(  "shadowmapped_dirlight.position", this->m_scenegraph->dirlight.position);
   this->ren->active_shader->setVec3(  "shadowmapped_dirlight.direction", this->m_scenegraph->dirlight.direction);
   this->ren->active_shader->setFloat( "shadowmapped_dirlight.bias", this->m_scenegraph->dirlight.bias);
+  this->ren->active_shader->setFloat( "shadowmapped_dirlight.fog_intensity", this->m_scenegraph->dirlight.fog_intensity);
 
 
 
@@ -64,6 +65,7 @@ void Scene::sendLightsToShader(void)
   this->ren->active_shader->setFloat("shadowmapped_pointlight.fog_constant", this->m_scenegraph->pointlights[0].fog_constant);
   this->ren->active_shader->setFloat("shadowmapped_pointlight.fog_linear", this->m_scenegraph->pointlights[0].fog_linear);
   this->ren->active_shader->setFloat("shadowmapped_pointlight.fog_quadratic", this->m_scenegraph->pointlights[0].fog_quadratic);
+  this->ren->active_shader->setFloat("shadowmapped_pointlight.fog_intensity", this->m_scenegraph->pointlights[0].fog_intensity);
 
 
   char buffer[64];

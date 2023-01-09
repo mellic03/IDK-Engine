@@ -2,7 +2,8 @@
 
 #include "../GameEngine/GameEngine.h"
 #include "../GraphicsEngine/GraphicsEngine.h"
-
+#include "../include/glm/ext/matrix_transform.hpp"
+#include "../include/glm/gtx/euler_angles.hpp"
 
 class Scene {
 
