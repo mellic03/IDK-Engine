@@ -34,7 +34,8 @@ void EntityComponent::_draw_pointlight(void)
     ImGui::ColorEdit3("ambient", (float*)&this->_pointlight->ambient);
     ImGui::ColorEdit3("diffuse", (float*)&this->_pointlight->diffuse);
 
-    ImGui::SliderFloat("constant", &this->_pointlight->constant, 0.0f, 100.0f, "%0.4f", 0);
+    ImGui::DragFloat("radius", &this->_pointlight->radius, 0.1f, 0.0f, 50.0f);
+    ImGui::DragFloat("constant", &this->_pointlight->constant, 0.1f, 0.0f, 100.0f);
     ImGui::DragScalar("linear", ImGuiDataType_Float, &this->_pointlight->linear,       0.001f, 0);
     ImGui::DragScalar("quadratic", ImGuiDataType_Float, &this->_pointlight->quadratic, 0.001f, 0);
     ImGui::DragScalar("bias", ImGuiDataType_Float, &this->_pointlight->bias,            0.001f, 0);

@@ -86,11 +86,46 @@ extern "C" int addToVel(lua_State *LS)
 }
 
 
+extern "C" int setPhysicsState(lua_State *LS)
+{
+  int objectID = lua_tointeger(LS, 1) - 1;
+  const char *physics_state = lua_tostring(LS, 1);
+  LuaInterface::scenegraph->objectPtr(objectID)->changePhysState(physics_state);
+
+  return 0;
+}
+
+extern "C" int setMoveForce(lua_State *LS)
+{
+  float force = lua_tonumber(LS, 1);
+  LuaInterface::scene->player->move_speed = force;
+
+  return 0;
+}
+
+
+extern "C" int setJumpForce(lua_State *LS)
+{
+  float force = lua_tonumber(LS, 1);
+  LuaInterface::scene->player->jump_force = force;
+
+  return 0;
+}
+
+
 extern "C" int loadScene(lua_State *LS)
 {
   const char *scene_name = lua_tostring(LS, 1);
   LuaInterface::scenegraph->importScene("assets/scenes/" + std::string(scene_name), LuaInterface::scene->player);
 
+  return 0;
+}
+
+extern "C" int setGravity(lua_State *LS)
+{
+  float g = lua_tonumber(LS, 1);
+  PhysicsEngine::gravity = g;
+  
   return 0;
 }
 
@@ -101,5 +136,9 @@ void register_library(void)
   lua_register(LuaInterface::L, "SetPos", setPos);
   lua_register(LuaInterface::L, "GetVel", getVel);
   lua_register(LuaInterface::L, "SetVel", setVel);
+  lua_register(LuaInterface::L, "SetPhysicsState", setPhysicsState);
+  lua_register(LuaInterface::L, "SetMoveForce", setMoveForce);
+  lua_register(LuaInterface::L, "SetJumpForce", setJumpForce);
   lua_register(LuaInterface::L, "LoadScene", loadScene);
+  lua_register(LuaInterface::L, "SetGravity", setGravity);
 }

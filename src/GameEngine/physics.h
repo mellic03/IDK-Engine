@@ -6,6 +6,8 @@
 
 namespace PhysicsEngine {
 
+  extern float gravity;
+
   bool ray_intersect_triangle(  glm::vec3 ray_pos, glm::vec3 ray_dir,
                               glm::vec3 v0, glm::vec3 v1, glm::vec3 v2,
                               glm::vec3 *intersect_point  );
@@ -20,6 +22,7 @@ namespace PhysicsEngine {
   bool capsule_triangle_detect(GameObject *obj, Vertex v0, Vertex v1, Vertex v2, float *plane_dist, bool *edge_collision, glm::vec3 *dir);
 
 };
+
 
 
 

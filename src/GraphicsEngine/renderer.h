@@ -23,9 +23,6 @@
 #define DEFAULT_SCREEN_WIDTH 1500
 #define DEFAULT_SCREEN_HEIGHT 900
 
-#define RENDER_DISTANCE 500.0f
-#define NEAR_PLANE_DIST 0.1f
-
 #define NUM_DIRLIGHTS 1
 #define NUM_POINTLIGHTS 5
 #define NUM_SPOTLIGHTS 2
@@ -97,10 +94,10 @@ class Renderer {
 
     // Camera/user-facing
     //---------------------------------------------------------------------
-    Camera cam;
+    Camera cam = Camera(0.1f, 500.0f);;
 
     float deltaTime = 0.0f;
-    float fov = 90.0f, far_plane = 2000.0f, near_plane = 1.0f;
+    float fov = 90.0f, near_plane = 0.1f, far_plane = 500.0f;
     float image_kernel[9] = {
       0, 0, 0,
       0, 1, 0,
@@ -143,6 +140,8 @@ class Renderer {
     glm::mat4 lightSpaceMatrix;
 
     GLuint dirlight_depthmapFBO, dirlight_depthmap;
+
+    GLuint depthCubeMapFBOS[2], depthCubeMaps[2];
     GLuint pointlight_depthmapFBO, pointlight_depthCubemap;
     GLuint spotlight_depthmapFBO, spotlight_depthmap;
     //---------------------------------------------------------------------
@@ -151,7 +150,7 @@ class Renderer {
     float gravity = 0.0f;
 
 
-    Renderer();
+    Renderer() { };
 
     void init(void);
 
@@ -164,7 +163,7 @@ class Renderer {
 
     void setupDirLightDepthmap(glm::vec3 dirlightpos, glm::vec3 dirlightdir);
     void setupPointLightDepthCubemap(void);
-    void usePerspective(void);
+    void perFrameUpdate(void);
 
     void update(glm::vec3 pos, glm::vec3 dir);
     void sendLightsToShader(void);

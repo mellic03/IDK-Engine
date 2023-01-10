@@ -24,7 +24,7 @@ class Camera {
 
     Transform *m_transform;
 
-    Camera();
+    Camera(float near, float far);
     void useTransform(Transform *transform)  { this->m_transform = transform; };
 
     glm::mat4 modifier_matrix = glm::mat4(1.0f);

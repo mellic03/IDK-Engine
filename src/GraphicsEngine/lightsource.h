@@ -47,6 +47,7 @@ struct PointLight {
     Transform *m_transform = &this->_default_transform;
     glm::vec3 ambient = glm::vec3(0.0f);
     glm::vec3 diffuse = glm::vec3(0.0f);
+    float radius = 25.0f;
     float constant = 1.0f;
     float linear = 0.09f;
     float quadratic = 0.032f;

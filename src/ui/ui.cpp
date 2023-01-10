@@ -19,7 +19,7 @@ void draw_lighting_tab(Renderer *ren, Scene *scene)
   ImGui::DragFloat3("Position", &scene->m_scenegraph->dirlight.position[0], 0.1f);
   ImGui::ColorEdit3("Diffuse", &scene->m_scenegraph->dirlight.diffuse[0], 0.1f);
   ImGui::ColorEdit3("Ambient", &scene->m_scenegraph->dirlight.ambient[0], 0.1f);
-  ImGui::DragFloat("Fog intensity", &scene->m_scenegraph->dirlight.fog_intensity, 0.01f);    
+  ImGui::DragFloat("Fog intensity", &scene->m_scenegraph->dirlight.fog_intensity, 0.01f);
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
 
@@ -122,24 +122,67 @@ void draw_render_tab(Renderer *ren)
 
 void draw_physics_tab(Renderer *ren, Player *player)
 {
-  ImGui::SliderFloat("Gravity", &ren->gravity, 0, 10);
+  ImGui::SliderFloat("Gravity", &PhysicsEngine::gravity, 0, 10);
   ImGui::Checkbox("Fly", &player->fly);
 }
 
 
-void draw_dev_ui(Renderer *ren, Scene *scene, Player *player, int *x, int *y, int *w, int *h)
+void draw_framebuffers3(Renderer *ren, float w, float h, std::string name1, GLuint fb1, std::string name2, GLuint fb2, std::string name3, GLuint fb3)
 {
-  draw_main_menu_bar(ren, scene);
+  ImGui::BeginGroup();
+  ImGui::Text(name1.c_str());
+  ImGui::Image((ImTextureID)fb1, {w, h}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+  ImGui::EndGroup();
 
-  ImGuiWindowFlags windowflags = 0;
-  windowflags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-  windowflags |= ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoFocusOnAppearing;
-  windowflags |= ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_MenuBar;
-  windowflags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBringToFrontOnFocus;
+  ImGui::SameLine();
 
-  ImGui::SetNextWindowPos({0, 0});
-  ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+  ImGui::BeginGroup();
+  ImGui::Text(name2.c_str());
+  ImGui::Image((ImTextureID)fb2, {w, h}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+  ImGui::EndGroup();
 
+  ImGui::SameLine();
+
+  ImGui::BeginGroup();
+  ImGui::Text(name3.c_str());
+  ImGui::Image((ImTextureID)fb3, {w, h}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+  ImGui::EndGroup();
+}
+
+void draw_framebuffers(Renderer *ren)
+{
+  ImGui::Begin("Frame Buffers");
+  {
+    ImVec2 viewportsize = ImGui::GetContentRegionAvail();
+    
+    draw_framebuffers3( ren, viewportsize.x/3, viewportsize.y/3,
+                        "position", ren->gbuffer_position,
+                        "normal",   ren->gbuffer_normal,
+                        "albedo",   ren->gbuffer_albedospec
+                      );
+
+
+    draw_framebuffers3( ren, viewportsize.x/3, viewportsize.y/3,
+                        "bloom",        ren->colorBuffers[1],
+                        "volumetrics",  ren->lightshaftColorBuffer,
+                        "general",      ren->generalColorBuffer
+                      );
+
+
+    ImGui::BeginGroup();
+    ImGui::Text("Dirlight depthmap");
+    ImGui::Image((ImTextureID)ren->dirlight_depthmap, {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+    ImGui::EndGroup();
+
+    ImGui::End();
+  }
+}
+
+
+
+
+void draw_ui_dev2(Renderer *ren, Scene *scene, Player *player, int *x, int *y, int *w, int *h, ImGuiWindowFlags windowflags)
+{
   ImGui::Begin("Root", NULL, windowflags);
   {
     ImGui::DockSpace(ImGui::GetID("dock"));
@@ -150,58 +193,7 @@ void draw_dev_ui(Renderer *ren, Scene *scene, Player *player, int *x, int *y, in
     EngineUI::scriptEditor();
     EngineUI::details(scene);
 
-    ImGui::Begin("Depth Map");
-    {
-      ImVec2 viewportsize = ImGui::GetContentRegionAvail();
-      
-      ImGui::BeginGroup();
-      ImGui::Text("position");
-      ImGui::Image((ImTextureID)ren->gbuffer_position, {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
-      ImGui::EndGroup();
-
-      ImGui::SameLine();
-
-      ImGui::BeginGroup();
-      ImGui::Text("normal");
-      ImGui::Image((ImTextureID)ren->gbuffer_normal, {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
-      ImGui::EndGroup();
-
-      ImGui::SameLine();
-
-      ImGui::BeginGroup();
-      ImGui::Text("albedo");
-      ImGui::Image((ImTextureID)ren->gbuffer_albedospec, {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
-      ImGui::EndGroup();
-
-
-
-      ImGui::BeginGroup();
-      ImGui::Text("bloom");
-      ImGui::Image((ImTextureID)ren->colorBuffers[1], {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
-      ImGui::EndGroup();
-
-      ImGui::SameLine();
-      
-      ImGui::BeginGroup();
-      ImGui::Text("volumetrics");
-      ImGui::Image((ImTextureID)ren->lightshaftColorBuffer, {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
-      ImGui::EndGroup();
-
-      ImGui::SameLine();
-
-      ImGui::BeginGroup();
-      ImGui::Text("general");
-      ImGui::Image((ImTextureID)ren->generalColorBuffer, {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
-      ImGui::EndGroup();
-
-
-      ImGui::BeginGroup();
-      ImGui::Text("Dirlight depthmap");
-      ImGui::Image((ImTextureID)ren->dirlight_depthmap, {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
-      ImGui::EndGroup();
-
-      ImGui::End();
-    }
+    draw_framebuffers(ren);
 
     ImGui::Begin("Lighting");
     {
@@ -236,5 +228,53 @@ void draw_dev_ui(Renderer *ren, Scene *scene, Player *player, int *x, int *y, in
 
 
     ImGui::End();
+  }
+}
+
+
+void draw_ui_dev1(Renderer *ren, Scene *scene, Player *player, int *x, int *y, int *w, int *h)
+{
+  *w = (int)ImGui::GetIO().DisplaySize.x;
+  *h = (int)ImGui::GetIO().DisplaySize.y;
+
+  if (ren->viewport_width != *w || ren->viewport_height != *h)
+    ren->resize(*w, *h);
+
+}
+
+void draw_ui_dev0(Renderer *ren, Scene *scene, Player *player, int *x, int *y, int *w, int *h)
+{
+
+}
+
+
+
+void draw_ui(Renderer *ren, Scene *scene, Player *player, int *x, int *y, int *w, int *h, const char *devlevel)
+{
+  if (strcmp(devlevel, "--dev2") == 0)
+  {
+    draw_main_menu_bar(ren, scene);
+
+    ImGuiWindowFlags windowflags = 0;
+    windowflags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+    windowflags |= ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoFocusOnAppearing;
+    windowflags |= ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_MenuBar;
+    windowflags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBringToFrontOnFocus;
+
+    ImGui::SetNextWindowPos({0, 0});
+    ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+
+    draw_ui_dev2(ren, scene, player, x, y, w, h, windowflags);
+  }
+
+  else if (strcmp(devlevel, "--dev1") == 0)
+  {
+    draw_ui_dev2(ren, scene, player, x, y, w, h, 0);
+  
+    *w = (int)ImGui::GetIO().DisplaySize.x;
+    *h = (int)ImGui::GetIO().DisplaySize.y;
+
+    if (ren->viewport_width != *w || ren->viewport_height != *h)
+      ren->resize(*w, *h);
   }
 }

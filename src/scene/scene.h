@@ -46,9 +46,10 @@ class Scene {
     void importScene(std::string filepath, Player *player);
 
     void drawDirLightDepthmap(void);
-    void drawPointLightDepthmap(void);
+    void drawPointLightDepthmaps(void);
 
     void drawDepthmaps(void);
+    void physicsTick(void);
     void drawGeometry();
     void drawVolumetricLights(void);
     void drawLightsources(SDL_Event *event);

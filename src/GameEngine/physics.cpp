@@ -4,6 +4,8 @@
 
 using namespace glm;
 
+float PhysicsEngine::gravity = 1.0f;
+
 bool PhysicsEngine::ray_intersect_triangle(vec3 ray_pos, vec3 ray_dir, vec3 v0, vec3 v1, vec3 v2, vec3 *intersect_point)
 {
   const float EPSILON = 0.0000001;

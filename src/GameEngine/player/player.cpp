@@ -1,10 +1,10 @@
-// #include <functional>
-
 #include "player.h"
 
 Player::Player(Renderer *ren)
 {
   this->cam = &ren->cam;
+
+  this->footstepsound.load("assets/audio/footsteps.wav");
 
   // this->useWeapon(WEAPON_SHOTGUN);
   // this->getWeapon()->loadModel("assets/player/gun/");
@@ -22,7 +22,7 @@ void Player::useGameObject(GameObject *gameobject)
 }
 
 
-SDL_bool mouse_capture = SDL_TRUE;
+bool mouse_capture = false;
 
 void Player::key_input(Renderer *ren)
 {
@@ -47,7 +47,7 @@ void Player::key_input(Renderer *ren)
       if (state[SDL_SCANCODE_SPACE])
       {
         this->m_gameobject->changePhysState(PHYSICS_FALLING);
-        this->m_gameobject->getVel()->y = 25 * this->jump_force * ren->deltaTime;
+        this->m_gameobject->getVel()->y = 25 * this->jump_force;
       }
       break;
   
@@ -59,7 +59,6 @@ void Player::key_input(Renderer *ren)
   glm::vec3 temp_front = { this->cam->front.x, 0.0f, this->cam->front.z };
   temp_front = glm::normalize(temp_front);
 
-  bool headbob = false;
 
   this->cam->input();
 
@@ -86,6 +85,7 @@ void Player::key_input(Renderer *ren)
     return;
   }
   
+  bool headbob = false;
 
   if (state[SDL_SCANCODE_W])
   {
@@ -110,6 +110,18 @@ void Player::key_input(Renderer *ren)
     *this->getVel() += this->move_speed * ren->deltaTime * ren->cam.right;
     headbob = true;
   }
+
+  static int frames_not_grounded = 0;
+
+  if (this->m_gameobject->getPhysState() != PHYSICS_GROUNDED)
+    frames_not_grounded += 1;
+  else
+    frames_not_grounded = 0;
+
+  if (headbob && frames_not_grounded < 25)
+    this->footstepsound.play();
+  else
+    this->footstepsound.stop();
 
 }
 
@@ -152,8 +164,8 @@ void Player::mouse_input(Renderer *ren, SDL_Event *event)
     switch (event->key.keysym.sym)
     {
       case SDLK_ESCAPE:
-        mouse_capture = (mouse_capture == SDL_TRUE) ? SDL_FALSE : SDL_TRUE;
-        SDL_SetRelativeMouseMode(mouse_capture);
+        mouse_capture = !mouse_capture;
+        SDL_SetRelativeMouseMode(mouse_capture ? SDL_TRUE : SDL_FALSE);
         break;
     }
   }

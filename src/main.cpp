@@ -28,6 +28,8 @@
 
 #include "scripting/luascripting.h"
 
+#include "audio/audio.h"
+
 
 
 
@@ -42,6 +44,9 @@ int ENTRY(int argc, char **argv)
     return 1;
   }
 
+  AudioEngine::init();
+
+
   window = SDL_CreateWindow(
     "Coom Engine",
     SDL_WINDOWPOS_CENTERED,
@@ -54,7 +59,7 @@ int ENTRY(int argc, char **argv)
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-  // SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+
 
   gl_context = SDL_GL_CreateContext(window);
   SDL_GL_MakeCurrent(window, gl_context);
@@ -66,10 +71,6 @@ int ENTRY(int argc, char **argv)
 
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
-  // glEnable(GL_BLEND);
-  glDisable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
-  // glEnable(GL_MULTISAMPLE);
 
   SDL_Event event;
 
@@ -79,6 +80,8 @@ int ENTRY(int argc, char **argv)
   Renderer *ren = &Render::ren;
   ren->init();
   Player player(ren);
+
+
 
   SceneGraph scenegraph;
 
@@ -145,18 +148,17 @@ int ENTRY(int argc, char **argv)
   glBindFramebuffer(GL_FRAMEBUFFER, 0);  
 
 
-  Shader gbuffer_geometrypass = ren->createShader("gbuffer_geometry");
-  Shader gbuffer_lightingpass = ren->createShader("gbuffer_lighting");
-
 
   int count = 0;
   Uint64 start = SDL_GetPerformanceCounter(), end = SDL_GetPerformanceCounter();
   while (1)
   {
+    AudioEngine::listener_pos = player.getPos();
+
+
     start = end;
     end = SDL_GetPerformanceCounter();
-    // SDL_GetWindowSize(window, ren->viewport_width, ren->viewport_height);
-    // glClearColor(ren->clearColor.x, ren->clearColor.y, ren->clearColor.z, 1.0f);
+
 
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
@@ -164,8 +166,9 @@ int ENTRY(int argc, char **argv)
     ImGui::NewFrame();
 
     int x, y, w, h;
-    draw_dev_ui(ren, scene_1, &player, &x, &y, &w, &h);
-    ren->usePerspective();
+    draw_ui(ren, scene_1, &player, &x, &y, &w, &h, argv[1]);
+
+    ren->perFrameUpdate();
 
     // Input
     //---------------------------------
@@ -184,28 +187,14 @@ int ENTRY(int argc, char **argv)
 
 
 
+
     // Render depthmaps
     //---------------------------------
     scene_1->drawDepthmaps();
     //---------------------------------
 
 
-
-    // Draw scene normally
-    //---------------------------------
-    glViewport(0, 0, w, h);
-    glBindFramebuffer(GL_FRAMEBUFFER, ren->colorFBO);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    ren->useShader(SHADER_TERRAIN);
-    scene_1->sendLightsToShader();
-    // scene_1->drawGeometry();
-
-    ren->useShader(SHADER_LIGHTSOURCE);
-    scene_1->drawLightsources(&event);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    //---------------------------------
-
+    scene_1->physicsTick();
 
 
     // G-Buffer geometry pass
@@ -216,6 +205,22 @@ int ENTRY(int argc, char **argv)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
     ren->useShader(SHADER_GBUFFER_GEOMETRY);
+  
+    ren->active_shader->setMat4("projection", ren->cam.projection * ren->cam.view);
+    ren->active_shader->setMat4("view", glm::mat4(1.0f));
+
+    float aspect = ren->viewport_width / ren->viewport_height;
+    float height = ren->far_plane * tan(ren->fov/2.0f);
+    float width = aspect * height;
+
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::scale(model, glm::vec3(width, height, 1.0f));
+    model = glm::translate(model, glm::vec3(0.0f, 0.0f, -0.99 * ren->far_plane));
+    ren->active_shader->setMat4("model", glm::inverse(ren->cam.view) * model);
+
+    glBindVertexArray(ren->quadVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
     scene_1->drawGeometry();
 
     ren->useShader(SHADER_LIGHTSOURCE);
@@ -304,8 +309,11 @@ int ENTRY(int argc, char **argv)
 
     ren->useShader(SHADER_SCREENQUAD);
     ren->postProcess();
-
-    glBindFramebuffer(GL_FRAMEBUFFER, ren->screenQuadFBO);
+    
+    if (strcmp(argv[1], "--dev2") == 0)
+      glBindFramebuffer(GL_FRAMEBUFFER, ren->screenQuadFBO);
+    else
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
    

@@ -4,7 +4,7 @@
 
 int frame_count = 0;
 
-Camera::Camera()
+Camera::Camera(float near, float far)
 {
   *this->pos = glm::vec3(0.0f, 0.0f, 3.0f);
   this->target = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -23,7 +23,7 @@ Camera::Camera()
   ); 
   *this->pos = glm::vec3(0.0f, 1.0f, 3.0f);
 
-  this->projection = glm::perspective(glm::radians(this->fov), 1.0f, 0.1f, RENDER_DISTANCE);
+  this->projection = glm::perspective(glm::radians(this->fov), 1.0f, near, far);
 }
 
 void Camera::init(void)

@@ -1,8 +1,4 @@
---[[
 
-  This file provides a list of methods for interating with CoomEngine
-
-]]--
 local function v_init()
   return {x = 0, y = 0, z = 0};
 end
@@ -18,6 +14,11 @@ function GetVel(objectID) return v_init(); end;
 
 -- Set the velocity of the object with ID objectID
 function SetVel(objectID, x, y, z) end;
+
+function SetJumpForce(force) end;
+function SetMoveForce(force) end;
+
+function SetGravity(force) end;
 
 -- Load a scene from filepath where filepath is relative to assets/scenes/
 function LoadScene(filepath) end;

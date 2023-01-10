@@ -120,46 +120,30 @@ static void draw_entity_childnodes(SceneGraph *scenegraph, GameObject *object, i
 void EngineUI::sceneHierarchy(Renderer *ren, Scene *scene)
 {
   ImGui::Begin("Scene Hierarchy");
+  
+  draw_new_instance_menu(scene->m_scenegraph, &EngineUI::selected_objectID);
+
+  
+  if (ImGui::TreeNodeEx("Scene Hierarchy", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    ImGui::BeginChild("entity-child", ImVec2(0, 0), false, 0);
+    if (ImGui::BeginDragDropTarget())
     {
-      draw_new_instance_menu(scene->m_scenegraph, &EngineUI::selected_objectID);
-      // ImGui::BeginChild("ChildL", ImVec2(ImGui::GetContentRegionAvail().x/3, 0), false, 0);
+      if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_DEMO_CELL"))
       {
-        if (ImGui::TreeNodeEx("Scene Hierarchy", ImGuiTreeNodeFlags_DefaultOpen))
-        {
-          if (ImGui::BeginDragDropTarget())
-          {
-            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_DEMO_CELL"))
-            {
-              IM_ASSERT(payload->DataSize == sizeof(int));
-              int selectedobj = *(int *)payload->Data;
-              scene->m_scenegraph->objectPtr(EngineUI::selected_objectID)->clearParent();
-            }
-            ImGui::EndDragDropTarget();
-          }
-
-          for (auto &object: scene->m_scenegraph->m_object_instances)
-            if (object.hasParent() == false)
-              draw_entity_childnodes(scene->m_scenegraph, &object, &EngineUI::selected_objectID);
-
-          ImGui::TreePop();
-        }
-
-        // ImGui::EndChild();
+        IM_ASSERT(payload->DataSize == sizeof(int));
+        int selectedobj = *(int *)payload->Data;
+        scene->m_scenegraph->objectPtr(EngineUI::selected_objectID)->clearParent();
       }
-
-      ImGui::SameLine();
-
-      // ImGui::BeginChild("ChildR", ImVec2(ImGui::GetContentRegionAvail().x, 0), true, 0);
-      // {
-      //   draw_properties_menu(scene, scene->m_scenegraph, *selected_instance);  
-      //   ImGui::EndChild();
-      // }
-
-      ImGui::EndChild();
+      ImGui::EndDragDropTarget();
     }
+
+    for (auto &object: scene->m_scenegraph->m_object_instances)
+      if (object.hasParent() == false)
+        draw_entity_childnodes(scene->m_scenegraph, &object, &EngineUI::selected_objectID);
+
+    ImGui::TreePop();
   }
+
   ImGui::End();
 }
 

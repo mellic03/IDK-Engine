@@ -192,7 +192,7 @@ void GameObject::perFrameUpdate(Renderer *ren)
       break;
 
     case (PHYSICS_FALLING):
-      this->getVel()->y -= ren->gravity * ren->deltaTime;
+      this->getVel()->y -= PE::gravity * ren->deltaTime;
       break;
   }
 

@@ -20,6 +20,7 @@ include_directories(
 
 set(ALL_LIBS
   ${OPENGL_LIBRARY}
+  ${OPENAL_LIBRARY}
   GLEW_210
 )
 
@@ -46,8 +47,11 @@ file(
   "src/ui/*.cpp"
   "src/ui/tabs/*.cpp"
   "src/ui/tabs/properties/*.cpp"
+
   "src/scene/*.cpp"
   "src/scripting/*.cpp"
+
+  "src/audio/*.cpp"
 
   
   "src/include/stb_image/*.cpp"
@@ -59,6 +63,7 @@ file(
 
 
 find_package(SDL2 REQUIRED)
+find_package(SDL2_mixer REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(Lua51 REQUIRED)
 
@@ -68,8 +73,8 @@ add_executable(
   ${SDL2_LIBRARY}
 )
 
-
 target_include_directories(${PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC ${SDL2_mixer_INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PUBLIC ${OPENGL_INCLUDE_DIRS})
 
 target_link_libraries(${PROJECT_NAME}
@@ -77,6 +82,7 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME} SDL2)
+target_link_libraries(${PROJECT_NAME} SDL2_mixer)
 target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARIES})
 

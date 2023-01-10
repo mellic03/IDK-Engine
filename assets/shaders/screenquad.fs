@@ -59,7 +59,7 @@ void main()
 
   vec3 hdrColor = vec3(0.0, 0.0, 0.0);
   hdrColor += texture(screenTexture, TexCoords).rgb;
-  hdrColor = mix(hdrColor, texture(volumetricLightsTexture, TexCoords).rgb, 0.5);
+  hdrColor += texture(volumetricLightsTexture, TexCoords).rgb;
   // hdrColor = mix(hdrColor, texture(bloomTexture, TexCoords).rgb, 0.5);
 
   vec3 result = vec3(1.0) - exp(-hdrColor * exposure);

@@ -26,9 +26,11 @@ struct PointLight {
   float constant, linear, quadratic;
   float bias;
   float fog_constant, fog_linear, fog_quadratic;
+  samplerCube depthCubemap;
+  float radius;
 };
 uniform PointLight pointlights[NUM_POINTLIGHTS];
-uniform PointLight shadowmapped_pointlight;
+uniform PointLight shadow_pointlights[2];
 uniform int num_active_pointlights;
 
 
@@ -45,10 +47,9 @@ uniform sampler2D gEmission;
 uniform mat4 dir_lightSpaceMatrix;
 
 uniform vec3 viewPos;
-uniform float far_plane;
 
 uniform sampler2D depthmap_dirlight;
-uniform samplerCube depthmap_pointlight;
+uniform samplerCube depthmap_pointlights[2];
 
 
 vec3 gridSamplingDisk[20] = vec3[]
@@ -59,22 +60,25 @@ vec3 gridSamplingDisk[20] = vec3[]
   vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
   vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
 );
-float calculate_shadow_pointlight(vec3 lightPos, vec3 viewPos, vec3 fragPos, float bias)
+float calculate_shadow_pointlight(PointLight light, vec3 viewPos, vec3 fragPos)
 {
-  vec3 fragToLight = fragPos - lightPos;
+  vec3 fragToLight = fragPos - light.position;
   float currentDepth = length(fragToLight);
 
   float shadow = 0.0;
   int samples = 20;
   float viewDistance = length(viewPos - fragPos);
-  float diskRadius = (1.0 + (viewDistance / far_plane)) / 25.0;
+  float diskRadius = (1.0 + (viewDistance / light.radius)) / 25.0;
+   
   for(int i = 0; i < samples; ++i)
   {
-    float closestDepth = texture(depthmap_pointlight, fragToLight + gridSamplingDisk[i] * diskRadius).r;
-    closestDepth *= far_plane;   // undo mapping [0;1]
-    if(currentDepth - bias > closestDepth)
+    float closestDepth = texture(light.depthCubemap, fragToLight + gridSamplingDisk[i] * diskRadius).r;
+    closestDepth *= light.radius;   // undo mapping [0;1]
+    if(currentDepth - light.bias > closestDepth)
       shadow += 1.0;
   }
+
+
   shadow /= float(samples);
 
   return shadow;
@@ -98,7 +102,7 @@ float calculate_shadow_dirlight(vec3 lightPos, vec3 fragPos, vec3 normal, vec3 l
   float bb = 0.01;
 
   float shadow = 0.0;
-  vec2 texelSize = 4.0 / textureSize(depthmap_dirlight, 1);
+  vec2 texelSize = 2.0 / textureSize(depthmap_dirlight, 1);
   const int halfkernelWidth = 2;
   for(int x = -halfkernelWidth; x <= halfkernelWidth; ++x)
   {
@@ -116,6 +120,10 @@ float calculate_shadow_dirlight(vec3 lightPos, vec3 fragPos, vec3 normal, vec3 l
 
 vec3 calculate_pointlight(PointLight light, vec3 albedo, vec3 fragPos, vec3 normal, float spec_strength)
 {
+  float d = length(light.position - fragPos);
+  if (d > light.radius)
+    return vec3(0.0);
+
   vec3 lightDir = normalize(light.position - fragPos);
   vec3 viewDir = normalize(viewPos - fragPos);
 
@@ -124,15 +132,14 @@ vec3 calculate_pointlight(PointLight light, vec3 albedo, vec3 fragPos, vec3 norm
   vec3 halfwayDir = normalize(lightDir + viewDir);  
   float spec = pow(max(dot(normal, halfwayDir), 0.0), 32);
   
-  float d = length(light.position - fragPos);
   float attenuation = 1.0 / (light.constant + d*light.linear + d*d*light.quadratic);
-  attenuation *= 1.0 - length(fragPos - light.position)/25.0;
+  attenuation *= 1.0 - d/light.radius;
 
   vec3 diffuse  = attenuation * albedo * diff * light.diffuse;
   vec3 ambient  = attenuation * albedo * light.ambient;
   vec3 specular = attenuation * albedo * spec * light.diffuse * 0;
 
-  float shadow = calculate_shadow_pointlight(light.position, viewPos, fragPos, light.bias);
+  float shadow = calculate_shadow_pointlight(light, viewPos, fragPos);
 
   return  (ambient + (1.0 - shadow) * (diffuse + specular));
 }
@@ -167,7 +174,9 @@ void main()
   vec3 result = vec3(0.0);
   result += 5 * emission;
 
-  result += calculate_pointlight(shadowmapped_pointlight, albedo, fragPos, normal, specular_map);
+  // for (int i=0; i<2; i++)
+  result += calculate_pointlight(shadow_pointlights[0], albedo, fragPos, normal, specular_map);
+  result += calculate_pointlight(shadow_pointlights[1], albedo, fragPos, normal, specular_map);
   result += calculate_dirlight(shadowmapped_dirlight, albedo, fragPos, normal, specular_map);
 
   FragColor = vec4(result, 1.0);

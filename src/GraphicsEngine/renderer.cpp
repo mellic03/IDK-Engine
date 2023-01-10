@@ -31,10 +31,6 @@ Shader Renderer::createShader(std::string filename)
   return shader;
 }
 
-Renderer::Renderer()
-{
-
-}
 
 void Renderer::compileShaders(void)
 {
@@ -115,23 +111,27 @@ void Renderer::init(void)
 
   // Pointlight depth cubemap
   //------------------------------------------------------
-  glGenFramebuffers(1, &this->pointlight_depthmapFBO); 
+  glGenFramebuffers(2, this->depthCubeMapFBOS); 
 
-  glGenTextures(1, &this->pointlight_depthCubemap);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, this->pointlight_depthCubemap);
-  for (unsigned int i = 0; i < 6; ++i)
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, POINT_SHADOW_WIDTH, POINT_SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+  glGenTextures(2, this->depthCubeMaps);
+  for (int i=0; i<2; i++)
+  {
+    glBindTexture(GL_TEXTURE_CUBE_MAP, this->depthCubeMaps[i]);
+    for (unsigned int j = 0; j < 6; ++j)
+      glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + j, 0, GL_DEPTH_COMPONENT, POINT_SHADOW_WIDTH, POINT_SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, this->pointlight_depthmapFBO);
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, this->pointlight_depthCubemap, 0);
-  glDrawBuffer(GL_NONE);
-  glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, this->depthCubeMapFBOS[i]);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, this->depthCubeMaps[i], 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+  }
+
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   //------------------------------------------------------
 }
@@ -168,7 +168,6 @@ void Renderer::postProcess(void)
 
 void Renderer::setupDirLightDepthmap(glm::vec3 dirlightpos, glm::vec3 dirlightdir)
 {
-  float aspect = (float)this->DIR_SHADOW_WIDTH / (float)this->DIR_SHADOW_HEIGHT;
   float near = 1.0f;
   float far = 55.0f;
   glm::mat4 lightProjection = glm::ortho(-35.0f, 35.0f, -35.0f, 35.0f, near, far);
@@ -215,9 +214,9 @@ void Renderer::setupPointLightDepthCubemap(void)
 }
 
 
-void Renderer::usePerspective(void)
+void Renderer::perFrameUpdate(void)
 {
-  this->cam.projection = glm::perspective(glm::radians(this->fov), (float)this->viewport_width/(float)this->viewport_height, NEAR_PLANE_DIST, RENDER_DISTANCE);
+  this->cam.projection = glm::perspective(glm::radians(this->fov), (float)this->viewport_width/(float)this->viewport_height, this->near_plane, this->far_plane);
 }
 
 
@@ -416,6 +415,7 @@ void Renderer::genGeneralBuffer(int x, int y)
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+
 void Renderer::genColorBuffer(int x, int y)
 {
   glDeleteTextures(2, this->colorBuffers);
@@ -557,7 +557,7 @@ void Renderer::resize(int x, int y)
   this->viewport_width = x;
   this->viewport_height = y;
 
-  this->cam.projection = glm::perspective(glm::radians(this->fov), (float)this->viewport_width/(float)this->viewport_height, NEAR_PLANE_DIST, RENDER_DISTANCE);
+  this->cam.projection = glm::perspective(glm::radians(this->fov), (float)this->viewport_width/(float)this->viewport_height, this->near_plane, this->far_plane);
 }
 
 void unbindTextureUnit(GLenum texture_unit)

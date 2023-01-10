@@ -6,6 +6,7 @@
 
 #include "../../keylog.h"
 #include "../../transform.h"
+#include "../../audio/AudioEngine.h"
 
 class Player {
   
@@ -13,6 +14,8 @@ class Player {
   //   WeaponType m_active_weapon = WEAPON_SHOTGUN;
   //   Weapon m_weapons[1];
   //   Weapon *m_active_weapon_ptr;
+    AudioEngine::Sound footstepsound;
+
 
   public:
 
@@ -20,9 +23,9 @@ class Player {
     Camera *cam;
     GameObject *m_gameobject = nullptr;
 
-    bool fly = true, fly_last = true, fly_changed = false;
-    float move_speed = 8.0f;
-    float jump_force = 8.0f;
+    bool fly = false, fly_last = false, fly_changed = false;
+    float move_speed = 32.0f;
+    float jump_force = 32.0f;
     float friction = 5.0f;
 
     Player(Renderer *ren);

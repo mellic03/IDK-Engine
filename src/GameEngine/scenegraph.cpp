@@ -367,6 +367,8 @@ void SceneGraph::objectFromFile_headerData(std::ifstream &stream, std::string &l
         count += 1;
       }
       *object->getPos() = v;
+      if (object->getTemplateName() == "pointlight")
+        printf("pointlight pos: %f %f %f\n", v.x, v.y, v.z);
     }
 
     else if (line.find("velocity: ") != std::string::npos)
@@ -454,8 +456,9 @@ bool SceneGraph::importScene(std::string filepath, Player *player)
 
   for (auto &object: this->m_object_instances)
   {
-    if (object.parentID != -1 && object.m_template_name != "spotlight")
+    if (object.parentID != -1 && object.m_template_name != "spotlight" && object.m_template_name != "pointlight")
       this->objectPtr(object.parentID)->giveChild(this->objectPtr(object.m_ID), false);
+    
   }
 
   stream.close();
