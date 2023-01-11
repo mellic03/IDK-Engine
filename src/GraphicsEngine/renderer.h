@@ -177,6 +177,8 @@ class Renderer {
     void blurTexture(GLuint framebuffer, GLuint texture, int num_passes, float texel_size, float x_strength, float y_strength);
     void additiveBlend(GLuint texture_1, GLuint texture_2);
 
+    void genDepthCubemap(GLuint *FBO, GLuint *texture);
+
     void genGBuffer(int x, int y);
     void genGeneralBuffer(int x, int y);
     void genColorBuffer(int x, int y);

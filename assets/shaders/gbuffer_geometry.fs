@@ -17,18 +17,32 @@ struct Material {
 };
 uniform Material material;
 
+uniform bool use_fill;
+uniform vec3 fill;
 
 void main()
 {
   gPosition = vec4(FragPos, 1.0);
 
-  vec3 normal = texture(material.normalMap, TexCoords).rgb;
-  normal = normal * 2.0 - 1.0; 
-  normal = normalize(TBN * normal);
-  gNormal = vec4(normal, 1.0);
-  
-  gAlbedoSpec.rgb = texture(material.diffuseMap, TexCoords).rgb + texture(material.emissionMap, TexCoords).rgb;
-  gAlbedoSpec.a = 1.0;//texture(material.specularMap, TexCoords).r;
+  if (use_fill)
+  {
+    gNormal = normalize(-gPosition);
 
-  gEmission = texture(material.emissionMap, TexCoords).rgb;
+    gAlbedoSpec.rgb = fill;
+    gAlbedoSpec.a = 1.0;//texture(material.specularMap, TexCoords).r;
+    gEmission = fill;
+  }
+
+  else
+  {
+    vec3 normal = texture(material.normalMap, TexCoords).rgb;
+    normal = normal * 2.0 - 1.0; 
+    normal = normalize(TBN * normal);
+    gNormal = vec4(normal, 1.0);
+
+    gAlbedoSpec.rgb = texture(material.diffuseMap, TexCoords).rgb + texture(material.emissionMap, TexCoords).rgb;
+    gAlbedoSpec.a = 1.0;//texture(material.specularMap, TexCoords).r;
+    gEmission = texture(material.emissionMap, TexCoords).rgb;
+  
+  }
 }

@@ -39,23 +39,23 @@ struct DirLight {
 
 struct PointLight {
   
-  private:
-    Transform _default_transform;
+  Transform default_transform;
 
-  public:
-    bool active = false;
-    Transform *m_transform = &this->_default_transform;
-    glm::vec3 ambient = glm::vec3(0.0f);
-    glm::vec3 diffuse = glm::vec3(0.0f);
-    float radius = 25.0f;
-    float constant = 1.0f;
-    float linear = 0.09f;
-    float quadratic = 0.032f;
-    float bias = 0.15f;
-    float fog_constant = 1.0f;
-    float fog_linear = 0.0f;
-    float fog_quadratic = 1.0f;
-    float fog_intensity = 0.01f;
+  GLuint FBO, depthCubemap;
+  bool shadowmapped = false;
+  bool active = false, volumetrics_active = false;
+  Transform *m_transform = &this->default_transform;
+  glm::vec3 ambient = glm::vec3(0.0f);
+  glm::vec3 diffuse = glm::vec3(0.0f);
+  float radius = 25.0f;
+  float constant = 1.0f;
+  float linear = 0.09f;
+  float quadratic = 0.032f;
+  float bias = 0.15f;
+  float fog_constant = 1.0f;
+  float fog_linear = 0.0f;
+  float fog_quadratic = 1.0f;
+  float fog_intensity = 0.01f;
 };
 
 struct SpotLight {

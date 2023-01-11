@@ -16,6 +16,7 @@ namespace AudioEngine
 {
   extern bool free_channels[AUDIOENGINE_NUM_CHANNELS]; 
   extern glm::vec3 *listener_pos;
+  extern glm::vec3 *listener_dir;
 
   void init(void);
 

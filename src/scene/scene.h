@@ -34,7 +34,7 @@ class Scene {
 
     Scene(void);
 
-    void updateLights(void);
+    void sortLights(void);
     void sendLightsToShader(void);
 
     void useRenderer(Renderer *renptr);

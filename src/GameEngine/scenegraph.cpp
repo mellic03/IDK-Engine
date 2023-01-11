@@ -211,7 +211,8 @@ void SceneGraph::clearScene(void)
   this->m_object_instances.clear();
   this->_num_pointlights = 0;
   this->_num_spotlights = 0;
-  this->_num_active_pointlights = 0;
+  this->_num_active_nonshadow_pointlights = 0;
+  this->_num_active_shadow_pointlights = 0;
   this->_num_active_spotlights = 0;
 
   this->pointlight_parent = nullptr;
@@ -225,45 +226,37 @@ void SceneGraph::defaultScene(void)
   this->newObjectInstance("pointlightcontainer");
   this->newObjectInstance("spotlightcontainer");
 
-  this->newObjectInstance("pointlight");
-  this->newObjectInstance("spotlight");
-  this->newObjectInstance("spotlight");
+  for (int i=0; i<NUM_POINTLIGHTS; i++)
+  {
+    this->pointlights[i].m_transform = &this->pointlights[i].default_transform;
+  }
+
+  // this->newObjectInstance("pointlight");
+  // this->newObjectInstance("spotlight");
+  // this->newObjectInstance("spotlight");
 }
 
 
-void SceneGraph::updateLights(void)
+void SceneGraph::sortLights(void)
 {
-  this->sorted_pointlights.clear();
+  this->sorted_nonshadow_pointlights.clear();
+  this->sorted_shadow_pointlights.clear();
+
   this->sorted_spotlights.clear();
 
-  this->_num_active_pointlights = 0;
+  this->_num_active_nonshadow_pointlights = 0;
+  this->_num_active_shadow_pointlights = 0;
   this->_num_active_spotlights = 0;
 
   int count = 0;
 
-  for (int i=1; i<MAX_POINTLIGHTS; i++)
-    if (this->pointlights[i].active)
-    {
-      this->sorted_pointlights.push_back(&this->pointlights[i]);
-      this->_num_active_pointlights += 1;
-    }
-  
-  for (int i=1; i<MAX_POINTLIGHTS; i++)
-    if (!this->pointlights[i].active)
-      this->sorted_pointlights.push_back(&this->pointlights[i]);
-  
-
-  for (int i=1; i<MAX_SPOTLIGHTS; i++)
+  for (int i=0; i<MAX_SPOTLIGHTS; i++)
     if (this->spotlights[i].active)
     {
       this->sorted_spotlights.push_back(&this->spotlights[i]);
       this->_num_active_spotlights += 1;
     }
 
-  for (int i=1; i<MAX_SPOTLIGHTS; i++)
-    if (!this->spotlights[i].active)
-      this->sorted_spotlights.push_back(&this->spotlights[i]);
-  
 }
 
 
@@ -458,7 +451,6 @@ bool SceneGraph::importScene(std::string filepath, Player *player)
   {
     if (object.parentID != -1 && object.m_template_name != "spotlight" && object.m_template_name != "pointlight")
       this->objectPtr(object.parentID)->giveChild(this->objectPtr(object.m_ID), false);
-    
   }
 
   stream.close();

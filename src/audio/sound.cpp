@@ -45,6 +45,15 @@ void AudioEngine::Sound::play(void)
   {
     float d = glm::distance(*this->pos, *AudioEngine::listener_pos);
     float volume = 1.0f - (d / this->range);
+
+    if (AudioEngine::listener_dir != nullptr)
+    {
+      float dt = glm::dot(*AudioEngine::listener_dir, glm::normalize(*this->pos - *AudioEngine::listener_pos));
+      dt = (dt + 1.0f) / 2.0f;
+      dt = glm::clamp(dt, 0.5f, 1.0f);
+      volume *= dt;
+    }
+
     this->setVolume(volume);
   }
 

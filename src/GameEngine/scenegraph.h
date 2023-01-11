@@ -8,7 +8,7 @@
 #include "../GraphicsEngine/GraphicsEngine.h"
 
 
-#define MAX_POINTLIGHTS 4
+#define MAX_POINTLIGHTS 10
 #define MAX_SPOTLIGHTS 2
 
 
@@ -27,9 +27,14 @@ class SceneGraph {
     GameObject *pointlight_parent;
     GameObject *spotlight_parent;
     DirLight dirlight;
-    PointLight pointlights[MAX_POINTLIGHTS]; std::vector<PointLight *> sorted_pointlights;
-    SpotLight spotlights[MAX_SPOTLIGHTS];   std::vector<SpotLight *> sorted_spotlights;
-    int _num_pointlights = 0,  _num_active_pointlights = 0;
+    PointLight pointlights[MAX_POINTLIGHTS];
+    SpotLight spotlights[MAX_SPOTLIGHTS];
+    
+    std::vector<PointLight *> sorted_nonshadow_pointlights, sorted_shadow_pointlights;
+    std::vector<SpotLight *> sorted_spotlights;
+    
+    int _num_pointlights = 0,  _num_active_nonshadow_pointlights = 0, _num_active_shadow_pointlights = 0;
+
     int _num_spotlights  = 0,  _num_active_spotlights  = 0;
 
 
@@ -51,7 +56,7 @@ class SceneGraph {
 
     void clearScene(void);
     void defaultScene(void);
-    void updateLights(void);
+    void sortLights(void);
     void objectFromFile(std::ifstream &stream, std::string &line);
     void objectFromFile_headerData(std::ifstream &stream, std::string &line, Player *player);
     bool exportScene(std::string filepath);

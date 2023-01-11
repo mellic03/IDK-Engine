@@ -1,6 +1,6 @@
 #version 330 core
 
-#define NUM_POINTLIGHTS 3
+#define NUM_POINTLIGHTS 10
 #define NUM_SPOTLIGHTS 1
 
 struct Material {
@@ -21,6 +21,7 @@ uniform DirLight shadowmapped_dirlight;
 
 
 struct PointLight {
+  bool is_active, is_shadowmapped;
   vec3 position;
   vec3 ambient, diffuse;
   float constant, linear, quadratic;
@@ -30,8 +31,6 @@ struct PointLight {
   float radius;
 };
 uniform PointLight pointlights[NUM_POINTLIGHTS];
-uniform PointLight shadow_pointlights[2];
-uniform int num_active_pointlights;
 
 
 layout (location = 0) out vec4 FragColor;
@@ -49,7 +48,6 @@ uniform mat4 dir_lightSpaceMatrix;
 uniform vec3 viewPos;
 
 uniform sampler2D depthmap_dirlight;
-uniform samplerCube depthmap_pointlights[2];
 
 
 vec3 gridSamplingDisk[20] = vec3[]
@@ -120,6 +118,9 @@ float calculate_shadow_dirlight(vec3 lightPos, vec3 fragPos, vec3 normal, vec3 l
 
 vec3 calculate_pointlight(PointLight light, vec3 albedo, vec3 fragPos, vec3 normal, float spec_strength)
 {
+  if (light.is_active == false)
+    return vec3(0.0);
+
   float d = length(light.position - fragPos);
   if (d > light.radius)
     return vec3(0.0);
@@ -139,9 +140,14 @@ vec3 calculate_pointlight(PointLight light, vec3 albedo, vec3 fragPos, vec3 norm
   vec3 ambient  = attenuation * albedo * light.ambient;
   vec3 specular = attenuation * albedo * spec * light.diffuse * 0;
 
-  float shadow = calculate_shadow_pointlight(light, viewPos, fragPos);
+  if (light.is_shadowmapped)
+  {
+    float shadow = calculate_shadow_pointlight(light, viewPos, fragPos);
+    return  (ambient + (1.0 - shadow) * (diffuse + specular));
+  }
 
-  return  (ambient + (1.0 - shadow) * (diffuse + specular));
+  else
+    return  (ambient + diffuse + specular);
 }
 
 
@@ -174,9 +180,9 @@ void main()
   vec3 result = vec3(0.0);
   result += 5 * emission;
 
-  // for (int i=0; i<2; i++)
-  result += calculate_pointlight(shadow_pointlights[0], albedo, fragPos, normal, specular_map);
-  result += calculate_pointlight(shadow_pointlights[1], albedo, fragPos, normal, specular_map);
+  for (int i=0; i<NUM_POINTLIGHTS; i++)
+    result += calculate_pointlight(pointlights[i], albedo, fragPos, normal, specular_map);
+
   result += calculate_dirlight(shadowmapped_dirlight, albedo, fragPos, normal, specular_map);
 
   FragColor = vec4(result, 1.0);

@@ -16,7 +16,7 @@ struct Transform {
 
   glm::vec3 position = {0.0f, 0.0f, 0.0f};
   glm::vec3 velocity = {0.0f, 0.0f, 0.0f};
-  glm::quat orientation    = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
+  glm::quat orientation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
 
   // Member access
   //-------------------------------------------------------------------------------------------------------------
@@ -27,10 +27,15 @@ struct Transform {
     return glm::vec3(glm::pitch(this->orientation), glm::yaw(this->orientation), glm::roll(this->orientation));
   };
 
+  glm::mat4 getOrientation_mat4(void)
+  {
+    return this->getModelMatrix();
+  };
+
   void addRot(glm::vec3 rot)
   {
     glm::quat drot = glm::quat(rot);
-    this->orientation = drot * this->orientation;
+    this->orientation = this->orientation * drot;
   }
 
   glm::vec4 getPos_vec4(void)   { return glm::vec4(this->position.x, this->position.y, this->position.z, 1.0f); };
@@ -41,7 +46,7 @@ struct Transform {
 
   glm::mat4 getModelMatrix(void)
   {
-    glm::mat4 model = glm::translate(glm::mat4(1.0f), this->position) * glm::toMat4(this->orientation);
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), this->position) * glm::inverse(glm::toMat4(this->orientation));
 
     if (this->parent != nullptr)
       return this->parent->getModelMatrix() * model;

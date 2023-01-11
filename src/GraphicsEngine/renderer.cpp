@@ -108,34 +108,33 @@ void Renderer::init(void)
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   //------------------------------------------------------
 
-
-  // Pointlight depth cubemap
-  //------------------------------------------------------
-  glGenFramebuffers(2, this->depthCubeMapFBOS); 
-
-  glGenTextures(2, this->depthCubeMaps);
-  for (int i=0; i<2; i++)
-  {
-    glBindTexture(GL_TEXTURE_CUBE_MAP, this->depthCubeMaps[i]);
-    for (unsigned int j = 0; j < 6; ++j)
-      glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + j, 0, GL_DEPTH_COMPONENT, POINT_SHADOW_WIDTH, POINT_SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, this->depthCubeMapFBOS[i]);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, this->depthCubeMaps[i], 0);
-    glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
-  }
-
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  //------------------------------------------------------
 }
 
+void Renderer::genDepthCubemap(GLuint *FBO, GLuint *texture)
+{
+  glDeleteFramebuffers(1, FBO); 
+  glDeleteTextures(1, texture);
+
+  glGenFramebuffers(1, FBO); 
+  glGenTextures(1, texture);
+
+  glBindTexture(GL_TEXTURE_CUBE_MAP, *texture);
+  for (unsigned int j = 0; j < 6; ++j)
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + j, 0, GL_DEPTH_COMPONENT, POINT_SHADOW_WIDTH, POINT_SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, *FBO);
+  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, *texture, 0);
+  glDrawBuffer(GL_NONE);
+  glReadBuffer(GL_NONE);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
 
 void Renderer::useShader(ShaderType shader)
 {
@@ -186,31 +185,7 @@ void Renderer::setupDirLightDepthmap(glm::vec3 dirlightpos, glm::vec3 dirlightdi
 
 void Renderer::setupPointLightDepthCubemap(void)
 {
-  float aspect = (float)this->POINT_SHADOW_WIDTH / (float)this->POINT_SHADOW_HEIGHT;
-  float near = 1.0f;
-  float far = 25.0f;
-  glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, near, far);
 
-  std::vector<glm::mat4> shadowTransforms;
-  PointLight *pointlight = &World::scene.m_scenegraph->pointlights[0];
-  glm::vec3 lightPos = pointlight->m_transform->getPos_worldspace();
-  shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 1.0,  0.0,  0.0), glm::vec3(0.0, -1.0,  0.0)));
-  shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0,  0.0,  0.0), glm::vec3(0.0, -1.0,  0.0)));
-  shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0,  1.0,  0.0), glm::vec3(0.0,  0.0,  1.0)));
-  shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0, -1.0,  0.0), glm::vec3(0.0,  0.0, -1.0)));
-  shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0,  0.0,  1.0), glm::vec3(0.0, -1.0,  0.0)));
-  shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0,  0.0, -1.0), glm::vec3(0.0, -1.0,  0.0)));
-
-
-  char buffer[64];
-  for (int i=0; i<6; i++)
-  {
-    sprintf(buffer, "shadowMatrices[%d]", i);
-    this->active_shader->setMat4(buffer, shadowTransforms[i]);
-  }
-
-  this->active_shader->setVec3("lightPos", lightPos);
-  this->active_shader->setFloat("far_plane", far);
 }
 
 

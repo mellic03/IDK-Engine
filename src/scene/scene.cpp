@@ -19,15 +19,15 @@ void Scene::useSceneGraph(SceneGraph *scenegraph)
 }
 
 
-void Scene::updateLights(void)
+void Scene::sortLights(void)
 {
-  this->m_scenegraph->updateLights();
+  this->m_scenegraph->sortLights();
 }
 
 
 void Scene::sendLightsToShader(void)
 {
-  this->updateLights();
+  this->sortLights();
 
   this->ren->active_shader->setVec3( "clearColor", this->ren->clearColor);
   this->ren->active_shader->setFloat("fog_start", this->ren->fog_start);
@@ -50,79 +50,133 @@ void Scene::sendLightsToShader(void)
 
   char buffer[64];
 
-  // Shadow mapped pointlights
 
-  for (int i=0; i<2; i++)
+
+  // Shadow mapped pointlights
+  for (int i=0; i<MAX_POINTLIGHTS; i++)
   {
     glActiveTexture(GL_TEXTURE11 + i);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, this->ren->depthCubeMaps[i]);
-    sprintf(buffer, "shadow_pointlights[%d].depthCubemap", i);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, this->m_scenegraph->pointlights[i].depthCubemap);
+    sprintf(buffer, "pointlights[%d].depthCubemap", i);
     this->ren->active_shader->setInt(buffer, 11 + i);
 
-    sprintf(buffer, "shadow_pointlights[%d].radius", i);
+
+    sprintf(buffer, "pointlights[%d].is_active", i);
+    this->ren->active_shader->setInt(buffer, this->m_scenegraph->pointlights[i].active);
+
+    sprintf(buffer, "pointlights[%d].is_shadowmapped", i);
+    this->ren->active_shader->setInt(buffer, this->m_scenegraph->pointlights[i].shadowmapped);
+
+    sprintf(buffer, "pointlights[%d].radius", i);
     this->ren->active_shader->setFloat(buffer, this->m_scenegraph->pointlights[i].radius);
 
-
-    sprintf(buffer, "shadow_pointlights[%d].ambient", i);
+    sprintf(buffer, "pointlights[%d].ambient", i);
     this->ren->active_shader->setVec3( buffer, this->m_scenegraph->pointlights[i].ambient);
 
-    sprintf(buffer, "shadow_pointlights[%d].diffuse", i);
+    sprintf(buffer, "pointlights[%d].diffuse", i);
     this->ren->active_shader->setVec3( buffer, this->m_scenegraph->pointlights[i].diffuse);
 
-    sprintf(buffer, "shadow_pointlights[%d].position", i);
+    sprintf(buffer, "pointlights[%d].position", i);
     this->ren->active_shader->setVec3( buffer, this->m_scenegraph->pointlights[i].m_transform->getPos_worldspace());
 
-    sprintf(buffer, "shadow_pointlights[%d].constant", i);
+    sprintf(buffer, "pointlights[%d].constant", i);
     this->ren->active_shader->setFloat(buffer, this->m_scenegraph->pointlights[i].constant);
     
-    sprintf(buffer, "shadow_pointlights[%d].linear", i);
+    sprintf(buffer, "pointlights[%d].linear", i);
     this->ren->active_shader->setFloat(buffer, this->m_scenegraph->pointlights[i].linear);
 
-    sprintf(buffer, "shadow_pointlights[%d].quadratic", i);
+    sprintf(buffer, "pointlights[%d].quadratic", i);
     this->ren->active_shader->setFloat(buffer, this->m_scenegraph->pointlights[i].quadratic);
 
-    sprintf(buffer, "shadow_pointlights[%d].bias", i);
+    sprintf(buffer, "pointlights[%d].bias", i);
     this->ren->active_shader->setFloat(buffer, this->m_scenegraph->pointlights[i].bias);
 
-    sprintf(buffer, "shadow_pointlights[%d].fog_constant", i);
+    sprintf(buffer, "pointlights[%d].fog_constant", i);
     this->ren->active_shader->setFloat(buffer, this->m_scenegraph->pointlights[i].fog_constant);
 
-    sprintf(buffer, "shadow_pointlights[%d].fog_linear", i);
+    sprintf(buffer, "pointlights[%d].fog_linear", i);
     this->ren->active_shader->setFloat(buffer, this->m_scenegraph->pointlights[i].fog_linear);
 
-    sprintf(buffer, "shadow_pointlights[%d].fog_quadratic", i);
+    sprintf(buffer, "pointlights[%d].fog_quadratic", i);
     this->ren->active_shader->setFloat(buffer, this->m_scenegraph->pointlights[i].fog_quadratic);
 
-    sprintf(buffer, "shadow_pointlights[%d].fog_intensity", i);
+    sprintf(buffer, "pointlights[%d].fog_intensity", i);
     this->ren->active_shader->setFloat(buffer, this->m_scenegraph->pointlights[i].fog_intensity);
   }
 
 
 
-  this->ren->active_shader->setInt("num_active_pointlights", this->m_scenegraph->_num_active_pointlights);
-  for (int i=0; i<this->m_scenegraph->_num_active_pointlights; i++)
-  {
-    sprintf(buffer, "pointlights[%d].position", i);
-    this->ren->active_shader->setVec3(buffer,  this->m_scenegraph->sorted_pointlights[i]->m_transform->getPos_worldspace());
+  // this->ren->active_shader->setInt("num_active_nonshadow_pointlights", this->m_scenegraph->_num_active_nonshadow_pointlights);
 
-    sprintf(buffer, "pointlights[%d].direction", i);
-    this->ren->active_shader->setVec3(buffer,  this->m_scenegraph->sorted_pointlights[i]->m_transform->getRot());
+  // for (int i=0; i<this->m_scenegraph->_num_active_nonshadow_pointlights; i++)
+  // {
+  //   glActiveTexture(GL_TEXTURE11 + i);
+  //   glBindTexture(GL_TEXTURE_CUBE_MAP, this->ren->depthCubeMaps[i]);
+  //   sprintf(buffer, "nonshadow_pointlights[%d].depthCubemap", i);
+  //   this->ren->active_shader->setInt(buffer, 11 + i);
 
-    sprintf(buffer, "pointlights[%d].ambient", i);
-    this->ren->active_shader->setVec3(buffer,  this->m_scenegraph->sorted_pointlights[i]->ambient);
+  //   sprintf(buffer, "nonshadow_pointlights[%d].radius", i);
+  //   this->ren->active_shader->setFloat(buffer, this->m_scenegraph->pointlights[i].radius);
 
-    sprintf(buffer, "pointlights[%d].diffuse", i);
-    this->ren->active_shader->setVec3(buffer,  this->m_scenegraph->sorted_pointlights[i]->diffuse);
+  //   sprintf(buffer, "nonshadow_pointlights[%d].ambient", i);
+  //   this->ren->active_shader->setVec3( buffer, this->m_scenegraph->pointlights[i].ambient);
 
-    sprintf(buffer, "spotlights[%d].constant", i);
-    this->ren->active_shader->setFloat(buffer,  this->m_scenegraph->sorted_pointlights[i]->constant);
+  //   sprintf(buffer, "nonshadow_pointlights[%d].diffuse", i);
+  //   this->ren->active_shader->setVec3( buffer, this->m_scenegraph->pointlights[i].diffuse);
 
-    sprintf(buffer, "pointlights[%d].linear", i);
-    this->ren->active_shader->setFloat(buffer,  this->m_scenegraph->sorted_pointlights[i]->linear);
+  //   sprintf(buffer, "nonshadow_pointlights[%d].position", i);
+  //   this->ren->active_shader->setVec3( buffer, this->m_scenegraph->pointlights[i].m_transform->getPos_worldspace());
 
-    sprintf(buffer, "pointlights[%d].quadratic", i);
-    this->ren->active_shader->setFloat(buffer,  this->m_scenegraph->sorted_pointlights[i]->quadratic);
-  }
+  //   sprintf(buffer, "nonshadow_pointlights[%d].constant", i);
+  //   this->ren->active_shader->setFloat(buffer, this->m_scenegraph->pointlights[i].constant);
+    
+  //   sprintf(buffer, "nonshadow_pointlights[%d].linear", i);
+  //   this->ren->active_shader->setFloat(buffer, this->m_scenegraph->pointlights[i].linear);
+
+  //   sprintf(buffer, "nonshadow_pointlights[%d].quadratic", i);
+  //   this->ren->active_shader->setFloat(buffer, this->m_scenegraph->pointlights[i].quadratic);
+
+  //   sprintf(buffer, "nonshadow_pointlights[%d].bias", i);
+  //   this->ren->active_shader->setFloat(buffer, this->m_scenegraph->pointlights[i].bias);
+
+  //   sprintf(buffer, "nonshadow_pointlights[%d].fog_constant", i);
+  //   this->ren->active_shader->setFloat(buffer, this->m_scenegraph->pointlights[i].fog_constant);
+
+  //   sprintf(buffer, "nonshadow_pointlights[%d].fog_linear", i);
+  //   this->ren->active_shader->setFloat(buffer, this->m_scenegraph->pointlights[i].fog_linear);
+
+  //   sprintf(buffer, "nonshadow_pointlights[%d].fog_quadratic", i);
+  //   this->ren->active_shader->setFloat(buffer, this->m_scenegraph->pointlights[i].fog_quadratic);
+
+  //   sprintf(buffer, "nonshadow_pointlights[%d].fog_intensity", i);
+  //   this->ren->active_shader->setFloat(buffer, this->m_scenegraph->pointlights[i].fog_intensity);
+  // }
+
+
+
+
+
+  // this->ren->active_shader->setInt("num_active_pointlights", this->m_scenegraph->_num_active_pointlights);
+  // for (int i=0; i<this->m_scenegraph->_num_active_pointlights; i++)
+  // {
+  //   sprintf(buffer, "pointlights[%d].position", i);
+  //   this->ren->active_shader->setVec3(buffer,  this->m_scenegraph->sorted_pointlights[i]->m_transform->getPos_worldspace());
+
+  //   sprintf(buffer, "pointlights[%d].ambient", i);
+  //   this->ren->active_shader->setVec3(buffer,  this->m_scenegraph->sorted_pointlights[i]->ambient);
+
+  //   sprintf(buffer, "pointlights[%d].diffuse", i);
+  //   this->ren->active_shader->setVec3(buffer,  this->m_scenegraph->sorted_pointlights[i]->diffuse);
+
+  //   sprintf(buffer, "spotlights[%d].constant", i);
+  //   this->ren->active_shader->setFloat(buffer,  this->m_scenegraph->sorted_pointlights[i]->constant);
+
+  //   sprintf(buffer, "pointlights[%d].linear", i);
+  //   this->ren->active_shader->setFloat(buffer,  this->m_scenegraph->sorted_pointlights[i]->linear);
+
+  //   sprintf(buffer, "pointlights[%d].quadratic", i);
+  //   this->ren->active_shader->setFloat(buffer,  this->m_scenegraph->sorted_pointlights[i]->quadratic);
+  // }
 
 
   this->ren->active_shader->setInt("num_active_spotlights", this->m_scenegraph->_num_active_spotlights);
@@ -210,9 +264,12 @@ void Scene::drawPointLightDepthmaps(void)
   float aspect = (float)this->ren->POINT_SHADOW_WIDTH / (float)this->ren->POINT_SHADOW_HEIGHT;
   float near = 0.1f;
 
-  for (int i=0; i<2; i++)
+  for (int i=0; i<MAX_POINTLIGHTS; i++)
   {
-    glBindFramebuffer(GL_FRAMEBUFFER, this->ren->depthCubeMapFBOS[i]);
+    if (this->m_scenegraph->pointlights[i].shadowmapped == false)
+      continue;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, this->m_scenegraph->pointlights[i].FBO);
     glClear(GL_DEPTH_BUFFER_BIT);
 
     std::vector<glm::mat4> shadowTransforms;

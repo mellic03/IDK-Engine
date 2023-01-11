@@ -63,7 +63,7 @@ int ENTRY(int argc, char **argv)
 
   gl_context = SDL_GL_CreateContext(window);
   SDL_GL_MakeCurrent(window, gl_context);
-  SDL_GL_SetSwapInterval(1); // vsync
+  SDL_GL_SetSwapInterval(0); // vsync
   SDL_SetRelativeMouseMode(SDL_FALSE);
 
   if (glewInit() != GLEW_OK)
@@ -148,12 +148,14 @@ int ENTRY(int argc, char **argv)
   glBindFramebuffer(GL_FRAMEBUFFER, 0);  
 
 
-
-  int count = 0;
   Uint64 start = SDL_GetPerformanceCounter(), end = SDL_GetPerformanceCounter();
   while (1)
   {
+    glm::vec3 v = player.cam->front;
+    v = glm::normalize(v);
+    AudioEngine::listener_dir = &v;
     AudioEngine::listener_pos = player.getPos();
+
 
 
     start = end;
@@ -218,8 +220,13 @@ int ENTRY(int argc, char **argv)
     model = glm::translate(model, glm::vec3(0.0f, 0.0f, -0.99 * ren->far_plane));
     ren->active_shader->setMat4("model", glm::inverse(ren->cam.view) * model);
 
+    ren->active_shader->setInt("use_fill", true);
+    ren->active_shader->setVec3("fill", ren->clearColor);
+
     glBindVertexArray(ren->quadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+    ren->active_shader->setInt("use_fill", false);
+
 
     scene_1->drawGeometry();
 

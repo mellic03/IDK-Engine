@@ -59,29 +59,34 @@ void Player::key_input(Renderer *ren)
   glm::vec3 temp_front = { this->cam->front.x, 0.0f, this->cam->front.z };
   temp_front = glm::normalize(temp_front);
 
+  glm::vec3 delta_pos1 = *this->getPos();
+  glm::vec3 delta_pos2 = delta_pos1;
 
   this->cam->input();
 
   if (this->fly)
   {
     if (state[SDL_SCANCODE_W])
-      *this->getPos() += this->move_speed * ren->deltaTime * temp_front;
+      delta_pos1 += this->move_speed * ren->deltaTime * temp_front;
 
     if (state[SDL_SCANCODE_S])
-      *this->getPos() -= this->move_speed * ren->deltaTime * temp_front;
+      delta_pos1 -= this->move_speed * ren->deltaTime * temp_front;
    
     if (state[SDL_SCANCODE_A])
-      *this->getPos() -= this->move_speed * ren->deltaTime * ren->cam.right;
+      delta_pos1 -= this->move_speed * ren->deltaTime * ren->cam.right;
    
     if (state[SDL_SCANCODE_D])
-      *this->getPos() += this->move_speed * ren->deltaTime * ren->cam.right;
+      delta_pos1 += this->move_speed * ren->deltaTime * ren->cam.right;
 
     if (state[SDL_SCANCODE_LCTRL])
-      this->getPos()->y -= this->move_speed * ren->deltaTime;
+      delta_pos1.y -= this->move_speed * ren->deltaTime;
 
     if (state[SDL_SCANCODE_SPACE])
-      this->getPos()->y += this->move_speed * ren->deltaTime;
+      delta_pos1.y += this->move_speed * ren->deltaTime;
     
+
+    *this->getPos() += this->getTransform()->localToWorld(delta_pos1 - delta_pos2, true);
+
     return;
   }
   
@@ -155,8 +160,7 @@ void Player::mouse_input(Renderer *ren, SDL_Event *event)
 
     this->getTransform()->orientation = dpitch * this->getTransform()->orientation * dyaw;
 
-    // this->getWeapon()->movement_offset.x -= this->cam->rot_speed * ren->deltaTime * 0.001f * event->motion.xrel;
-    // this->getWeapon()->movement_offset.y += this->cam->rot_speed * ren->deltaTime * 0.001f * event->motion.yrel;
+    // this->getTransform()->orientation = dpitch * this->getTransform()->orientation * dyaw;
   }
 
   else if (event->type == SDL_KEYDOWN)

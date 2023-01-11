@@ -2,6 +2,7 @@
 
 bool AudioEngine::free_channels[AUDIOENGINE_NUM_CHANNELS] = { true };
 glm::vec3 *AudioEngine::listener_pos = nullptr;
+glm::vec3 *AudioEngine::listener_dir = nullptr;
 
 
 void AudioEngine::init(void)
