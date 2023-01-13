@@ -42,7 +42,7 @@ class Camera {
     float headbob_value = 0.0f;
 
     float *pitch = nullptr, *roll = nullptr, *yaw = nullptr;
-    float rot_speed = 0.1f;
+    float rot_speed = 0.0003f;
 
     float fov = 90.0f;
 

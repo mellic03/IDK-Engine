@@ -28,7 +28,18 @@ uniform DirLight shadowmapped_dirlight;
 
 
 struct PointLight {
-  bool is_active, is_shadowmapped;
+  vec3 position;
+  vec3 ambient, diffuse;
+  float constant, linear, quadratic;
+  float bias;
+  float fog_constant, fog_linear, fog_quadratic;
+  float fog_intensity;
+  float radius;
+};
+uniform PointLight volumetric_pointlights[NUM_POINTLIGHTS];
+uniform int num_volumetric_pointlights;
+
+struct ShadowPointLight {
   vec3 position;
   vec3 ambient, diffuse;
   float constant, linear, quadratic;
@@ -38,8 +49,8 @@ struct PointLight {
   samplerCube depthCubemap;
   float radius;
 };
-uniform PointLight pointlights[NUM_POINTLIGHTS];
-
+uniform ShadowPointLight shadow_pointlights[NUM_POINTLIGHTS];
+uniform int num_shadow_pointlights;
 
 
 struct SpotLight {
@@ -66,7 +77,7 @@ vec3 gridSamplingDisk[20] = vec3[]
   vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
 );
 
-bool in_shadow(PointLight light, vec3 fragPos)
+bool in_shadow(ShadowPointLight light, vec3 fragPos)
 {
   vec3 fragToLight = fragPos - light.position;
   float closestDepth = texture(light.depthCubemap, fragToLight).r;
@@ -135,30 +146,37 @@ void main()
     ray = viewPos + ray_length*ray_dir;
 
 
-    // Point light
+    // Point lights
     //------------------------------------------------------------------
     for (int j=0; j<NUM_POINTLIGHTS; j++)
     {
-      if (pointlights[j].is_active == false)
-        continue;
+      if (j >= num_volumetric_pointlights)
+        break;
 
-      float d = length(ray - pointlights[j].position);
-      // if (d > pointlights[j].radius)
-      //   continue;
-      float attenuation = 1.0 / (pointlights[j].fog_constant + d*pointlights[j].fog_linear + d*d*pointlights[j].fog_quadratic);
-      attenuation *= 1.0 - (d/pointlights[j].radius);
+      float d = length(ray - volumetric_pointlights[j].position);
+      float attenuation = 1.0 / (volumetric_pointlights[j].fog_constant + d*volumetric_pointlights[j].fog_linear + d*d*volumetric_pointlights[j].fog_quadratic);
+      
+      attenuation *= 1.0 - clamp(d/volumetric_pointlights[j].radius, 0.0, 1.0);
 
-      float v = attenuation * step_size * pointlights[j].fog_intensity;
+      float vol = attenuation * step_size * volumetric_pointlights[j].fog_intensity;
+      pointlight_vol[j] += vol;
+    }
 
-      if (pointlights[j].is_shadowmapped)
+    for (int j=0; j<NUM_POINTLIGHTS; j++)
+    {
+      if (j >= num_shadow_pointlights)
+        break;
+
+      if (!in_shadow(shadow_pointlights[j], ray))
       {
-        if (!in_shadow(pointlights[j], ray))
-        {
-          pointlight_vol[j] += v;
-        }
+        float d = length(ray - shadow_pointlights[j].position);
+       
+        float attenuation = 1.0 / (shadow_pointlights[j].fog_constant + d*shadow_pointlights[j].fog_linear + d*d*shadow_pointlights[j].fog_quadratic);
+        attenuation *= 1.0 - (d/shadow_pointlights[j].radius);
+
+        float vol = attenuation * step_size * shadow_pointlights[j].fog_intensity;
+        pointlight_vol[num_volumetric_pointlights + j] += vol;
       }
-      else
-        pointlight_vol[j] += v;
     }
     //------------------------------------------------------------------
 
@@ -172,8 +190,19 @@ void main()
   vec3 result = vec3(0.0, 0.0, 0.0);
 
   for (int i=0; i<NUM_POINTLIGHTS; i++)
-    result += pointlight_vol[i] * pointlights[i].diffuse;
+  {
+    if (i >= num_volumetric_pointlights)
+      break;
+    result += pointlight_vol[i] * volumetric_pointlights[i].diffuse;
+  }
   
+  for (int i=0; i<NUM_POINTLIGHTS; i++)
+  {
+    if (i >= num_shadow_pointlights)
+      break;
+    result += pointlight_vol[num_volumetric_pointlights + i] * shadow_pointlights[i].diffuse;
+  }
+
   result += dirlight_vol * shadowmapped_dirlight.diffuse;
 
   FragColor = vec4(result, 1.0);

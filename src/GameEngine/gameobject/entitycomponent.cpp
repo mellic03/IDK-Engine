@@ -45,6 +45,7 @@ void EntityComponent::_draw_pointlight(void)
     ImGui::DragScalar("quadratic", ImGuiDataType_Float, &this->_pointlight->quadratic, 0.001f, 0);
     ImGui::DragScalar("bias", ImGuiDataType_Float, &this->_pointlight->bias,            0.001f, 0);
 
+    ImGui::Checkbox("Volumetrics", &this->_pointlight->volumetrics_active);
     ImGui::DragScalar("fog constant",  ImGuiDataType_Float, &this->_pointlight->fog_constant,    0.001f, 0);
     ImGui::DragScalar("fog linear",    ImGuiDataType_Float, &this->_pointlight->fog_linear,      0.001f, 0);
     ImGui::DragScalar("fog quadratic", ImGuiDataType_Float, &this->_pointlight->fog_quadratic,   0.001f, 0);

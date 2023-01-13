@@ -9,9 +9,9 @@ class Node {
 
   public:
     int id = 0;
-    glm::vec3 position;
+    glm::vec3 position = glm::vec3(0.0f);
     std::vector<int> neighbours;
-    int previous;
+    int previous = -1;
 
     bool visited = false;
     float tent_dist = INFINITY;

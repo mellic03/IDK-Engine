@@ -21,16 +21,29 @@ uniform DirLight shadowmapped_dirlight;
 
 
 struct PointLight {
-  bool is_active, is_shadowmapped;
-  vec3 position;
+  float radius;
   vec3 ambient, diffuse;
+  vec3 position;
   float constant, linear, quadratic;
   float bias;
   float fog_constant, fog_linear, fog_quadratic;
-  samplerCube depthCubemap;
-  float radius;
+  float fog_intensity;
 };
 uniform PointLight pointlights[NUM_POINTLIGHTS];
+uniform int num_active_pointlights;
+
+struct ShadowPointLight {
+  float radius;
+  vec3 ambient, diffuse;
+  vec3 position;
+  float constant, linear, quadratic;
+  float bias;
+  float fog_constant, fog_linear, fog_quadratic;
+  float fog_intensity;
+  samplerCube depthCubemap;
+};
+uniform ShadowPointLight shadow_pointlights[NUM_POINTLIGHTS];
+uniform int num_shadow_pointlights;
 
 
 layout (location = 0) out vec4 FragColor;
@@ -44,10 +57,9 @@ uniform sampler2D gAlbedoSpec;
 uniform sampler2D gEmission;
 
 uniform mat4 dir_lightSpaceMatrix;
+uniform sampler2D depthmap_dirlight;
 
 uniform vec3 viewPos;
-
-uniform sampler2D depthmap_dirlight;
 
 
 vec3 gridSamplingDisk[20] = vec3[]
@@ -58,7 +70,7 @@ vec3 gridSamplingDisk[20] = vec3[]
   vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
   vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
 );
-float calculate_shadow_pointlight(PointLight light, vec3 viewPos, vec3 fragPos)
+float calculate_shadow_pointlight(ShadowPointLight light, vec3 viewPos, vec3 fragPos)
 {
   vec3 fragToLight = fragPos - light.position;
   float currentDepth = length(fragToLight);
@@ -116,11 +128,34 @@ float calculate_shadow_dirlight(vec3 lightPos, vec3 fragPos, vec3 normal, vec3 l
 }
 
 
-vec3 calculate_pointlight(PointLight light, vec3 albedo, vec3 fragPos, vec3 normal, float spec_strength)
+vec3 calculate_shadowmapped_pointlight(ShadowPointLight light, vec3 albedo, vec3 fragPos, vec3 normal, float spec_strength)
 {
-  if (light.is_active == false)
+  float d = length(light.position - fragPos);
+  if (d > light.radius)
     return vec3(0.0);
 
+  vec3 lightDir = normalize(light.position - fragPos);
+  vec3 viewDir = normalize(viewPos - fragPos);
+
+  float diff = max(dot(normal, lightDir), 0.0);
+
+  vec3 halfwayDir = normalize(lightDir + viewDir);  
+  float spec = pow(max(dot(normal, halfwayDir), 0.0), 32);
+  
+  float attenuation = 1.0 / (light.constant + d*light.linear + d*d*light.quadratic);
+  attenuation *= 1.0 - clamp(d/light.radius, 0.0, 1.0);
+
+  vec3 diffuse  = attenuation * albedo * diff * light.diffuse;
+  vec3 ambient  = attenuation * albedo * light.ambient;
+  vec3 specular = attenuation * albedo * spec * light.diffuse * 0;
+
+  float shadow = calculate_shadow_pointlight(light, viewPos, fragPos);
+  return  (ambient + (1.0 - shadow) * (diffuse + specular));
+}
+
+
+vec3 calculate_pointlight(PointLight light, vec3 albedo, vec3 fragPos, vec3 normal, float spec_strength)
+{
   float d = length(light.position - fragPos);
   if (d > light.radius)
     return vec3(0.0);
@@ -140,14 +175,7 @@ vec3 calculate_pointlight(PointLight light, vec3 albedo, vec3 fragPos, vec3 norm
   vec3 ambient  = attenuation * albedo * light.ambient;
   vec3 specular = attenuation * albedo * spec * light.diffuse * 0;
 
-  if (light.is_shadowmapped)
-  {
-    float shadow = calculate_shadow_pointlight(light, viewPos, fragPos);
-    return  (ambient + (1.0 - shadow) * (diffuse + specular));
-  }
-
-  else
-    return  (ambient + diffuse + specular);
+  return  (ambient + diffuse + specular);
 }
 
 
@@ -181,7 +209,21 @@ void main()
   result += 5 * emission;
 
   for (int i=0; i<NUM_POINTLIGHTS; i++)
+  {
+    if (i >= num_shadow_pointlights)
+      break;
+
+    result += calculate_shadowmapped_pointlight(shadow_pointlights[i], albedo, fragPos, normal, specular_map);
+  }
+
+  for (int i=0; i<num_active_pointlights; i++)
+  {
+    if (i >= num_active_pointlights)
+      break;
+
     result += calculate_pointlight(pointlights[i], albedo, fragPos, normal, specular_map);
+  }
+
 
   result += calculate_dirlight(shadowmapped_dirlight, albedo, fragPos, normal, specular_map);
 

@@ -6,7 +6,21 @@ using namespace glm;
 
 float PhysicsEngine::gravity = 1.0f;
 
-bool PhysicsEngine::ray_intersect_triangle(vec3 ray_pos, vec3 ray_dir, vec3 v0, vec3 v1, vec3 v2, vec3 *intersect_point)
+
+bool PhysicsEngine::ray_intersects_plane(glm::vec3 ray_origin, glm::vec3 ray_dir, glm::vec3 plane_normal, glm::vec3 plane_pos)
+{
+  // float t = -10000000000.0f;
+  
+  // float dt = glm::dot(ray_dir, plane_normal);
+
+  // if (dt < -0.001 || dt > 0.001)
+  //   return true;  
+  // t = dot(plane_normal, plane_pos - ray_origin);
+  return false;
+}
+
+
+bool PhysicsEngine::ray_intersects_triangle(vec3 ray_pos, vec3 ray_dir, vec3 v0, vec3 v1, vec3 v2, vec3 *intersect_point)
 {
   const float EPSILON = 0.0000001;
   glm::vec3 edge1, edge2, h, s, q;
@@ -39,6 +53,7 @@ bool PhysicsEngine::ray_intersect_triangle(vec3 ray_pos, vec3 ray_dir, vec3 v0, 
   else
     return false;
 }
+
 
 
 float PhysicsEngine::calculate_impulse(glm::vec3 vel, glm::vec3 face_normal, float mass)
@@ -82,41 +97,53 @@ bool PhysicsEngine::line_intersects_sphere(glm::vec3 A, glm::vec3 B, glm::vec3 P
   *dir = glm::normalize(P - glm::vec3(x, y, z));
 
   return glm::distance(P, glm::vec3(x, y, z)) < radius;
-
-  return false;
 }
 
 
-bool PhysicsEngine::sphere_triangle_detect(GameObject *obj, Vertex v0, Vertex v1, Vertex v2, float *plane_dist, bool *edge_collision, glm::vec3 *dir)
+float point_plane_dist(glm::vec3 point, glm::vec3 plane_normal, glm::vec3 plane_pos)
 {
-  *plane_dist = glm::dot(v0.normal, *obj->getPos() - v0.position);
+  return glm::dot(plane_normal, point - plane_pos);
+} 
+
+
+bool point_in_triangle(glm::vec3 point, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2)
+{ 
+  glm::vec3 plane_normal = PhysicsEngine::triangle_normal(v0, v1, v2);
+
+  float plane_dist = point_plane_dist(point, plane_normal, v0);
+  glm::vec3 closest_point = point + (plane_dist * -plane_normal);
+  glm::vec3 N1 = PhysicsEngine::triangle_normal(v0, v1, closest_point);
+  glm::vec3 N2 = PhysicsEngine::triangle_normal(v1, v2, closest_point);
+  glm::vec3 N3 = PhysicsEngine::triangle_normal(v2, v0, closest_point);
+
+  return (glm::dot(N1, N2) > 0.9999f && glm::dot(N2, N3) > 0.9999f);
+}
+
+
+bool PhysicsEngine::sphere_triangle_detect(SphereCollider *spherecollider, Vertex v0, Vertex v1, Vertex v2, float *plane_dist, bool *edge_collision, glm::vec3 *dir)
+{
+  *plane_dist = point_plane_dist(spherecollider->pos, v0.normal, v0.position);
   
   // If center of sphere is closer to plane than its radius
-  if (fabs(*plane_dist) <= obj->m_sphere_collider_radius)
+  if (fabs(*plane_dist) <= spherecollider->radius)
   {
-    glm::vec3 closest_point = *obj->getPos() + (*plane_dist * -v0.normal);
-    glm::vec3 N1 = triangle_normal(v0.position, v1.position, closest_point);
-    glm::vec3 N2 = triangle_normal(v1.position, v2.position, closest_point);
-    glm::vec3 N3 = triangle_normal(v2.position, v0.position, closest_point);
-
-    if (glm::dot(N1, N2) > 0.9999f && glm::dot(N2, N3) > 0.9999f)
+    if (point_in_triangle(spherecollider->pos, v0.position, v1.position, v2.position))
       return true;
-
 
     // check if any edges intersect sphere
-    if (line_intersects_sphere(v0.position, v1.position, *obj->getPos(), obj->m_sphere_collider_radius, dir))
+    if (line_intersects_sphere(v0.position, v1.position, spherecollider->pos, spherecollider->radius, dir))
     {
       *edge_collision = true;
       return true;
     }
 
-    if (line_intersects_sphere(v1.position, v2.position, *obj->getPos(), obj->m_sphere_collider_radius, dir))
+    if (line_intersects_sphere(v1.position, v2.position, spherecollider->pos, spherecollider->radius, dir))
     {
       *edge_collision = true;
       return true;
     }
 
-    if (line_intersects_sphere(v2.position, v0.position, *obj->getPos(), obj->m_sphere_collider_radius, dir))
+    if (line_intersects_sphere(v2.position, v0.position, spherecollider->pos, spherecollider->radius, dir))
     {
       *edge_collision = true;
       return true;
@@ -127,37 +154,81 @@ bool PhysicsEngine::sphere_triangle_detect(GameObject *obj, Vertex v0, Vertex v1
 }
 
 
-void PhysicsEngine::sphere_triangle_response(GameObject *obj1, Vertex v0, Vertex v1, Vertex v2, float dist, bool edge_collision, glm::vec3 dir)
+void PhysicsEngine::sphere_triangle_response(SphereCollider *spherecollider, Vertex v0, Vertex v1, Vertex v2, float dist, bool edge_collision, glm::vec3 dir)
 {
-  float overlap = obj1->m_sphere_collider_radius - dist;
+  float overlap =  spherecollider->radius - dist;
   
   float impulse_1d = 0.0f;
+
+  glm::vec3 tnormal = triangle_normal(v0.position, v1.position, v2.position);
 
   if (edge_collision)
   {
     overlap = 0.0f;
-    impulse_1d = calculate_impulse(*obj1->getVel(), dir, 1.0f);
+    impulse_1d = calculate_impulse(spherecollider->vel, dir, 1.0f);
   }
 
+
   else
-    impulse_1d = calculate_impulse(*obj1->getVel(), v0.normal, 1.0f);
+    impulse_1d = calculate_impulse(spherecollider->vel, tnormal, 1.0f);
 
 
   if (impulse_1d == 0.0f)
     return;
 
-  glm::vec3 impulse = v0.normal * impulse_1d;
-  obj1->getVel()->x += 1.0f/1.0f * impulse.x;
-  obj1->getVel()->y += 1.0f/1.0f * impulse.y;
-  obj1->getVel()->z += 1.0f/1.0f * impulse.z;
+  glm::vec3 impulse = tnormal * impulse_1d;
+  spherecollider->vel.x += 1.0f/1.0f * impulse.x;
+  spherecollider->vel.y += 1.0f/1.0f * impulse.y;
+  spherecollider->vel.z += 1.0f/1.0f * impulse.z;
 
-  *obj1->getPos() += 0.5f * overlap * v0.normal;
+  spherecollider->pos += 0.5f * overlap * tnormal;
 }
 
 
-bool PhysicsEngine::capsule_triangle_detect(GameObject *obj, Vertex v0, Vertex v1, Vertex v2, float *plane_dist, bool *edge_collision, glm::vec3 *dir)
+glm::vec3 ClosestPointOnLineSegment(glm::vec3 A, glm::vec3 B, glm::vec3 Point)
 {
-  
+  glm::vec3 AB = B - A;
+  float t = glm::dot(Point - A, AB) / dot(AB, AB);
+  return A + glm::min(glm::max(t, 0.0f), 1.0f) * AB;
 }
 
 
+bool PhysicsEngine::capsule_triangle_detect(CapsuleCollider *capsule, Vertex v0, Vertex v1, Vertex v2, float *plane_dist, bool *edge_collision, glm::vec3 *dir)
+{  
+  // Find closest point on line segment to triangle
+  glm::vec3 tip  = capsule->pos + glm::vec3(0.0f, capsule->top - capsule->radius, 0.0f);
+  glm::vec3 base = capsule->pos - glm::vec3(0.0f, capsule->bottom - capsule->radius, 0.0f);
+
+
+  SphereCollider sphere1;
+  sphere1.pos = tip;
+  sphere1.vel = capsule->vel;
+  sphere1.radius = capsule->radius;
+
+  if (PhysicsEngine::sphere_triangle_detect(&sphere1, v0, v1, v2, plane_dist, edge_collision, dir))
+    PhysicsEngine::sphere_triangle_response(&sphere1, v0, v1, v2, *plane_dist, *edge_collision, *dir);
+
+  capsule->pos += sphere1.pos - tip;
+  capsule->vel += sphere1.vel - capsule->vel;
+
+
+  SphereCollider sphere2;
+  sphere2.pos = base;
+  sphere2.vel = capsule->vel;
+  sphere2.radius = capsule->radius;
+
+  if (PhysicsEngine::sphere_triangle_detect(&sphere2, v0, v1, v2, plane_dist, edge_collision, dir))
+    PhysicsEngine::sphere_triangle_response(&sphere2, v0, v1, v2, *plane_dist, *edge_collision, *dir);
+
+  capsule->pos += sphere2.pos - base;
+  capsule->vel += sphere2.vel - capsule->vel;
+
+
+  return false;
+}
+
+
+void PhysicsEngine::capsule_triangle_response(CapsuleCollider *capsule, Vertex v0, Vertex v1, Vertex v2, float dist, bool edge_collision, glm::vec3 dir)
+{
+
+}

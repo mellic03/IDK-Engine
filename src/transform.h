@@ -46,12 +46,12 @@ struct Transform {
 
   glm::mat4 getModelMatrix(void)
   {
-    glm::mat4 model = glm::translate(glm::mat4(1.0f), this->position) * glm::inverse(glm::toMat4(this->orientation));
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), this->position) * glm::mat4_cast(this->orientation);
 
     if (this->parent != nullptr)
       return this->parent->getModelMatrix() * model;
-    else
-      return model;
+
+    return model;
   };
 
   /** Return the model matrix without applying local translation/rotation.
@@ -60,10 +60,11 @@ struct Transform {
   glm::mat4 getModelMatrix_noLocalTransform(void)
   {
     glm::mat4 model = glm::mat4(1.0f);
+
     if (this->parent != nullptr)
       return this->parent->getModelMatrix() * model;
-    else
-      return model;
+
+    return model;
   };
   //-------------------------------------------------------------------------------------------------------------
 

@@ -4,7 +4,7 @@
 
 int SceneGraph::indexOfObjectName(std::string object_name)
 {
-  for (int i=0; i<this->m_object_templates.size(); i++)
+  for (size_t i=0; i<this->m_object_templates.size(); i++)
     if (this->m_object_templates[i].getTemplateName() == object_name)
       return i;
 
@@ -211,8 +211,8 @@ void SceneGraph::clearScene(void)
   this->m_object_instances.clear();
   this->_num_pointlights = 0;
   this->_num_spotlights = 0;
-  this->_num_active_nonshadow_pointlights = 0;
-  this->_num_active_shadow_pointlights = 0;
+  this->num_active_pointlights = 0;
+  this->num_shadow_pointlights = 0;
   this->_num_active_spotlights = 0;
 
   this->pointlight_parent = nullptr;
@@ -228,6 +228,8 @@ void SceneGraph::defaultScene(void)
 
   for (int i=0; i<NUM_POINTLIGHTS; i++)
   {
+    this->pointlights[i].active = false;
+    this->pointlights[i].shadowmapped = false;
     this->pointlights[i].m_transform = &this->pointlights[i].default_transform;
   }
 
@@ -239,23 +241,54 @@ void SceneGraph::defaultScene(void)
 
 void SceneGraph::sortLights(void)
 {
-  this->sorted_nonshadow_pointlights.clear();
+  this->sorted_active_pointlights.clear();
   this->sorted_shadow_pointlights.clear();
+  this->sorted_volumetric_shadow_pointlights.clear();
+  this->sorted_volumetric_pointlights.clear();
 
-  this->sorted_spotlights.clear();
+  this->num_active_pointlights = 0;
+  this->num_volumetric_pointlights = 0;
+  this->num_volumetric_shadow_pointlights = 0;
+  this->num_shadow_pointlights = 0;
 
-  this->_num_active_nonshadow_pointlights = 0;
-  this->_num_active_shadow_pointlights = 0;
-  this->_num_active_spotlights = 0;
 
-  int count = 0;
-
-  for (int i=0; i<MAX_SPOTLIGHTS; i++)
-    if (this->spotlights[i].active)
+  //------------------------------------------------------------------
+  for (int i=0; i<MAX_POINTLIGHTS; i++)
+  {
+    if (this->pointlights[i].active)
     {
-      this->sorted_spotlights.push_back(&this->spotlights[i]);
-      this->_num_active_spotlights += 1;
+      if (this->pointlights[i].shadowmapped && this->pointlights[i].volumetrics_active)
+        this->sorted_volumetric_shadow_pointlights.push_back(&this->pointlights[i]);
+
+      if (this->pointlights[i].shadowmapped)
+        this->sorted_shadow_pointlights.push_back(&this->pointlights[i]);
+
+      else
+        this->sorted_active_pointlights.push_back(&this->pointlights[i]);
+
+      if (!this->pointlights[i].shadowmapped && this->pointlights[i].volumetrics_active)
+        this->sorted_volumetric_pointlights.push_back(&this->pointlights[i]);
     }
+  }
+
+  this->num_active_pointlights = this->sorted_active_pointlights.size();
+  this->num_volumetric_pointlights = this->sorted_volumetric_pointlights.size();
+  this->num_volumetric_shadow_pointlights = this->sorted_volumetric_shadow_pointlights.size();
+  this->num_shadow_pointlights = this->sorted_shadow_pointlights.size();
+
+
+  while (this->sorted_active_pointlights.size() < 10)
+    this->sorted_active_pointlights.push_back(&this->pointlights[0]);
+
+  while (this->sorted_shadow_pointlights.size() < 10)
+    this->sorted_shadow_pointlights.push_back(&this->pointlights[0]);
+
+  while (this->sorted_volumetric_pointlights.size() < 10)
+    this->sorted_volumetric_pointlights.push_back(&this->pointlights[0]);
+
+  while (this->sorted_volumetric_shadow_pointlights.size() < 10)
+    this->sorted_volumetric_shadow_pointlights.push_back(&this->pointlights[0]);
+  //------------------------------------------------------------------
 
 }
 
@@ -284,7 +317,7 @@ void objectToFile(std::ofstream *stream, GameObject *object)
   glm::quat q = object->getTransform()->orientation;
   *stream << "orientation: " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << std::endl;
 
-  for (int i=0; i<object->script_components.size(); i++)
+  for (size_t i=0; i<object->script_components.size(); i++)
   {
     *stream << "#SCRIPT: ";
     *stream << object->script_components[i].script_name << std::endl;
@@ -311,7 +344,7 @@ void SceneGraph::objectFromFile(std::ifstream &stream, std::string &line)
 void SceneGraph::objectFromFile_headerData(std::ifstream &stream, std::string &line, Player *player)
 {
   int objectID = -1, parentID = -1;
-  GameObject *object;
+  GameObject *object = nullptr;
 
   while (getline(stream, line))
   {
@@ -413,7 +446,7 @@ void SceneGraph::objectFromFile_headerData(std::ifstream &stream, std::string &l
 }
 
 
-bool SceneGraph::exportScene(std::string filepath)
+void SceneGraph::exportScene(std::string filepath)
 {
   std::cout << "exporting scene to: " << filepath << std::endl;
 
@@ -429,7 +462,7 @@ bool SceneGraph::exportScene(std::string filepath)
 }
 
 
-bool SceneGraph::importScene(std::string filepath, Player *player)
+void SceneGraph::importScene(std::string filepath, Player *player)
 {
   printf("scene_name: %s\n", filepath.c_str());
 

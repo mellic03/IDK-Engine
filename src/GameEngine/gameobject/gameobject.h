@@ -4,6 +4,7 @@
 #include "../../transform.h"
 
 #include "../computemesh/computemesh.h"
+#include "../physics.h"
 
 #include "entitycomponent.h"
 class EntityComponent;
@@ -24,7 +25,7 @@ class GameObject {
     PhysicsState m_physics_state = PHYSICS_NONE;
     NavigationState m_navigation_state = NAVIGATION_REST;
     std::vector<CollisionMesh *> _collision_meshes;
-    std::vector<Transform> _collision_transforms;
+    std::vector<Transform *> _collision_transforms;
     bool _has_collisionmesh = false;
     //----------------------------------------------------
 
@@ -54,8 +55,9 @@ class GameObject {
     std::vector<EntityComponent> script_components;
     std::vector<EntityComponent> variable_components;
 
-    float m_sphere_collider_radius = 1.7 / 1.3;
-    float height = 0.4f, width = 0.1f;
+
+    PhysicsEngine::SphereCollider spherecollider;
+    PhysicsEngine::CapsuleCollider capsulecollider;
 
 
     Model *m_model;
@@ -71,7 +73,7 @@ class GameObject {
 
     bool selected = false;
 
-    GameObject(void) { };
+    GameObject(void);
 
 
     Transform *getTransform(void)     { return &this->_transform; };

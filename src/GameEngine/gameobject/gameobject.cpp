@@ -4,6 +4,10 @@
 
 namespace PE = PhysicsEngine;
 
+GameObject::GameObject(void)
+{
+}
+
 bool GameObject::_groundTest(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal)
 {
   if (glm::dot(ray, normal) > 0)
@@ -11,14 +15,16 @@ bool GameObject::_groundTest(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec
 
   glm::vec3 intersect_point;
 
-  bool intersects = PE::ray_intersect_triangle(this->pos_worldspace, ray, v0, v1, v2, &intersect_point);
+  this->pos_worldspace = this->getTransform()->getPos_worldspace();
+
+  bool intersects = PE::ray_intersects_triangle(this->pos_worldspace, ray, v0, v1, v2, &intersect_point);
 
   if (intersects)
   {
     float dist = glm::distance(this->pos_worldspace, intersect_point);
-    if (dist >= 0 && dist < this->m_sphere_collider_radius*1.15f)
+    if (dist >= 0 && dist < (this->capsulecollider.bottom + 0.05f))
     {
-      float overlap = this->m_sphere_collider_radius*1.15f - dist;
+      float overlap = (this->capsulecollider.bottom + 0.05f) - dist;
       this->getPos()->y += overlap / 2.0f;
       return true;
     }
@@ -30,17 +36,17 @@ bool GameObject::_groundTest(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec
 
 void GameObject::collideWithMeshes(void)
 {
-  glm::mat4 thismodelmat = this->getTransform()->getModelMatrix();
   glm::vec3 ray_down  =   glm::vec4(0.0f, -1.0f,  0.0f,  0.0f);
 
   this->changePhysState(PHYSICS_FALLING);
 
-  for (int i=0; i<this->_collision_meshes.size(); i++)
+
+  for (size_t i=0; i<this->_collision_meshes.size(); i++)
   {
     CollisionMesh *mesh = this->_collision_meshes[i];
-    glm::mat4 model = this->_collision_transforms[i].getModelMatrix();
+    glm::mat4 model = this->_collision_transforms[i]->getModelMatrix();
 
-    for (int j=0; j<mesh->m_vertices.size(); j+=3)
+    for (size_t j=0; j<mesh->m_vertices.size(); j+=3)
     {
       Vertex vert0 = mesh->m_vertices[j+0];
       Vertex vert1 = mesh->m_vertices[j+1];
@@ -51,12 +57,15 @@ void GameObject::collideWithMeshes(void)
       vert1.position = model * glm::vec4(vert1.position.x, vert1.position.y, vert1.position.z, 1.0f);
       vert2.position = model * glm::vec4(vert2.position.x, vert2.position.y, vert2.position.z, 1.0f);
 
-
       glm::vec3 dir;
       bool edge_collision = false;
       float dist = INFINITY;
-      if (PE::sphere_triangle_detect(this, vert0, vert1, vert2, &dist, &edge_collision, &dir))
-        PE::sphere_triangle_response(this, vert0, vert1, vert2, dist, edge_collision, dir);
+      
+      this->capsulecollider.pos = *this->getPos();
+      this->capsulecollider.vel = *this->getVel();
+      PE::capsule_triangle_detect(&this->capsulecollider, vert0, vert1, vert2, &dist, &edge_collision, &dir);
+      *this->getPos() = this->capsulecollider.pos;
+      *this->getVel() = this->capsulecollider.vel;
       
       
       if (this->getPhysState() == PHYSICS_FALLING)
@@ -64,6 +73,7 @@ void GameObject::collideWithMeshes(void)
           this->changePhysState(PHYSICS_GROUNDED);
     }
   }
+
 
   this->_collision_transforms.clear();
   this->_collision_meshes.clear();
@@ -261,7 +271,7 @@ void GameObject::giveChild(GameObject *child, bool keepGlobalPos)
 
 void GameObject::removeChild(GameObject *child)
 {
-  for (int i=0; i<this->m_children.size(); i++)
+  for (size_t i=0; i<this->m_children.size(); i++)
     if (this->m_children[i]->getID() == child->getID())
       this->m_children.erase(std::next(this->m_children.begin(), i));
 }
@@ -308,14 +318,23 @@ void GameObject::setParent(GameObject *parent, bool keepGlobalPos)
  */
 void GameObject::collideWithObject(GameObject *object)
 {
-  if (this->getPhysState() == PHYSICS_NONE || this->getID() == object->getID())
+  if (glm::distance2(this->getTransform()->getPos_worldspace(), object->getTransform()->getPos_worldspace()) > object->m_collision_mesh.bounding_sphere_radiusSQ)
+    return;
+
+  if (this->getID() == object->getID())
+    return;
+
+  if (object->isHidden() || this->isHidden())
+    return;
+
+  if (this->getPhysState() == PHYSICS_NONE)
     return;
 
   // if (glm::distance(this->_transform.position, object->getPos()) > object->boundingSphereRadius())
   //   return;
 
   this->_collision_meshes.push_back(object->getCollisionMesh());
-  this->_collision_transforms.push_back(*object->getTransform());
+  this->_collision_transforms.push_back(object->getTransform());
 
 }
 

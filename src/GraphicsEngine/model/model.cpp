@@ -98,24 +98,6 @@ Texture *Model::texturePtr(std::string dae_id)
 }
 
 
-Texture *Model::texturePtr_materialID(std::string material_dae_id)
-{
-  ColladaMaterial *collada_material = this->colladaMaterialPtr(material_dae_id);
-  if (collada_material == nullptr)
-  {
-    printf("Could not find ColladaMaterial, id: %s\n", material_dae_id.c_str());
-    exit(1);
-  }
-
-  ColladaEffect *collada_effect = collada_material->m_parent_effect;
-  if (collada_effect == nullptr)
-  {
-    printf("Could not find ColladaEffect\n");
-    exit(1);
-  }
-}
-
-
 ColladaMaterial *Model::colladaMaterialPtr(std::string dae_id)
 {
   for (auto &material: this->_collada_materials)
@@ -363,6 +345,39 @@ int Model::colladaImageIndex(std::string dae_id)
 }
 
 
+void Model::computeBoundingSphere(void)
+{
+
+  glm::vec3 total = glm::vec3(0.0f);
+  int count = 0;
+  for (auto &mesh: this->m_meshes)
+  {
+    for (auto &vertex: mesh.vertices)
+    {
+      total += vertex.position;
+      count += 1;
+    }
+  }
+  this->bounding_sphere_pos = total / (float)count;
+
+
+  this->bounding_sphere_radius2 = 0.0f;
+  for (auto &mesh: this->m_meshes)
+  {
+    for (auto &vertex: mesh.vertices)
+    {
+      float dist2 = glm::distance(glm::vec3(0.0f), vertex.position);
+      if (dist2 > this->bounding_sphere_radius2)
+        this->bounding_sphere_radius2 = dist2;
+    }
+  }
+
+  printf("name: %s\n", this->m_name.c_str());
+  printf("radius: %f\n\n", this->bounding_sphere_radius2);
+
+}
+
+
 void Model::loadDae(std::string directory, std::string filename, int id)
 {
   std::ifstream fh;
@@ -398,6 +413,7 @@ void Model::loadDae(std::string directory, std::string filename, int id)
   this->constructMeshes(&doc);
   this->applyMeshTransforms(&doc);
 
+  this->computeBoundingSphere();
 
   for (auto &mesh: this->m_meshes)
     mesh.setBufferData();

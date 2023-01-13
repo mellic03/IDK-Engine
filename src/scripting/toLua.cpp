@@ -39,7 +39,7 @@ void LuaInterface::ToLua::stdvec_stdstring(std::vector<std::string> vecOfString,
 {
   lua_newtable(LuaInterface::L);
 
-  for (int i=0; i<vecOfString.size(); i++)
+  for (size_t i=0; i<vecOfString.size(); i++)
   {
     lua_pushinteger(LuaInterface::L, i+1);
     lua_pushstring(LuaInterface::L, vecOfString[i].c_str());

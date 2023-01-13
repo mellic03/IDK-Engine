@@ -170,6 +170,13 @@ void draw_framebuffers(Renderer *ren)
 
 
     ImGui::BeginGroup();
+    ImGui::Text("Screen Quad");
+    ImGui::Image((ImTextureID)ren->screenQuadColorBuffers[0], {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+    ImGui::EndGroup();
+
+    ImGui::SameLine();
+
+    ImGui::BeginGroup();
     ImGui::Text("Dirlight depthmap");
     ImGui::Image((ImTextureID)ren->dirlight_depthmap, {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
     ImGui::EndGroup();

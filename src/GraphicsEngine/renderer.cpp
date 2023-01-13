@@ -47,6 +47,7 @@ void Renderer::compileShaders(void)
 
   this->createShader("gbuffer_geometry",  SHADER_GBUFFER_GEOMETRY);
   this->createShader("gbuffer_lighting",  SHADER_GBUFFER_LIGHTING);
+  this->createShader("fxaa",              SHADER_FXAA);
 
   // Shadows 
   //------------------------------------------------------
@@ -152,7 +153,6 @@ void Renderer::useShader(Shader *shader)
 
 void Renderer::postProcess(void)
 {
-  // this->active_shader.setInt("screenTexture", 0);
   this->active_shader->setFloatVector("kernel", 9, this->image_kernel);
   this->active_shader->setFloat("kernelDivisor", this->kernel_divisor);
   this->active_shader->setFloat("kernelOffsetDivisor", this->kernel_offset_divisor);
@@ -214,6 +214,98 @@ void Renderer::sendVolumetricData(void)
   this->active_shader->setFloat("volumetrics.step_multiplier",   this->volumetrics.step_multiplier);
   this->active_shader->setInt("volumetrics.resolution_divisor",  this->volumetrics.resolution_divisor);
   this->active_shader->setInt("volumetrics.num_blur_passes",     this->volumetrics.num_blur_passes);
+  
+
+  SceneGraph *scenegraph = World::scene.m_scenegraph;
+  char buffer[256];
+
+  this->active_shader->setInt("num_volumetric_pointlights", scenegraph->num_volumetric_pointlights);
+  this->active_shader->setInt("num_shadow_pointlights", scenegraph->num_volumetric_shadow_pointlights);
+
+
+  for (int i=0; i<MAX_POINTLIGHTS; i++)
+  {
+    sprintf(buffer, "volumetric_pointlights[%d].radius", i);
+    this->active_shader->setFloat(buffer, scenegraph->sorted_volumetric_pointlights[i]->radius);
+
+    sprintf(buffer, "volumetric_pointlights[%d].ambient", i);
+    this->active_shader->setVec3( buffer, scenegraph->sorted_volumetric_pointlights[i]->ambient);
+
+    sprintf(buffer, "volumetric_pointlights[%d].diffuse", i);
+    this->active_shader->setVec3( buffer, scenegraph->sorted_volumetric_pointlights[i]->diffuse);
+
+    sprintf(buffer, "volumetric_pointlights[%d].position", i);
+    this->active_shader->setVec3( buffer, scenegraph->sorted_volumetric_pointlights[i]->m_transform->getPos_worldspace());
+
+    sprintf(buffer, "volumetric_pointlights[%d].constant", i);
+    this->active_shader->setFloat(buffer, scenegraph->sorted_volumetric_pointlights[i]->constant);
+    
+    sprintf(buffer, "volumetric_pointlights[%d].linear", i);
+    this->active_shader->setFloat(buffer, scenegraph->sorted_volumetric_pointlights[i]->linear);
+
+    sprintf(buffer, "volumetric_pointlights[%d].quadratic", i);
+    this->active_shader->setFloat(buffer, scenegraph->sorted_volumetric_pointlights[i]->quadratic);
+
+    sprintf(buffer, "volumetric_pointlights[%d].bias", i);
+    this->active_shader->setFloat(buffer, scenegraph->sorted_volumetric_pointlights[i]->bias);
+
+    sprintf(buffer, "volumetric_pointlights[%d].fog_constant", i);
+    this->active_shader->setFloat(buffer, scenegraph->sorted_volumetric_pointlights[i]->fog_constant);
+
+    sprintf(buffer, "volumetric_pointlights[%d].fog_linear", i);
+    this->active_shader->setFloat(buffer, scenegraph->sorted_volumetric_pointlights[i]->fog_linear);
+
+    sprintf(buffer, "volumetric_pointlights[%d].fog_quadratic", i);
+    this->active_shader->setFloat(buffer, scenegraph->sorted_volumetric_pointlights[i]->fog_quadratic);
+
+    sprintf(buffer, "volumetric_pointlights[%d].fog_intensity", i);
+    this->active_shader->setFloat(buffer, scenegraph->sorted_volumetric_pointlights[i]->fog_intensity);
+  }
+
+  for (int i=0; i<MAX_POINTLIGHTS; i++)
+  {
+    glActiveTexture(GL_TEXTURE11 + i);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, scenegraph->sorted_volumetric_shadow_pointlights[i]->depthCubemap);
+    sprintf(buffer, "shadow_pointlights[%d].depthCubemap", i);
+    this->active_shader->setInt(buffer, 11 + i);
+
+
+    sprintf(buffer, "shadow_pointlights[%d].radius", i);
+    this->active_shader->setFloat(buffer, scenegraph->sorted_volumetric_shadow_pointlights[i]->radius);
+
+    sprintf(buffer, "shadow_pointlights[%d].ambient", i);
+    this->active_shader->setVec3( buffer, scenegraph->sorted_volumetric_shadow_pointlights[i]->ambient);
+
+    sprintf(buffer, "shadow_pointlights[%d].diffuse", i);
+    this->active_shader->setVec3( buffer, scenegraph->sorted_volumetric_shadow_pointlights[i]->diffuse);
+
+    sprintf(buffer, "shadow_pointlights[%d].position", i);
+    this->active_shader->setVec3( buffer, scenegraph->sorted_volumetric_shadow_pointlights[i]->m_transform->getPos_worldspace());
+
+    sprintf(buffer, "shadow_pointlights[%d].constant", i);
+    this->active_shader->setFloat(buffer, scenegraph->sorted_volumetric_shadow_pointlights[i]->constant);
+    
+    sprintf(buffer, "shadow_pointlights[%d].linear", i);
+    this->active_shader->setFloat(buffer, scenegraph->sorted_volumetric_shadow_pointlights[i]->linear);
+
+    sprintf(buffer, "shadow_pointlights[%d].quadratic", i);
+    this->active_shader->setFloat(buffer, scenegraph->sorted_volumetric_shadow_pointlights[i]->quadratic);
+
+    sprintf(buffer, "shadow_pointlights[%d].bias", i);
+    this->active_shader->setFloat(buffer, scenegraph->sorted_volumetric_shadow_pointlights[i]->bias);
+
+    sprintf(buffer, "shadow_pointlights[%d].fog_constant", i);
+    this->active_shader->setFloat(buffer, scenegraph->sorted_volumetric_shadow_pointlights[i]->fog_constant);
+
+    sprintf(buffer, "shadow_pointlights[%d].fog_linear", i);
+    this->active_shader->setFloat(buffer, scenegraph->sorted_volumetric_shadow_pointlights[i]->fog_linear);
+
+    sprintf(buffer, "shadow_pointlights[%d].fog_quadratic", i);
+    this->active_shader->setFloat(buffer, scenegraph->sorted_volumetric_shadow_pointlights[i]->fog_quadratic);
+
+    sprintf(buffer, "shadow_pointlights[%d].fog_intensity", i);
+    this->active_shader->setFloat(buffer, scenegraph->sorted_volumetric_shadow_pointlights[i]->fog_intensity);
+  }
 }
 
 
@@ -237,7 +329,7 @@ void Renderer::blurTexture(GLuint framebuffer, GLuint texture, int num_passes, f
   bool horizontal = true;
   bool first = true;
 
-  for (unsigned int i=0; i<num_passes; i++)
+  for (int i=0; i<num_passes; i++)
   {
     glBindFramebuffer(GL_FRAMEBUFFER, this->pingPongFBO[horizontal]);
 
@@ -361,32 +453,24 @@ void Renderer::genGBuffer(int x, int y)
 void Renderer::genGeneralBuffer(int x, int y)
 {
   glDeleteTextures(1, &this->generalColorBuffer);
-  glDeleteRenderbuffers(1, &this->generalRBO);
   glDeleteFramebuffers(1, &this->generalFBO);
 
   glGenFramebuffers(1, &this->generalFBO);
-  glBindFramebuffer(GL_FRAMEBUFFER, this->generalFBO);
   glGenTextures(1, &this->generalColorBuffer);
   
+  glBindFramebuffer(GL_FRAMEBUFFER, this->generalFBO);
+
   glBindTexture(GL_TEXTURE_2D, this->generalColorBuffer);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_FLOAT, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
   glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->generalColorBuffer, 0);
-
-
-  glGenRenderbuffers(1, &this->generalRBO);
-  glBindRenderbuffer(GL_RENDERBUFFER, this->generalRBO); 
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, x, y);  
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->generalRBO);
-
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 0, GL_TEXTURE_2D, this->generalColorBuffer, 0);
 
   GLuint attachments[1] = { GL_COLOR_ATTACHMENT0 };
   glDrawBuffers(1, attachments);
 
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -553,7 +637,7 @@ void Renderer::drawModel(Model *model)
     glBindVertexArray(mesh.VAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.VBO);
 
-    for (int i=0; i<mesh.IBOS.size(); i++)
+    for (size_t i=0; i<mesh.IBOS.size(); i++)
     {
       mesh.materials[i].diffuseMap.bind( GL_TEXTURE0 );
       mesh.materials[i].specularMap.bind(  GL_TEXTURE1 );
@@ -593,7 +677,7 @@ void Renderer::drawLightSource(Model *model, glm::vec3 diffuse)
     glBindVertexArray(mesh.VAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.VBO);
 
-    for (int i=0; i<mesh.IBOS.size(); i++)
+    for (size_t i=0; i<mesh.IBOS.size(); i++)
     {
       this->active_shader->setVec3("diffuseColor", diffuse);
 

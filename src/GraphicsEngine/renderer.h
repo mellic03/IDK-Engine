@@ -94,7 +94,7 @@ class Renderer {
 
     // Camera/user-facing
     //---------------------------------------------------------------------
-    Camera cam = Camera(0.1f, 500.0f);;
+    Camera cam = Camera(0.1f, 500.0f);
 
     float deltaTime = 0.0f;
     float fov = 90.0f, near_plane = 0.1f, far_plane = 500.0f;
@@ -105,7 +105,7 @@ class Renderer {
     };
     float kernel_divisor = 1.0f, kernel_offset_divisor = 600.0f;
 
-    glm::vec4 clearColor = {0.0, 0.0, 0.0, 1.0};
+    glm::vec4 clearColor = glm::vec4(29.0f/255.0f, 60.0f/255.0f, 60.0f/255.0f, 1.0f);
     float fog_start = 10, fog_end = 1000;
     float exposure = 1.0f, gamma = 2.2f;
 

@@ -33,7 +33,7 @@
 
 
 
-int ENTRY(int argc, char **argv)
+int ENTRY(int argc, const char **argv)
 {
   SDL_Window *window = NULL;
   SDL_GLContext gl_context;
@@ -100,6 +100,8 @@ int ENTRY(int argc, char **argv)
   scenegraph.loadObject("assets/environment/terrain0/");
   scenegraph.loadObject("assets/environment/terrain1/");
   scenegraph.loadObject("assets/environment/terrain2/");
+  scenegraph.loadObject("assets/environment/wall/");
+  scenegraph.loadObject("assets/environment/bunker/");
   scenegraph.loadObject("assets/npc/muscleskele/");
   scenegraph.loadObject("assets/npc/fren/");
   scenegraph.loadObject("assets/props/table/");
@@ -168,7 +170,7 @@ int ENTRY(int argc, char **argv)
     ImGui::NewFrame();
 
     int x, y, w, h;
-    draw_ui(ren, scene_1, &player, &x, &y, &w, &h, argv[1]);
+    draw_ui(ren, scene_1, &player, &x, &y, &w, &h, "--dev2");
 
     ren->perFrameUpdate();
 
@@ -192,7 +194,9 @@ int ENTRY(int argc, char **argv)
 
     // Render depthmaps
     //---------------------------------
+    glEnable(GL_DEPTH_CLAMP);
     scene_1->drawDepthmaps();
+    glDisable(GL_DEPTH_CLAMP);
     //---------------------------------
 
 
@@ -235,6 +239,7 @@ int ENTRY(int argc, char **argv)
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //---------------------------------
+
 
 
     // G-Buffer lighting pass
@@ -311,16 +316,15 @@ int ENTRY(int argc, char **argv)
     // Draw to quad
     //---------------------------------
     glViewport(0, 0, w, h);
-    glBindVertexArray(ren->quadVAO);
     glDisable(GL_DEPTH_TEST);
 
     ren->useShader(SHADER_SCREENQUAD);
     ren->postProcess();
     
-    if (strcmp(argv[1], "--dev2") == 0)
-      glBindFramebuffer(GL_FRAMEBUFFER, ren->screenQuadFBO);
-    else
-      glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // if (strcmp(argv[1], "--dev2") == 0)
+      glBindFramebuffer(GL_FRAMEBUFFER, ren->generalFBO);
+    // else
+    //   glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
    
@@ -337,11 +341,35 @@ int ENTRY(int argc, char **argv)
     ren->active_shader->setInt("bloomTexture", 12);
 
 
+    glBindVertexArray(ren->quadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
   
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    // //---------------------------------
+    //---------------------------------
+
+
+    // FXAA
+    //---------------------------------
+    glViewport(0, 0, w, h);
+
+    ren->useShader(SHADER_FXAA);
+    glBindFramebuffer(GL_FRAMEBUFFER, ren->screenQuadFBO);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glActiveTexture(GL_TEXTURE10);
+    glBindTexture(GL_TEXTURE_2D, ren->generalColorBuffer);
+    ren->active_shader->setInt("screenTexture", 10);
+
+    glBindVertexArray(ren->quadVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    //---------------------------------
+
+
+
 
     glEnable(GL_DEPTH_TEST);
     ///////////////////////////////////////////////////////////////////////////////////////////// Render stop

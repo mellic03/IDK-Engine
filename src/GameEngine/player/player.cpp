@@ -59,33 +59,29 @@ void Player::key_input(Renderer *ren)
   glm::vec3 temp_front = { this->cam->front.x, 0.0f, this->cam->front.z };
   temp_front = glm::normalize(temp_front);
 
-  glm::vec3 delta_pos1 = *this->getPos();
-  glm::vec3 delta_pos2 = delta_pos1;
-
   this->cam->input();
 
   if (this->fly)
   {
     if (state[SDL_SCANCODE_W])
-      delta_pos1 += this->move_speed * ren->deltaTime * temp_front;
+      *this->getPos() += this->move_speed * ren->deltaTime * temp_front;
 
     if (state[SDL_SCANCODE_S])
-      delta_pos1 -= this->move_speed * ren->deltaTime * temp_front;
+      *this->getPos() -= this->move_speed * ren->deltaTime * temp_front;
    
     if (state[SDL_SCANCODE_A])
-      delta_pos1 -= this->move_speed * ren->deltaTime * ren->cam.right;
+      *this->getPos() -= this->move_speed * ren->deltaTime * ren->cam.right;
    
     if (state[SDL_SCANCODE_D])
-      delta_pos1 += this->move_speed * ren->deltaTime * ren->cam.right;
+      *this->getPos() += this->move_speed * ren->deltaTime * ren->cam.right;
 
     if (state[SDL_SCANCODE_LCTRL])
-      delta_pos1.y -= this->move_speed * ren->deltaTime;
+      this->getPos()->y -= this->move_speed * ren->deltaTime;
 
     if (state[SDL_SCANCODE_SPACE])
-      delta_pos1.y += this->move_speed * ren->deltaTime;
+      this->getPos()->y += this->move_speed * ren->deltaTime;
     
 
-    *this->getPos() += this->getTransform()->localToWorld(delta_pos1 - delta_pos2, true);
 
     return;
   }
@@ -123,7 +119,7 @@ void Player::key_input(Renderer *ren)
   else
     frames_not_grounded = 0;
 
-  if (headbob && frames_not_grounded < 25)
+  if (headbob && frames_not_grounded < 60)
     this->footstepsound.play();
   else
     this->footstepsound.stop();
@@ -155,12 +151,10 @@ void Player::mouse_input(Renderer *ren, SDL_Event *event)
 
   if (event->type == SDL_MOUSEMOTION && SDL_GetRelativeMouseMode())
   {
-    glm::quat dpitch = glm::angleAxis(this->cam->rot_speed * ren->deltaTime * event->motion.yrel, glm::vec3(1.0f, 0.0f, 0.0f));
-    glm::quat dyaw   = glm::angleAxis(this->cam->rot_speed * ren->deltaTime * event->motion.xrel, glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::quat dpitch = glm::angleAxis(-this->cam->rot_speed * event->motion.yrel, glm::vec3(1.0f, 0.0f, 0.0f));
+    glm::quat dyaw   = glm::angleAxis(-this->cam->rot_speed * event->motion.xrel, glm::vec3(0.0f, 1.0f, 0.0f));
 
-    this->getTransform()->orientation = dpitch * this->getTransform()->orientation * dyaw;
-
-    // this->getTransform()->orientation = dpitch * this->getTransform()->orientation * dyaw;
+    this->getTransform()->orientation = dyaw * this->getTransform()->orientation * dpitch;
   }
 
   else if (event->type == SDL_KEYDOWN)

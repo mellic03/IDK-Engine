@@ -13,7 +13,7 @@ struct VolumetricData {
   float step_multiplier = 1.01;
   
   int resolution_divisor = 2;
-  int num_blur_passes = 5;
+  int num_blur_passes = 2;
 
   float texel_size = 1.0f;
   float x_strength = 1.0f;
@@ -29,12 +29,12 @@ struct BloomData {
 };
 
 struct DirLight {
-  glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
+  glm::vec3 position = glm::vec3(10.0f, 15.0f, 10.0f);
   glm::vec3 direction = glm::vec3(0.0, -1.0, 0.0);
-  glm::vec3 diffuse = glm::vec3(0.0f, 0.0f, 0.0f);
-  glm::vec3 ambient = glm::vec3(0.0f, 0.0f, 0.0f);
+  glm::vec3 diffuse = glm::vec3(0.82f, 0.69f, 0.37f);
+  glm::vec3 ambient = glm::vec3(0.26f, 0.26f, 0.26f);
   float bias = 0.15f;
-  float fog_intensity = 0.01f;
+  float fog_intensity = 0.005f;
 };
 
 struct PointLight {

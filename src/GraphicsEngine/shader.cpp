@@ -19,7 +19,18 @@ ShaderSource parse_shader(const std::string &vertex_shader, const std::string &f
     while (getline(gs_stream, line))
       ss[2] << line << '\n';
 
-  return (ShaderSource){ss[0].str(), ss[1].str(), geometry_shader == "NULL" ? "NULL" : ss[2].str()};
+  ShaderSource src;
+
+  src.vertex_source = ss[0].str();
+  src.fragment_source = ss[1].str();
+
+  if (geometry_shader == "NULL")
+    src.geometry_source = "NULL";
+  
+  else
+    src.geometry_source = ss[2].str();
+
+  return src;
 }
 
 unsigned int compile_shader(unsigned int type, const std::string &source)

@@ -45,10 +45,8 @@ class Mesh {
     void transformByMatrix(glm::mat4 matrix);
 
     void load(std::string filepath);
-    void genbuffers(void);
     void setBufferData(void);
 
-    void draw(void);
 
 };
 

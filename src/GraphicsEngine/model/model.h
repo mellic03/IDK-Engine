@@ -24,7 +24,6 @@ class Model {
 
     Mesh *meshPtr(std::string dae_id);
     Texture *texturePtr(std::string dae_id);
-    Texture *texturePtr_materialID(std::string material_dae_id);
     ColladaMaterial *colladaMaterialPtr(std::string dae_id);
     ColladaEffect *colladaEffectPtr(std::string dae_id);
     ColladaEffect *colladaEffectPtr_materialID(std::string dae_id);
@@ -35,12 +34,18 @@ class Model {
     void loadLibraryEffects(rapidxml::xml_document<> *doc);
     void loadLibraryMaterials(rapidxml::xml_document<> *doc);
     int colladaImageIndex(std::string dae_id);
+    void computeBoundingSphere(void);
 
     Transform *_transform;
 
   public:
+
     int m_ID = 0;
     std::string m_name = "DEFAULT";
+
+    glm::vec3 bounding_sphere_pos = glm::vec3(0.0f);
+    float bounding_sphere_radius2 = 0.0f;
+
 
     std::vector<Mesh> m_meshes;
 

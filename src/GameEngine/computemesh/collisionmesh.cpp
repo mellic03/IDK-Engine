@@ -1,5 +1,29 @@
 #include "collisionmesh.h"
 
+void CollisionMesh::computeBoundingSphere(void)
+{
+
+  glm::vec3 total = glm::vec3(0.0f);
+  int count = 0;
+  for (auto &vertex: this->m_vertices)
+  {
+    total += vertex.position;
+    count += 1;
+  }
+  this->bounding_sphere_pos = total / (float)count;
+
+
+  this->bounding_sphere_radiusSQ = 0.0f;
+  for (auto &vertex: this->m_vertices)
+  {
+    float dist2 = glm::distance2(glm::vec3(0.0f), vertex.position);
+    if (dist2 > this->bounding_sphere_radiusSQ)
+      this->bounding_sphere_radiusSQ = dist2;
+  }
+
+  printf("radiusSQ: %f\n\n", this->bounding_sphere_radiusSQ);
+}
+
 
 void CollisionMesh::load(std::string filepath)
 {
@@ -43,5 +67,7 @@ void CollisionMesh::load(std::string filepath)
       this->m_vertices.push_back(v3);
     }
   }
+
+  this->computeBoundingSphere();
 
 }

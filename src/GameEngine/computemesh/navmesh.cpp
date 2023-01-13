@@ -10,7 +10,7 @@ bool isSameNode(Node node, glm::vec3 pos)
 
 int NavMesh::indexOfNode(glm::vec3 pos)
 {
-  for (int i=0; i<this->nodes.size(); i++)
+  for (size_t i=0; i<this->nodes.size(); i++)
     if (this->nodes[i].position == pos)
       return i;
 
@@ -22,11 +22,11 @@ void Node::removeDuplicateNeighbours(void)
 {
   std::vector<int> deduped_neighbours;
 
-  for (int i=0; i<this->neighbours.size(); i++)
+  for (size_t i=0; i<this->neighbours.size(); i++)
   {
     bool is_duplicate = false;
 
-    for (int j=0; j<i; j++)
+    for (size_t j=0; j<i; j++)
       if (this->neighbours[i] == this->neighbours[j])
         is_duplicate = true;
   
@@ -48,7 +48,7 @@ int NavMesh::unvisitedNeighbours(Node *node)
 {
   int unvisited_neighbours = 0;
 
-  for (int i=0; i<node->neighbours.size(); i++)
+  for (size_t i=0; i<node->neighbours.size(); i++)
   {
     Node *neighbour = &this->nodes[node->neighbours[i]];
     if (neighbour->visited == false)
@@ -107,15 +107,15 @@ void NavMesh::load(std::string filepath)
       //--------------------------------------
     }
   }
-  for (int i=0; i<this->nodes.size(); i++)
+  for (size_t i=0; i<this->nodes.size(); i++)
     this->nodes[i].id = i;
 
-  for (int i=0; i<this->nodes.size(); i++)
+  for (size_t i=0; i<this->nodes.size(); i++)
   {
     this->nodes[i].removeDuplicateNeighbours();
 
     // printf("Node: %d, neighbours: ", i);
-    // for (int j=0; j<this->nodes[i].neighbours.size(); j++)
+    // for (size_t j=0; j<this->nodes[i].neighbours.size(); j++)
     //   printf("%d ", this->nodes[i].neighbours[j]);
     // printf("\n");
   }
@@ -128,7 +128,7 @@ Node *NavMesh::closestNode(glm::vec3 pos)
   int index_of_nearest = 0;
   float shortest_distance = glm::distance(this->nodes[0].position, pos);
 
-  for (int i=0; i<this->nodes.size(); i++)
+  for (size_t i=0; i<this->nodes.size(); i++)
   {
     float dist = glm::distance(this->nodes[i].position, pos);
     if (dist < shortest_distance)
@@ -152,7 +152,7 @@ std::vector<glm::vec3> NavMesh::path(glm::vec3 from, glm::vec3 to)
   printf("end: node %d, (%f, %f, %f)\n",     ending_node->id,   ending_node->position.x,   ending_node->position.y,   ending_node->position.z);
 
 
-  for (int i=0; i<this->nodes.size(); i++)
+  for (size_t i=0; i<this->nodes.size(); i++)
   {
     this->nodes[i].tent_dist = INFINITY;
     this->nodes[i].visited = false;
@@ -174,7 +174,7 @@ std::vector<glm::vec3> NavMesh::path(glm::vec3 from, glm::vec3 to)
       break;
     }
 
-    for (int i=0; i<current_node->neighbours.size(); i++)
+    for (size_t i=0; i<current_node->neighbours.size(); i++)
     {
       Node *neighbour = &this->nodes[current_node->neighbours[i]];
 
@@ -197,7 +197,7 @@ std::vector<glm::vec3> NavMesh::path(glm::vec3 from, glm::vec3 to)
     // Find node with smallest tent_dist in ENTIRE graph
     float smallest_tent = INFINITY;
     int indexof_next_node = -1;
-    for (int i=0; i<this->nodes.size(); i++)
+    for (size_t i=0; i<this->nodes.size(); i++)
     {
       if (this->nodes[i].visited == false)
       {
@@ -224,7 +224,7 @@ std::vector<glm::vec3> NavMesh::path(glm::vec3 from, glm::vec3 to)
     current_node = &this->nodes[current_node->previous];
   }
 
-  // for (int i=0; i<this->nodes.size(); i++)
+  // for (size_t i=0; i<this->nodes.size(); i++)
   //   printf("node %d: %s\n", this->nodes[i].id, (this->nodes[i].visited) ? "visited" : "unvisited");
 
   return navpath;
