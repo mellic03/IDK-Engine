@@ -84,9 +84,9 @@ m_template_name: player
 m_given_name: Player
 objectID: 5
 parentID: -1
-position: 9.47516 7.9613 20.9344
-velocity: -0.0112858 0 0.19084
-orientation: -0.00122066 0.95162 0.0038519 0.30158
+position: 9.66597 7.95883 23.6877
+velocity: -0.14271 -0.0100456 -0.0114837
+orientation: -0.0402833 0.67724 0.0373139 0.731134
 #GAMEOBJECT END
 
 #GAMEOBJECT BEGIN
@@ -104,9 +104,9 @@ m_template_name: building3
 m_given_name: building3
 objectID: 7
 parentID: -1
-position: 18.5 0.49 0.98
+position: 18.54 0.49 -0.82
 velocity: 0 0 0
-orientation: 0 -6.08805e-22 0 -1
+orientation: 0 -0.707107 0 0.707107
 #GAMEOBJECT END
 
 #GAMEOBJECT BEGIN

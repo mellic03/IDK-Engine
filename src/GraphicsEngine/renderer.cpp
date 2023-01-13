@@ -17,6 +17,7 @@ void Renderer::createShader(std::string filename, ShaderType type)
   ShaderSource src = parse_shader(filepath + ".vs", filepath + ".fs", "NULL");
   Shader shader;
   shader.set(create_shader(src.vertex_source, src.fragment_source, src.geometry_source));
+  shader.mapUniformLocs(); 
   this->shaders[type] = shader;
 }
 
@@ -56,8 +57,10 @@ void Renderer::compileShaders(void)
   ShaderSource pointshadow_src = parse_shader("assets/shaders/pointshadow.vs", "assets/shaders/pointshadow.fs", "assets/shaders/pointshadow.gs");
   Shader pointshadow;
   pointshadow.set(create_shader(pointshadow_src.vertex_source, pointshadow_src.fragment_source, pointshadow_src.geometry_source));
+  pointshadow.mapUniformLocs();
   this->shaders[SHADER_POINTSHADOW] = pointshadow;
   //------------------------------------------------------
+
 }
 
 void Renderer::init(void)
@@ -663,6 +666,7 @@ void Renderer::drawModel(Model *model)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
   }
+
 }
 
 

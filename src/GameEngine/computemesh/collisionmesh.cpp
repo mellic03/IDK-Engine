@@ -21,7 +21,7 @@ void CollisionMesh::computeBoundingSphere(void)
       this->bounding_sphere_radiusSQ = dist2;
   }
 
-  printf("radiusSQ: %f\n\n", this->bounding_sphere_radiusSQ);
+  // printf("radiusSQ: %f\n\n", this->bounding_sphere_radiusSQ);
 }
 
 

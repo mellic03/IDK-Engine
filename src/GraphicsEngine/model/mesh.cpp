@@ -46,14 +46,14 @@ void Mesh::setBufferData(void)
 
 
   // Indexing
-  for (int i=0; i<this->IBOS.size(); i++)
+  for (size_t i=0; i<this->IBOS.size(); i++)
   {
     glGenBuffers(1, &this->IBOS[i]);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->IBOS[i]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices[i].size() * sizeof(GLuint), &this->indices[i][0], GL_STATIC_DRAW);
   }
 }
-
+ 
 
 void Mesh::transformByMatrix(glm::mat4 matrix)
 {

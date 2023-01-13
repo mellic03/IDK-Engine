@@ -216,7 +216,7 @@ int ENTRY(int argc, const char **argv)
     ren->active_shader->setMat4("view", glm::mat4(1.0f));
 
     float aspect = ren->viewport_width / ren->viewport_height;
-    float height = ren->far_plane * tan(ren->fov/2.0f);
+    float height = ren->far_plane * tan(ren->fov);
     float width = aspect * height;
 
     glm::mat4 model = glm::mat4(1.0f);
@@ -367,8 +367,6 @@ int ENTRY(int argc, const char **argv)
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //---------------------------------
-
-
 
 
     glEnable(GL_DEPTH_TEST);

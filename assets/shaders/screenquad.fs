@@ -3,9 +3,9 @@
 in vec2 TexCoords;
 out vec4 FragColor;
 
-uniform float kernel[9];
-float kernelDivisor = 1;
-uniform float kernelOffsetDivisor;
+// uniform float kernel[9];
+// float kernelDivisor = 1;
+// uniform float kernelOffsetDivisor;
 
 uniform sampler2D screenTexture;
 uniform sampler2D volumetricLightsTexture;
@@ -20,30 +20,30 @@ void main()
 {
   // Image convolution
   // -----------------------------------------
-  float offset = 1.0 / kernelOffsetDivisor;
-  vec2 offsets[9] = vec2[](
-      vec2(-offset,  offset), // top-left
-      vec2( 0.0f,    offset), // top-center
-      vec2( offset,  offset), // top-right
-      vec2(-offset,  0.0f),   // center-left
-      vec2( 0.0f,    0.0f),   // center-center
-      vec2( offset,  0.0f),   // center-right
-      vec2(-offset, -offset), // bottom-left
-      vec2( 0.0f,   -offset), // bottom-center
-      vec2( offset, -offset)  // bottom-right    
-  );
+  // float offset = 1.0 / kernelOffsetDivisor;
+  // vec2 offsets[9] = vec2[](
+  //     vec2(-offset,  offset), // top-left
+  //     vec2( 0.0f,    offset), // top-center
+  //     vec2( offset,  offset), // top-right
+  //     vec2(-offset,  0.0f),   // center-left
+  //     vec2( 0.0f,    0.0f),   // center-center
+  //     vec2( offset,  0.0f),   // center-right
+  //     vec2(-offset, -offset), // bottom-left
+  //     vec2( 0.0f,   -offset), // bottom-center
+  //     vec2( offset, -offset)  // bottom-right    
+  // );
 
-  float ImageKernel[9] = float[](
-      0, // top-left
-      0, // top-center
-      0, // top-right
-      0,   // center-left
-      1,   // center-center
-      0,   // center-right
-      0, // bottom-left
-      0, // bottom-center
-      0  // bottom-right    
-  );
+  // float ImageKernel[9] = float[](
+  //     0, // top-left
+  //     0, // top-center
+  //     0, // top-right
+  //     0,   // center-left
+  //     1,   // center-center
+  //     0,   // center-right
+  //     0, // bottom-left
+  //     0, // bottom-center
+  //     0  // bottom-right    
+  // );
 
   // for (int i=0; i<9; i++)
   //   ImageKernel[i] = ImageKernel[i]/kernelDivisor;

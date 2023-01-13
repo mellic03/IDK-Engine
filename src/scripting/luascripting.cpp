@@ -13,7 +13,7 @@ void luaMain(Renderer *ren, Player *player, std::list<GameObject> *gameobjects)
   std::vector<glm::vec3> positions, velocities;
 
   auto element = gameobjects->begin();
-  for (int i=0; i<gameobjects->size(); i++)
+  for (size_t i=0; i<gameobjects->size(); i++)
   {
     GameObject *object = &(*element);
 

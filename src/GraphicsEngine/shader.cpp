@@ -80,32 +80,58 @@ unsigned int create_shader(const std::string &vertex_shader, const std::string &
 }
 
 
-void Shader::setVec3(const char *uniform_name, glm::vec3 vec)
+void Shader::mapUniformLocs(void)
 {
-  int uniform_loc = glGetUniformLocation(this->id, uniform_name);
-  glUniform3fv(uniform_loc, 1, glm::value_ptr(vec));
+  int count;
+
+  GLint size; // size of the variable
+  GLenum type; // type of the variable (float, vec3 or mat4, etc)
+
+  const GLsizei bufSize = 64; // maximum name length
+  GLchar name[bufSize]; // variable name in GLSL
+  GLsizei length; // name length
+
+
+  glGetProgramiv(this->id, GL_ACTIVE_UNIFORMS, &count);
+
+  for (int i=0; i<count; i++)
+  {
+    glGetActiveUniform(this->id, (GLuint)i, bufSize, &length, &size, &type, name);
+
+    this->uniforms[std::string(name)] = glGetUniformLocation(this->id, name);
+    this->mapped_uniforms[std::string(name)] = true;
+
+    printf("Uniform #%d Type: %u Name: %s\n", i, type, std::string(name).c_str());
+  }
 }
 
-void Shader::setMat4(const char *uniform_name, glm::mat4 mat)
+
+void Shader::setVec3(std::string uniform_name, glm::vec3 vec)
 {
-  int uniform_loc = glGetUniformLocation(this->id, uniform_name);
-  glUniformMatrix4fv(uniform_loc, 1, GL_FALSE, glm::value_ptr(mat));
+    this->uniforms[uniform_name] = glGetUniformLocation(this->id, uniform_name.c_str());
+  glUniform3fv(this->uniforms[uniform_name], 1, glm::value_ptr(vec));
 }
 
-void Shader::setInt(const char *uniform_name, GLuint value)
+void Shader::setMat4(std::string uniform_name, glm::mat4 mat)
 {
-  int uniform_loc = glGetUniformLocation(this->id, uniform_name);
-  glUniform1i(uniform_loc, value);
+    this->uniforms[uniform_name] = glGetUniformLocation(this->id, uniform_name.c_str());
+  glUniformMatrix4fv(this->uniforms[uniform_name], 1, GL_FALSE, glm::value_ptr(mat));
 }
 
-void Shader::setFloat(const char *uniform_name, float value)
+void Shader::setInt(std::string uniform_name, GLuint value)
 {
-  int uniform_loc = glGetUniformLocation(this->id, uniform_name);
-  glUniform1f(uniform_loc, value);
+    this->uniforms[uniform_name] = glGetUniformLocation(this->id, uniform_name.c_str());
+  glUniform1i(this->uniforms[uniform_name], value);
 }
 
-void Shader::setFloatVector(const char *uniform_name, int size, float *ptr)
+void Shader::setFloat(std::string uniform_name, float value)
 {
-  int uniform_loc = glGetUniformLocation(this->id, uniform_name);
-  glUniform1fv(uniform_loc, size, ptr);
+    this->uniforms[uniform_name] = glGetUniformLocation(this->id, uniform_name.c_str());
+  glUniform1f(this->uniforms[uniform_name], value);
+}
+
+void Shader::setFloatVector(std::string uniform_name, int size, float *ptr)
+{
+    this->uniforms[uniform_name] = glGetUniformLocation(this->id, uniform_name.c_str());
+  glUniform1fv(this->uniforms[uniform_name], size, ptr);
 }

@@ -4,6 +4,10 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <map>
+#include <vector>
+#include <functional>
+
 
 #include <GL/glew.h>
 #include <GL/glu.h>
@@ -41,17 +45,38 @@ unsigned int compile_shader(unsigned int type, const std::string &source);
 unsigned int create_shader(const std::string &vertex_shader, const std::string &fragment_shader, const std::string &geometry_shader);
 
 
+template <typename K, typename V>
+inline V GetWithDef(const  std::map <K,V> & m, const K & key, const V & defval ) {
+   typename std::map<K,V>::const_iterator it = m.find( key );
+   if ( it == m.end() ) {
+      return defval;
+   }
+   else {
+      return it->second;
+   }
+}
+
+
 class Shader {
   private:
 
   public:
+    
     GLuint id;
-    Shader() { };
+    std::map<std::string, bool>  mapped_uniforms;
+
+    std::map <std::string, GLint> uniforms;
+
+    Shader() {};
+
+    void mapUniformLocs(void);
     void set(GLuint shader_id) { this->id = shader_id; };
     GLuint get(void) { return this->id; };
-    void setVec3(const char *uniform_name, glm::vec3 vec);
-    void setMat4(const char *uniform_name, glm::mat4 mat);
-    void setInt(const char *uniform_name, GLuint value);
-    void setFloat(const char *uniform_name, float value);
-    void setFloatVector(const char *uniform_name, int size, float *ptr);
+
+    void setVec3(std::string uniform_name, glm::vec3 vec);
+    void setMat4(std::string uniform_name, glm::mat4 mat);
+    void setInt(std::string uniform_name, GLuint value);
+    void setFloat(std::string uniform_name, float value);
+    void setFloatVector(std::string uniform_name, int size, float *ptr);
 };
+

@@ -34,7 +34,6 @@ class Model {
     void loadLibraryEffects(rapidxml::xml_document<> *doc);
     void loadLibraryMaterials(rapidxml::xml_document<> *doc);
     int colladaImageIndex(std::string dae_id);
-    void computeBoundingSphere(void);
 
     Transform *_transform;
 
@@ -42,10 +41,6 @@ class Model {
 
     int m_ID = 0;
     std::string m_name = "DEFAULT";
-
-    glm::vec3 bounding_sphere_pos = glm::vec3(0.0f);
-    float bounding_sphere_radius2 = 0.0f;
-
 
     std::vector<Mesh> m_meshes;
 
