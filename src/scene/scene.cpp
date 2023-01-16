@@ -354,6 +354,7 @@ void Scene::drawGeometry_batched()
   this->drawStatic();
   this->drawActors();
   this->drawLightsources();
+  this->drawBillboards(ren->colorFBO);
 }
 
 
@@ -381,25 +382,20 @@ void Scene::drawStatic()
 void Scene::drawBillboards(GLuint framebuffer)
 {
   GLCALL( glDisable(GL_CULL_FACE) );
-  // GLCALL( glDepthMask(GL_FALSE) );
-  // GLCALL( glEnable(GL_BLEND) );
-  // GLCALL( glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) );
-  glEnable(GL_ALPHA_TEST);
-  glAlphaFunc(GL_GREATER, 0.5f);
-  // glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
 
+  this->m_scenegraph->perFrameUpdate();
 
   // Blit depth information from g-buffer
   //---------------------------------
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, ren->gbufferFBO);
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
-  glBlitFramebuffer(
-    0, 0, this->ren->viewport_width, this->ren->viewport_height,
-    0, 0, this->ren->viewport_width, this->ren->viewport_height,
-    GL_DEPTH_BUFFER_BIT, GL_NEAREST
-  );
+  // glBindFramebuffer(GL_READ_FRAMEBUFFER, ren->gbufferFBO);
+  // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
+  // glBlitFramebuffer(
+  //   0, 0, this->ren->viewport_width, this->ren->viewport_height,
+  //   0, 0, this->ren->viewport_width, this->ren->viewport_height,
+  //   GL_DEPTH_BUFFER_BIT, GL_NEAREST
+  // );
   
-  glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+  // glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
   //---------------------------------
 
 
@@ -410,29 +406,24 @@ void Scene::drawBillboards(GLuint framebuffer)
   this->ren->active_shader->setMat4("view_noTranslate", view_noTranslate);
   this->ren->active_shader->setInt("diffuseMap", 0);
 
+
+  GLCALL( glActiveTexture(GL_TEXTURE0) );
+  GLCALL( glBindTexture(GL_TEXTURE_2D, this->m_scenegraph->templatePtr("grass")->m_model->m_meshes[0].materials[0].diffuseMap.m_texture_obj) );
+
+
   std::map<std::string, InstanceData> *instance_data = this->m_scenegraph->getInstanceData();
   for (auto it = instance_data->begin(); it != instance_data->end(); ++it)
   {
     auto &data = (*it).second;
+    
+    GLCALL( glBindBuffer(GL_ARRAY_BUFFER, data.VBO) );
 
-    GLCALL( glActiveTexture(GL_TEXTURE0) );
-    GLCALL( glBindTexture(GL_TEXTURE_2D, data.models[0]->m_meshes[0].materials[0].diffuseMap.m_texture_obj) );
-
-    for (GLuint i=0; i<data.model_matrices.size(); i++)
-    {
-      glBindVertexArray(data.models[i]->m_meshes[0].VAO);
-      glDrawArraysInstanced(GL_TRIANGLES, 0, data.models[i]->m_meshes[0].vertices.size(), data.model_matrices.size());
-      // glDrawElementsInstanced(GL_TRIANGLES, data.models[i]->m_meshes[0].indices.size(), GL_UNSIGNED_INT, 0, data.model_matrices.size());
-    }
+    glBindVertexArray(data.models[0]->m_meshes[0].VAO);
+    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, data.model_transforms.size());
   }
 
 
   GLCALL( glEnable(GL_CULL_FACE) );
-  glDisable(GL_ALPHA_TEST);
-  GLCALL( glDepthMask(GL_TRUE) );
-  GLCALL( glDisable(GL_BLEND) );
-
-  this->_billboard_queue.clear();
 }
 
 

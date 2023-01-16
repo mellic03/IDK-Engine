@@ -51,20 +51,14 @@ struct InstanceData {
     this->model_matrices.push_back(transform->getModelMatrix());
     this->model_transforms.push_back(transform);
     this->models.push_back(model);
-
-    this->genVBO();
   }
 
 
-  void perFrameUpdate()
+  void setVertexAttribs()
   {
+    this->genVBO();
     GLCALL( glBindBuffer(GL_ARRAY_BUFFER, this->VBO) );
 
-    for (size_t i=0; i<this->model_transforms.size(); i++)
-    {
-      this->model_matrices[i] = this->model_transforms[i]->getModelMatrix();
-    }
-  
     for (auto &model: this->models)
     {
       for (auto &mesh: model->m_meshes)
@@ -96,6 +90,16 @@ struct InstanceData {
 
         GLCALL( glBindVertexArray(0) );
       }
+    }
+  }
+
+  void perFrameUpdate()
+  {
+    GLCALL( glBindBuffer(GL_ARRAY_BUFFER, this->VBO) );
+
+    for (size_t i=0; i<this->model_transforms.size(); i++)
+    {
+      this->model_matrices[i] = this->model_transforms[i]->getModelMatrix();
     }
   }
 };

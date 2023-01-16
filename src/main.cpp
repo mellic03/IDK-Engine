@@ -205,6 +205,7 @@ int ENTRY(int argc, const char **argv)
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
     ren->useShader(SHADER_GBUFFER_LIGHTING);
     scene->sendLightsToShader();
 
@@ -220,11 +221,9 @@ int ENTRY(int argc, const char **argv)
     glBindTexture(GL_TEXTURE_2D, ren->gbuffer_albedospec);
     ren->active_shader->setInt("gAlbedoSpec", 2);
 
-
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, ren->gbuffer_emission);
     ren->active_shader->setInt("gEmission", 3);
-
 
     glBindVertexArray(ren->quadVAO);
 
@@ -232,8 +231,6 @@ int ENTRY(int argc, const char **argv)
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glEnable(GL_DEPTH_TEST);
 
-
-    scene->drawBillboards(ren->colorFBO);
   
     glBindVertexArray(0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

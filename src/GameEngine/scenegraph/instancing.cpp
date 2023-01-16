@@ -15,9 +15,9 @@ std::map<std::string, InstanceData> *SceneGraph::getInstanceData(void)
 
 void SceneGraph::perFrameUpdate(void)
 {
-  // for (auto it=this->_instance_data.begin(); it!=this->_instance_data.end(); ++it)
-  // {
-  //   auto &data = *it;
-  //   data.second.perFrameUpdate();
-  // }
+  for (auto it=this->_instance_data.begin(); it!=this->_instance_data.end(); ++it)
+  {
+    auto &data = *it;
+    data.second.perFrameUpdate();
+  }
 }

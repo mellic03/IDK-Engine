@@ -148,22 +148,50 @@ void EntityComponent::_draw_terrain(GameObject *object)
       if (ImGui::Button("Do the thing"))
       {
         first = false;
-
-        int width = 30;
         
-        for (int i=0; i<width; i++)
-          for (int j=0; j<width; j++)
+        int count = 0;
+
+        glm::mat4 model_mat = object->getTransform()->getModelMatrix();
+
+        for (int i=0; i<object->m_model->m_meshes[0].vertices.size(); i+=1)
+        {
+          Vertex vertex = object->m_model->m_meshes[0].vertices[i];
+          vertex.normal = glm::normalize(vertex.normal);
+
+          if (vertex.normal.y < 0.5f)
+            continue;
+
+          glm::vec3 p = vertex.position;
+          
+          p = model_mat * glm::vec4(p.x, p.y, p.z, 1.0f);
+
+          for (int i=0; i<5; i++)
           {
-            float r1 = (float)(rand()%10) - 5.0f;   r1 *= ((float)(rand()%100) - 50.0f)/50.0f;
-            float r2 = (float)(rand()%10) - 5.0f;   r2 *= ((float)(rand()%100) - 50.0f)/50.0f;
-            float h = 0.5f * sin(i + j);
-            World::scene.m_scenegraph->newObjectInstance("grass", glm::vec3((float)i + r1, h, (float)j + r2));
+            float r1 = -1.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f - -1.0f)));
+            float r2 = -1.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f - -1.0f)));
+            World::scene.m_scenegraph->newObjectInstance("grass", p + glm::vec3(r1, 0.0f, r2));
+            count += 1;
           }
+
+        }
+
+        // int width = 30;
+        // for (int i=0; i<width; i++)
+        //   for (int j=0; j<width; j++)
+        //   {
+        //     float r1 = (float)(rand()%10) - 5.0f;   r1 *= ((float)(rand()%100) - 50.0f)/50.0f;
+        //     float r2 = (float)(rand()%10) - 5.0f;   r2 *= ((float)(rand()%100) - 50.0f)/50.0f;
+        //     float h = 0.5f * sin(i + j);
+        //     World::scene.m_scenegraph->newObjectInstance("grass", glm::vec3((float)i + r1, h, (float)j + r2));
+        //   }
 
         auto data = World::scene.m_scenegraph->getInstanceData();
         InstanceData *iData = &data->at("grass");
         iData->genVBO();
-        iData->perFrameUpdate();
+        iData->setVertexAttribs();
+
+        printf("Placed %d grass instances\n", count);
+
       }
     }
     //----------------------------------------------------------------

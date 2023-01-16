@@ -8,8 +8,8 @@ layout (location = 4) in vec4 aColor;
 layout (location = 5) in mat4 aInstanceMatrix;
 
 out vec2 TexCoords;
-// out vec3 FragPos;
-// out vec3 Normal;
+out vec3 FragPos;
+out vec3 Normal;
 
 
 uniform mat4 projection;
@@ -20,9 +20,9 @@ uniform mat4 view_noTranslate;
 void main()
 {
   vec4 worldPos = aInstanceMatrix * inverse(view_noTranslate) * vec4(aPos, 1.0);
-  // FragPos = worldPos.xyz;
+  FragPos = worldPos.xyz;
   TexCoords = aTexCoords;
-  // Normal = (aInstanceMatrix * inverse(view_noTranslate) * vec4(aNormal.xyz, 0.0)).xyz;
+  Normal = (aInstanceMatrix * inverse(view_noTranslate) * vec4(aNormal.xyz, 0.0)).xyz;
 
   gl_Position = projection * view * worldPos;
 }

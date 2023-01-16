@@ -19,7 +19,7 @@
   while (glGetError() != GL_NO_ERROR); \
 }
 
-// #ifdef COOMDEBUG
+#ifdef COOMDEBUG
   #define GLCALL(glFunc) \
   { \
     GLClearError(); \
@@ -32,12 +32,12 @@
       assert(err != GL_NO_ERROR); \
     } \
   }
-// #else
-//   #define GLCALL(glFunc) \
-//   { \
-//     glFunc; \
-//   }
-// #endif
+#else
+  #define GLCALL(glFunc) \
+  { \
+    glFunc; \
+  }
+#endif
 
 
 #include "../include/glm/glm.hpp"
