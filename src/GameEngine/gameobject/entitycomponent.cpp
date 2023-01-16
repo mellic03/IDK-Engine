@@ -158,7 +158,7 @@ void EntityComponent::_draw_terrain(GameObject *object)
           Vertex vertex = object->m_model->m_meshes[0].vertices[i];
           vertex.normal = glm::normalize(vertex.normal);
 
-          if (vertex.normal.y < 0.5f)
+          if (vertex.normal.y < 0.7f)
             continue;
 
           glm::vec3 p = vertex.position;

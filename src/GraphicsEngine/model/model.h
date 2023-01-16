@@ -35,7 +35,6 @@ class Model {
     void loadLibraryMaterials(rapidxml::xml_document<> *doc);
     int colladaImageIndex(std::string dae_id);
 
-    Transform *_transform;
 
   public:
 

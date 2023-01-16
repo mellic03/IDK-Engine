@@ -19,7 +19,7 @@ void main()
     discard;
 
   gPosition = vec4(FragPos, 1.0);
-  gNormal.xyz = normalize(Normal);
+  gNormal.xyz = vec3(0.0, 1.0, 0.0);
 
   gEmission = vec3(0.0);
 }

@@ -417,9 +417,17 @@ void Scene::drawBillboards(GLuint framebuffer)
     auto &data = (*it).second;
     
     GLCALL( glBindBuffer(GL_ARRAY_BUFFER, data.VBO) );
+    
+    for (auto &mesh: data.models[0]->m_meshes)
+    {
+      glBindVertexArray(mesh.VAO);
 
-    glBindVertexArray(data.models[0]->m_meshes[0].VAO);
-    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, data.model_transforms.size());
+      for (auto &indices: mesh.indices)
+      {
+        glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0, data.model_transforms.size());
+      }
+    }
+
   }
 
 

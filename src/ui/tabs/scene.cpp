@@ -108,7 +108,12 @@ void EngineUI::sceneHierarchy(Renderer *ren, Scene *scene)
 
     for (auto &object: scene->m_scenegraph->m_object_instances)
       if (object.hasParent() == false)
+      {
         draw_entity_childnodes(scene->m_scenegraph, &object, &EngineUI::selected_objectID);
+
+        if (object.getTemplateName() == "wall")
+          break;
+      }
 
     ImGui::TreePop();
   }
