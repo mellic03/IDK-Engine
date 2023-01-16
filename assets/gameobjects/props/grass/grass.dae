@@ -5,22 +5,22 @@
       <author>Blender User</author>
       <authoring_tool>Blender 3.4.1 commit date:2022-12-20, commit time:08:50, hash:ef9ca44dee7f</authoring_tool>
     </contributor>
-    <created>2023-01-16T22:48:26</created>
-    <modified>2023-01-16T22:48:26</modified>
+    <created>2023-01-16T22:49:26</created>
+    <modified>2023-01-16T22:49:26</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
   <library_effects>
-    <effect id="Material_002-effect">
+    <effect id="Material_001-effect">
       <profile_COMMON>
-        <newparam sid="flower_png-surface">
+        <newparam sid="grass_png-surface">
           <surface type="2D">
-            <init_from>flower_png</init_from>
+            <init_from>grass_png</init_from>
           </surface>
         </newparam>
-        <newparam sid="flower_png-sampler">
+        <newparam sid="grass_png-sampler">
           <sampler2D>
-            <source>flower_png-surface</source>
+            <source>grass_png-surface</source>
           </sampler2D>
         </newparam>
         <technique sid="common">
@@ -29,7 +29,7 @@
               <color sid="emission">0 0 0 1</color>
             </emission>
             <diffuse>
-              <texture texture="flower_png-sampler" texcoord="Plane-mesh-map-0"/>
+              <texture texture="grass_png-sampler" texcoord="Plane-mesh-map-0"/>
             </diffuse>
             <index_of_refraction>
               <float sid="ior">1.45</float>
@@ -40,67 +40,67 @@
     </effect>
   </library_effects>
   <library_images>
-    <image id="flower_png" name="flower_png">
-      <init_from>flower.png</init_from>
+    <image id="grass_png" name="grass_png">
+      <init_from>grass.png</init_from>
     </image>
   </library_images>
   <library_materials>
-    <material id="Material_002-material" name="Material.002">
-      <instance_effect url="#Material_002-effect"/>
+    <material id="Material_001-material" name="Material.001">
+      <instance_effect url="#Material_001-effect"/>
     </material>
   </library_materials>
   <library_geometries>
-    <geometry id="Plane_001-mesh" name="Plane.001">
+    <geometry id="Plane-mesh" name="Plane">
       <mesh>
-        <source id="Plane_001-mesh-positions">
-          <float_array id="Plane_001-mesh-positions-array" count="12">-0.1767766 0.006254076 0.1767764 0.1767767 0.006253957 -0.176777 -0.1767767 -0.6994101 0.1767766 0.1767766 -0.6994101 -0.1767768</float_array>
+        <source id="Plane-mesh-positions">
+          <float_array id="Plane-mesh-positions-array" count="12">-0.3535532 1.19209e-7 0.3535533 0.3535535 -1.19209e-7 -0.3535534 -0.3535535 -0.9999999 0.3535534 0.3535532 -1 -0.3535533</float_array>
           <technique_common>
-            <accessor source="#Plane_001-mesh-positions-array" count="4" stride="3">
+            <accessor source="#Plane-mesh-positions-array" count="4" stride="3">
               <param name="X" type="float"/>
               <param name="Y" type="float"/>
               <param name="Z" type="float"/>
             </accessor>
           </technique_common>
         </source>
-        <source id="Plane_001-mesh-normals">
-          <float_array id="Plane_001-mesh-normals-array" count="6">-0.7071068 0 -0.7071068 -0.7071068 0 -0.7071068</float_array>
+        <source id="Plane-mesh-normals">
+          <float_array id="Plane-mesh-normals-array" count="3">-0.7071068 0 -0.7071068</float_array>
           <technique_common>
-            <accessor source="#Plane_001-mesh-normals-array" count="2" stride="3">
+            <accessor source="#Plane-mesh-normals-array" count="1" stride="3">
               <param name="X" type="float"/>
               <param name="Y" type="float"/>
               <param name="Z" type="float"/>
             </accessor>
           </technique_common>
         </source>
-        <source id="Plane_001-mesh-map-0">
-          <float_array id="Plane_001-mesh-map-0-array" count="12">1 0 0 0.9944195 0 0 1 0 1 0.9944195 0 0.9944195</float_array>
+        <source id="Plane-mesh-map-0">
+          <float_array id="Plane-mesh-map-0-array" count="12">1 0 0 0.8515624 0 0 1 0 1 0.8515625 0 0.8515624</float_array>
           <technique_common>
-            <accessor source="#Plane_001-mesh-map-0-array" count="6" stride="2">
+            <accessor source="#Plane-mesh-map-0-array" count="6" stride="2">
               <param name="S" type="float"/>
               <param name="T" type="float"/>
             </accessor>
           </technique_common>
         </source>
-        <vertices id="Plane_001-mesh-vertices">
-          <input semantic="POSITION" source="#Plane_001-mesh-positions"/>
+        <vertices id="Plane-mesh-vertices">
+          <input semantic="POSITION" source="#Plane-mesh-positions"/>
         </vertices>
-        <triangles material="Material_002-material" count="2">
-          <input semantic="VERTEX" source="#Plane_001-mesh-vertices" offset="0"/>
-          <input semantic="NORMAL" source="#Plane_001-mesh-normals" offset="1"/>
-          <input semantic="TEXCOORD" source="#Plane_001-mesh-map-0" offset="2" set="0"/>
-          <p>1 0 0 2 0 1 0 0 2 1 1 3 3 1 4 2 1 5</p>
+        <triangles material="Material_001-material" count="2">
+          <input semantic="VERTEX" source="#Plane-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Plane-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Plane-mesh-map-0" offset="2" set="0"/>
+          <p>1 0 0 2 0 1 0 0 2 1 0 3 3 0 4 2 0 5</p>
         </triangles>
       </mesh>
     </geometry>
   </library_geometries>
   <library_visual_scenes>
     <visual_scene id="Scene" name="Scene">
-      <node id="Plane_001" name="Plane.001" type="NODE">
-        <matrix sid="transform">0.7071068 -7.36167e-7 -0.7071068 0 0 -1 1.0411e-6 0 -0.7071068 -7.36167e-7 -0.7071068 0 0 0 0 1</matrix>
-        <instance_geometry url="#Plane_001-mesh" name="Plane.001">
+      <node id="Plane" name="Plane" type="NODE">
+        <matrix sid="transform">0.7071068 -3.98992e-7 -0.7071068 0 0 -1 5.6426e-7 0 -0.7071068 -3.98992e-7 -0.7071068 0 0 0 0 1</matrix>
+        <instance_geometry url="#Plane-mesh" name="Plane">
           <bind_material>
             <technique_common>
-              <instance_material symbol="Material_002-material" target="#Material_002-material">
+              <instance_material symbol="Material_001-material" target="#Material_001-material">
                 <bind_vertex_input semantic="Plane-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
               </instance_material>
             </technique_common>
