@@ -59,7 +59,7 @@ class Scene {
     void drawBackground();
     void drawTerrain();
     void drawStatic();
-    void drawBillboards();
+    void drawBillboards(GLuint framebuffer);
     void drawActors();
     void drawLightsources();
     void drawGeometry_batched();

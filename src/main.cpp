@@ -78,6 +78,7 @@ int ENTRY(int argc, const char **argv)
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
 
+
   SDL_Event event;
 
 
@@ -183,6 +184,15 @@ int ENTRY(int argc, const char **argv)
     GLCALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
     scene->drawBackground();
     scene->drawGeometry_batched();
+    //---------------------------------
+
+
+    // Billboards
+    //---------------------------------
+
+
+    
+
 
     //---------------------------------
 
@@ -194,7 +204,7 @@ int ENTRY(int argc, const char **argv)
     glBindFramebuffer(GL_FRAMEBUFFER, ren->colorFBO);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  
+
     ren->useShader(SHADER_GBUFFER_LIGHTING);
     scene->sendLightsToShader();
 
@@ -221,6 +231,9 @@ int ENTRY(int argc, const char **argv)
     glDisable(GL_DEPTH_TEST);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glEnable(GL_DEPTH_TEST);
+
+
+    scene->drawBillboards(ren->colorFBO);
   
     glBindVertexArray(0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -267,30 +280,30 @@ int ENTRY(int argc, const char **argv)
     ren->useShader(SHADER_SCREENQUAD);
     ren->postProcess();
     
-    // if (strcmp(argv[1], "--dev2") == 0)
-      glBindFramebuffer(GL_FRAMEBUFFER, ren->generalFBO);
-    // else
-    //   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, ren->generalFBO);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
    
     glActiveTexture(GL_TEXTURE10);
     glBindTexture(GL_TEXTURE_2D, ren->colorBuffers[0]);
-    ren->active_shader->setInt("screenTexture", 10);
 
     glActiveTexture(GL_TEXTURE11);
     glBindTexture(GL_TEXTURE_2D, ren->pingPongColorBuffers[0]);
-    ren->active_shader->setInt("volumetricLightsTexture", 11);
 
     glActiveTexture(GL_TEXTURE12);
-    glBindTexture(GL_TEXTURE_2D, ren->colorBuffers[1]);
+    glBindTexture(GL_TEXTURE_2D, ren->billboardColorBuffer);
+
+
+    ren->active_shader->setInt("screenTexture", 10);
+    ren->active_shader->setInt("volumetricLightsTexture", 11);
     ren->active_shader->setInt("bloomTexture", 12);
-
-
+    
+    
     glBindVertexArray(ren->quadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
-  
+
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //---------------------------------
 

@@ -352,7 +352,6 @@ void Scene::drawGeometry_batched()
 {
   this->drawTerrain();
   this->drawStatic();
-  this->drawBillboards();
   this->drawActors();
   this->drawLightsources();
 }
@@ -379,12 +378,36 @@ void Scene::drawStatic()
 }
 
 
-void Scene::drawBillboards()
+void Scene::drawBillboards(GLuint framebuffer)
 {
   GLCALL( glDisable(GL_CULL_FACE) );
+  // GLCALL( glDepthMask(GL_FALSE) );
+  // GLCALL( glEnable(GL_BLEND) );
+  // GLCALL( glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) );
+  glEnable(GL_ALPHA_TEST);
+  glAlphaFunc(GL_GREATER, 0.5f);
+  // glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+
+
+  // Blit depth information from g-buffer
+  //---------------------------------
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, ren->gbufferFBO);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
+  glBlitFramebuffer(
+    0, 0, this->ren->viewport_width, this->ren->viewport_height,
+    0, 0, this->ren->viewport_width, this->ren->viewport_height,
+    GL_DEPTH_BUFFER_BIT, GL_NEAREST
+  );
+  
+  glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+  //---------------------------------
+
 
   ren->useShader(SHADER_BILLBOARD);
-  this->ren->active_shader->setMat4("inv_view", glm::mat4(1.0f));
+
+  glm::mat4 view_noTranslate = this->ren->cam.view;
+  view_noTranslate[3] = glm::vec4(0.0f, 0.0f, 0.f, 1.0f);
+  this->ren->active_shader->setMat4("view_noTranslate", view_noTranslate);
   this->ren->active_shader->setInt("diffuseMap", 0);
 
   std::map<std::string, InstanceData> *instance_data = this->m_scenegraph->getInstanceData();
@@ -403,7 +426,11 @@ void Scene::drawBillboards()
     }
   }
 
+
   GLCALL( glEnable(GL_CULL_FACE) );
+  glDisable(GL_ALPHA_TEST);
+  GLCALL( glDepthMask(GL_TRUE) );
+  GLCALL( glDisable(GL_BLEND) );
 
   this->_billboard_queue.clear();
 }

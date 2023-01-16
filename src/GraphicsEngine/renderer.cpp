@@ -459,6 +459,39 @@ void Renderer::genGeneralBuffer(int x, int y)
 }
 
 
+void Renderer::genBillboardBuffer(int x, int y)
+{
+  glDeleteTextures(1, &this->billboardColorBuffer);
+  glDeleteRenderbuffers(1, &this->billboardRBO);
+  glDeleteFramebuffers(1, &this->billboardFBO);
+
+  glGenFramebuffers(1, &this->billboardFBO);
+  glGenRenderbuffers(1, &this->billboardRBO);
+  glGenTextures(1, &this->billboardColorBuffer);
+  
+  glBindFramebuffer(GL_FRAMEBUFFER, this->billboardFBO);
+
+  glBindTexture(GL_TEXTURE_2D, this->billboardColorBuffer);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 0, GL_TEXTURE_2D, this->billboardColorBuffer, 0);
+
+  GLuint attachments[1] = { GL_COLOR_ATTACHMENT0 };
+  glDrawBuffers(1, attachments);
+
+  glBindRenderbuffer(GL_RENDERBUFFER, this->billboardRBO);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, x, y);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, this->billboardRBO);
+  // finally check if framebuffer is complete
+
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+
 void Renderer::genColorBuffer(int x, int y)
 {
   glDeleteTextures(2, this->colorBuffers);
@@ -591,6 +624,7 @@ void Renderer::resize(int x, int y)
 {
   this->genGBuffer(x, y);
   this->genGeneralBuffer(x, y);
+  this->genBillboardBuffer(x, y);
   this->genColorBuffer(x, y);
   this->genVolLightBuffer(x/this->volumetrics.resolution_divisor, y/this->volumetrics.resolution_divisor);
   this->genPingPongBuffer(x, y);

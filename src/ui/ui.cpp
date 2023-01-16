@@ -37,8 +37,6 @@ void draw_lighting_tab(Renderer *ren, Scene *scene)
 
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
-
-
   ImGui::Text("Bloom");
   ImGui::Separator();
   ImGui::DragInt("Blur passes ##bloom",           &ren->bloomData.num_blur_passes, 1.0f, 0, 256);
@@ -179,6 +177,14 @@ void draw_framebuffers(Renderer *ren)
     ImGui::Text("Dirlight depthmap");
     ImGui::Image(*(ImTextureID *)(void *)&ren->dirlight_depthmap, {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
     ImGui::EndGroup();
+
+    ImGui::SameLine();
+
+    ImGui::BeginGroup();
+    ImGui::Text("Billboards");
+    ImGui::Image(*(ImTextureID *)(void *)&ren->billboardColorBuffer, {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+    ImGui::EndGroup();
+
 
     ImGui::End();
   }

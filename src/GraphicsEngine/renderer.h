@@ -129,6 +129,7 @@ class Renderer {
     GLuint screenQuadFBO, screenQuadRBO, screenQuadColorBuffers[1];
     GLuint pingPongFBO[2], pingPingRBO[2], pingPongColorBuffers[2];
     GLuint generalFBO, generalRBO, generalColorBuffer;
+    GLuint billboardFBO, billboardRBO, billboardColorBuffer;
 
     // Camera/user-facing
     //---------------------------------------------------------------------
@@ -217,6 +218,7 @@ class Renderer {
 
     void genGBuffer(int x, int y);
     void genGeneralBuffer(int x, int y);
+    void genBillboardBuffer(int x, int y);
     void genColorBuffer(int x, int y);
     void genVolLightBuffer(int x, int y);
     void genScreenQuadBuffer(int x, int y);
