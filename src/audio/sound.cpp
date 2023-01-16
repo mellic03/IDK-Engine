@@ -40,7 +40,6 @@ void AudioEngine::Sound::play(void)
     this->channel = chnl;
   }
 
-
   if (this->pos != nullptr && AudioEngine::listener_pos != nullptr)
   {
     float d = glm::distance(*this->pos, *AudioEngine::listener_pos);

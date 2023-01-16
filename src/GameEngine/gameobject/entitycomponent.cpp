@@ -132,6 +132,47 @@ void EntityComponent::_draw_script(GameObject *object)
 }
 
 
+void EntityComponent::_draw_terrain(GameObject *object)
+{
+  if (ImGui::CollapsingHeader("Terrain"))
+  {
+    ImGui::DragFloat("threshold", &this->terrain_component.threshold, 0.001f);
+    ImGui::DragFloat("epsilon",   &this->terrain_component.epsilon,   0.001f);
+  
+    // High code
+    //----------------------------------------------------------------
+    static bool first = true;
+
+    if (first)
+    {
+      if (ImGui::Button("Do the thing"))
+      {
+        first = false;
+
+        int width = 30;
+        
+        for (int i=0; i<width; i++)
+          for (int j=0; j<width; j++)
+          {
+            float r1 = (float)(rand()%10) - 5.0f;   r1 *= ((float)(rand()%100) - 50.0f)/50.0f;
+            float r2 = (float)(rand()%10) - 5.0f;   r2 *= ((float)(rand()%100) - 50.0f)/50.0f;
+            float h = 0.5f * sin(i + j);
+            World::scene.m_scenegraph->newObjectInstance("grass", glm::vec3((float)i + r1, h, (float)j + r2));
+          }
+
+        auto data = World::scene.m_scenegraph->getInstanceData();
+        InstanceData *iData = &data->at("grass");
+        iData->genVBO();
+        iData->perFrameUpdate();
+      }
+    }
+    //----------------------------------------------------------------
+
+
+  }
+}
+
+
 void EntityComponent::_draw_variable(GameObject *object)
 {
 
@@ -144,6 +185,7 @@ void EntityComponent::draw(GameObject *object)
   {
     case (COMPONENT_NONE):
       break;
+
 
     case (COMPONENT_TRANSFORM):
       this->_draw_transform(object);
@@ -160,11 +202,40 @@ void EntityComponent::draw(GameObject *object)
       break;
   
 
+    case (COMPONENT_TERRAIN):
+      this->_draw_terrain(object);
+      break;
+  
+
     case (COMPONENT_VARIABLE):
       this->_draw_variable(object);
       break;
   }
 
+}
+
+void *EntityComponent::getComponentData(EntityComponentType component_type)
+{
+  switch (component_type)
+  {
+    case (COMPONENT_NONE):
+      break;
+
+    case (COMPONENT_TRANSFORM):
+      break;
+
+    case (COMPONENT_LIGHTSOURCE):
+      break;
+
+    case (COMPONENT_SCRIPT):
+      break;
+
+    case (COMPONENT_TERRAIN):
+      return (void *)this;
+
+    case (COMPONENT_VARIABLE):
+      break;
+  }
 }
 
 

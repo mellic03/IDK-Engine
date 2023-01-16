@@ -60,6 +60,32 @@ std::vector<glm::vec3> parseArray_vec3(std::string string_array)
   return vec3_array;
 }
 
+std::vector<glm::vec4> parseArray_vec4(std::string string_array)
+{
+  std::vector<glm::vec4> vec4_array;
+
+  std::istringstream input(string_array);
+
+  int count = 0;
+  float f;
+  glm::vec4 temp;
+
+  while (input >> f)
+  {
+    temp[count] = f;
+
+    count += 1;
+  
+    if (count == 4)
+    {
+      count = 0;
+      vec4_array.push_back(temp);
+    }
+  }
+
+  return vec4_array;
+}
+
 
 glm::mat4 parseArray_mat4(std::string string_array)
 {
@@ -153,6 +179,13 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
     nd = nd->parent()->next_sibling()->first_node("float_array");
     std::vector<glm::vec2> texcoords = parseArray_vec2(nd->value());
 
+    std::vector<glm::vec4> vertcolors;
+    if (this->is_terrain)
+    {
+      nd = nd->parent()->next_sibling()->first_node("float_array");
+      vertcolors = parseArray_vec4(nd->value());
+    }
+
 
     // For each "triangles"
     nd = nd->parent()->parent()->first_node("triangles");
@@ -164,8 +197,6 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
       mesh->indices.push_back(std::vector<GLuint>());
 
 
-
-
       ColladaEffect *effectptr = this->colladaEffectPtr_materialID(nd->first_attribute("material")->value());
 
       mesh->materials.push_back(Material());
@@ -174,28 +205,46 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
       mesh->materials[mesh->materials.size() - 1].emissionMap = *this->texturePtr(effectptr->m_image_dae_id + "-emission");
       mesh->materials[mesh->materials.size() - 1].normalMap   = *this->texturePtr(effectptr->m_image_dae_id + "-normal");
 
-
-
       std::string string_array = n->value();
       std::vector<int> indices;
       std::istringstream input(string_array);
+
 
       int i;
       while (input >> i)
         indices.push_back(i);
 
-
-      for (int i=0; i<indices.size()/3; i+=1)
+      if (!this->is_terrain)
       {
-        mesh->vertices.push_back(Vertex());
-        Vertex *vertex = &mesh->vertices[mesh->vertices.size() - 1];
+        for (int i=0; i<indices.size()/3; i+=1)
+        {
+          mesh->vertices.push_back(Vertex());
+          Vertex *vertex = &mesh->vertices[mesh->vertices.size() - 1];
 
-        vertex->position  = positions[indices[3*i + 0]];
-        vertex->normal    = normals  [indices[3*i + 1]];
-        vertex->texcoords = texcoords[indices[3*i + 2]];
+          vertex->position  = positions[indices[3*i + 0]];
+          vertex->normal    = normals  [indices[3*i + 1]];
+          vertex->texcoords = texcoords[indices[3*i + 2]];
 
-        mesh->indices[mesh->indices.size() - 1].push_back(mesh->vertices.size() - 1);
+          mesh->indices[mesh->indices.size() - 1].push_back(mesh->vertices.size() - 1);
+        }
       }
+
+      else
+      {
+        for (int i=0; i<indices.size()/4; i+=1)
+        {
+          mesh->vertices.push_back(Vertex());
+          Vertex *vertex = &mesh->vertices[mesh->vertices.size() - 1];
+
+          vertex->position  = positions [indices[4*i + 0]];
+          vertex->normal    = normals   [indices[4*i + 1]];
+          vertex->texcoords = texcoords [indices[4*i + 2]];
+          vertex->color     = vertcolors[indices[4*i + 3]];
+
+          mesh->indices[mesh->indices.size() - 1].push_back(mesh->vertices.size() - 1);
+        }
+      }
+
 
       // Calculate vertex tangents
       //----------------------------------------------------
@@ -317,7 +366,6 @@ void Model::loadLibraryMaterials(rapidxml::xml_document<> *doc)
     std::string self_id = node->first_attribute("id")->value();
     std::string effect_id = node->first_node("instance_effect")->first_attribute()->value();
 
-
     for (auto &effect: this->_collada_effects)
     {
       if (effect.m_dae_id == effect_id)
@@ -326,9 +374,6 @@ void Model::loadLibraryMaterials(rapidxml::xml_document<> *doc)
         break;
       }
     }
-
-
-
     node = node->next_sibling();
   }
 
@@ -345,7 +390,7 @@ int Model::colladaImageIndex(std::string dae_id)
 }
 
 
-void Model::loadDae(std::string directory, std::string filename, int id)
+void Model::loadDae(std::string directory, std::string filename, bool is_terrain)
 {
   std::ifstream fh;
   fh.open(directory + filename);
@@ -356,9 +401,12 @@ void Model::loadDae(std::string directory, std::string filename, int id)
     exit(1);
   }
 
-  this->m_ID = id;
+  this->m_ID = 0;
   this->m_name = directory + filename;
   this->_directory = directory;
+
+  if (is_terrain)
+    this->is_terrain = true;
 
   std::string raw_document = "";
   std::string line;
@@ -379,6 +427,33 @@ void Model::loadDae(std::string directory, std::string filename, int id)
 
   this->constructMeshes(&doc);
   this->applyMeshTransforms(&doc);
+
+  if (this->is_terrain)
+  {
+    node = doc.first_node();
+    node = node->first_node("library_visual_scenes");
+    node = node->first_node("visual_scene");
+    node = node->first_node("node");
+    node = node->first_node("instance_geometry");
+    node = node->first_node("bind_material");
+    node = node->first_node("technique_common");
+    node = node->first_node("instance_material");
+
+    for (int i=0; i<3; i++)
+    {
+      std::string name = node->first_attribute("symbol")->value();
+
+      ColladaEffect *effectptr = this->colladaEffectPtr_materialID(name);
+
+      this->materials.push_back(Material());
+      this->materials[this->materials.size() - 1].diffuseMap  = *this->texturePtr(effectptr->m_image_dae_id);
+      this->materials[this->materials.size() - 1].specularMap = *this->texturePtr(effectptr->m_image_dae_id + "-specular");
+      this->materials[this->materials.size() - 1].emissionMap = *this->texturePtr(effectptr->m_image_dae_id + "-emission");
+      this->materials[this->materials.size() - 1].normalMap   = *this->texturePtr(effectptr->m_image_dae_id + "-normal");
+
+      node = node->next_sibling();
+    }
+  }
 
 
   for (auto &mesh: this->m_meshes)

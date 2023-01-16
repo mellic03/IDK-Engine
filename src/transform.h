@@ -14,8 +14,8 @@ struct Transform {
 
   Transform *parent = nullptr;
 
-  glm::vec3 position = {0.0f, 0.0f, 0.0f};
-  glm::vec3 velocity = {0.0f, 0.0f, 0.0f};
+  glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
+  glm::vec3 velocity = glm::vec3(0.0f, 0.0f, 0.0f);
   glm::quat orientation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
 
   // Member access

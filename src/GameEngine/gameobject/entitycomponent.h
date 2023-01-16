@@ -22,6 +22,7 @@ enum EntityComponentType {
   COMPONENT_TRANSFORM,
   COMPONENT_LIGHTSOURCE,
   COMPONENT_SCRIPT,
+  COMPONENT_TERRAIN,
   COMPONENT_VARIABLE
 };
 
@@ -30,6 +31,28 @@ enum DataType {
   DATATYPE_FLOAT,
   DATATYPE_DOUBLE,
   DATATYPE_STRING
+};
+
+struct TerrainComponent {
+  float threshold = 0.5f;
+  float epsilon   = 0.25f;
+
+  std::vector<Transform> grass_transforms;
+  void generateGrassPositions(std::vector<Vertex> &vertices)
+  {
+    for (auto &vertex: vertices)
+    {
+      if (glm::normalize(vertex.normal).y > 0.95f)
+      {
+        for (int i=0; i<10; i++)
+        {
+          Transform transform;
+          *transform.getPos() = vertex.position + glm::vec3(((float)(rand()%4)-2.0f) / (float)(rand()%10), 0.0f, ((float)(rand()%4)-2.0f) / (float)(rand()%10));
+          this->grass_transforms.push_back(transform);
+        }
+      }
+    }
+  }
 };
 
 struct VariableComponent {
@@ -56,6 +79,8 @@ class EntityComponent {
     void _draw_transform(GameObject *object); 
     void _draw_script(GameObject *object);
 
+    void _draw_terrain(GameObject *object);
+
     void _draw_variable(GameObject *object);
 
 
@@ -70,13 +95,15 @@ class EntityComponent {
     bool script_changed = false;
 
 
-    // COMPONENT_VARIABLE
+    TerrainComponent  terrain_component;
     VariableComponent variable_component;
 
 
     EntityComponent(EntityComponentType component_type);
     EntityComponent(EntityComponentType component_type, PointLight *pointlight);
     EntityComponent(EntityComponentType component_type, SpotLight *spotlight);
+
+    void *getComponentData(EntityComponentType component_type);
 
     void draw(GameObject *object);
 

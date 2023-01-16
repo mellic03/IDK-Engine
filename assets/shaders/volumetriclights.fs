@@ -133,18 +133,14 @@ void main()
   float ray_length = 0.0;
 
   float len = frag_dist / volumetrics.num_samples;
-  len = clamp(len, 0.0, 0.2);
+  len = clamp(len, 0.0, 0.4);
 
   for (int i=0; i<volumetrics.num_samples; i++)
   {
     float step_size = len;//i * (len/frag_dist);
     ray_length += step_size;
 
-    if (ray_length > frag_dist)
-      break;
-
     ray = viewPos + ray_length*ray_dir;
-
 
     // Point lights
     //------------------------------------------------------------------

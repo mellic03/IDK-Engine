@@ -1,5 +1,5 @@
-
 #include "shader.h"
+
 
 ShaderSource parse_shader(const std::string &vertex_shader, const std::string &fragment_shader, const std::string &geometry_shader)
 {
@@ -33,6 +33,7 @@ ShaderSource parse_shader(const std::string &vertex_shader, const std::string &f
   return src;
 }
 
+
 unsigned int compile_shader(unsigned int type, const std::string &source)
 {
   if (source == "NULL") return 0;
@@ -59,6 +60,7 @@ unsigned int compile_shader(unsigned int type, const std::string &source)
   return id;
 }
 
+
 unsigned int create_shader(const std::string &vertex_shader, const std::string &fragment_shader, const std::string &geometry_shader)
 {
   unsigned int program = glCreateProgram();
@@ -82,56 +84,56 @@ unsigned int create_shader(const std::string &vertex_shader, const std::string &
 
 void Shader::mapUniformLocs(void)
 {
-  int count;
+  // int count;
 
-  GLint size; // size of the variable
-  GLenum type; // type of the variable (float, vec3 or mat4, etc)
+  // GLint size; // size of the variable
+  // GLenum type; // type of the variable (float, vec3 or mat4, etc)
 
-  const GLsizei bufSize = 64; // maximum name length
-  GLchar name[bufSize]; // variable name in GLSL
-  GLsizei length; // name length
+  // const GLsizei bufSize = 64; // maximum name length
+  // GLchar name[bufSize]; // variable name in GLSL
+  // GLsizei length; // name length
 
 
-  glGetProgramiv(this->id, GL_ACTIVE_UNIFORMS, &count);
+  // glGetProgramiv(this->id, GL_ACTIVE_UNIFORMS, &count);
 
-  for (int i=0; i<count; i++)
-  {
-    glGetActiveUniform(this->id, (GLuint)i, bufSize, &length, &size, &type, name);
+  // for (int i=0; i<count; i++)
+  // {
+  //   glGetActiveUniform(this->id, (GLuint)i, bufSize, &length, &size, &type, name);
 
-    this->uniforms[std::string(name)] = glGetUniformLocation(this->id, name);
-    this->mapped_uniforms[std::string(name)] = true;
+  //   this->uniforms[std::string(name)] = glGetUniformLocation(this->id, name);
+  //   this->mapped_uniforms[std::string(name)] = true;
 
-    printf("Uniform #%d Type: %u Name: %s\n", i, type, std::string(name).c_str());
-  }
+    // printf("Uniform #%d Type: %u Name: %s\n", i, type, std::string(name).c_str());
+  // }
 }
 
 
 void Shader::setVec3(std::string uniform_name, glm::vec3 vec)
 {
-    this->uniforms[uniform_name] = glGetUniformLocation(this->id, uniform_name.c_str());
-  glUniform3fv(this->uniforms[uniform_name], 1, glm::value_ptr(vec));
+  GLCALL(  this->uniforms[uniform_name] = glGetUniformLocation(this->programID, uniform_name.c_str())  );
+  GLCALL(  glUniform3fv(this->uniforms[uniform_name], 1, glm::value_ptr(vec))  );
 }
 
 void Shader::setMat4(std::string uniform_name, glm::mat4 mat)
 {
-    this->uniforms[uniform_name] = glGetUniformLocation(this->id, uniform_name.c_str());
-  glUniformMatrix4fv(this->uniforms[uniform_name], 1, GL_FALSE, glm::value_ptr(mat));
+  GLCALL( this->uniforms[uniform_name] = glGetUniformLocation(this->programID, uniform_name.c_str()) );
+  GLCALL(glUniformMatrix4fv(this->uniforms[uniform_name], 1, GL_FALSE, glm::value_ptr(mat)));
 }
 
 void Shader::setInt(std::string uniform_name, GLuint value)
 {
-    this->uniforms[uniform_name] = glGetUniformLocation(this->id, uniform_name.c_str());
-  glUniform1i(this->uniforms[uniform_name], value);
+  GLCALL( this->uniforms[uniform_name] = glGetUniformLocation(this->programID, uniform_name.c_str()) );
+  GLCALL(glUniform1i(this->uniforms[uniform_name], value));
 }
 
 void Shader::setFloat(std::string uniform_name, float value)
 {
-    this->uniforms[uniform_name] = glGetUniformLocation(this->id, uniform_name.c_str());
-  glUniform1f(this->uniforms[uniform_name], value);
+  GLCALL( this->uniforms[uniform_name] = glGetUniformLocation(this->programID, uniform_name.c_str()) );
+  GLCALL(glUniform1f(this->uniforms[uniform_name], value));
 }
 
 void Shader::setFloatVector(std::string uniform_name, int size, float *ptr)
 {
-    this->uniforms[uniform_name] = glGetUniformLocation(this->id, uniform_name.c_str());
-  glUniform1fv(this->uniforms[uniform_name], size, ptr);
+  GLCALL( this->uniforms[uniform_name] = glGetUniformLocation(this->programID, uniform_name.c_str()) );
+  GLCALL(glUniform1fv(this->uniforms[uniform_name], size, ptr));
 }

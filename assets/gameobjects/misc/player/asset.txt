@@ -1,0 +1,5 @@
+#gameobject player
+#interactivity misc
+#physics PHYSICS_FALLING
+#GameObjectType GAMEOBJECT_PLAYER
+#exit

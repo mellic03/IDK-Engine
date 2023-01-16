@@ -18,6 +18,7 @@
 #include <string>
 #include <sstream>
 
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -32,9 +33,15 @@
 
 
 
-
 int ENTRY(int argc, const char **argv)
 {
+
+#ifdef COOMDEBUG
+  printf("COOMDEBUG defined\n");
+#else
+  printf("COOMDEBUG NOT defined\n");
+#endif
+
   SDL_Window *window = NULL;
   SDL_GLContext gl_context;
 
@@ -45,7 +52,6 @@ int ENTRY(int argc, const char **argv)
   }
 
   AudioEngine::init();
-
 
   window = SDL_CreateWindow(
     "Coom Engine",
@@ -81,42 +87,20 @@ int ENTRY(int argc, const char **argv)
   ren->init();
   Player player(ren);
 
-
-
   SceneGraph scenegraph;
+  scenegraph.loadObjects("assets/index.txt");
 
-  scenegraph.loadObject("assets/misc/thang/");
-  scenegraph.loadObject("assets/misc/blendingtest/");
-  scenegraph.loadObject("assets/misc/empty/");
-  scenegraph.loadObject("assets/misc/pointlight/");
-  scenegraph.loadObject("assets/misc/spotlight/");
-  scenegraph.loadObject("assets/misc/pointlightcontainer/");
-  scenegraph.loadObject("assets/misc/spotlightcontainer/");
-  scenegraph.loadObject("assets/misc/player/");
-  scenegraph.loadObject("assets/environment/skybox/");
-  scenegraph.loadObject("assets/environment/building/");
-  scenegraph.loadObject("assets/environment/building2/");
-  scenegraph.loadObject("assets/environment/building3/");
-  scenegraph.loadObject("assets/environment/terrain0/");
-  scenegraph.loadObject("assets/environment/terrain1/");
-  scenegraph.loadObject("assets/environment/terrain2/");
-  scenegraph.loadObject("assets/environment/wall/");
-  scenegraph.loadObject("assets/environment/bunker/");
-  scenegraph.loadObject("assets/npc/muscleskele/");
-  scenegraph.loadObject("assets/npc/fren/");
-  scenegraph.loadObject("assets/props/table/");
+  Scene *scene = &World::scene;
+  scene->useSceneGraph(&scenegraph);
+  scene->usePlayer(&player);
+  scene->defaultScene();
 
-  Scene *scene_1 = &World::scene;
-  scene_1->useSceneGraph(&scenegraph);
-  scene_1->usePlayer(&player);
-  scene_1->defaultScene();
+  scene->m_scenegraph->importScene("assets/scenes/entry.scene", &player);
 
-  scene_1->m_scenegraph->importScene("assets/scenes/entry.scene", &player);
-
-  luaInit(scene_1, &scenegraph);
+  luaInit(scene, &scenegraph);
 
 
-  scene_1->useRenderer(ren);
+  scene->useRenderer(ren);
   //----------------------------------------
 
 
@@ -137,17 +121,10 @@ int ENTRY(int argc, const char **argv)
   // RENDER LOOP
   //----------------------------------------
 
-  int err = glGetError();
-  if (err)
-  {
-    printf("OpenGL Error: %d\n", err);
-    exit(1);
-  }
-  
 
   if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);  
+  GLCALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));  
 
 
   Uint64 start = SDL_GetPerformanceCounter(), end = SDL_GetPerformanceCounter();
@@ -158,11 +135,8 @@ int ENTRY(int argc, const char **argv)
     AudioEngine::listener_dir = &v;
     AudioEngine::listener_pos = player.getPos();
 
-
-
     start = end;
     end = SDL_GetPerformanceCounter();
-
 
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
@@ -170,7 +144,7 @@ int ENTRY(int argc, const char **argv)
     ImGui::NewFrame();
 
     int x, y, w, h;
-    draw_ui(ren, scene_1, &player, &x, &y, &w, &h, "--dev2");
+    draw_ui(ren, scene, &player, &x, &y, &w, &h, "--dev2");
 
     ren->perFrameUpdate();
 
@@ -190,67 +164,39 @@ int ENTRY(int argc, const char **argv)
     ///////////////////////////////////////////////////////////////////////////////////////////// Render start
 
 
-
-
     // Render depthmaps
     //---------------------------------
-    glEnable(GL_DEPTH_CLAMP);
-    scene_1->drawDepthmaps();
-    glDisable(GL_DEPTH_CLAMP);
+    GLCALL(glEnable(GL_DEPTH_CLAMP));
+    scene->drawDepthmaps();
+    GLCALL(glDisable(GL_DEPTH_CLAMP));
     //---------------------------------
 
 
-    scene_1->physicsTick();
+    scene->physicsTick();
 
 
     // G-Buffer geometry pass
     //---------------------------------
-    glViewport(0, 0, w, h);
-    glBindFramebuffer(GL_FRAMEBUFFER, ren->gbufferFBO);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  
-    ren->useShader(SHADER_GBUFFER_GEOMETRY);
-  
-    ren->active_shader->setMat4("projection", ren->cam.projection * ren->cam.view);
-    ren->active_shader->setMat4("view", glm::mat4(1.0f));
+    GLCALL(glViewport(0, 0, w, h));
+    GLCALL(glBindFramebuffer(GL_FRAMEBUFFER, ren->gbufferFBO));
+    GLCALL(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
+    GLCALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+    scene->drawBackground();
+    scene->drawGeometry_batched();
 
-    float aspect = ren->viewport_width / ren->viewport_height;
-    float height = ren->far_plane * tan(ren->fov);
-    float width = aspect * height;
-
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::scale(model, glm::vec3(width, height, 1.0f));
-    model = glm::translate(model, glm::vec3(0.0f, 0.0f, -0.99 * ren->far_plane));
-    ren->active_shader->setMat4("model", glm::inverse(ren->cam.view) * model);
-
-    ren->active_shader->setInt("use_fill", true);
-    ren->active_shader->setVec3("fill", ren->clearColor);
-
-    glBindVertexArray(ren->quadVAO);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    ren->active_shader->setInt("use_fill", false);
-
-
-    scene_1->drawGeometry();
-
-    ren->useShader(SHADER_LIGHTSOURCE);
-    scene_1->drawLightsources(&event);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //---------------------------------
 
 
 
     // G-Buffer lighting pass
     //---------------------------------
-    glViewport(0, 0, w, h);
+    GLCALL(glViewport(0, 0, w, h));
     glBindFramebuffer(GL_FRAMEBUFFER, ren->colorFBO);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
     ren->useShader(SHADER_GBUFFER_LIGHTING);
-    scene_1->sendLightsToShader();
+    scene->sendLightsToShader();
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, ren->gbuffer_position);
@@ -290,7 +236,7 @@ int ENTRY(int argc, const char **argv)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     ren->useShader(SHADER_VOLUMETRIC_LIGHT);
-    scene_1->sendLightsToShader();
+    scene->sendLightsToShader();
     ren->sendVolumetricData();
     
     glBindVertexArray(ren->quadVAO);
@@ -304,7 +250,7 @@ int ENTRY(int argc, const char **argv)
 
     // Blur bloom and volumetric light buffers
     //---------------------------------
-    glViewport(0, 0, w, h);
+    GLCALL(glViewport(0, 0, w, h));
     ren->blurTexture( ren->lightshaftFBO, ren->lightshaftColorBuffer,
                       ren->volumetrics.num_blur_passes, ren->volumetrics.texel_size,
                       ren->volumetrics.x_strength, ren->volumetrics.y_strength
@@ -315,7 +261,7 @@ int ENTRY(int argc, const char **argv)
 
     // Draw to quad
     //---------------------------------
-    glViewport(0, 0, w, h);
+    GLCALL(glViewport(0, 0, w, h));
     glDisable(GL_DEPTH_TEST);
 
     ren->useShader(SHADER_SCREENQUAD);
@@ -351,7 +297,7 @@ int ENTRY(int argc, const char **argv)
 
     // FXAA
     //---------------------------------
-    glViewport(0, 0, w, h);
+    GLCALL(glViewport(0, 0, w, h));
 
     ren->useShader(SHADER_FXAA);
     glBindFramebuffer(GL_FRAMEBUFFER, ren->screenQuadFBO);

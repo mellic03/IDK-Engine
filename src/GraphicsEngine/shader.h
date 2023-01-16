@@ -8,30 +8,57 @@
 #include <vector>
 #include <functional>
 
-
 #include <GL/glew.h>
 #include <GL/glu.h>
+
+
+#include <assert.h>
+
+#define GLClearError() \
+{ \
+  while (glGetError() != GL_NO_ERROR); \
+}
+
+// #ifdef COOMDEBUG
+  #define GLCALL(glFunc) \
+  { \
+    GLClearError(); \
+    glFunc; \
+    GLenum err = glGetError(); \
+    if (err != GL_NO_ERROR) \
+    { \
+      printf("OpenGL Error: %s\n", gluErrorString(err)); \
+      fflush(stdout); \
+      assert(err != GL_NO_ERROR); \
+    } \
+  }
+// #else
+//   #define GLCALL(glFunc) \
+//   { \
+//     glFunc; \
+//   }
+// #endif
+
 
 #include "../include/glm/glm.hpp"
 #include "../include/glm/gtc/matrix_transform.hpp"
 #include "../include/glm/gtc/type_ptr.hpp"
 
 enum ShaderType {
-  SHADER_WORLDSPACE,
-  SHADER_WEAPON,
+  SHADER_BACKGROUND,
+  SHADER_TERRAIN,
+  SHADER_BILLBOARD,
+  SHADER_ACTOR,
   SHADER_LIGHTSOURCE,
-  SHADER_SHADOWMAP,
   SHADER_POINTSHADOW,
   SHADER_DIRSHADOW,
   SHADER_SCREENQUAD,
-  SHADER_TERRAIN,
-  SHADER_NORMALS,
   SHADER_VOLUMETRIC_LIGHT,
   SHADER_BLUR,
   SHADER_ADDITIVE,
-  SHADER_GBUFFER_GEOMETRY,
   SHADER_GBUFFER_LIGHTING,
-  SHADER_FXAA
+  SHADER_FXAA,
+  SHADER_NUM_SHADERS
 };
 
 struct ShaderSource {
@@ -61,8 +88,7 @@ class Shader {
   private:
 
   public:
-    
-    GLuint id;
+    GLuint programID;
     std::map<std::string, bool>  mapped_uniforms;
 
     std::map <std::string, GLint> uniforms;
@@ -70,8 +96,8 @@ class Shader {
     Shader() {};
 
     void mapUniformLocs(void);
-    void set(GLuint shader_id) { this->id = shader_id; };
-    GLuint get(void) { return this->id; };
+    void set(GLuint shader_id) { this->programID = shader_id; };
+    GLuint get(void) { return this->programID; };
 
     void setVec3(std::string uniform_name, glm::vec3 vec);
     void setMat4(std::string uniform_name, glm::mat4 mat);

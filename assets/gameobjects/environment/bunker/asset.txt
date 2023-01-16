@@ -1,0 +1,8 @@
+
+#gameobject bunker
+#interactivity environmental
+#GameObjectType GAMEOBJECT_STATIC
+#geometry bunker.dae
+#collision collision.obj
+#physics PHYSICS_NONE
+#exit

@@ -17,7 +17,6 @@ Mesh::Mesh(void)
 void Mesh::load(std::string filepath)
 {
 
-
 }
 
 
@@ -33,16 +32,20 @@ void Mesh::setBufferData(void)
   glEnableVertexAttribArray(0);
 
   // Vertex normal
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(3*sizeof(float)));
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(glm::vec3)));
   glEnableVertexAttribArray(1);
 
   // UV
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(6*sizeof(float)));
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(2*sizeof(glm::vec3)));
   glEnableVertexAttribArray(2);
 
   // Tangent
-  glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(8*sizeof(float)));
+  glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(2*sizeof(glm::vec3) + sizeof(glm::vec2)));
   glEnableVertexAttribArray(3);
+
+  // color
+  glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(3*sizeof(glm::vec3) + sizeof(glm::vec2)));
+  glEnableVertexAttribArray(4);
 
 
   // Indexing
@@ -53,7 +56,7 @@ void Mesh::setBufferData(void)
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices[i].size() * sizeof(GLuint), &this->indices[i][0], GL_STATIC_DRAW);
   }
 }
- 
+
 
 void Mesh::transformByMatrix(glm::mat4 matrix)
 {

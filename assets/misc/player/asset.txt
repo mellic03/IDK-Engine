@@ -1,4 +1,0 @@
-#gameobject player
-#interactivity misc
-#physics PHYSICS_FALLING
-#exit

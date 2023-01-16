@@ -6,6 +6,7 @@ namespace PE = PhysicsEngine;
 
 GameObject::GameObject(void)
 {
+
 }
 
 bool GameObject::_groundTest(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal)
@@ -85,9 +86,9 @@ std::string GameObject::physStateString(void)
   switch (this->m_physics_state)
   {
     default:                  return "unknown";
-    case (PHYSICS_NONE):      return "none";
-    case (PHYSICS_GROUNDED):  return "grounded";
-    case (PHYSICS_FALLING):   return "falling";
+    case (PHYSICS_NONE):      return "PHYSICS_NONE";
+    case (PHYSICS_GROUNDED):  return "PHYSICS_GROUNDED";
+    case (PHYSICS_FALLING):   return "PHYSICS_FALLING";
   }
 }
 
@@ -96,8 +97,8 @@ std::string GameObject::navStateString(void)
   switch (this->m_navigation_state)
   {
     default:                  return "unknown";
-    case (NAVIGATION_REST):   return "rest";
-    case (NAVIGATION_SEEK):   return "seek";
+    case (NAVIGATION_REST):   return "NAVIGATION_REST";
+    case (NAVIGATION_SEEK):   return "NAVIGATION_SEEK";
   }
 }
 
@@ -173,6 +174,19 @@ void GameObject::changeNavState(NavigationState new_state)
   }
 }
 
+std::string GameObject::getObjectTypeString(void)
+{
+  switch (this->getObjectType())
+  {
+    case (GAMEOBJECT_UNDEFINED):    return "GAMEOBJECT_UNDEFINED";
+    case (GAMEOBJECT_TERRAIN):      return "GAMEOBJECT_TERRAIN";
+    case (GAMEOBJECT_STATIC):       return "GAMEOBJECT_TERRAIN";
+    case (GAMEOBJECT_BILLBOARD):    return "GAMEOBJECT_BILLBOARD";
+    case (GAMEOBJECT_ACTOR):        return "GAMEOBJECT_ACTOR";
+    case (GAMEOBJECT_PLAYER):       return "GAMEOBJECT_PLAYER";
+    case (GAMEOBJECT_LIGHTSOURCE):  return "GAMEOBJECT_LIGHTSOURCE";
+  }
+}
 
 void GameObject::perFrameUpdate(Renderer *ren)
 {
@@ -318,24 +332,25 @@ void GameObject::setParent(GameObject *parent, bool keepGlobalPos)
  */
 void GameObject::collideWithObject(GameObject *object)
 {
-  if (glm::distance2(this->getTransform()->getPos_worldspace(), object->getTransform()->getPos_worldspace()) > object->m_collision_mesh.bounding_sphere_radiusSQ)
-    return;
-
   if (this->getID() == object->getID())
     return;
 
   if (object->isHidden() || this->isHidden())
     return;
 
+  if (this->getObjectType() == GAMEOBJECT_BILLBOARD)
+    return;
+
   if (this->getPhysState() == PHYSICS_NONE)
     return;
 
-  // if (glm::distance(this->_transform.position, object->getPos()) > object->boundingSphereRadius())
-  //   return;
+  glm::vec3 sphere_pos = object->getTransform()->getPos_worldspace();
+  if (glm::distance2(this->getTransform()->getPos_worldspace(), sphere_pos) > object->m_collision_mesh.bounding_sphere_radiusSQ)
+    return;
+
 
   this->_collision_meshes.push_back(object->getCollisionMesh());
   this->_collision_transforms.push_back(object->getTransform());
-
 }
 
 

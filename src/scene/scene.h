@@ -11,7 +11,9 @@ class Scene {
 
     Renderer *ren;
 
-
+    std::vector<GameObject *> _terrain_queue;
+    std::vector<GameObject *> _billboard_queue;
+    std::vector<GameObject *> _actor_queue;
     std::vector<GameObject *> _lightsource_queue;
 
 
@@ -49,10 +51,19 @@ class Scene {
     void drawPointLightDepthmaps(void);
 
     void drawDepthmaps(void);
+    
+    void physicsTick_actor_terrain(void);
+    void physicsTick_actor_actor(void);
     void physicsTick(void);
+
+    void drawBackground();
+    void drawTerrain();
+    void drawStatic();
+    void drawBillboards();
+    void drawActors();
+    void drawLightsources();
+    void drawGeometry_batched();
     void drawGeometry();
-    void drawVolumetricLights(void);
-    void drawLightsources(SDL_Event *event);
 
 };
 

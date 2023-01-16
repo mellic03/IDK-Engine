@@ -1,0 +1,7 @@
+
+#gameobject terrain0
+#interactivity environmental
+#GameObjectType GAMEOBJECT_ACTOR
+#geometry ground.dae
+#collision collision.obj
+#exit

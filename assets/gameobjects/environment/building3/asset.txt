@@ -1,0 +1,6 @@
+#gameobject building3
+#interactivity environmental
+#GameObjectType GAMEOBJECT_STATIC
+#geometry building3.dae
+#collision collision.obj
+#exit

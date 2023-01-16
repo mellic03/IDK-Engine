@@ -1,9 +1,0 @@
-// #[attribute] [type] [name] [num keyframes] //
-
-#ASSETNAME terrain2
-
-#STATIC
-#ENVIRONMENTAL
-
-GEOMETRYMESH ground
-COLLISIONMESH ground

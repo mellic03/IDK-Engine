@@ -1,0 +1,5 @@
+#gameobject pointlight
+#interactivity misc
+#GameObjectType GAMEOBJECT_LIGHTSOURCE
+#geometry sphere.dae
+#exit

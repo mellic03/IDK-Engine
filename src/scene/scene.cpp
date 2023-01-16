@@ -204,13 +204,13 @@ void Scene::importScene(std::string filepath, Player *player)
 
 void Scene::drawDirLightDepthmap(void)
 {
-  glViewport(0, 0, this->ren->DIR_SHADOW_WIDTH, this->ren->DIR_SHADOW_HEIGHT);
-  glBindFramebuffer(GL_FRAMEBUFFER, this->ren->dirlight_depthmapFBO);
-  glBindTexture(GL_TEXTURE_2D, this->ren->dirlight_depthmap);
+  GLCALL(glViewport(0, 0, this->ren->DIR_SHADOW_WIDTH, this->ren->DIR_SHADOW_HEIGHT));
+  GLCALL(glBindFramebuffer(GL_FRAMEBUFFER, this->ren->dirlight_depthmapFBO));
+  GLCALL(glBindTexture(GL_TEXTURE_2D, this->ren->dirlight_depthmap));
   glClear(GL_DEPTH_BUFFER_BIT);
-      this->ren->useShader(SHADER_DIRSHADOW);
-      this->ren->setupDirLightDepthmap(this->m_scenegraph->dirlight.position, this->m_scenegraph->dirlight.direction);
-      this->drawGeometry();
+    this->ren->useShader(SHADER_DIRSHADOW);
+    this->ren->setupDirLightDepthmap(this->m_scenegraph->dirlight.position, this->m_scenegraph->dirlight.direction);
+    this->drawGeometry();
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -275,77 +275,165 @@ void Scene::drawDepthmaps(void)
 }
 
 
-void Scene::physicsTick()
+void Scene::physicsTick_actor_terrain(void)
 {
+  for (auto &actor: this->m_scenegraph->m_actor_instances)
+  {
+    for (auto &terrain: this->m_scenegraph->m_terrain_instances)
+    {
+      actor->collideWithObject(terrain);
+    }
+  }
+}
+
+
+void Scene::physicsTick_actor_actor(void)
+{
+
+}
+
+
+void Scene::physicsTick(void)
+{
+
+  for (auto &terrain: this->m_scenegraph->m_terrain_instances)
+    this->m_scenegraph->player_object->collideWithObject(terrain);
+
+  for (auto &staticobj: this->m_scenegraph->m_static_instances)
+    this->m_scenegraph->player_object->collideWithObject(staticobj);
+
+
+  this->physicsTick_actor_terrain();
+  this->physicsTick_actor_actor();
+
   for (auto &obj: this->m_scenegraph->m_object_instances)
   {
-    for (auto &obj2: this->m_scenegraph->m_object_instances)
-      obj.collideWithObject(&obj2);
-
     obj.perFrameUpdate(this->ren);
   }
 }
 
 
-void Scene::drawGeometry()
+void Scene::drawBackground()
 {
-  this->_lightsource_queue.clear();
-
-  for (auto &obj: this->m_scenegraph->m_object_instances)
-  {
-    if (obj.hasLightSource())
-    {
-      this->_lightsource_queue.push_back(&obj);
-    }
-
-    else if (obj.hasGeometry() && !obj.isHidden())
-    {
-      obj.m_model->setTransform(obj.getTransform());
-      this->ren->drawModel(obj.m_model);
-    }
-  }
-}
-
-
-void Scene::drawVolumetricLights(void)
-{
-  this->ren->sendVolumetricData();
+  this->ren->useShader(SHADER_BACKGROUND);
+  this->ren->active_shader->setMat4("projection", this->ren->cam.projection);
+  this->ren->active_shader->setMat4("view", this->ren->cam.view);
   
-  this->ren->active_shader->setMat4("projection", this->ren->cam.projection * this->ren->cam.view);
-  this->ren->active_shader->setMat4("view", glm::mat4(1.0f));
+  float aspect = ren->viewport_width / ren->viewport_height;
+  float height = ren->far_plane * tan(ren->fov);
+  float width = aspect * height;
 
   glm::mat4 model = glm::mat4(1.0f);
-  model = glm::translate(model, glm::vec3(0.0f, 0.0f, -25.0f));
-  model = glm::scale(model, glm::vec3((float)this->ren->viewport_width, (float)this->ren->viewport_height, 1.0f));
-  this->ren->active_shader->setMat4("model", glm::inverse(this->ren->cam.view) * model);
+  model = glm::scale(model, glm::vec3(width, height, 1.0f));
+  model = glm::translate(model, glm::vec3(0.0f, 0.0f, -0.99 * this->ren->far_plane));
+  this->ren->active_shader->setMat4("model", model);
+  this->ren->active_shader->setVec3("clearColor", this->ren->clearColor);
+
+  GLCALL(glBindVertexArray(this->ren->quadVAO));
+  GLCALL(glDrawArrays(GL_TRIANGLES, 0, 6));
+
+}
 
 
-  glBindVertexArray(ren->quadVAO);
-  glDrawArrays(GL_TRIANGLES, 0, 6);
-  glBindVertexArray(0);
-
-
+void Scene::drawGeometry()
+{
   for (auto &obj: this->m_scenegraph->m_object_instances)
   {
-    if (obj.isHidden())
+    if (obj.getObjectType() == GAMEOBJECT_BILLBOARD)
       continue;
 
-    if (obj.hasGeometry())
-    {
-      obj.m_model->setTransform(obj.getTransform());
-      this->ren->drawModel(obj.m_model);
-    }
+    if (!obj.hasLightSource() && obj.hasGeometry())
+      this->ren->drawModel(obj.m_model, obj.getTransform());
   }
 }
 
 
-void Scene::drawLightsources(SDL_Event *event)
+void Scene::drawGeometry_batched()
 {
-  for (auto &obj: this->_lightsource_queue)
+  this->drawTerrain();
+  this->drawStatic();
+  this->drawBillboards();
+  this->drawActors();
+  this->drawLightsources();
+}
+
+
+void Scene::drawTerrain()
+{
+  ren->useShader(SHADER_TERRAIN);
+  for (GameObject *obj: this->m_scenegraph->m_terrain_instances)
   {
-    obj->m_model->setTransform(obj->getTransform());
-    this->ren->drawLightSource(obj->m_model, *obj->lightsource_components[0].diffuse);
+    TerrainComponent tc = obj->terrain_components[0].terrain_component;
+    this->ren->drawTerrain(obj->m_model, obj->getTransform(), tc.threshold, tc.epsilon);
   }
+}
+
+
+void Scene::drawStatic()
+{
+  ren->useShader(SHADER_ACTOR);
+  for (GameObject *obj: this->m_scenegraph->m_static_instances)
+  {
+    this->ren->drawModel(obj->m_model, obj->getTransform());
+  }
+}
+
+
+void Scene::drawBillboards()
+{
+  GLCALL( glDisable(GL_CULL_FACE) );
+
+  ren->useShader(SHADER_BILLBOARD);
+  this->ren->active_shader->setMat4("inv_view", glm::mat4(1.0f));
+  this->ren->active_shader->setInt("diffuseMap", 0);
+
+  std::map<std::string, InstanceData> *instance_data = this->m_scenegraph->getInstanceData();
+  for (auto it = instance_data->begin(); it != instance_data->end(); ++it)
+  {
+    auto &data = (*it).second;
+
+    GLCALL( glActiveTexture(GL_TEXTURE0) );
+    GLCALL( glBindTexture(GL_TEXTURE_2D, data.models[0]->m_meshes[0].materials[0].diffuseMap.m_texture_obj) );
+
+    for (GLuint i=0; i<data.model_matrices.size(); i++)
+    {
+      glBindVertexArray(data.models[i]->m_meshes[0].VAO);
+      glDrawArraysInstanced(GL_TRIANGLES, 0, data.models[i]->m_meshes[0].vertices.size(), data.model_matrices.size());
+      // glDrawElementsInstanced(GL_TRIANGLES, data.models[i]->m_meshes[0].indices.size(), GL_UNSIGNED_INT, 0, data.model_matrices.size());
+    }
+  }
+
+  GLCALL( glEnable(GL_CULL_FACE) );
+
+  this->_billboard_queue.clear();
+}
+
+
+void Scene::drawActors()
+{
+  ren->useShader(SHADER_ACTOR);
+
+  this->ren->active_shader->setInt("material.diffuseMap", 0);
+  this->ren->active_shader->setInt("material.specularMap", 1);
+  this->ren->active_shader->setInt("material.normalMap", 2);
+  this->ren->active_shader->setInt("material.emissionMap", 3);
+
+  for (GameObject *obj: this->m_scenegraph->m_actor_instances)
+  {
+    this->ren->drawModel(obj->m_model, obj->getTransform());
+  }
+
+}
+
+
+void Scene::drawLightsources()
+{
+  // ren->useShader(SHADER_LIGHTSOURCE);
+
+  // for (GameObject *obj: this->m_scenegraph->m_lightsource_instances)
+  // {
+  //   this->ren->drawLightSource(obj->m_model, obj->getTransform(), *obj->lightsource_components[0].diffuse);
+  // }
 }
 
 

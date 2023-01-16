@@ -6,7 +6,6 @@ add_definitions(
 	-D_CRT_SECURE_NO_WARNINGS
 )
 
-
 include_directories(
 	glew-2.1.0/include/
 )

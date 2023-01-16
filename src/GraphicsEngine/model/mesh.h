@@ -15,10 +15,11 @@
 
 
 struct Vertex {
-  glm::vec3 position;
-  glm::vec3 normal;
-  glm::vec2 texcoords;
-  glm::vec3 tangent;
+  glm::vec3 position = glm::vec3(0.0f);
+  glm::vec3 normal = glm::vec3(0.0f);
+  glm::vec2 texcoords = glm::vec2(0.0f);
+  glm::vec3 tangent = glm::vec3(0.0f);
+  glm::vec3 color = glm::vec4(0.0f);
 };
 
 
@@ -38,7 +39,6 @@ class Mesh {
     std::vector<Material> materials;
     std::vector<Vertex> vertices;
 
-    glm::vec3 pos = glm::vec3(0.0f, 0.0f, 2.0f);
 
     Mesh(void);
 
@@ -46,6 +46,7 @@ class Mesh {
 
     void load(std::string filepath);
     void setBufferData(void);
+    void setBufferData_instanced(void);
 
 };
 

@@ -1,68 +1,37 @@
 #include "../UIEngine.h"
 
 
+
+static void draw_submenu(const char *title, SceneGraph *scenegraph, int *selected_instance, std::list<GameObject *> &object_templates)
+{
+  if (ImGui::BeginMenu(title))
+  {
+    for (GameObject *obj: object_templates)
+    {
+      if (ImGui::MenuItem(obj->getTemplateName().c_str()))
+      {
+        scenegraph->newObjectInstance(obj->getTemplateName());
+        *selected_instance = scenegraph->m_object_instances.size() - 1;
+      }
+    }
+    ImGui::EndMenu();
+  }
+}
+
+
+
 static void draw_new_instance_menu(SceneGraph *scenegraph, int *selected_instance)
 {
   if (ImGui::BeginPopupContextWindow("New Instance"))
   {
     ImGui::Text("New Instance");
     ImGui::Separator();
-    
-    if (ImGui::BeginMenu("Environment"))
-    {
-      int iterator = 0;
-      for (auto &objtemplate: scenegraph->m_object_templates)
-      {
-        if (objtemplate.isEnvironmental() == false)
-          continue;
-        
-        if (ImGui::MenuItem(objtemplate.getTemplateName().c_str()))
-        {
-          scenegraph->newObjectInstance(objtemplate.getTemplateName());
-          *selected_instance = scenegraph->m_object_instances.size() - 1;
-        }
 
-        iterator += 1;
-      }
-      ImGui::EndMenu();
-    }
-
-    if (ImGui::BeginMenu("NPC"))
-    {
-      int iterator = 0;
-      for (auto &objtemplate: scenegraph->m_object_templates)
-      {
-        if (objtemplate.isNPC() == false)
-          continue;
-        
-        if (ImGui::MenuItem(objtemplate.getTemplateName().c_str()))
-        {
-          scenegraph->newObjectInstance(objtemplate.getTemplateName());
-          *selected_instance = scenegraph->m_object_instances.size() - 1;
-        }
-
-        iterator += 1;
-      }
-      ImGui::EndMenu();
-    }
-
-    if (ImGui::BeginMenu("Misc"))
-    {
-      for (auto &objtemplate: scenegraph->m_object_templates)
-      {
-
-        if (objtemplate.isMisc() == false)
-          continue;
-  
-        if (ImGui::MenuItem(objtemplate.getTemplateName().c_str()))
-        {
-          scenegraph->newObjectInstance(objtemplate.getTemplateName());
-          *selected_instance = scenegraph->m_object_instances.size() - 1;
-        }
-      }
-
-      ImGui::EndMenu();
-    }
+    draw_submenu("Terrain Objects",       scenegraph, selected_instance, scenegraph->m_terrain_templates);
+    draw_submenu("Static Objects",        scenegraph, selected_instance, scenegraph->m_static_templates);
+    draw_submenu("Billboard Objects",     scenegraph, selected_instance, scenegraph->m_billboard_templates);
+    draw_submenu("Actor Objects",         scenegraph, selected_instance, scenegraph->m_actor_templates);
+    draw_submenu("Lightsource Objects",   scenegraph, selected_instance, scenegraph->m_lightsource_templates);
 
     ImGui::EndPopup();
   }
@@ -105,7 +74,7 @@ static void draw_entity_childnodes(SceneGraph *scenegraph, GameObject *object, i
     }
 
     std::vector<GameObject *> children = object->getChildren();
-    for (int i=0; i<children.size(); i++)
+    for (size_t i=0; i<children.size(); i++)
     {
       draw_entity_childnodes(scenegraph, children[i], selected_instance);
     }

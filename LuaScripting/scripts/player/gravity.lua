@@ -1,6 +1,5 @@
 return function(objectID, engine)
 
-
   local vlib = engine.vectorLibrary;
   local origin = vlib.newVector();
 

@@ -1,7 +1,0 @@
-
-#gameobject bunker
-#interactivity environmental
-#geometry bunker.dae
-#collision collision.obj
-#physics PHYSICS_NONE
-#exit

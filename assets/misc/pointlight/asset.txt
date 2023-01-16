@@ -1,4 +1,0 @@
-#gameobject pointlight
-#interactivity misc
-#geometry sphere.dae
-#exit

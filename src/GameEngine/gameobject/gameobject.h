@@ -10,11 +10,23 @@
 class EntityComponent;
 
 
+enum GameObjectType {
+  GAMEOBJECT_UNDEFINED    = 0b00000000,
+  GAMEOBJECT_TERRAIN      = 0b00000001,
+  GAMEOBJECT_STATIC       = 0b00000010,
+  GAMEOBJECT_BILLBOARD    = 0b00000100,
+  GAMEOBJECT_ACTOR        = 0b00001000,
+  GAMEOBJECT_PLAYER       = 0b00010000,
+  GAMEOBJECT_LIGHTSOURCE  = 0b00100000
+};
+
 
 class GameObject {
 
   private:
 
+    GameObjectType gameobject_type = GAMEOBJECT_UNDEFINED;
+  
     bool _has_geometry = false;
 
     std::vector<GameObject *> m_children;
@@ -54,7 +66,7 @@ class GameObject {
     std::vector<EntityComponent> lightsource_components;
     std::vector<EntityComponent> script_components;
     std::vector<EntityComponent> variable_components;
-
+    std::vector<EntityComponent> terrain_components;
 
     PhysicsEngine::SphereCollider spherecollider;
     PhysicsEngine::CapsuleCollider capsulecollider;
@@ -97,6 +109,12 @@ class GameObject {
 
     // Interactivity
     //---------------------------------------------------------------------------------------------
+    void setObjectType(GameObjectType type)           { this->gameobject_type = type; };
+    GameObjectType getObjectType(void)                { return this->gameobject_type; };
+    std::string    getObjectTypeString(void);
+    
+
+  
     void setInteractivity(std::string interactivity)  { this->m_interactivity = interactivity; };
     bool isNPC(void)              { return this->m_interactivity == "npc"; };
     bool isEnvironmental(void)    { return this->m_interactivity == "environmental"; };

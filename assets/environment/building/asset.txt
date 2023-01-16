@@ -1,8 +1,0 @@
-
-#gameobject building
-#interactivity environmental
-#geometry building.dae
-#collision building.obj
-
-#exit
-

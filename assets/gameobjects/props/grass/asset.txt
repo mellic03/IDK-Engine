@@ -1,0 +1,6 @@
+#gameobject grass
+#interactivity billboard
+#GameObjectType GAMEOBJECT_BILLBOARD
+#geometry grass.dae
+#physics PHYSICS_NONE
+#exit

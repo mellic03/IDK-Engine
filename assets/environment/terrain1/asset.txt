@@ -1,7 +1,0 @@
-
-#gameobject terrain1
-#interactivity environmental
-#geometry ground2.dae
-#collision collision.obj
-#physics PHYSICS_NONE
-#exit

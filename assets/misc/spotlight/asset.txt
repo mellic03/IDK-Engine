@@ -1,4 +1,0 @@
-#gameobject spotlight
-#interactivity misc
-#geometry sphere.dae
-#exit

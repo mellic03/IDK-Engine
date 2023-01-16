@@ -18,7 +18,7 @@ void LuaInterface::ToLua::stdvec_int(std::vector<int> vecOfInt, std::string name
 {
   lua_newtable(LuaInterface::L);
 
-  for (int i=0; i<vecOfInt.size(); i++)
+  for (size_t i=0; i<vecOfInt.size(); i++)
   {
     lua_pushinteger(LuaInterface::L, i+1);
     lua_pushinteger(LuaInterface::L, vecOfInt[i]);
@@ -54,7 +54,7 @@ void LuaInterface::ToLua::stdvec_vec3(std::vector<glm::vec3> vecOfVec3, std::str
 {
   lua_newtable(LuaInterface::L);
 
-  for (int i=0; i<vecOfVec3.size(); i++)
+  for (size_t i=0; i<vecOfVec3.size(); i++)
   {
     lua_pushinteger(LuaInterface::L, i+1);
 

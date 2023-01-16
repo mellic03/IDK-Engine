@@ -147,7 +147,7 @@ vec3 calculate_shadowmapped_pointlight(ShadowPointLight light, vec3 albedo, vec3
 
   vec3 diffuse  = attenuation * albedo * diff * light.diffuse;
   vec3 ambient  = attenuation * albedo * light.ambient;
-  vec3 specular = attenuation * albedo * spec * light.diffuse * 0;
+  vec3 specular = attenuation * albedo * spec * light.diffuse * spec_strength;
 
   float shadow = calculate_shadow_pointlight(light, viewPos, fragPos);
   return  (ambient + (1.0 - shadow) * (diffuse + specular));
@@ -166,14 +166,14 @@ vec3 calculate_pointlight(PointLight light, vec3 albedo, vec3 fragPos, vec3 norm
   float diff = max(dot(normal, lightDir), 0.0);
 
   vec3 halfwayDir = normalize(lightDir + viewDir);  
-  float spec = pow(max(dot(normal, halfwayDir), 0.0), 32);
+  float spec = pow(max(dot(normal, halfwayDir), 0.0), 16);
   
   float attenuation = 1.0 / (light.constant + d*light.linear + d*d*light.quadratic);
   attenuation *= 1.0 - d/light.radius;
 
   vec3 diffuse  = attenuation * albedo * diff * light.diffuse;
   vec3 ambient  = attenuation * albedo * light.ambient;
-  vec3 specular = attenuation * albedo * spec * light.diffuse * 0;
+  vec3 specular = attenuation * albedo * spec * light.diffuse * spec_strength;
 
   return  (ambient + diffuse + specular);
 }

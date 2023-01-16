@@ -42,15 +42,12 @@ class Model {
     int m_ID = 0;
     std::string m_name = "DEFAULT";
 
+    bool is_terrain = false;
+
     std::vector<Mesh> m_meshes;
+    std::vector<Material> materials;
 
-    void loadDae(std::string directory, std::string filename, int id = 0);
-
-    void setTransform(Transform *transform) { this->_transform = transform; };
-
-    Transform *getTransform(void) { return this->_transform; };
-    glm::vec3 *getPos(void)       { return this->_transform->getPos(); };
-
+    void loadDae(std::string directory, std::string filename, bool instanced);
 };
 
 

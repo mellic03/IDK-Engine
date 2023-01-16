@@ -35,7 +35,6 @@ void draw_lighting_tab(Renderer *ren, Scene *scene)
   ImGui::DragFloat("Step size",    &ren->volumetrics.step_size, 0.001f);
   ImGui::DragFloat("Step multiplier",    &ren->volumetrics.step_multiplier, 0.001f);
 
-  ImGui::Text("Volumetric pass time: %lf\n", ren->render_pass_timer.getVolumetric());
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
 
@@ -80,7 +79,7 @@ void draw_render_tab(Renderer *ren)
   {
     char buffer[32];
 
-    for (int row = 0; row < 3; row++)
+    for (int row=0; row<3; row++)
     {
       ImGui::TableNextRow();
       ImGui::TableNextColumn();
@@ -131,21 +130,21 @@ void draw_framebuffers3(Renderer *ren, float w, float h, std::string name1, GLui
 {
   ImGui::BeginGroup();
   ImGui::Text(name1.c_str());
-  ImGui::Image((ImTextureID)fb1, {w, h}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+  ImGui::Image(*(ImTextureID *)(void *)&fb1, {w, h}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
   ImGui::EndGroup();
 
   ImGui::SameLine();
 
   ImGui::BeginGroup();
   ImGui::Text(name2.c_str());
-  ImGui::Image((ImTextureID)fb2, {w, h}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+  ImGui::Image(*(ImTextureID *)(void *)&fb2, {w, h}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
   ImGui::EndGroup();
 
   ImGui::SameLine();
 
   ImGui::BeginGroup();
   ImGui::Text(name3.c_str());
-  ImGui::Image((ImTextureID)fb3, {w, h}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+  ImGui::Image(*(ImTextureID *)(void *)&fb3, {w, h}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
   ImGui::EndGroup();
 }
 
@@ -171,14 +170,14 @@ void draw_framebuffers(Renderer *ren)
 
     ImGui::BeginGroup();
     ImGui::Text("Screen Quad");
-    ImGui::Image((ImTextureID)ren->screenQuadColorBuffers[0], {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+    ImGui::Image(*(ImTextureID *)(void *)&ren->screenQuadColorBuffers[0], {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
     ImGui::EndGroup();
 
     ImGui::SameLine();
 
     ImGui::BeginGroup();
     ImGui::Text("Dirlight depthmap");
-    ImGui::Image((ImTextureID)ren->dirlight_depthmap, {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+    ImGui::Image(*(ImTextureID *)(void *)&ren->dirlight_depthmap, {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
     ImGui::EndGroup();
 
     ImGui::End();
@@ -228,7 +227,7 @@ void draw_ui_dev2(Renderer *ren, Scene *scene, Player *player, int *x, int *y, i
       if (ren->viewport_width != *w || ren->viewport_height != *h)
         ren->resize(*w, *h);
 
-      ImGui::Image((ImTextureID)ren->screenQuadColorBuffers[0], ImGui::GetContentRegionAvail(), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+      ImGui::Image(*(ImTextureID *)(void *)&ren->screenQuadColorBuffers[0], ImGui::GetContentRegionAvail(), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
   
       ImGui::End();
     }

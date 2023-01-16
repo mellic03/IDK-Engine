@@ -164,7 +164,7 @@ std::vector<glm::vec3> NavMesh::path(glm::vec3 from, glm::vec3 to)
   current_node->previous = -1;
 
 
-  int nodes_visited = 0;
+  size_t nodes_visited = 0;
   
   while (nodes_visited < this->nodes.size())
   {

@@ -1,0 +1,8 @@
+
+#gameobject terrain2
+#interactivity environmental
+#GameObjectType GAMEOBJECT_STATIC
+#geometry terrain2.dae
+#collision collision.obj
+#physics PHYSICS_NONE
+#exit

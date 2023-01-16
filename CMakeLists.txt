@@ -3,9 +3,18 @@ cmake_minimum_required(VERSION 3.24)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
 set(CMAKE_BUILD_PARALLEL_LEVEL 8)
 
-add_compile_options(
-  -Ofast -pedantic -Wextra
-)
+set(COOM_DEBUG_MODE FALSE)
+
+
+
+add_compile_options( -pedantic -Wextra )
+
+if (COOM_DEBUG_MODE)
+  add_compile_options( -g )
+  add_definitions( -DCOOMDEBUG )
+else()
+  add_compile_options( -Ofast )
+endif()
 
 set (CMAKE_CXX_FLAGS "-lstdc++fs -std=c++17")
 
@@ -43,6 +52,7 @@ file(
   "src/GameEngine/computemesh/*.cpp"
   "src/GameEngine/gameobject/*.cpp"
   "src/GameEngine/player/*.cpp"
+  "src/GameEngine/scenegraph/*.cpp"
 
   "src/ui/*.cpp"
   "src/ui/tabs/*.cpp"

@@ -28,44 +28,85 @@
 #define NUM_SPOTLIGHTS 2
 
 
-struct RenderPassTimer {
-  int frames_passed = 0;
-  clock_t t;
 
-  double color = 0.0;
+struct InstanceData {
 
-  double volumetric = 0.0;
-  double volumetric_blur = 0.0;
+  GLuint VBO;
+  std::vector<glm::mat4>   model_matrices;
+  std::vector<Transform *> model_transforms;
+  std::vector<Model *>     models;
 
-
-  void beginVolumetric(void)
+  void genVBO()
   {
-    this->t = clock();
-  };
+    GLCALL( glDeleteBuffers(1, &this->VBO) );
+    GLCALL( glGenBuffers(1, &this->VBO) );
+    GLCALL( glBindBuffer(GL_ARRAY_BUFFER, this->VBO) );
+    GLCALL( glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4) * this->model_matrices.size(), &this->model_matrices[0], GL_STATIC_DRAW) );
+    GLCALL( glBindBuffer(GL_ARRAY_BUFFER, 0) );
+  }
 
-  void endVolumetric(void)
+
+  void addInstance(Model *model, Transform *transform)
   {
-    if (this->frames_passed >= 60)
+    this->model_matrices.push_back(transform->getModelMatrix());
+    this->model_transforms.push_back(transform);
+    this->models.push_back(model);
+
+    this->genVBO();
+  }
+
+
+  void perFrameUpdate()
+  {
+    GLCALL( glBindBuffer(GL_ARRAY_BUFFER, this->VBO) );
+
+    for (size_t i=0; i<this->model_transforms.size(); i++)
     {
-      this->frames_passed = 0;
-      this->volumetric = 0.0;
+      this->model_matrices[i] = this->model_transforms[i]->getModelMatrix();
     }
+  
+    for (auto &model: this->models)
+    {
+      for (auto &mesh: model->m_meshes)
+      {
+        GLCALL( glBindVertexArray(mesh.VAO) );
 
-    this->volumetric += (clock() - this->t);
-    this->frames_passed += 1;
-  };
+        int pos = 5;
+        int pos1 = pos + 0;
+        int pos2 = pos + 1;
+        int pos3 = pos + 2;
+        int pos4 = pos + 3;
 
-  double getVolumetric(void)
-  {
-    return (this->volumetric / this->frames_passed) / ((double)t/CLOCKS_PER_SEC);
-  };
+        GLCALL( glVertexAttribPointer(pos1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(0)) );
+        GLCALL( glEnableVertexAttribArray(pos1) );
 
+        GLCALL( glVertexAttribPointer(pos2, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(1*sizeof(glm::vec4))) );
+        GLCALL( glEnableVertexAttribArray(pos2) );
+
+        GLCALL( glVertexAttribPointer(pos3, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(2*sizeof(glm::vec4))) );
+        GLCALL( glEnableVertexAttribArray(pos3) );
+
+        GLCALL( glVertexAttribPointer(pos4, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(3*sizeof(glm::vec4))) );
+        GLCALL( glEnableVertexAttribArray(pos4) );
+
+        GLCALL( glVertexAttribDivisor(pos1, 1) );
+        GLCALL( glVertexAttribDivisor(pos2, 1) );
+        GLCALL( glVertexAttribDivisor(pos3, 1) );
+        GLCALL( glVertexAttribDivisor(pos4, 1) );
+
+        GLCALL( glBindVertexArray(0) );
+      }
+    }
+  }
 };
+
+
 
 
 class Renderer {
   
   private:
+
     float quadVertices[30] = {
       -1.0f,  1.0f,  -0.999f,  0.0f,  1.0f,
       -1.0f, -1.0f,  -0.999f,  0.0f,  0.0f,
@@ -80,9 +121,6 @@ class Renderer {
 
 
   public:
-
-    RenderPassTimer render_pass_timer;
-
     GLuint gbufferFBO, gbufferRBO, gbuffer_position, gbuffer_normal, gbuffer_albedospec, gbuffer_emission;
 
     GLuint colorFBO, colorRBO, colorBuffers[2];
@@ -154,7 +192,6 @@ class Renderer {
 
     void init(void);
 
-    Shader createShader(std::string filename);
 
     void compileShaders(void);
     void useShader(ShaderType shader);
@@ -162,15 +199,14 @@ class Renderer {
     void postProcess(void);
 
     void setupDirLightDepthmap(glm::vec3 dirlightpos, glm::vec3 dirlightdir);
-    void setupPointLightDepthCubemap(void);
     void perFrameUpdate(void);
 
-    void update(glm::vec3 pos, glm::vec3 dir);
-    void sendLightsToShader(void);
     void sendVolumetricData(void);
 
-    void drawModel(Model *model);
-    void drawLightSource(Model *model, glm::vec3 diffuse);
+    void drawTerrain(Model *model, Transform *transform, float threshold, float epsilon);
+    void drawBillboard(Model *model, Transform *transform);
+    void drawLightSource(Model *model,Transform *transform, glm::vec3 diffuse);
+    void drawModel(Model *model, Transform *transform);
 
 
     void copyTexture(GLuint src, GLuint dest);
