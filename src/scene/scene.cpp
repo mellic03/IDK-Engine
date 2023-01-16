@@ -385,19 +385,6 @@ void Scene::drawBillboards(GLuint framebuffer)
 
   this->m_scenegraph->perFrameUpdate();
 
-  // Blit depth information from g-buffer
-  //---------------------------------
-  // glBindFramebuffer(GL_READ_FRAMEBUFFER, ren->gbufferFBO);
-  // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
-  // glBlitFramebuffer(
-  //   0, 0, this->ren->viewport_width, this->ren->viewport_height,
-  //   0, 0, this->ren->viewport_width, this->ren->viewport_height,
-  //   GL_DEPTH_BUFFER_BIT, GL_NEAREST
-  // );
-  
-  // glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-  //---------------------------------
-
 
   ren->useShader(SHADER_BILLBOARD);
 
@@ -427,7 +414,6 @@ void Scene::drawBillboards(GLuint framebuffer)
         glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0, data.model_transforms.size());
       }
     }
-
   }
 
 
