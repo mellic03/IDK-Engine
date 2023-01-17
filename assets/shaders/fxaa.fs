@@ -4,6 +4,7 @@ out vec4 FragColor;
 
 in vec2 TexCoords;
 uniform sampler2D screenTexture;
+uniform sampler2D bloomTexture;
 
 // FXAA Quality Settings
 #define FXAA_SPAN_MAX (8.0)
@@ -63,5 +64,6 @@ vec3 fxaa(sampler2D tex, vec2 frameBufSize)
 
 void main() {
   FragColor = vec4(fxaa(screenTexture, textureSize(screenTexture, 0)), 1.0);
-  // FragColor = texture(screenTexture, TexCoords);
+  // FragColor = texture(bloomTexture, TexCoords);
+  FragColor = mix(FragColor, texture(bloomTexture, TexCoords), 0.04);
 }

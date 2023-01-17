@@ -262,9 +262,8 @@ int ENTRY(int argc, const char **argv)
 
 
 
-    // Blur bloom and volumetric light buffers
     //---------------------------------
-    // ren->textureToQuad(w, h, ren->pingPongColorBuffers[0], ren->lightshaftFBO);
+    glViewport(0, 0, w, h);
 
     //---------------------------------
   
@@ -304,39 +303,7 @@ int ENTRY(int argc, const char **argv)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //---------------------------------
 
-
-
-
-    // Blurring test
-    //---------------------------------
-
-    // ren->textureToQuad(w/2, h/2, ren->generalColorBuffer, ren->pingPongFBO[0]);
-
-    // glBindFramebuffer(GL_READ_FRAMEBUFFER, ren->generalFBO);
-    // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ren->pingPongFBO[0]);
-    // glBlitFramebuffer(
-    //   0, 0, w, h, 0, 0, w/2, h/2, GL_COLOR_BUFFER_BIT, GL_LINEAR
-    // );
-    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    // glBindFramebuffer(GL_READ_FRAMEBUFFER, ren->pingPongFBO[0]);
-    // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ren->generalFBO);
-    // glBlitFramebuffer(
-    //   0, 0, w/2, h/2, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_LINEAR
-    // );
-    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    // glBindTexture(GL_TEXTURE_2D, ren->pingPongColorBuffers[0]);
-    // glGenerateMipmap(GL_TEXTURE_2D);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-    // glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, 10.0);
-  
-    // ren->textureToQuad(w, h, ren->pingPongColorBuffers[0], ren->generalColorBuffer);
-
-
-    //---------------------------------
-
-
+    ren->blurTexture(ren->generalColorBuffer, ren->billboardFBO);
 
 
 
@@ -351,6 +318,10 @@ int ENTRY(int argc, const char **argv)
     glActiveTexture(GL_TEXTURE10);
     glBindTexture(GL_TEXTURE_2D, ren->generalColorBuffer);
     ren->active_shader->setInt("screenTexture", 10);
+
+    glActiveTexture(GL_TEXTURE11);
+    glBindTexture(GL_TEXTURE_2D, ren->billboardColorBuffer);
+    ren->active_shader->setInt("bloomTexture", 11);
 
     glBindVertexArray(ren->quadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);

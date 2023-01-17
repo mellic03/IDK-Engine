@@ -24,7 +24,7 @@
 #define DEFAULT_SCREEN_WIDTH 1500
 #define DEFAULT_SCREEN_HEIGHT 900
 
-#define NUM_BLUR_FBOS 8
+#define NUM_BLUR_FBOS 32
 
 #define NUM_DIRLIGHTS 1
 #define NUM_POINTLIGHTS 5
@@ -137,7 +137,7 @@ class Renderer {
 
 
     void copyTexture(GLuint src, GLuint dest);
-    void blurTexture(GLuint framebuffer, GLuint texture, int num_passes, float texel_size, float x_strength, float y_strength);
+    void blurTexture(GLuint input_texture, GLuint output_framebuffer);
     void additiveBlend(GLuint texture_1, GLuint texture_2);
 
     void genDepthCubemap(GLuint *FBO, GLuint *texture);

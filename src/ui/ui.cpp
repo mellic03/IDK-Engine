@@ -177,6 +177,24 @@ void draw_framebuffers(Renderer *ren)
     ImGui::EndGroup();
 
 
+
+    for (int i=0; i<NUM_BLUR_FBOS; i+=2)
+    {
+      ImGui::BeginGroup();
+      ImGui::Text("Blur Framebuffer %d", i);
+      ImGui::Image(*(ImTextureID *)(void *)&ren->blurColorBuffers[i], {viewportsize.x/2, viewportsize.y/2}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+      ImGui::EndGroup();
+
+      ImGui::SameLine();
+
+      ImGui::BeginGroup();
+      ImGui::Text("Blur Framebuffer %d", i+1);
+      ImGui::Image(*(ImTextureID *)(void *)&ren->blurColorBuffers[i+1], {viewportsize.x/2, viewportsize.y/2}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+      ImGui::EndGroup();
+    }
+
+
+
     ImGui::End();
   }
 }

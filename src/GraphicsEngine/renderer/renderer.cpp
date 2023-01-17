@@ -36,7 +36,8 @@ void Renderer::compileShaders(void)
   this->createShader("screenquad",            SHADER_SCREENQUAD);
 
   this->createShader("volumetriclights",      SHADER_VOLUMETRIC_LIGHT);
-  this->createShader("blur",                  SHADER_BLUR);
+  this->createShader("blur",                  SHADER_BLUR_DOWNSAMPLE);
+  this->createShader("blur/blur_upsample",         SHADER_BLUR_UPSAMPLE);
   this->createShader("additive",              SHADER_ADDITIVE);
 
   this->createShader("gbuffer_lighting",      SHADER_GBUFFER_LIGHTING);
@@ -302,51 +303,6 @@ void Renderer::copyTexture(GLuint src, GLuint dest)
 }
 
 
-void Renderer::blurTexture(GLuint framebuffer, GLuint texture, int num_passes, float texel_size, float x_strength, float y_strength)
-{
-  this->useShader(SHADER_BLUR);
-
-  glBindVertexArray(this->quadVAO);
-  glDisable(GL_DEPTH_TEST);
-
-  glActiveTexture(GL_TEXTURE10);
-
-  bool horizontal = true;
-  bool first = true;
-
-  for (int i=0; i<num_passes; i++)
-  {
-    glBindFramebuffer(GL_FRAMEBUFFER, this->pingPongFBO[horizontal]);
-
-    if (first)
-      glBindTexture(GL_TEXTURE_2D, texture);
-    else
-      glBindTexture(GL_TEXTURE_2D, this->pingPongColorBuffers[!horizontal]);
-
-    this->active_shader->setInt("image", 10);
-    this->active_shader->setInt("horizontal", horizontal);
-    this->active_shader->setFloat("texel_size", texel_size);
-    this->active_shader->setFloat("x_strength", x_strength);
-    this->active_shader->setFloat("y_strength", y_strength);
-    
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-
-    first = false;
-    horizontal = !horizontal;
-  }
-
-  // this->copyTexture(this->pingPongColorBuffers[!horizontal], texture);  
-
-  glCopyImageSubData( this->pingPongColorBuffers[!horizontal],  GL_TEXTURE_2D, 0, 0, 0, 0,
-                      texture, GL_TEXTURE_2D, 0, 0, 0, 0,
-                      this->viewport_width, this->viewport_height, 1);
-  glBindVertexArray(0);
-  glBindTexture(GL_TEXTURE_2D, 0);
-
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-
 void Renderer::additiveBlend(GLuint texture_1, GLuint texture_2)
 {
   glBindFramebuffer(GL_FRAMEBUFFER, this->generalFBO);
@@ -374,6 +330,103 @@ void Renderer::additiveBlend(GLuint texture_1, GLuint texture_2)
 }
 
 
+void Renderer::blurTexture(GLuint input_texture, GLuint output_framebuffer)
+{
+  GLCALL( glDisable(GL_DEPTH_TEST); );
+
+  this->useShader(SHADER_BLUR_DOWNSAMPLE);
+
+  
+  glActiveTexture(GL_TEXTURE0);
+  this->active_shader->setInt("inputTexture", 0);
+  
+
+  glBindVertexArray(this->quadVAO);
+
+
+  // Downsampling
+  //--------------------------------------------------------------------------
+  int i = 0;
+  for (i=0; i<NUM_BLUR_FBOS; i++)
+  {
+    glViewport(0, 0, this->viewport_width/(i+1), this->viewport_height/(i+1));
+    glBindFramebuffer(GL_FRAMEBUFFER, this->blurFBOS[i]);
+    
+    if (i == 0)
+      glBindTexture(GL_TEXTURE_2D, input_texture);
+    else
+      glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[i-1]);
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+  }
+  //--------------------------------------------------------------------------
+
+
+  // glBindFramebuffer(GL_FRAMEBUFFER, output_framebuffer);
+  // glViewport(0, 0, this->viewport_width, this->viewport_height);
+  // glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[i-1]);
+  // glDrawArrays(GL_TRIANGLES, 0, 6);
+
+  // Upsampling
+  // --------------------------------------------------------------------------
+  for (i=NUM_BLUR_FBOS-1; i>0; i--)
+  {
+    glViewport(0, 0, this->viewport_width/(i), this->viewport_height/(i));
+
+    glBindFramebuffer(GL_FRAMEBUFFER, this->blurFBOS[i-1]);
+
+    glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[i]);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+  }
+  // --------------------------------------------------------------------------
+
+  this->useShader(SHADER_BLUR_UPSAMPLE);
+
+  glViewport(0, 0, this->viewport_width, this->viewport_height);
+
+  glActiveTexture(GL_TEXTURE0);
+  this->active_shader->setInt("inputTexture1", 0);
+  glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[0]);
+
+  glActiveTexture(GL_TEXTURE1);
+  this->active_shader->setInt("inputTexture2", 1);
+  glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[1]);
+
+  glActiveTexture(GL_TEXTURE2);
+  this->active_shader->setInt("inputTexture3", 2);
+  glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[2]);
+
+  glActiveTexture(GL_TEXTURE3);
+  this->active_shader->setInt("inputTexture4", 3);
+  glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[3]);
+
+  glActiveTexture(GL_TEXTURE4);
+  this->active_shader->setInt("inputTexture5", 4);
+  glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[4]);
+
+  glActiveTexture(GL_TEXTURE5);
+  this->active_shader->setInt("inputTexture6", 5);
+  glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[5]);
+
+  glActiveTexture(GL_TEXTURE6);
+  this->active_shader->setInt("inputTexture7", 6);
+  glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[6]);
+
+  glActiveTexture(GL_TEXTURE7);
+  this->active_shader->setInt("inputTexture8", 7);
+  glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[7]);
+
+
+  glBindFramebuffer(GL_FRAMEBUFFER, output_framebuffer);
+  glDrawArrays(GL_TRIANGLES, 0, 6);
+
+
+  glBindVertexArray(0);
+
+  GLCALL( glEnable(GL_DEPTH_TEST); );
+}
+
+
 void Renderer::genBlurBuffers(int x, int y)
 {
   glDeleteTextures(NUM_BLUR_FBOS, this->blurColorBuffers);
@@ -388,12 +441,12 @@ void Renderer::genBlurBuffers(int x, int y)
 
     glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[i]);
 
-    float res_x = (float)x * (1.0f / (float)i);
-    float res_y = (float)y * (1.0f / (float)i);
+    int res_x = x / (i+1);
+    int res_y = y / (i+1);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, res_x, res_y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 0, GL_TEXTURE_2D, this->blurColorBuffers[i], 0);
@@ -580,11 +633,10 @@ void Renderer::genVolLightBuffer(int x, int y)
 
   glBindTexture(GL_TEXTURE_2D, this->lightshaftColorBuffer);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glGenerateMipmap(GL_TEXTURE_2D);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 0, GL_TEXTURE_2D, this->lightshaftColorBuffer, 0);
 
 

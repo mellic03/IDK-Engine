@@ -206,7 +206,7 @@ void main()
   float specular_map = texture(gAlbedoSpec, TexCoords).a;
 
   vec3 result = vec3(0.0);
-  result += 5 * emission;
+  result += emission;
 
   for (int i=0; i<NUM_POINTLIGHTS; i++)
   {

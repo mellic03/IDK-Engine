@@ -29,5 +29,5 @@ void main()
   gAlbedoSpec.rgb = texture(material.diffuseMap, TexCoords).rgb + texture(material.emissionMap, TexCoords).rgb;
   gAlbedoSpec.a = 1.0;//texture(material.specularMap, TexCoords).r;
 
-  gEmission = texture(material.emissionMap, TexCoords).rgb;
+  gEmission = 1 * texture(material.emissionMap, TexCoords).rgb;
 }

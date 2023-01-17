@@ -1,5 +1,6 @@
 #gameobject muscleskele
 #interactivity npc
+#GameObjectType GAMEOBJECT_ACTOR
 #geometry muscleskele.dae
 #physics PHYSICS_FALLING
 #exit

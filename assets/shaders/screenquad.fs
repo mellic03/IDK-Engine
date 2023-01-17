@@ -58,19 +58,10 @@ void main()
   //   RenderWithKernel += sampleTex[i] * ImageKernel[i];
 
   vec3 hdrColor = vec3(0.0, 0.0, 0.0);
-  hdrColor += textureLod(screenTexture, TexCoords, 0.0).rgb;
-
-  vec3 vol = vec3(0.0);
-  float levels = 4.0;
-  for (float i=0; i<levels; i++)
-  {
-    vol += textureLod(volumetricLightsTexture, TexCoords, i).rgb;
-  }
-  vol /= levels;
+  hdrColor += texture(screenTexture, TexCoords).rgb;
+  hdrColor += texture(volumetricLightsTexture, TexCoords).rgb;
 
 
-  hdrColor += vol;
-  // hdrColor += texture(bloomTexture, TexCoords).rgb;
   vec3 result = vec3(1.0) - exp(-hdrColor * exposure);
   result = pow(result, vec3(1.0 / gamma));
 
