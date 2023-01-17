@@ -20,5 +20,7 @@ GameObjectType GameObjectUtil::objectType_fromString(std::string stringdata)
 
   else if (std::string(stringdata) == "GAMEOBJECT_LIGHTSOURCE")
     return GAMEOBJECT_LIGHTSOURCE;
+
+  return GAMEOBJECT_UNDEFINED;
 }
 

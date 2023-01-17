@@ -38,6 +38,9 @@ class SceneGraph {
     std::list<GameObject *>   m_actor_instances;
     std::list<GameObject *>   m_billboard_instances;
     std::list<GameObject *>   m_lightsource_instances;
+    std::list<GameObject *>   m_dirlight_instances;
+    std::list<GameObject *>   m_spotlight_instances;
+    std::list<GameObject *>   m_pointlight_instances;
     GameObject *player_object;
 
 

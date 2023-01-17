@@ -3,8 +3,8 @@
 # Build project
 mkdir build output
 cd build
-cmake ..
-make
+cmake -G Ninja ..
+ninja
 
 
 # Copy game files to output folder

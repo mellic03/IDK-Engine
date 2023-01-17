@@ -112,6 +112,9 @@ void SceneGraph::loadObject(std::string directory)
     if (sscanf(buffer, "#GameObjectType %s", stringdata))
       object.setObjectType(GameObjectUtil::objectType_fromString(std::string(stringdata)));
 
+    if (sscanf(buffer, "#LightSourceType %s", stringdata))
+      object.setObjectType(GameObjectUtil::objectType_fromString(std::string(stringdata)));
+
     if (sscanf(buffer, "#interactivity %s", stringdata))
       object.setInteractivity(std::string(stringdata));
 

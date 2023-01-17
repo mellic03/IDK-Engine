@@ -11,101 +11,24 @@
 #include <string>
 #include <sstream>
 
-#include "../include/glm/glm.hpp"
-#include "../include/glm/gtc/matrix_transform.hpp"
-#include "../include/glm/gtc/type_ptr.hpp"
+#include "../glcall.h"
 
-#include "model/model.h"
-#include "camera.h"
-#include "lightsource.h"
-#include "shader.h"
+#include "../../transform.h"
+
+#include "../model/model.h"
+#include "../camera.h"
+#include "../lightsource.h"
+#include "../shader.h"
+#include "instancedata.h"
 
 #define DEFAULT_SCREEN_WIDTH 1500
 #define DEFAULT_SCREEN_HEIGHT 900
 
+#define NUM_BLUR_FBOS 8
+
 #define NUM_DIRLIGHTS 1
 #define NUM_POINTLIGHTS 5
 #define NUM_SPOTLIGHTS 2
-
-
-
-struct InstanceData {
-
-  GLuint VBO;
-  std::vector<glm::mat4>   model_matrices;
-  std::vector<Transform *> model_transforms;
-  std::vector<Model *>     models;
-
-  void genVBO()
-  {
-    GLCALL( glDeleteBuffers(1, &this->VBO) );
-    GLCALL( glGenBuffers(1, &this->VBO) );
-    GLCALL( glBindBuffer(GL_ARRAY_BUFFER, this->VBO) );
-    GLCALL( glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4) * this->model_matrices.size(), &this->model_matrices[0], GL_STATIC_DRAW) );
-    GLCALL( glBindBuffer(GL_ARRAY_BUFFER, 0) );
-  }
-
-
-  void addInstance(Model *model, Transform *transform)
-  {
-    this->model_matrices.push_back(transform->getModelMatrix());
-    this->model_transforms.push_back(transform);
-    this->models.push_back(model);
-  }
-
-
-  void setVertexAttribs()
-  {
-    this->genVBO();
-    GLCALL( glBindBuffer(GL_ARRAY_BUFFER, this->VBO) );
-
-    for (auto &model: this->models)
-    {
-      for (auto &mesh: model->m_meshes)
-      {
-        GLCALL( glBindVertexArray(mesh.VAO) );
-
-        int pos = 5;
-        int pos1 = pos + 0;
-        int pos2 = pos + 1;
-        int pos3 = pos + 2;
-        int pos4 = pos + 3;
-
-        GLCALL( glVertexAttribPointer(pos1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(0)) );
-        GLCALL( glEnableVertexAttribArray(pos1) );
-
-        GLCALL( glVertexAttribPointer(pos2, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(1*sizeof(glm::vec4))) );
-        GLCALL( glEnableVertexAttribArray(pos2) );
-
-        GLCALL( glVertexAttribPointer(pos3, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(2*sizeof(glm::vec4))) );
-        GLCALL( glEnableVertexAttribArray(pos3) );
-
-        GLCALL( glVertexAttribPointer(pos4, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(3*sizeof(glm::vec4))) );
-        GLCALL( glEnableVertexAttribArray(pos4) );
-
-        GLCALL( glVertexAttribDivisor(pos1, 1) );
-        GLCALL( glVertexAttribDivisor(pos2, 1) );
-        GLCALL( glVertexAttribDivisor(pos3, 1) );
-        GLCALL( glVertexAttribDivisor(pos4, 1) );
-
-        GLCALL( glBindVertexArray(0) );
-      }
-    }
-  }
-
-  void perFrameUpdate()
-  {
-    GLCALL( glBindBuffer(GL_ARRAY_BUFFER, this->VBO) );
-    GLCALL( glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4) * this->model_matrices.size(), &this->model_matrices[0], GL_STATIC_DRAW) );
-
-    for (size_t i=0; i<this->model_transforms.size(); i++)
-    {
-      this->model_matrices[i] = this->model_transforms[i]->getModelMatrix();
-    }
-  }
-};
-
-
 
 
 class Renderer {
@@ -126,6 +49,9 @@ class Renderer {
 
 
   public:
+
+    GLuint blurFBOS[NUM_BLUR_FBOS], blurColorBuffers[NUM_BLUR_FBOS];
+
     GLuint gbufferFBO, gbufferRBO, gbuffer_position, gbuffer_normal, gbuffer_albedospec, gbuffer_emission;
 
     GLuint colorFBO, colorRBO, colorBuffers[2];
@@ -161,7 +87,6 @@ class Renderer {
     // Lighting
     //---------------------------------------------------------------------
     VolumetricData volumetrics;
-    BloomData bloomData;
 
     float NM_DIRLIGHTS = 1;
     float NM_POINTLIGHTS = 5;
@@ -209,10 +134,6 @@ class Renderer {
 
     void sendVolumetricData(void);
 
-    void drawTerrain(Model *model, Transform *transform, float threshold, float epsilon);
-    void drawBillboard(Model *model, Transform *transform);
-    void drawLightSource(Model *model,Transform *transform, glm::vec3 diffuse);
-    void drawModel(Model *model, Transform *transform);
 
 
     void copyTexture(GLuint src, GLuint dest);
@@ -221,6 +142,8 @@ class Renderer {
 
     void genDepthCubemap(GLuint *FBO, GLuint *texture);
 
+    void genBlurBuffers(int x, int y);
+    
     void genGBuffer(int x, int y);
     void genGeneralBuffer(int x, int y);
     void genBillboardBuffer(int x, int y);
@@ -229,6 +152,13 @@ class Renderer {
     void genScreenQuadBuffer(int x, int y);
     void genPingPongBuffer(int x, int y);
     void resize(int x, int y);
+
+
+    void drawTerrain(Model *model, Transform *transform, float threshold, float epsilon);
+    void drawBillboard(Model *model, Transform *transform);
+    void drawLightSource(Model *model,Transform *transform, glm::vec3 diffuse);
+    void drawModel(Model *model, Transform *transform);
+    void drawModelInstanced(Model *model, InstanceData *instance_data);
 };
 
 

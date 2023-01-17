@@ -35,15 +35,6 @@ void draw_lighting_tab(Renderer *ren, Scene *scene)
   ImGui::DragFloat("Step size",    &ren->volumetrics.step_size, 0.001f);
   ImGui::DragFloat("Step multiplier",    &ren->volumetrics.step_multiplier, 0.001f);
 
-  ImGui::Dummy(ImVec2(0.0f, 20.0f));
-
-  ImGui::Text("Bloom");
-  ImGui::Separator();
-  ImGui::DragInt("Blur passes ##bloom",           &ren->bloomData.num_blur_passes, 1.0f, 0, 256);
-  ImGui::DragFloat("Texel size ##bloom",          &ren->bloomData.texel_size, 0.01f, 0, 256);
-  ImGui::DragFloat("Horizontal strength ##bloom", &ren->bloomData.x_strength, 0.01f, 0, 256);
-  ImGui::DragFloat("Vertical strength ##bloom",   &ren->bloomData.y_strength, 0.01f, 0, 256);
-
 }
 
 void draw_render_tab(Renderer *ren)

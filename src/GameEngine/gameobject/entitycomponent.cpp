@@ -153,37 +153,26 @@ void EntityComponent::_draw_terrain(GameObject *object)
 
         glm::mat4 model_mat = object->getTransform()->getModelMatrix();
 
-        for (int i=0; i<object->m_model->m_meshes[0].vertices.size(); i+=1)
+        for (size_t i=0; i<object->m_model->m_meshes[0].vertices.size(); i+=1)
         {
           Vertex vertex = object->m_model->m_meshes[0].vertices[i];
-          vertex.normal = glm::normalize(vertex.normal);
 
-          if (vertex.normal.y < 0.7f)
-            continue;
+          float density = vertex.color.g;
 
           glm::vec3 p = vertex.position;
           
           p = model_mat * glm::vec4(p.x, p.y, p.z, 1.0f);
 
-          for (int i=0; i<5; i++)
+          for (int i=0; i<ceil(density*25.0f); i++)
           {
-            float r1 = -1.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f - -1.0f)));
-            float r2 = -1.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f - -1.0f)));
+            float r1 = -1.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.5f - -1.5f)));
+            float r2 = -1.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.5f - -1.5f)));
             World::scene.m_scenegraph->newObjectInstance("grass", p + glm::vec3(r1, 0.0f, r2));
             count += 1;
           }
 
         }
 
-        // int width = 30;
-        // for (int i=0; i<width; i++)
-        //   for (int j=0; j<width; j++)
-        //   {
-        //     float r1 = (float)(rand()%10) - 5.0f;   r1 *= ((float)(rand()%100) - 50.0f)/50.0f;
-        //     float r2 = (float)(rand()%10) - 5.0f;   r2 *= ((float)(rand()%100) - 50.0f)/50.0f;
-        //     float h = 0.5f * sin(i + j);
-        //     World::scene.m_scenegraph->newObjectInstance("grass", glm::vec3((float)i + r1, h, (float)j + r2));
-        //   }
 
         auto data = World::scene.m_scenegraph->getInstanceData();
         InstanceData *iData = &data->at("grass");
@@ -240,30 +229,6 @@ void EntityComponent::draw(GameObject *object)
       break;
   }
 
-}
-
-void *EntityComponent::getComponentData(EntityComponentType component_type)
-{
-  switch (component_type)
-  {
-    case (COMPONENT_NONE):
-      break;
-
-    case (COMPONENT_TRANSFORM):
-      break;
-
-    case (COMPONENT_LIGHTSOURCE):
-      break;
-
-    case (COMPONENT_SCRIPT):
-      break;
-
-    case (COMPONENT_TERRAIN):
-      return (void *)this;
-
-    case (COMPONENT_VARIABLE):
-      break;
-  }
 }
 
 

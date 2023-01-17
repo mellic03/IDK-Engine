@@ -26,6 +26,7 @@ class GameObject {
   private:
 
     GameObjectType gameobject_type = GAMEOBJECT_UNDEFINED;
+    LightSourceType lightsource_type = LIGHTSOURCE_NONE;
   
     bool _has_geometry = false;
 
@@ -113,6 +114,7 @@ class GameObject {
     GameObjectType getObjectType(void)                { return this->gameobject_type; };
     std::string    getObjectTypeString(void);
     
+    void setLightSourceType(LightSourceType type)     {  };
 
   
     void setInteractivity(std::string interactivity)  { this->m_interactivity = interactivity; };

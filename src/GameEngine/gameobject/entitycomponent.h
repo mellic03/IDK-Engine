@@ -94,16 +94,12 @@ class EntityComponent {
     std::string script_name = "LuaScripting/scripts/default";
     bool script_changed = false;
 
-
     TerrainComponent  terrain_component;
     VariableComponent variable_component;
-
 
     EntityComponent(EntityComponentType component_type);
     EntityComponent(EntityComponentType component_type, PointLight *pointlight);
     EntityComponent(EntityComponentType component_type, SpotLight *spotlight);
-
-    void *getComponentData(EntityComponentType component_type);
 
     void draw(GameObject *object);
 

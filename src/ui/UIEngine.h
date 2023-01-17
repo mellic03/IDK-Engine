@@ -5,7 +5,7 @@
 #include "../include/imgui/imgui_impl_opengl3.h"
 #include "../include/imgui/imgui_stdlib.h"
 
-#include "../GraphicsEngine/renderer.h"
+#include "../GraphicsEngine/GraphicsEngine.h"
 #include "../scene/scene.h"
 #include "../scripting/luainterface.h"
 

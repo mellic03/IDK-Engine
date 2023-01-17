@@ -1,6 +1,6 @@
 
 #include "camera.h"
-#include "renderer.h"
+
 
 int frame_count = 0;
 

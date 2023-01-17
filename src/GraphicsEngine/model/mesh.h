@@ -46,7 +46,6 @@ class Mesh {
 
     void load(std::string filepath);
     void setBufferData(void);
-    void setBufferData_instanced(void);
 
 };
 

@@ -337,14 +337,14 @@ void Scene::drawBackground()
 
 void Scene::drawGeometry()
 {
-  for (auto &obj: this->m_scenegraph->m_object_instances)
-  {
-    if (obj.getObjectType() == GAMEOBJECT_BILLBOARD)
-      continue;
+  for (auto &terrain: this->m_scenegraph->m_terrain_instances)
+    this->ren->drawModel(terrain->m_model, terrain->getTransform());
+   
+  for (auto &staticobj: this->m_scenegraph->m_static_instances)
+    this->ren->drawModel(staticobj->m_model, staticobj->getTransform());
 
-    if (!obj.hasLightSource() && obj.hasGeometry())
-      this->ren->drawModel(obj.m_model, obj.getTransform());
-  }
+  for (auto &actor: this->m_scenegraph->m_actor_instances)
+    this->ren->drawModel(actor->m_model, actor->getTransform());
 }
 
 
@@ -394,28 +394,13 @@ void Scene::drawBillboards(GLuint framebuffer)
   this->ren->active_shader->setInt("diffuseMap", 0);
 
 
-  GLCALL( glActiveTexture(GL_TEXTURE0) );
-  GLCALL( glBindTexture(GL_TEXTURE_2D, this->m_scenegraph->templatePtr("grass")->m_model->m_meshes[0].materials[0].diffuseMap.m_texture_obj) );
 
-
-  std::map<std::string, InstanceData> *instance_data = this->m_scenegraph->getInstanceData();
-  for (auto it = instance_data->begin(); it != instance_data->end(); ++it)
+  std::map<std::string, InstanceData> *map = this->m_scenegraph->getInstanceData();
+  for (auto it = map->begin(); it != map->end(); ++it)
   {
-    auto &data = (*it).second;
-    
-    GLCALL( glBindBuffer(GL_ARRAY_BUFFER, data.VBO) );
-    
-    for (auto &mesh: data.models[0]->m_meshes)
-    {
-      glBindVertexArray(mesh.VAO);
-
-      for (auto &indices: mesh.indices)
-      {
-        glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0, data.model_transforms.size());
-      }
-    }
+    auto &instance_data = (*it).second;
+    this->ren->drawModelInstanced(instance_data.model, &instance_data);
   }
-
 
   GLCALL( glEnable(GL_CULL_FACE) );
 }

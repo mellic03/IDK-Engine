@@ -253,6 +253,10 @@ int ENTRY(int argc, const char **argv)
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
 
+    glBindTexture(GL_TEXTURE_2D, ren->lightshaftColorBuffer);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //---------------------------------
 
@@ -260,11 +264,8 @@ int ENTRY(int argc, const char **argv)
 
     // Blur bloom and volumetric light buffers
     //---------------------------------
-    GLCALL(glViewport(0, 0, w, h));
-    ren->blurTexture( ren->lightshaftFBO, ren->lightshaftColorBuffer,
-                      ren->volumetrics.num_blur_passes, ren->volumetrics.texel_size,
-                      ren->volumetrics.x_strength, ren->volumetrics.y_strength
-                    );
+    // ren->textureToQuad(w, h, ren->pingPongColorBuffers[0], ren->lightshaftFBO);
+
     //---------------------------------
   
 
@@ -285,7 +286,7 @@ int ENTRY(int argc, const char **argv)
     glBindTexture(GL_TEXTURE_2D, ren->colorBuffers[0]);
 
     glActiveTexture(GL_TEXTURE11);
-    glBindTexture(GL_TEXTURE_2D, ren->pingPongColorBuffers[0]);
+    glBindTexture(GL_TEXTURE_2D, ren->lightshaftColorBuffer);
 
     glActiveTexture(GL_TEXTURE12);
     glBindTexture(GL_TEXTURE_2D, ren->billboardColorBuffer);
@@ -300,9 +301,43 @@ int ENTRY(int argc, const char **argv)
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
 
-
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //---------------------------------
+
+
+
+
+    // Blurring test
+    //---------------------------------
+
+    // ren->textureToQuad(w/2, h/2, ren->generalColorBuffer, ren->pingPongFBO[0]);
+
+    // glBindFramebuffer(GL_READ_FRAMEBUFFER, ren->generalFBO);
+    // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ren->pingPongFBO[0]);
+    // glBlitFramebuffer(
+    //   0, 0, w, h, 0, 0, w/2, h/2, GL_COLOR_BUFFER_BIT, GL_LINEAR
+    // );
+    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // glBindFramebuffer(GL_READ_FRAMEBUFFER, ren->pingPongFBO[0]);
+    // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ren->generalFBO);
+    // glBlitFramebuffer(
+    //   0, 0, w/2, h/2, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_LINEAR
+    // );
+    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // glBindTexture(GL_TEXTURE_2D, ren->pingPongColorBuffers[0]);
+    // glGenerateMipmap(GL_TEXTURE_2D);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    // glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, 10.0);
+  
+    // ren->textureToQuad(w, h, ren->pingPongColorBuffers[0], ren->generalColorBuffer);
+
+
+    //---------------------------------
+
+
+
 
 
     // FXAA

@@ -8,7 +8,9 @@
 #include <string>
 #include <sstream>
 #include "renderer.h"
-#include "../scene/scene.h"
+
+#include "../../scene/scene.h"
+
 
 void Renderer::createShader(std::string filename, ShaderType type)
 {
@@ -39,6 +41,7 @@ void Renderer::compileShaders(void)
 
   this->createShader("gbuffer_lighting",      SHADER_GBUFFER_LIGHTING);
   this->createShader("fxaa",                  SHADER_FXAA);
+  this->createShader("texture_to_quad",       SHADER_TEXTURE_TO_QUAD);
 
   // Shadows
   //------------------------------------------------------
@@ -186,8 +189,6 @@ void Renderer::perFrameUpdate(void)
     this->shaders[i].setMat4("projection", this->cam.projection);
     this->shaders[i].setMat4("view", this->cam.view);
   }
-  fflush(stdout);
-  // exit(1);
 }
 
 
@@ -373,6 +374,39 @@ void Renderer::additiveBlend(GLuint texture_1, GLuint texture_2)
 }
 
 
+void Renderer::genBlurBuffers(int x, int y)
+{
+  glDeleteTextures(NUM_BLUR_FBOS, this->blurColorBuffers);
+  glDeleteFramebuffers(NUM_BLUR_FBOS, this->blurFBOS);
+
+  glGenFramebuffers(NUM_BLUR_FBOS, this->blurFBOS);
+  glGenTextures(NUM_BLUR_FBOS, this->blurColorBuffers);
+  
+  for (int i=0; i<NUM_BLUR_FBOS; i++)
+  {
+    glBindFramebuffer(GL_FRAMEBUFFER, this->blurFBOS[i]);
+
+    glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[i]);
+
+    float res_x = (float)x * (1.0f / (float)i);
+    float res_y = (float)y * (1.0f / (float)i);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, res_x, res_y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 0, GL_TEXTURE_2D, this->blurColorBuffers[i], 0);
+
+    GLuint attachments[1] = { GL_COLOR_ATTACHMENT0 };
+    glDrawBuffers(1, attachments);
+  }
+
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+
 void Renderer::genGBuffer(int x, int y)
 {
   glDeleteTextures(1, &this->gbuffer_position);
@@ -546,11 +580,11 @@ void Renderer::genVolLightBuffer(int x, int y)
 
   glBindTexture(GL_TEXTURE_2D, this->lightshaftColorBuffer);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
+  glGenerateMipmap(GL_TEXTURE_2D);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 0, GL_TEXTURE_2D, this->lightshaftColorBuffer, 0);
 
 
@@ -622,6 +656,8 @@ void Renderer::genPingPongBuffer(int x, int y)
 
 void Renderer::resize(int x, int y)
 {
+  this->genBlurBuffers(x, y);
+
   this->genGBuffer(x, y);
   this->genGeneralBuffer(x, y);
   this->genBillboardBuffer(x, y);
@@ -704,6 +740,21 @@ void Renderer::drawTerrain(Model *model, Transform *transform, float threshold, 
   this->active_shader->setFloat("threshold", threshold);
   this->active_shader->setFloat("epsilon",   epsilon);
 
+  this->shaders[SHADER_TERRAIN].setInt("material.diffuseMap1", 0);
+  this->shaders[SHADER_TERRAIN].setInt("material.diffuseMap2", 1);
+  this->shaders[SHADER_TERRAIN].setInt("material.diffuseMap3", 2);
+  this->shaders[SHADER_TERRAIN].setInt("material.diffuseMap4", 3);
+
+  this->shaders[SHADER_TERRAIN].setInt("material.specularMap1", 4);
+  this->shaders[SHADER_TERRAIN].setInt("material.specularMap2", 5);
+  this->shaders[SHADER_TERRAIN].setInt("material.specularMap3", 6);
+  this->shaders[SHADER_TERRAIN].setInt("material.specularMap4", 7);
+
+  this->shaders[SHADER_TERRAIN].setInt("material.normalMap1", 8);
+  this->shaders[SHADER_TERRAIN].setInt("material.normalMap2", 9);
+  this->shaders[SHADER_TERRAIN].setInt("material.normalMap3", 10);
+  this->shaders[SHADER_TERRAIN].setInt("material.normalMap4", 11);
+
 
   for (auto &mesh: model->m_meshes)
   {
@@ -724,27 +775,13 @@ void Renderer::drawTerrain(Model *model, Transform *transform, float threshold, 
     model->materials[2].normalMap.bind(   GL_TEXTURE10 );
     model->materials[3].normalMap.bind(   GL_TEXTURE11 );
 
-    this->shaders[SHADER_TERRAIN].setInt("material.diffuseMap1", 0);
-    this->shaders[SHADER_TERRAIN].setInt("material.diffuseMap2", 1);
-    this->shaders[SHADER_TERRAIN].setInt("material.diffuseMap3", 2);
-    this->shaders[SHADER_TERRAIN].setInt("material.diffuseMap4", 3);
-
-    this->shaders[SHADER_TERRAIN].setInt("material.specularMap1", 4);
-    this->shaders[SHADER_TERRAIN].setInt("material.specularMap2", 5);
-    this->shaders[SHADER_TERRAIN].setInt("material.specularMap3", 6);
-    this->shaders[SHADER_TERRAIN].setInt("material.specularMap4", 7);
-
-    this->shaders[SHADER_TERRAIN].setInt("material.normalMap1", 8);
-    this->shaders[SHADER_TERRAIN].setInt("material.normalMap2", 9);
-    this->shaders[SHADER_TERRAIN].setInt("material.normalMap3", 10);
-    this->shaders[SHADER_TERRAIN].setInt("material.normalMap4", 11);
 
     for (size_t i=0; i<mesh.IBOS.size(); i++)
     {
       this->active_shader->setFloat("material.spec_exponent", mesh.materials[i].spec_exponent);
 
-      GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBOS[i]));
-      GLCALL(glDrawElements(GL_TRIANGLES, mesh.indices[i].size(), GL_UNSIGNED_INT, (void *)0));
+      GLCALL( glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBOS[i]) );
+      GLCALL( glDrawElements(GL_TRIANGLES, mesh.indices[i].size(), GL_UNSIGNED_INT, (void *)0) );
     }
 
     glBindVertexArray(0);
@@ -755,9 +792,31 @@ void Renderer::drawTerrain(Model *model, Transform *transform, float threshold, 
 void Renderer::drawBillboard(Model *model, Transform *transform)
 {
 
-
  
 }
+
+
+void Renderer::drawModelInstanced(Model *model, InstanceData *instance_data)
+{
+  GLCALL( glBindBuffer(GL_ARRAY_BUFFER, instance_data->VBO) );
+  
+  for (auto &mesh: model->m_meshes)
+  {
+    glBindVertexArray(mesh.VAO);
+
+    for (size_t i=0; i<mesh.indices.size(); i++)
+    {
+      GLCALL( glActiveTexture(GL_TEXTURE0) );
+      GLCALL( glBindTexture(GL_TEXTURE_2D, mesh.materials[i].diffuseMap.m_texture_obj) );
+
+      glDrawElementsInstanced(GL_TRIANGLES, mesh.indices[i].size(), GL_UNSIGNED_INT, 0, instance_data->model_transforms.size());
+    }
+  }
+}
+
+
+
+
 
 
 Renderer Render::ren;

@@ -4,7 +4,7 @@
 #include "../include/imgui/imgui_impl_sdl.h"
 #include "../include/imgui/imgui_impl_opengl3.h"
 
-#include "../GraphicsEngine/renderer.h"
+#include "../GraphicsEngine/GraphicsEngine.h"
 #include "../scene/scene.h"
 
 #include "UIEngine.h"

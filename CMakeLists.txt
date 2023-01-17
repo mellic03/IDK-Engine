@@ -16,7 +16,7 @@ else()
   add_compile_options( -Ofast )
 endif()
 
-set (CMAKE_CXX_FLAGS "-lstdc++fs -std=c++17")
+set (CMAKE_CXX_FLAGS "-lstdc++fs -std=c++17 -fdiagnostics-color=always")
 
 project(CoomEngine)
 
@@ -47,6 +47,7 @@ file(
 
   "src/GraphicsEngine/*.cpp"
   "src/GraphicsEngine/model/*.cpp"
+  "src/GraphicsEngine/renderer/*.cpp"
   
   "src/GameEngine/*.cpp"
   "src/GameEngine/computemesh/*.cpp"

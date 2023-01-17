@@ -2,11 +2,6 @@
 
 #include "../transform.h"
 
-#include "../include/glm/glm.hpp"
-#include "../include/glm/gtc/matrix_transform.hpp"
-#include "../include/glm/gtc/type_ptr.hpp"
-
-
 struct VolumetricData {
   int num_samples = 128;
   float step_size = 0.05;
@@ -20,13 +15,14 @@ struct VolumetricData {
   float y_strength = 1.0f;
 };
 
-struct BloomData {
-  int num_blur_passes = 5;
 
-  float texel_size = 1.0f;
-  float x_strength = 1.0f;
-  float y_strength = 1.0f;
+enum LightSourceType {
+  LIGHTSOURCE_NONE,
+  LIGHTSOURCE_DIRECTIONAL_LIGHT,
+  LIGHTSOURCE_POINT_LIGHT,
+  LIGHTSOURCE_SPOT_LIGHT
 };
+
 
 struct DirLight {
   glm::vec3 position = glm::vec3(10.0f, 15.0f, 10.0f);

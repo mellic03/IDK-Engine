@@ -216,7 +216,7 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
 
       if (!this->is_terrain)
       {
-        for (int i=0; i<indices.size()/3; i+=1)
+        for (size_t i=0; i<indices.size()/3; i+=1)
         {
           mesh->vertices.push_back(Vertex());
           Vertex *vertex = &mesh->vertices[mesh->vertices.size() - 1];
@@ -231,7 +231,7 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
 
       else
       {
-        for (int i=0; i<indices.size()/4; i+=1)
+        for (size_t i=0; i<indices.size()/4; i+=1)
         {
           mesh->vertices.push_back(Vertex());
           Vertex *vertex = &mesh->vertices[mesh->vertices.size() - 1];
@@ -248,7 +248,7 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
 
       // Calculate vertex tangents
       //----------------------------------------------------
-      for (int i=0; i<mesh->vertices.size(); i+=3)
+      for (size_t i=0; i<mesh->vertices.size(); i+=3)
       {
         Vertex *v1 = &mesh->vertices[i+0];
         Vertex *v2 = &mesh->vertices[i+1];
@@ -382,7 +382,7 @@ void Model::loadLibraryMaterials(rapidxml::xml_document<> *doc)
 
 int Model::colladaImageIndex(std::string dae_id)
 {
-  for (int i=0; i<this->_collada_images.size(); i++)
+  for (size_t i=0; i<this->_collada_images.size(); i++)
     if (this->_collada_images[i].m_dae_id == dae_id)
       return i;
 

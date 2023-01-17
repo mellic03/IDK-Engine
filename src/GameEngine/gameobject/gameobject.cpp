@@ -178,9 +178,10 @@ std::string GameObject::getObjectTypeString(void)
 {
   switch (this->getObjectType())
   {
+    default:
     case (GAMEOBJECT_UNDEFINED):    return "GAMEOBJECT_UNDEFINED";
     case (GAMEOBJECT_TERRAIN):      return "GAMEOBJECT_TERRAIN";
-    case (GAMEOBJECT_STATIC):       return "GAMEOBJECT_TERRAIN";
+    case (GAMEOBJECT_STATIC):       return "GAMEOBJECT_STATIC";
     case (GAMEOBJECT_BILLBOARD):    return "GAMEOBJECT_BILLBOARD";
     case (GAMEOBJECT_ACTOR):        return "GAMEOBJECT_ACTOR";
     case (GAMEOBJECT_PLAYER):       return "GAMEOBJECT_PLAYER";
