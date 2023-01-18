@@ -5,6 +5,8 @@ out vec4 FragColor;
 in vec2 TexCoords;
 uniform sampler2D screenTexture;
 uniform sampler2D bloomTexture;
+uniform float bloomAmount;
+
 
 // FXAA Quality Settings
 #define FXAA_SPAN_MAX (8.0)
@@ -62,8 +64,32 @@ vec3 fxaa(sampler2D tex, vec2 frameBufSize)
   return result;
 }
 
+vec3 aces(vec3 x)
+{
+  const float a = 2.51;
+  const float b = 0.03;
+  const float c = 2.43;
+  const float d = 0.59;
+  const float e = 0.14;
+  return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
+}
+
+vec3 reinhard(vec3 x)
+{
+  return x / (x + vec3(1.0));
+}
+
 void main() {
-  FragColor = vec4(fxaa(screenTexture, textureSize(screenTexture, 0)), 1.0);
-  // FragColor = texture(bloomTexture, TexCoords);
-  FragColor = mix(FragColor, texture(bloomTexture, TexCoords), 0.04);
+
+  vec3 color = fxaa(screenTexture, textureSize(screenTexture, 0));
+  vec3 bloom = texture(bloomTexture, TexCoords).rgb;
+
+  vec3 result = color;
+  // result = mix(result, bloom, bloomAmount);
+  result = result + bloomAmount*bloom;
+
+  result = aces(result);
+  result = pow(result, vec3(1.0 / 2.2));
+
+  FragColor = vec4(result, 1.0);
 }

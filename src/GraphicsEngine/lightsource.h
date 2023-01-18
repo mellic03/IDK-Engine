@@ -16,6 +16,14 @@ struct VolumetricData {
 };
 
 
+struct BloomData {
+
+  float threshold = 1.0f;
+  float bloom_amount = 0.04f;
+
+};
+
+
 enum LightSourceType {
   LIGHTSOURCE_NONE,
   LIGHTSOURCE_DIRECTIONAL_LIGHT,

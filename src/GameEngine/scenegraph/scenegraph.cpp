@@ -3,6 +3,14 @@
 
 
 
+SceneGraph::SceneGraph()
+{
+
+
+}
+
+
+
 Model *SceneGraph::modelPtr(std::string model_name)
 {
   for (auto &model: this->m_models)
@@ -145,16 +153,7 @@ void SceneGraph::loadObject(std::string directory)
   this->m_object_templates.push_back(object);
 
   GameObject *objectptr = this->templatePtr(object.getTemplateName());
-
-  switch (objectptr->getObjectType())
-  {
-    case (GAMEOBJECT_UNDEFINED):    break;
-    case (GAMEOBJECT_TERRAIN):      this->m_terrain_templates.push_back(objectptr);       break;
-    case (GAMEOBJECT_STATIC):       this->m_static_templates.push_back(objectptr);        break;
-    case (GAMEOBJECT_BILLBOARD):    this->m_billboard_templates.push_back(objectptr);     break;
-    case (GAMEOBJECT_ACTOR):        this->m_actor_templates.push_back(objectptr);         break;
-    case (GAMEOBJECT_LIGHTSOURCE):  this->m_lightsource_templates.push_back(objectptr);   break;
-  }
+  this->_object_templates_by_type[objectptr->getObjectType()].push_back(objectptr);
 
 
   fclose(fh);
@@ -245,43 +244,43 @@ void SceneGraph::newObjectInstance(std::string object_name, glm::vec3 pos, glm::
 
 
   objectptr = this->rearObjectPtr();
+  GameObjectType object_type = objectptr->getObjectType();
+  this->_object_instances_by_type[object_type].push_back(objectptr);
 
-  switch (newobj.getObjectType())
+  bool selectable = true;
+  switch (object_type)
   {
     case (GAMEOBJECT_UNDEFINED):
       break;
 
     case (GAMEOBJECT_TERRAIN):
-      this->m_terrain_instances.push_back(objectptr);
       objectptr->terrain_components.push_back(EntityComponent(COMPONENT_TERRAIN));
       objectptr->terrain_components[0].terrain_component.generateGrassPositions(objectptr->m_model->m_meshes[0].vertices);
       break;
 
-
     case (GAMEOBJECT_STATIC):
-      this->m_static_instances.push_back(objectptr);
       break;
 
-
     case (GAMEOBJECT_BILLBOARD):
-      this->m_billboard_instances.push_back(objectptr);
+      selectable = false;
       this->addInstanceData(objectptr->getTemplateName(), objectptr->m_model, objectptr->getTransform());
       break;
 
-
     case (GAMEOBJECT_ACTOR):
-      this->m_actor_instances.push_back(objectptr);
       break;
-
 
     case (GAMEOBJECT_PLAYER):
       this->player_object = objectptr;
       break;
 
-
     case (GAMEOBJECT_LIGHTSOURCE):
-      this->m_lightsource_instances.push_back(objectptr);
+      printf("lightsource instance");
       break;
+  }
+
+  if (selectable)
+  {
+    this->m_selectable_instances.push_back(objectptr);
   }
 
 }
@@ -290,6 +289,12 @@ void SceneGraph::newObjectInstance(std::string object_name, glm::vec3 pos, glm::
 void SceneGraph::clearScene(void)
 {
   this->m_object_instances.clear();
+  this->m_selectable_instances.clear();
+
+  for (int i=0; i<GAMEOBJECT_NUM_TYPES; i++)
+    this->_object_instances_by_type[i].clear();
+    
+
   this->_num_pointlights = 0;
   this->_num_spotlights = 0;
   this->num_active_pointlights = 0;
@@ -560,3 +565,14 @@ void SceneGraph::importScene(std::string filepath, Player *player)
   stream.close();
 }
 
+
+std::list<GameObject *> *SceneGraph::getTemplatesByType(GameObjectType object_type)
+{
+  return &this->_object_templates_by_type[object_type];
+}
+
+
+std::list<GameObject *> *SceneGraph::getInstancesByType(GameObjectType object_type)
+{
+  return &this->_object_instances_by_type[object_type];
+}

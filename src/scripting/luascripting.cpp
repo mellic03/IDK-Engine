@@ -13,19 +13,17 @@ void luaMain(Renderer *ren, Player *player, std::list<GameObject> *gameobjects)
   std::vector<glm::vec3> positions, velocities;
 
   auto element = gameobjects->begin();
-  for (size_t i=0; i<gameobjects->size(); i++)
-  {
-    GameObject *object = &(*element);
 
-    for (auto &component: object->script_components)
+  for (auto &object: *gameobjects)
+  {
+    for (auto &component: object.script_components)
     {
       if (component.script_changed)
         LuaInterface::compile();
 
-      IDs.push_back(object->getID() + 1);
+      IDs.push_back(object.getID() + 1);
       scripts.push_back(component.script_name);
     }
-    element = std::next(element);
   }
 
   LuaInterface::ToLua::number(ren->deltaTime, "DeltaTime");

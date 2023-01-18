@@ -1,7 +1,10 @@
 #version 330 core
 
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
+
+
 in vec2 TexCoords;
-out vec4 FragColor;
 
 // uniform float kernel[9];
 // float kernelDivisor = 1;
@@ -9,62 +12,34 @@ out vec4 FragColor;
 
 uniform sampler2D screenTexture;
 uniform sampler2D volumetricLightsTexture;
-uniform sampler2D bloomTexture;
+uniform sampler2D emissionTexture;
 
 
 uniform float gamma;
 uniform float exposure;
+uniform float bloom_threshold;
 
 
 void main()
 {
-  // Image convolution
-  // -----------------------------------------
-  // float offset = 1.0 / kernelOffsetDivisor;
-  // vec2 offsets[9] = vec2[](
-  //     vec2(-offset,  offset), // top-left
-  //     vec2( 0.0f,    offset), // top-center
-  //     vec2( offset,  offset), // top-right
-  //     vec2(-offset,  0.0f),   // center-left
-  //     vec2( 0.0f,    0.0f),   // center-center
-  //     vec2( offset,  0.0f),   // center-right
-  //     vec2(-offset, -offset), // bottom-left
-  //     vec2( 0.0f,   -offset), // bottom-center
-  //     vec2( offset, -offset)  // bottom-right    
-  // );
-
-  // float ImageKernel[9] = float[](
-  //     0, // top-left
-  //     0, // top-center
-  //     0, // top-right
-  //     0,   // center-left
-  //     1,   // center-center
-  //     0,   // center-right
-  //     0, // bottom-left
-  //     0, // bottom-center
-  //     0  // bottom-right    
-  // );
-
-  // for (int i=0; i<9; i++)
-  //   ImageKernel[i] = ImageKernel[i]/kernelDivisor;
-
-  // vec3 sampleTex[9];
-  // for(int i = 0; i < 9; i++)
-  //   sampleTex[i] = vec3(texture(volumetricLightsTexture, TexCoords.st + offsets[i]));
-
-  // vec3 RenderWithKernel = vec3(0.0);
-
-  // for(int i = 0; i < 9; i++)
-  //   RenderWithKernel += sampleTex[i] * ImageKernel[i];
-
   vec3 hdrColor = vec3(0.0, 0.0, 0.0);
   hdrColor += texture(screenTexture, TexCoords).rgb;
   hdrColor += texture(volumetricLightsTexture, TexCoords).rgb;
 
 
-  vec3 result = vec3(1.0) - exp(-hdrColor * exposure);
-  result = pow(result, vec3(1.0 / gamma));
+  float brightness = dot(hdrColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+  if(brightness > bloom_threshold)
+  {
+    BrightColor = vec4(hdrColor, 1.0);
+  }
+  else
+  {
+    BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
+  }
 
 
-  FragColor = vec4(result, 1.0);
+  // vec3 result = vec3(1.0) - exp(-hdrColor * exposure);
+  // result = pow(result, vec3(1.0 / gamma));
+
+  FragColor = vec4(hdrColor, 1.0);
 }

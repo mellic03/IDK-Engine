@@ -262,13 +262,6 @@ int ENTRY(int argc, const char **argv)
 
 
 
-    //---------------------------------
-    glViewport(0, 0, w, h);
-
-    //---------------------------------
-  
-
-
     // Draw to quad
     //---------------------------------
     GLCALL(glViewport(0, 0, w, h));
@@ -282,19 +275,15 @@ int ENTRY(int argc, const char **argv)
   
    
     glActiveTexture(GL_TEXTURE10);
-    glBindTexture(GL_TEXTURE_2D, ren->colorBuffers[0]);
+    glBindTexture(GL_TEXTURE_2D, ren->colorBuffer);
 
     glActiveTexture(GL_TEXTURE11);
     glBindTexture(GL_TEXTURE_2D, ren->lightshaftColorBuffer);
 
-    glActiveTexture(GL_TEXTURE12);
-    glBindTexture(GL_TEXTURE_2D, ren->billboardColorBuffer);
-
-
     ren->active_shader->setInt("screenTexture", 10);
     ren->active_shader->setInt("volumetricLightsTexture", 11);
-    ren->active_shader->setInt("bloomTexture", 12);
-    
+    ren->active_shader->setFloat("bloom_threshold", ren->bloom.threshold);
+
     
     glBindVertexArray(ren->quadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -303,8 +292,7 @@ int ENTRY(int argc, const char **argv)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //---------------------------------
 
-    ren->blurTexture(ren->generalColorBuffer, ren->billboardFBO);
-
+    ren->blurTexture(ren->generalColorBuffers[1], ren->billboardFBO);
 
 
     // FXAA
@@ -316,12 +304,14 @@ int ENTRY(int argc, const char **argv)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glActiveTexture(GL_TEXTURE10);
-    glBindTexture(GL_TEXTURE_2D, ren->generalColorBuffer);
+    glBindTexture(GL_TEXTURE_2D, ren->generalColorBuffers[0]);
     ren->active_shader->setInt("screenTexture", 10);
 
     glActiveTexture(GL_TEXTURE11);
     glBindTexture(GL_TEXTURE_2D, ren->billboardColorBuffer);
     ren->active_shader->setInt("bloomTexture", 11);
+
+    ren->active_shader->setFloat("bloomAmount", ren->bloom.bloom_amount);
 
     glBindVertexArray(ren->quadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);

@@ -1,0 +1,6 @@
+#gameobject lightsaber
+#interactivity billboard
+#GameObjectType GAMEOBJECT_ACTOR
+#geometry lightsaber.dae
+#physics PHYSICS_NONE
+#exit

@@ -9,9 +9,16 @@ void EngineUI::properties(Scene *scene)
   GameObject *object = scenegraph->objectPtr(EngineUI::selected_objectID);
   if (object == nullptr)
     return;
+
   
   ImGui::Begin("Properties");
   {
+    ImGui::PushID(EngineUI::selected_objectID);
+    EngineUI::vec3("emission", &object->emission, 0.1f);
+    ImGui::DragFloat("scale", &object->emission_scale, 0.01f, 0.0f, 10.0f);
+    ImGui::PopID();
+
+
     ImGui::InputText("Name", &object->m_given_name);
     ImGui::Separator();
 

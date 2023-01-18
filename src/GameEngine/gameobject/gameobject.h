@@ -11,13 +11,14 @@ class EntityComponent;
 
 
 enum GameObjectType {
-  GAMEOBJECT_UNDEFINED    = 0b00000000,
-  GAMEOBJECT_TERRAIN      = 0b00000001,
-  GAMEOBJECT_STATIC       = 0b00000010,
-  GAMEOBJECT_BILLBOARD    = 0b00000100,
-  GAMEOBJECT_ACTOR        = 0b00001000,
-  GAMEOBJECT_PLAYER       = 0b00010000,
-  GAMEOBJECT_LIGHTSOURCE  = 0b00100000
+  GAMEOBJECT_UNDEFINED,
+  GAMEOBJECT_TERRAIN,
+  GAMEOBJECT_STATIC,
+  GAMEOBJECT_BILLBOARD,
+  GAMEOBJECT_ACTOR,
+  GAMEOBJECT_PLAYER,
+  GAMEOBJECT_LIGHTSOURCE,
+  GAMEOBJECT_NUM_TYPES
 };
 
 
@@ -58,6 +59,9 @@ class GameObject {
 
 
   public:
+
+    glm::vec3 emission = glm::vec3(0.0f);
+    float emission_scale = 1.0f;
 
     int m_ID = 0;
     int parentID = -1;

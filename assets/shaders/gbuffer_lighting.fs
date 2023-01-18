@@ -46,8 +46,8 @@ uniform ShadowPointLight shadow_pointlights[NUM_POINTLIGHTS];
 uniform int num_shadow_pointlights;
 
 
-layout (location = 0) out vec4 FragColor;
-layout (location = 1) out vec4 BrightColor;
+
+out vec4 FragColor;
 
 in vec2 TexCoords;
 
@@ -206,6 +206,7 @@ void main()
   float specular_map = texture(gAlbedoSpec, TexCoords).a;
 
   vec3 result = vec3(0.0);
+
   result += emission;
 
   for (int i=0; i<NUM_POINTLIGHTS; i++)
@@ -224,15 +225,8 @@ void main()
     result += calculate_pointlight(pointlights[i], albedo, fragPos, normal, specular_map);
   }
 
-
   result += calculate_dirlight(shadowmapped_dirlight, albedo, fragPos, normal, specular_map);
 
   FragColor = vec4(result, 1.0);
-
-  float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
-  if(brightness > 1.0)
-    BrightColor = vec4(FragColor.rgb, 1.0);
-  else
-    BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 }
 

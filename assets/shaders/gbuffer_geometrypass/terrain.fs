@@ -63,11 +63,8 @@ void main()
 {
   gPosition = vec4(FragPos, 1.0);
 
-
   vec3 sNormal = normalize(SurfaceNormal);
-
   float alpha = 1.0 - smoothstep(threshold - epsilon, threshold + epsilon, clamp(sNormal.y, 0.0, 1.0));
-
 
   vec4 normal4 = mix( textureNoTile(material.normalMap1, TexCoords),
                       textureNoTile(material.normalMap2, TexCoords), alpha );

@@ -44,6 +44,9 @@ void Renderer::compileShaders(void)
   this->createShader("fxaa",                  SHADER_FXAA);
   this->createShader("texture_to_quad",       SHADER_TEXTURE_TO_QUAD);
 
+  this->createShader("tonemap",               SHADER_TONEMAP);
+
+
   // Shadows
   //------------------------------------------------------
   this->createShader("dirshadow",         SHADER_DIRSHADOW);
@@ -335,7 +338,6 @@ void Renderer::blurTexture(GLuint input_texture, GLuint output_framebuffer)
   GLCALL( glDisable(GL_DEPTH_TEST); );
 
   this->useShader(SHADER_BLUR_DOWNSAMPLE);
-
   
   glActiveTexture(GL_TEXTURE0);
   this->active_shader->setInt("inputTexture", 0);
@@ -347,9 +349,9 @@ void Renderer::blurTexture(GLuint input_texture, GLuint output_framebuffer)
   // Downsampling
   //--------------------------------------------------------------------------
   int i = 0;
-  for (i=0; i<NUM_BLUR_FBOS; i++)
+  for (i=0; i<this->num_blur_FBOs; i++)
   {
-    glViewport(0, 0, this->viewport_width/(i+1), this->viewport_height/(i+1));
+    glViewport(0, 0, this->viewport_width/pow(2, i+1), this->viewport_height/pow(2, i+1));
     glBindFramebuffer(GL_FRAMEBUFFER, this->blurFBOS[i]);
     
     if (i == 0)
@@ -361,88 +363,67 @@ void Renderer::blurTexture(GLuint input_texture, GLuint output_framebuffer)
   }
   //--------------------------------------------------------------------------
 
-
-  // glBindFramebuffer(GL_FRAMEBUFFER, output_framebuffer);
-  // glViewport(0, 0, this->viewport_width, this->viewport_height);
-  // glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[i-1]);
-  // glDrawArrays(GL_TRIANGLES, 0, 6);
-
   // Upsampling
   // --------------------------------------------------------------------------
-  for (i=NUM_BLUR_FBOS-1; i>0; i--)
+  this->useShader(SHADER_BLUR_UPSAMPLE);
+  glViewport(0, 0, this->viewport_width, this->viewport_height);
+
+  for (i=this->num_blur_FBOs-1; i>=0; i--)
   {
-    glViewport(0, 0, this->viewport_width/(i), this->viewport_height/(i));
+    glViewport(0, 0, this->viewport_width/pow(2, i), this->viewport_height/pow(2, i));
 
-    glBindFramebuffer(GL_FRAMEBUFFER, this->blurFBOS[i-1]);
+    if (i == 0)
+      glBindFramebuffer(GL_FRAMEBUFFER, output_framebuffer);
+    else
+      glBindFramebuffer(GL_FRAMEBUFFER, this->blurFBOS[i-1]);
 
+
+    glActiveTexture(GL_TEXTURE0);
+    this->active_shader->setInt("inputTexture0", 0);
     glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[i]);
+    glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[i]);
+
+
+    glActiveTexture(GL_TEXTURE1);
+    this->active_shader->setInt("inputTexture1", 1);
+    if (i == this->num_blur_FBOs-1)
+      glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[i]);
+    else
+      glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[i+1]);
+
     glDrawArrays(GL_TRIANGLES, 0, 6);
   }
   // --------------------------------------------------------------------------
 
-  this->useShader(SHADER_BLUR_UPSAMPLE);
-
-  glViewport(0, 0, this->viewport_width, this->viewport_height);
-
-  glActiveTexture(GL_TEXTURE0);
-  this->active_shader->setInt("inputTexture1", 0);
-  glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[0]);
-
-  glActiveTexture(GL_TEXTURE1);
-  this->active_shader->setInt("inputTexture2", 1);
-  glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[1]);
-
-  glActiveTexture(GL_TEXTURE2);
-  this->active_shader->setInt("inputTexture3", 2);
-  glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[2]);
-
-  glActiveTexture(GL_TEXTURE3);
-  this->active_shader->setInt("inputTexture4", 3);
-  glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[3]);
-
-  glActiveTexture(GL_TEXTURE4);
-  this->active_shader->setInt("inputTexture5", 4);
-  glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[4]);
-
-  glActiveTexture(GL_TEXTURE5);
-  this->active_shader->setInt("inputTexture6", 5);
-  glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[5]);
-
-  glActiveTexture(GL_TEXTURE6);
-  this->active_shader->setInt("inputTexture7", 6);
-  glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[6]);
-
-  glActiveTexture(GL_TEXTURE7);
-  this->active_shader->setInt("inputTexture8", 7);
-  glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[7]);
-
-
-  glBindFramebuffer(GL_FRAMEBUFFER, output_framebuffer);
-  glDrawArrays(GL_TRIANGLES, 0, 6);
 
 
   glBindVertexArray(0);
-
   GLCALL( glEnable(GL_DEPTH_TEST); );
 }
 
 
 void Renderer::genBlurBuffers(int x, int y)
 {
-  glDeleteTextures(NUM_BLUR_FBOS, this->blurColorBuffers);
-  glDeleteFramebuffers(NUM_BLUR_FBOS, this->blurFBOS);
+  glDeleteTextures(MAX_BLUR_FBOS, this->blurColorBuffers);
+  glDeleteFramebuffers(MAX_BLUR_FBOS, this->blurFBOS);
 
-  glGenFramebuffers(NUM_BLUR_FBOS, this->blurFBOS);
-  glGenTextures(NUM_BLUR_FBOS, this->blurColorBuffers);
+  glGenFramebuffers(MAX_BLUR_FBOS, this->blurFBOS);
+  glGenTextures(MAX_BLUR_FBOS, this->blurColorBuffers);
   
-  for (int i=0; i<NUM_BLUR_FBOS; i++)
+  for (int i=0; i<MAX_BLUR_FBOS; i++)
   {
     glBindFramebuffer(GL_FRAMEBUFFER, this->blurFBOS[i]);
 
     glBindTexture(GL_TEXTURE_2D, this->blurColorBuffers[i]);
 
-    int res_x = x / (i+1);
-    int res_y = y / (i+1);
+    int res_x = x / pow(2, i+1);
+    int res_y = y / pow(2, i+1);
+
+    if (res_x <= 8 || res_y <= 8)
+    {
+      this->num_blur_FBOs = i;
+      break;
+    }
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, res_x, res_y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -493,7 +474,7 @@ void Renderer::genGBuffer(int x, int y)
   // - color + specular color buffer
   glGenTextures(1, &this->gbuffer_albedospec);
   glBindTexture(GL_TEXTURE_2D, this->gbuffer_albedospec);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, this->gbuffer_albedospec, 0);
@@ -501,7 +482,7 @@ void Renderer::genGBuffer(int x, int y)
   // - emission color buffer
   glGenTextures(1, &this->gbuffer_emission);
   glBindTexture(GL_TEXTURE_2D, this->gbuffer_emission);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, this->gbuffer_emission, 0);
@@ -523,24 +504,27 @@ void Renderer::genGBuffer(int x, int y)
 
 void Renderer::genGeneralBuffer(int x, int y)
 {
-  glDeleteTextures(1, &this->generalColorBuffer);
+  glDeleteTextures(2, this->generalColorBuffers);
   glDeleteFramebuffers(1, &this->generalFBO);
 
   glGenFramebuffers(1, &this->generalFBO);
-  glGenTextures(1, &this->generalColorBuffer);
+  glGenTextures(2, this->generalColorBuffers);
   
   glBindFramebuffer(GL_FRAMEBUFFER, this->generalFBO);
 
-  glBindTexture(GL_TEXTURE_2D, this->generalColorBuffer);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 0, GL_TEXTURE_2D, this->generalColorBuffer, 0);
+  for (int i=0; i<2; i++)
+  {
+    glBindTexture(GL_TEXTURE_2D, this->generalColorBuffers[i]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, this->generalColorBuffers[i], 0);
+  }
 
-  GLuint attachments[1] = { GL_COLOR_ATTACHMENT0 };
-  glDrawBuffers(1, attachments);
+  GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+  glDrawBuffers(2, attachments);
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -572,7 +556,6 @@ void Renderer::genBillboardBuffer(int x, int y)
   glBindRenderbuffer(GL_RENDERBUFFER, this->billboardRBO);
   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, x, y);
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, this->billboardRBO);
-  // finally check if framebuffer is complete
 
   glBindRenderbuffer(GL_RENDERBUFFER, 0);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -581,31 +564,21 @@ void Renderer::genBillboardBuffer(int x, int y)
 
 void Renderer::genColorBuffer(int x, int y)
 {
-  glDeleteTextures(2, this->colorBuffers);
+  glDeleteTextures(1, &this->colorBuffer);
   glDeleteRenderbuffers(1, &this->colorRBO);
   glDeleteFramebuffers(1, &this->colorFBO);
 
   glGenFramebuffers(1, &this->colorFBO);
   glBindFramebuffer(GL_FRAMEBUFFER, this->colorFBO);
-  glGenTextures(2, this->colorBuffers);
+  glGenTextures(1, &this->colorBuffer);
   
-  glBindTexture(GL_TEXTURE_2D, this->colorBuffers[0]);
+  glBindTexture(GL_TEXTURE_2D, this->colorBuffer);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_FLOAT, NULL);
   glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
   glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->colorBuffers[0], 0);
-
-
-  glBindTexture(GL_TEXTURE_2D, this->colorBuffers[1]);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_FLOAT, NULL);
-  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, this->colorBuffers[1], 0);
-
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->colorBuffer, 0);
 
   glGenRenderbuffers(1, &this->colorRBO);
   glBindRenderbuffer(GL_RENDERBUFFER, this->colorRBO); 
@@ -613,8 +586,8 @@ void Renderer::genColorBuffer(int x, int y)
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->colorRBO);
 
 
-  GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-  glDrawBuffers(2, attachments);
+  GLuint attachments[1] = { GL_COLOR_ATTACHMENT0 };
+  glDrawBuffers(1, attachments);
 
   glBindRenderbuffer(GL_RENDERBUFFER, 0);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);

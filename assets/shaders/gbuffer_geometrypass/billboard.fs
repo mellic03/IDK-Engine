@@ -17,6 +17,7 @@ void main()
   gAlbedoSpec = texture(diffuseMap, TexCoords);
   if (gAlbedoSpec.a < 0.1)
     discard;
+  gAlbedoSpec.a = 0.0;
 
   gPosition = vec4(FragPos, 1.0);
   gNormal.xyz = vec3(0.0, 1.0, 0.0);

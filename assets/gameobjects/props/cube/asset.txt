@@ -1,0 +1,6 @@
+#gameobject cube
+#interactivity billboard
+#GameObjectType GAMEOBJECT_ACTOR
+#geometry cube.dae
+#physics PHYSICS_NONE
+#exit

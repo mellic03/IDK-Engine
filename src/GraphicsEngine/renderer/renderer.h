@@ -24,7 +24,7 @@
 #define DEFAULT_SCREEN_WIDTH 1500
 #define DEFAULT_SCREEN_HEIGHT 900
 
-#define NUM_BLUR_FBOS 32
+#define MAX_BLUR_FBOS 16
 
 #define NUM_DIRLIGHTS 1
 #define NUM_POINTLIGHTS 5
@@ -50,16 +50,17 @@ class Renderer {
 
   public:
 
-    GLuint blurFBOS[NUM_BLUR_FBOS], blurColorBuffers[NUM_BLUR_FBOS];
+    GLuint blurFBOS[MAX_BLUR_FBOS], blurColorBuffers[MAX_BLUR_FBOS];
+    int num_blur_FBOs;
 
     GLuint gbufferFBO, gbufferRBO, gbuffer_position, gbuffer_normal, gbuffer_albedospec, gbuffer_emission;
 
-    GLuint colorFBO, colorRBO, colorBuffers[2];
+    GLuint colorFBO, colorRBO, colorBuffer;
     GLuint lightshaftFBO, lightshaftRBO, lightshaftColorBuffer;
     GLuint quadVAO, quadVBO;
     GLuint screenQuadFBO, screenQuadRBO, screenQuadColorBuffers[1];
     GLuint pingPongFBO[2], pingPingRBO[2], pingPongColorBuffers[2];
-    GLuint generalFBO, generalRBO, generalColorBuffer;
+    GLuint generalFBO, generalRBO, generalColorBuffers[2];
     GLuint billboardFBO, billboardRBO, billboardColorBuffer;
 
     // Camera/user-facing
@@ -87,6 +88,8 @@ class Renderer {
     // Lighting
     //---------------------------------------------------------------------
     VolumetricData volumetrics;
+    BloomData bloom;
+
 
     float NM_DIRLIGHTS = 1;
     float NM_POINTLIGHTS = 5;

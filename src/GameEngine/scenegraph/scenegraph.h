@@ -17,6 +17,8 @@
 class SceneGraph {
 
   private:
+    std::list<GameObject *>  _object_templates_by_type[GAMEOBJECT_NUM_TYPES];
+    std::list<GameObject *>  _object_instances_by_type[GAMEOBJECT_NUM_TYPES];
 
     std::map<std::string, InstanceData> _instance_data;
 
@@ -26,21 +28,13 @@ class SceneGraph {
     std::list<Model> m_models;
 
     std::list<GameObject>     m_object_templates;
-    std::list<GameObject *>   m_terrain_templates;
-    std::list<GameObject *>   m_static_templates;
-    std::list<GameObject *>   m_actor_templates;
-    std::list<GameObject *>   m_billboard_templates;
-    std::list<GameObject *>   m_lightsource_templates;
-
     std::list<GameObject>     m_object_instances;
-    std::list<GameObject *>   m_terrain_instances;
-    std::list<GameObject *>   m_static_instances;
-    std::list<GameObject *>   m_actor_instances;
-    std::list<GameObject *>   m_billboard_instances;
-    std::list<GameObject *>   m_lightsource_instances;
+  
     std::list<GameObject *>   m_dirlight_instances;
     std::list<GameObject *>   m_spotlight_instances;
     std::list<GameObject *>   m_pointlight_instances;
+
+    std::list<GameObject *>   m_selectable_instances;
     GameObject *player_object;
 
 
@@ -60,7 +54,7 @@ class SceneGraph {
     int _num_spotlights  = 0,  _num_active_spotlights  = 0;
 
 
-    SceneGraph() { };
+    SceneGraph();
     
     void directoryloadrecursething(std::filesystem::path filepath);
     void loadObject(std::string directory);
@@ -86,5 +80,9 @@ class SceneGraph {
     void objectFromFile_headerData(std::ifstream &stream, std::string &line, Player *player);
     void exportScene(std::string filepath);
     void importScene(std::string filepath, Player *player);
+
+    std::list<GameObject *> *getTemplatesByType(GameObjectType object_type);
+    std::list<GameObject *> *getInstancesByType(GameObjectType object_type);
+
 };
 

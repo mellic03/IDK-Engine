@@ -2,11 +2,11 @@
 
 
 
-static void draw_submenu(const char *title, SceneGraph *scenegraph, int *selected_instance, std::list<GameObject *> &object_templates)
+static void draw_submenu(const char *title, SceneGraph *scenegraph, int *selected_instance, std::list<GameObject *> *object_templates)
 {
   if (ImGui::BeginMenu(title))
   {
-    for (GameObject *obj: object_templates)
+    for (GameObject *obj: *object_templates)
     {
       if (ImGui::MenuItem(obj->getTemplateName().c_str()))
       {
@@ -19,7 +19,6 @@ static void draw_submenu(const char *title, SceneGraph *scenegraph, int *selecte
 }
 
 
-
 static void draw_new_instance_menu(SceneGraph *scenegraph, int *selected_instance)
 {
   if (ImGui::BeginPopupContextWindow("New Instance"))
@@ -27,11 +26,11 @@ static void draw_new_instance_menu(SceneGraph *scenegraph, int *selected_instanc
     ImGui::Text("New Instance");
     ImGui::Separator();
 
-    draw_submenu("Terrain Objects",       scenegraph, selected_instance, scenegraph->m_terrain_templates);
-    draw_submenu("Static Objects",        scenegraph, selected_instance, scenegraph->m_static_templates);
-    draw_submenu("Billboard Objects",     scenegraph, selected_instance, scenegraph->m_billboard_templates);
-    draw_submenu("Actor Objects",         scenegraph, selected_instance, scenegraph->m_actor_templates);
-    draw_submenu("Lightsource Objects",   scenegraph, selected_instance, scenegraph->m_lightsource_templates);
+    draw_submenu("Terrain Objects",       scenegraph, selected_instance, scenegraph->getTemplatesByType(GAMEOBJECT_TERRAIN));
+    draw_submenu("Static Objects",        scenegraph, selected_instance, scenegraph->getTemplatesByType(GAMEOBJECT_STATIC));
+    draw_submenu("Billboard Objects",     scenegraph, selected_instance, scenegraph->getTemplatesByType(GAMEOBJECT_BILLBOARD));
+    draw_submenu("Actor Objects",         scenegraph, selected_instance, scenegraph->getTemplatesByType(GAMEOBJECT_ACTOR));
+    draw_submenu("Lightsource Objects",   scenegraph, selected_instance, scenegraph->getTemplatesByType(GAMEOBJECT_LIGHTSOURCE));
 
     ImGui::EndPopup();
   }
@@ -50,7 +49,7 @@ static void draw_entity_childnodes(SceneGraph *scenegraph, GameObject *object, i
   if (*selected_instance == object->getID())
     flags |= ImGuiTreeNodeFlags_Selected;
 
-  if (ImGui::TreeNodeEx(object->m_given_name.c_str(), flags))
+  if (ImGui::TreeNodeEx(object->m_template_name.c_str(), flags))
   {
     if (ImGui::IsItemClicked())
       *selected_instance = object->getID();
@@ -106,10 +105,10 @@ void EngineUI::sceneHierarchy(Renderer *ren, Scene *scene)
       ImGui::EndDragDropTarget();
     }
 
-    for (auto &object: scene->m_scenegraph->m_object_instances)
-      if (object.hasParent() == false)
+    for (auto &object: scene->m_scenegraph->m_selectable_instances)
+      if (object->hasParent() == false)
       {
-        draw_entity_childnodes(scene->m_scenegraph, &object, &EngineUI::selected_objectID);
+        draw_entity_childnodes(scene->m_scenegraph, object, &EngineUI::selected_objectID);
 
         // if (object.getTemplateName() == "wall")
         //   break;

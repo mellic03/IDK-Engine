@@ -277,13 +277,12 @@ void Scene::drawDepthmaps(void)
 
 void Scene::physicsTick_actor_terrain(void)
 {
-  for (auto &actor: this->m_scenegraph->m_actor_instances)
-  {
-    for (auto &terrain: this->m_scenegraph->m_terrain_instances)
-    {
+  std::list<GameObject *> *actor_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_ACTOR);
+  std::list<GameObject *> *terrain_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_TERRAIN);
+
+  for (auto &actor: *actor_list)
+    for (auto &terrain: *terrain_list)
       actor->collideWithObject(terrain);
-    }
-  }
 }
 
 
@@ -295,13 +294,13 @@ void Scene::physicsTick_actor_actor(void)
 
 void Scene::physicsTick(void)
 {
-
-  for (auto &terrain: this->m_scenegraph->m_terrain_instances)
+  std::list<GameObject *> *terrain_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_TERRAIN);
+  for (auto &terrain: *terrain_list)
     this->m_scenegraph->player_object->collideWithObject(terrain);
 
-  for (auto &staticobj: this->m_scenegraph->m_static_instances)
+  std::list<GameObject *> *static_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_STATIC);
+  for (auto &staticobj: *static_list)
     this->m_scenegraph->player_object->collideWithObject(staticobj);
-
 
   this->physicsTick_actor_terrain();
   this->physicsTick_actor_actor();
@@ -337,13 +336,16 @@ void Scene::drawBackground()
 
 void Scene::drawGeometry()
 {
-  for (auto &terrain: this->m_scenegraph->m_terrain_instances)
+  std::list<GameObject *> *terrain_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_TERRAIN);
+  for (auto &terrain: *terrain_list)
     this->ren->drawModel(terrain->m_model, terrain->getTransform());
    
-  for (auto &staticobj: this->m_scenegraph->m_static_instances)
+  std::list<GameObject *> *static_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_STATIC);
+  for (auto &staticobj: *static_list)
     this->ren->drawModel(staticobj->m_model, staticobj->getTransform());
 
-  for (auto &actor: this->m_scenegraph->m_actor_instances)
+  std::list<GameObject *> *actor_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_ACTOR);
+  for (auto &actor: *actor_list)
     this->ren->drawModel(actor->m_model, actor->getTransform());
 }
 
@@ -361,7 +363,9 @@ void Scene::drawGeometry_batched()
 void Scene::drawTerrain()
 {
   ren->useShader(SHADER_TERRAIN);
-  for (GameObject *obj: this->m_scenegraph->m_terrain_instances)
+
+  std::list<GameObject *> *terrain_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_TERRAIN);
+  for (auto &obj: *terrain_list)
   {
     TerrainComponent tc = obj->terrain_components[0].terrain_component;
     this->ren->drawTerrain(obj->m_model, obj->getTransform(), tc.threshold, tc.epsilon);
@@ -372,7 +376,9 @@ void Scene::drawTerrain()
 void Scene::drawStatic()
 {
   ren->useShader(SHADER_ACTOR);
-  for (GameObject *obj: this->m_scenegraph->m_static_instances)
+
+  std::list<GameObject *> *static_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_STATIC);
+  for (auto &obj: *static_list)
   {
     this->ren->drawModel(obj->m_model, obj->getTransform());
   }
@@ -415,22 +421,28 @@ void Scene::drawActors()
   this->ren->active_shader->setInt("material.normalMap", 2);
   this->ren->active_shader->setInt("material.emissionMap", 3);
 
-  for (GameObject *obj: this->m_scenegraph->m_actor_instances)
+  std::list<GameObject *> *actor_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_ACTOR);
+  for (auto &obj: *actor_list)
   {
+    this->ren->active_shader->setVec3("emission", obj->emission);
+    this->ren->active_shader->setFloat("emission_scale", obj->emission_scale);
+
     this->ren->drawModel(obj->m_model, obj->getTransform());
   }
-
+  this->ren->active_shader->setVec3("emission", glm::vec3(0.0f));
+  this->ren->active_shader->setFloat("emission_scale", 0.0f);
 }
 
 
 void Scene::drawLightsources()
 {
-  // ren->useShader(SHADER_LIGHTSOURCE);
+  ren->useShader(SHADER_LIGHTSOURCE);
 
-  // for (GameObject *obj: this->m_scenegraph->m_lightsource_instances)
-  // {
-  //   this->ren->drawLightSource(obj->m_model, obj->getTransform(), *obj->lightsource_components[0].diffuse);
-  // }
+  std::list<GameObject *> *lightsource_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_LIGHTSOURCE);
+  for (GameObject *obj: *lightsource_list)
+  {
+    this->ren->drawLightSource(obj->m_model, obj->getTransform(), *obj->lightsource_components[0].diffuse);
+  }
 }
 
 

@@ -23,6 +23,12 @@ void draw_lighting_tab(Renderer *ren, Scene *scene)
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
 
+  ImGui::Text("Bloom");
+  ImGui::Separator();
+  ImGui::DragFloat("Bloom threshold", &ren->bloom.threshold, 0.01f, 0.0f, 10.0f);
+  ImGui::DragFloat("Bloom strength", &ren->bloom.bloom_amount, 0.0001f, 0.0f, 1.0f);
+
+
   ImGui::Text("Volumetrics");
   ImGui::Separator();
   ImGui::SliderInt("Resolution",  &ren->volumetrics.resolution_divisor, 1, 64);
@@ -115,27 +121,66 @@ void draw_physics_tab(Renderer *ren, Player *player)
 }
 
 
-void draw_framebuffers3(Renderer *ren, float w, float h, std::string name1, GLuint fb1, std::string name2, GLuint fb2, std::string name3, GLuint fb3)
+static void draw_framebuffers2(Renderer *ren, ImVec2 viewportsize, std::string name1, GLuint fb1, std::string name2, GLuint fb2)
 {
   ImGui::BeginGroup();
   ImGui::Text(name1.c_str());
-  ImGui::Image(*(ImTextureID *)(void *)&fb1, {w, h}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+  ImGui::Image(*(ImTextureID *)(void *)&fb1, {viewportsize.x/2.0f, viewportsize.y/2.0f}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
   ImGui::EndGroup();
 
   ImGui::SameLine();
 
   ImGui::BeginGroup();
   ImGui::Text(name2.c_str());
-  ImGui::Image(*(ImTextureID *)(void *)&fb2, {w, h}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+  ImGui::Image(*(ImTextureID *)(void *)&fb2, {viewportsize.x/2.0f, viewportsize.y/2.0f}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+  ImGui::EndGroup();
+}
+
+
+static void draw_framebuffers3(Renderer *ren, ImVec2 viewportsize, std::string name1, GLuint fb1, std::string name2, GLuint fb2, std::string name3, GLuint fb3)
+{
+  ImGui::BeginGroup();
+  ImGui::Text(name1.c_str());
+  ImGui::Image(*(ImTextureID *)(void *)&fb1, {viewportsize.x/3.0f, viewportsize.y/3.0f}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+  ImGui::EndGroup();
+
+  ImGui::SameLine();
+
+  ImGui::BeginGroup();
+  ImGui::Text(name2.c_str());
+  ImGui::Image(*(ImTextureID *)(void *)&fb2, {viewportsize.x/3.0f, viewportsize.y/3.0f}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
   ImGui::EndGroup();
 
   ImGui::SameLine();
 
   ImGui::BeginGroup();
   ImGui::Text(name3.c_str());
-  ImGui::Image(*(ImTextureID *)(void *)&fb3, {w, h}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+  ImGui::Image(*(ImTextureID *)(void *)&fb3, {viewportsize.x/3.0f, viewportsize.y/3.0f}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
   ImGui::EndGroup();
 }
+
+
+static void draw_framebuffers_n(Renderer *ren, ImVec2 viewportsize, int n, std::vector<std::string> names, std::vector<GLuint> framebuffer_IDs)
+{
+  float w = viewportsize.x / n;
+  float h = viewportsize.y / n;
+
+
+  for (size_t i=0; i<names.size(); i++)
+  {
+    ImGui::BeginGroup();
+    ImGui::Text(names[i].c_str());
+    ImGui::Image(*(ImTextureID *)(void *)&framebuffer_IDs[i], ImVec2(w, h), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+    ImGui::EndGroup();
+
+    ImGui::SameLine();
+  }
+
+  ImGui::Dummy(ImVec2(0.0f, 0.0f));
+
+}
+
+
 
 void draw_framebuffers(Renderer *ren)
 {
@@ -143,42 +188,33 @@ void draw_framebuffers(Renderer *ren)
   {
     ImVec2 viewportsize = ImGui::GetContentRegionAvail();
     
-    draw_framebuffers3( ren, viewportsize.x/3, viewportsize.y/3,
-                        "position", ren->gbuffer_position,
-                        "normal",   ren->gbuffer_normal,
-                        "albedo",   ren->gbuffer_albedospec
+    draw_framebuffers_n( ren, viewportsize, 4,
+                         {"position",            "normal",            "albedo",                "emission"},
+                         {ren->gbuffer_position, ren->gbuffer_normal, ren->gbuffer_albedospec, ren->gbuffer_emission}
+                      );
+
+    draw_framebuffers_n( ren, viewportsize, 2,
+                         {"general 0",                 "general 1"},
+                         {ren->generalColorBuffers[0],  ren->generalColorBuffers[1]}
+                       );
+
+    draw_framebuffers_n( ren, viewportsize, 2,
+                         {"ping pong 0",                 "ping pong 1"},
+                         {ren->pingPongColorBuffers[0],  ren->pingPongColorBuffers[1]}
+                      );
+
+    draw_framebuffers_n( ren, viewportsize, 2,
+                         {"Screen Quad 0",                 "Screen Quad 1"},
+                         {ren->screenQuadColorBuffers[0],  ren->screenQuadColorBuffers[1]}
+                      );
+
+    draw_framebuffers_n( ren, viewportsize, 2,
+                         {"Dirlight depthmap",     "Billboards"},
+                         {ren->dirlight_depthmap,  ren->billboardColorBuffer}
                       );
 
 
-    draw_framebuffers3( ren, viewportsize.x/3, viewportsize.y/3,
-                        "bloom",        ren->colorBuffers[1],
-                        "volumetrics",  ren->lightshaftColorBuffer,
-                        "general",      ren->generalColorBuffer
-                      );
-
-
-    ImGui::BeginGroup();
-    ImGui::Text("Screen Quad");
-    ImGui::Image(*(ImTextureID *)(void *)&ren->screenQuadColorBuffers[0], {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
-    ImGui::EndGroup();
-
-    ImGui::SameLine();
-
-    ImGui::BeginGroup();
-    ImGui::Text("Dirlight depthmap");
-    ImGui::Image(*(ImTextureID *)(void *)&ren->dirlight_depthmap, {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
-    ImGui::EndGroup();
-
-    ImGui::SameLine();
-
-    ImGui::BeginGroup();
-    ImGui::Text("Billboards");
-    ImGui::Image(*(ImTextureID *)(void *)&ren->billboardColorBuffer, {viewportsize.x/3, viewportsize.y/3}, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
-    ImGui::EndGroup();
-
-
-
-    for (int i=0; i<NUM_BLUR_FBOS; i+=2)
+    for (int i=0; i<ren->num_blur_FBOs; i+=2)
     {
       ImGui::BeginGroup();
       ImGui::Text("Blur Framebuffer %d", i);
