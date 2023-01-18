@@ -133,7 +133,7 @@ void main()
   float ray_length = 0.0;
 
   float len = frag_dist / volumetrics.num_samples;
-  len = clamp(len, 0.0, 0.4);
+  len = clamp(len, 0.0, 0.1);
 
   for (int i=0; i<volumetrics.num_samples; i++)
   {

@@ -17,6 +17,7 @@ struct Transform {
   glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
   glm::vec3 velocity = glm::vec3(0.0f, 0.0f, 0.0f);
   glm::quat orientation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
+  glm::vec3 scale = glm::vec3(1.0f);
 
   // Member access
   //-------------------------------------------------------------------------------------------------------------
@@ -27,6 +28,8 @@ struct Transform {
     return glm::vec3(glm::pitch(this->orientation), glm::yaw(this->orientation), glm::roll(this->orientation));
   };
 
+  glm::vec3 *getScale(void)     { return &this->scale; };
+
   glm::mat4 getOrientation_mat4(void)
   {
     return this->getModelMatrix();
@@ -35,7 +38,7 @@ struct Transform {
   void addRot(glm::vec3 rot)
   {
     glm::quat drot = glm::quat(rot);
-    this->orientation = this->orientation * drot;
+    this->orientation = drot * this->orientation;
   }
 
   glm::vec4 getPos_vec4(void)   { return glm::vec4(this->position.x, this->position.y, this->position.z, 1.0f); };
@@ -49,9 +52,9 @@ struct Transform {
     glm::mat4 model = glm::translate(glm::mat4(1.0f), this->position) * glm::mat4_cast(this->orientation);
 
     if (this->parent != nullptr)
-      return this->parent->getModelMatrix() * model;
+      return this->parent->getModelMatrix() * glm::scale(model, this->scale);
 
-    return model;
+    return glm::scale(model, this->scale);
   };
 
   /** Return the model matrix without applying local translation/rotation.

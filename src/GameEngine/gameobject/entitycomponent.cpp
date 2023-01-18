@@ -98,6 +98,8 @@ void EntityComponent::_draw_transform(GameObject *object)
     glm::vec3 drot2 = drot1;
     EngineUI::vec3("Rotation", &drot1, 0.1f);
     object->getTransform()->addRot(glm::radians(drot1 - drot2));
+
+    EngineUI::vec3("Scale", object->getTransform()->getScale(), 0.01f);
   }
 }
 

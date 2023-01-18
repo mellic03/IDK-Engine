@@ -84,9 +84,9 @@ m_template_name: player
 m_given_name: Player
 objectID: 5
 parentID: -1
-position: -5.49766 1.55 -0.466317
-velocity: 0.046499 0 -0.0866951
-orientation: 0.00557454 0.976837 0.0269383 -0.202086
+position: -7.65718 1.55 7.25771
+velocity: -0.000478517 0 -0.00058639
+orientation: 0.0289231 0.936966 0.0815522 -0.332283
 #GAMEOBJECT END
 
 #GAMEOBJECT BEGIN
@@ -113,10 +113,10 @@ orientation: -5.92559e-08 0.7071 -5.36926e-08 -0.7071
 m_template_name: wall
 m_given_name: wall
 objectID: 8
-parentID: 6
+parentID: -1
 position: 3.01 9.91 40.13
 velocity: 0 0 0
-orientation: 7.99628e-08 -0.998501 4.39837e-10 0.0546889
+orientation: 2.13163e-14 0.998511 2.51241e-23 -0.0546894
 #GAMEOBJECT END
 
 #GAMEOBJECT BEGIN
@@ -124,7 +124,7 @@ m_template_name: bunker
 m_given_name: bunker
 objectID: 9
 parentID: 8
-position: 15.7197 8.4 30.9169
+position: 15.7202 8.4 30.9166
 velocity: 0 0 0
 orientation: 2.17746e-09 6.55651e-07 -8.43773e-09 0.999988
 #GAMEOBJECT END
