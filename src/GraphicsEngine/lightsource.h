@@ -20,7 +20,7 @@ struct BloomData {
 
   float threshold = 1.0f;
   float bloom_amount = 0.04f;
-
+  int min_downsample_resolution = 8;
 };
 
 

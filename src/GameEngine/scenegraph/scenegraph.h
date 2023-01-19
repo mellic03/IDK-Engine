@@ -19,6 +19,7 @@ class SceneGraph {
   private:
     std::list<GameObject *>  _object_templates_by_type[GAMEOBJECT_NUM_TYPES];
     std::list<GameObject *>  _object_instances_by_type[GAMEOBJECT_NUM_TYPES];
+    std::list<GameObject *>  _object_instances_by_type_instanced[GAMEOBJECT_NUM_TYPES];
 
     std::map<std::string, InstanceData> _instance_data;
 
@@ -77,12 +78,13 @@ class SceneGraph {
     void defaultScene(void);
     void sortLights(void);
     void objectFromFile(std::ifstream &stream, std::string &line);
-    void objectFromFile_headerData(std::ifstream &stream, std::string &line, Player *player);
+    void objectFromFile(std::ifstream &stream, std::string &line, Player *player);
     void exportScene(std::string filepath);
     void importScene(std::string filepath, Player *player);
 
     std::list<GameObject *> *getTemplatesByType(GameObjectType object_type);
     std::list<GameObject *> *getInstancesByType(GameObjectType object_type);
+    std::list<GameObject *> *getInstancesByType(GameObjectType object_type, InstancingType instancing);
 
 };
 

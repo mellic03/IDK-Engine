@@ -179,7 +179,10 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
     nd = nd->parent()->next_sibling()->first_node("float_array");
     std::vector<glm::vec2> texcoords = parseArray_vec2(nd->value());
 
+
     std::vector<glm::vec4> vertcolors;
+
+
     if (this->is_terrain)
     {
       nd = nd->parent()->next_sibling()->first_node("float_array");
@@ -425,8 +428,6 @@ void Model::loadDae(std::string directory, std::string filename, bool is_terrain
   this->loadLibraryEffects(&doc);
   this->loadLibraryMaterials(&doc);
 
-  this->constructMeshes(&doc);
-  this->applyMeshTransforms(&doc);
 
   if (this->is_terrain)
   {
@@ -455,6 +456,8 @@ void Model::loadDae(std::string directory, std::string filename, bool is_terrain
     }
   }
 
+  this->constructMeshes(&doc);
+  this->applyMeshTransforms(&doc);
 
   for (auto &mesh: this->m_meshes)
     mesh.setBufferData();

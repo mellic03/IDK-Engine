@@ -117,22 +117,28 @@ void SceneGraph::loadObject(std::string directory)
     if (sscanf(buffer, "#gameobject %s", stringdata))
       object.setTemplateName(std::string(stringdata));
 
-    if (sscanf(buffer, "#GameObjectType %s", stringdata))
+    else if (sscanf(buffer, "#GameObjectType %s", stringdata))
       object.setObjectType(GameObjectUtil::objectType_fromString(std::string(stringdata)));
 
-    if (sscanf(buffer, "#LightSourceType %s", stringdata))
-      object.setObjectType(GameObjectUtil::objectType_fromString(std::string(stringdata)));
+    // if (sscanf(buffer, "#LightSourceType %s", stringdata))
+    //   object.setObjectType(GameObjectUtil::objectType_fromString(std::string(stringdata)));
 
-    if (sscanf(buffer, "#interactivity %s", stringdata))
+    else if (sscanf(buffer, "#interactivity %s", stringdata))
       object.setInteractivity(std::string(stringdata));
 
-    if (sscanf(buffer, "#GameObjectType %s", stringdata))
+    else if (sscanf(buffer, "#GameObjectType %s", stringdata))
       object.setObjectType(GameObjectUtil::objectType_fromString(std::string(stringdata)));
 
-    if (sscanf(buffer, "#physics %s", stringdata))
+    else if (sscanf(buffer, "#InstancingType %s", stringdata))
+      object.data.setInstancingType(GameObjectUtil::instancingType_fromString(std::string(stringdata)));
+
+    else if (sscanf(buffer, "#BilloardType %s", stringdata))
+      object.data.setBillboardType(GameObjectUtil::billboardType_fromString(std::string(stringdata)));
+
+    else if (sscanf(buffer, "#physics %s", stringdata))
       object.changePhysState(std::string(stringdata));
 
-    if (sscanf(buffer, "#geometry %s", stringdata))
+    else if (sscanf(buffer, "#geometry %s", stringdata))
     {
       new_model.loadDae(directory, std::string(stringdata), object.getObjectType() == GAMEOBJECT_TERRAIN);
       this->m_models.push_back(new_model);
@@ -140,13 +146,13 @@ void SceneGraph::loadObject(std::string directory)
       object.hasGeometry(true);
     }
 
-    if (sscanf(buffer, "#collision %s", stringdata))
+    else if (sscanf(buffer, "#collision %s", stringdata))
     {
       object.m_collision_mesh.load(directory + std::string(stringdata));      
       object.hasCollisionMesh(true);
     }
 
-    if (strstr(buffer, "#exit"))
+    else if (strstr(buffer, "#exit"))
       break;
   }
 
@@ -201,7 +207,6 @@ void SceneGraph::newObjectInstance(std::string object_name, glm::vec3 pos, glm::
   newobj.m_parent = nullptr;
   *newobj.getPos() = pos;
 
-
   newobj.setName(object_name);
   newobj.setID(this->m_object_instances.size());
 
@@ -245,7 +250,12 @@ void SceneGraph::newObjectInstance(std::string object_name, glm::vec3 pos, glm::
 
   objectptr = this->rearObjectPtr();
   GameObjectType object_type = objectptr->getObjectType();
-  this->_object_instances_by_type[object_type].push_back(objectptr);
+
+  if (objectptr->data.instancing_type == INSTANCING_OFF)
+    this->_object_instances_by_type[object_type].push_back(objectptr);
+  else
+    this->_object_instances_by_type_instanced[object_type].push_back(objectptr);
+
 
   bool selectable = true;
   switch (object_type)
@@ -262,8 +272,11 @@ void SceneGraph::newObjectInstance(std::string object_name, glm::vec3 pos, glm::
       break;
 
     case (GAMEOBJECT_BILLBOARD):
-      selectable = false;
-      this->addInstanceData(objectptr->getTemplateName(), objectptr->m_model, objectptr->getTransform());
+      if (objectptr->data.instancing_type == INSTANCING_ON)
+      {
+        this->addInstanceData(objectptr->getTemplateName(), objectptr->m_model, objectptr->getTransform());
+        selectable = false;
+      }
       break;
 
     case (GAMEOBJECT_ACTOR):
@@ -274,7 +287,6 @@ void SceneGraph::newObjectInstance(std::string object_name, glm::vec3 pos, glm::
       break;
 
     case (GAMEOBJECT_LIGHTSOURCE):
-      printf("lightsource instance");
       break;
   }
 
@@ -318,10 +330,6 @@ void SceneGraph::defaultScene(void)
     this->pointlights[i].shadowmapped = false;
     this->pointlights[i].m_transform = &this->pointlights[i].default_transform;
   }
-
-  // this->newObjectInstance("pointlight");
-  // this->newObjectInstance("spotlight");
-  // this->newObjectInstance("spotlight");
 }
 
 
@@ -421,7 +429,7 @@ void SceneGraph::objectFromFile(std::ifstream &stream, std::string &line)
 }
 
 
-void SceneGraph::objectFromFile_headerData(std::ifstream &stream, std::string &line, Player *player)
+void SceneGraph::objectFromFile(std::ifstream &stream, std::string &line, Player *player)
 {
   int objectID = -1, parentID = -1;
   GameObject *object = nullptr;
@@ -553,7 +561,7 @@ void SceneGraph::importScene(std::string filepath, Player *player)
   while (getline(stream, line))
   {
     if (line == "#GAMEOBJECT BEGIN")
-      this->objectFromFile_headerData(stream, line, player);
+      this->objectFromFile(stream, line, player);
   }
 
   for (auto &object: this->m_object_instances)
@@ -575,4 +583,13 @@ std::list<GameObject *> *SceneGraph::getTemplatesByType(GameObjectType object_ty
 std::list<GameObject *> *SceneGraph::getInstancesByType(GameObjectType object_type)
 {
   return &this->_object_instances_by_type[object_type];
+}
+
+
+std::list<GameObject *> *SceneGraph::getInstancesByType(GameObjectType object_type, InstancingType instancing)
+{
+  if (instancing == INSTANCING_ON)
+    return &this->_object_instances_by_type_instanced[object_type];
+  else
+    return &this->_object_instances_by_type[object_type];
 }

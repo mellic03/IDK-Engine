@@ -114,10 +114,17 @@ uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedoSpec;
 
+uniform vec3 viewDir;
+vec3 SunPos = 1000 * vec3(10, 15, 10);
+
+const float decay = 1;
+const float decay_cutoff = 0.1;
 
 void main()
 {
   vec3 fragPos = texture(gPosition, TexCoords).rgb;
+
+  float illumination_decay = 1.0;
 
   float pointlight_vol[NUM_POINTLIGHTS];
   for (int i=0; i<NUM_POINTLIGHTS; i++)
@@ -132,13 +139,18 @@ void main()
   vec3 ray_dir = normalize(fragPos - viewPos);
   float ray_length = 0.0;
 
+
   float len = frag_dist / volumetrics.num_samples;
-  len = clamp(len, 0.0, 0.1);
+  // len = clamp(len, 0.0, 0.4);
+  len = 0.1;
 
   for (int i=0; i<volumetrics.num_samples; i++)
   {
     float step_size = len;//i * (len/frag_dist);
     ray_length += step_size;
+
+    if (ray_length > frag_dist || illumination_decay < decay_cutoff)
+      break;
 
     ray = viewPos + ray_length*ray_dir;
 
@@ -179,8 +191,10 @@ void main()
     // Directional light
     //------------------------------------------------------------------
     if (!in_shadow_ortho(ray))
-      dirlight_vol += shadowmapped_dirlight.fog_intensity * step_size;
+      dirlight_vol += illumination_decay * shadowmapped_dirlight.fog_intensity * step_size;
     //------------------------------------------------------------------
+
+    illumination_decay *= decay;
   }
 
   vec3 result = vec3(0.0, 0.0, 0.0);

@@ -7,6 +7,8 @@
 
 struct InstanceData {
 
+  std::string name = "no_name";
+
   GLuint VBO;
   std::vector<glm::mat4>   model_matrices;
   std::vector<Transform *> model_transforms;

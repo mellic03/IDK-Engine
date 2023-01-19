@@ -86,6 +86,20 @@ extern "C" int addToVel(lua_State *LS)
 }
 
 
+extern "C" int addRot(lua_State *LS)
+{
+  int objectID = lua_tointeger(LS, 1) - 1;
+  float x = lua_tonumber(LS, 2);
+  float y = lua_tonumber(LS, 3);
+  float z = lua_tonumber(LS, 4);
+  
+  GameObject *object = LuaInterface::scenegraph->objectPtr(objectID);
+  object->getTransform()->addRot(glm::vec3(x, y, z));
+
+  return 0;
+}
+
+
 extern "C" int setPhysicsState(lua_State *LS)
 {
   int objectID = lua_tointeger(LS, 1) - 1;
@@ -136,6 +150,7 @@ void register_library(void)
   lua_register(LuaInterface::L, "SetPos", setPos);
   lua_register(LuaInterface::L, "GetVel", getVel);
   lua_register(LuaInterface::L, "SetVel", setVel);
+  lua_register(LuaInterface::L, "AddRot", addRot);
   lua_register(LuaInterface::L, "SetPhysicsState", setPhysicsState);
   lua_register(LuaInterface::L, "SetMoveForce", setMoveForce);
   lua_register(LuaInterface::L, "SetJumpForce", setJumpForce);

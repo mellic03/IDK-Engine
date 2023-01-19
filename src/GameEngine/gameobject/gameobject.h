@@ -21,6 +21,32 @@ enum GameObjectType {
   GAMEOBJECT_NUM_TYPES
 };
 
+enum InstancingType {
+  INSTANCING_OFF,
+  INSTANCING_ON
+};
+
+enum BillboardType {
+  BILLBOARD_FIXED,
+  BILLBOARD_FOLLOW_CAMERA
+};
+
+
+struct GameObjectData {
+
+  InstancingType instancing_type = INSTANCING_OFF;
+  BillboardType billboard_type = BILLBOARD_FIXED;
+
+  PhysicsState physics_state = PHYSICS_NONE;
+  NavigationState navigation_state = NAVIGATION_NONE;
+
+  void setInstancingType(InstancingType type)     { this->instancing_type  = type; };
+  void setBillboardType(BillboardType type)       { this->billboard_type   = type; };
+  void setPhysicsState(PhysicsState type)         { this->physics_state    = type; };
+  void setNavigationState(NavigationState type)   { this->navigation_state = type; };
+
+};
+
 
 class GameObject {
 
@@ -59,6 +85,8 @@ class GameObject {
 
 
   public:
+
+    GameObjectData data;
 
     glm::vec3 emission = glm::vec3(0.0f);
     float emission_scale = 1.0f;

@@ -13,10 +13,11 @@ void InstanceData::genVBO()
 
 void InstanceData::addInstance(Model *model, Transform *transform)
 {
+  this->name = model->m_name;
+
   this->model_matrices.push_back(transform->getModelMatrix());
   this->model_transforms.push_back(transform);
   this->model = model;
-  int i = 0;
 }
 
 
@@ -54,6 +55,8 @@ void InstanceData::setVertexAttribs()
 
     GLCALL( glBindVertexArray(0) );
   }
+  
+  GLCALL( glBindBuffer(GL_ARRAY_BUFFER, 0) );
 }
 
 void InstanceData::perFrameUpdate()
@@ -65,4 +68,6 @@ void InstanceData::perFrameUpdate()
   {
     this->model_matrices[i] = this->model_transforms[i]->getModelMatrix();
   }
+
+  GLCALL( glBindBuffer(GL_ARRAY_BUFFER, 0) );
 }

@@ -25,8 +25,13 @@ void draw_lighting_tab(Renderer *ren, Scene *scene)
 
   ImGui::Text("Bloom");
   ImGui::Separator();
-  ImGui::DragFloat("Bloom threshold", &ren->bloom.threshold, 0.01f, 0.0f, 10.0f);
-  ImGui::DragFloat("Bloom strength", &ren->bloom.bloom_amount, 0.0001f, 0.0f, 1.0f);
+  ImGui::DragFloat("Threshold", &ren->bloom.threshold, 0.01f, 0.0f, 10.0f);
+  ImGui::DragFloat("Strength", &ren->bloom.bloom_amount, 0.0001f, 0.0f, 1.0f);
+  
+  int min_res = ren->bloom.min_downsample_resolution;
+  ImGui::DragInt("min downsampling resolution", &ren->bloom.min_downsample_resolution, 0.01f, 1, 64);
+  if (min_res != ren->bloom.min_downsample_resolution)
+    ren->resize(ren->viewport_width, ren->viewport_height);  
 
 
   ImGui::Text("Volumetrics");
@@ -40,8 +45,8 @@ void draw_lighting_tab(Renderer *ren, Scene *scene)
   ImGui::DragInt("Samples",      &ren->volumetrics.num_samples);
   ImGui::DragFloat("Step size",    &ren->volumetrics.step_size, 0.001f);
   ImGui::DragFloat("Step multiplier",    &ren->volumetrics.step_multiplier, 0.001f);
-
 }
+
 
 void draw_render_tab(Renderer *ren)
 {
@@ -113,6 +118,7 @@ void draw_render_tab(Renderer *ren)
 
   ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 }
+
 
 void draw_physics_tab(Renderer *ren, Player *player)
 {

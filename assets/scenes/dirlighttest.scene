@@ -84,9 +84,9 @@ m_template_name: player
 m_given_name: Player
 objectID: 5
 parentID: -1
-position: -7.65718 1.55 7.25771
-velocity: -0.000478517 0 -0.00058639
-orientation: 0.0289231 0.936966 0.0815522 -0.332283
+position: -2.29339 19.7169 46.4196
+velocity: -0.000865653 0 -0.000650805
+orientation: -0.0607875 0.885053 -0.122393 -0.439533
 #GAMEOBJECT END
 
 #GAMEOBJECT BEGIN
@@ -158,5 +158,65 @@ parentID: -1
 position: -3.17 1.84 4.58
 velocity: 0 0 0
 orientation: 0 0 0 1
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+m_template_name: tree
+m_given_name: tree
+objectID: 12
+parentID: 16
+position: 4.83356 9.329 47.2262
+velocity: 0 0 0
+orientation: 9.92473e-15 -0.698409 -1.0171e-14 0.715683
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+m_template_name: tree
+m_given_name: tree
+objectID: 13
+parentID: 16
+position: 6.34356 9.329 52.3562
+velocity: 0 0 0
+orientation: 0 0 0 1
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+m_template_name: tree
+m_given_name: tree
+objectID: 14
+parentID: 16
+position: 3.85356 9.329 55.8962
+velocity: 0 0 0
+orientation: -0.0267786 0.958694 0.00790678 0.283073
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+m_template_name: tree
+m_given_name: tree
+objectID: 15
+parentID: 16
+position: -1.28644 8.369 56.3562
+velocity: 0 0 0
+orientation: 0.028627 -0.262075 -0.00777777 0.964593
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+m_template_name: tree
+m_given_name: tree
+objectID: 16
+parentID: -1
+position: -1.28644 9.329 50.5762
+velocity: 0 0 0
+orientation: 0 0 0 1
+#GAMEOBJECT END
+
+#GAMEOBJECT BEGIN
+m_template_name: tree
+m_given_name: tree
+objectID: 17
+parentID: 16
+position: -6.28644 9.329 50.5762
+velocity: 0 0 0
+orientation: 0 0.376224 0 0.926529
 #GAMEOBJECT END
 

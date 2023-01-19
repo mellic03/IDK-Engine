@@ -248,6 +248,7 @@ int ENTRY(int argc, const char **argv)
     ren->useShader(SHADER_VOLUMETRIC_LIGHT);
     scene->sendLightsToShader();
     ren->sendVolumetricData();
+    ren->active_shader->setVec3("viewDir", ren->cam.front);
     
     glBindVertexArray(ren->quadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);

@@ -19,7 +19,7 @@
     { \
       printf("OpenGL Error: %s\n", gluErrorString(err)); \
       fflush(stdout); \
-      assert(err != GL_NO_ERROR); \
+      assert(err == GL_NO_ERROR); \
     } \
   }
 #else

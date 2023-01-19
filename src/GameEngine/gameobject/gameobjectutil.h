@@ -7,12 +7,10 @@
 
 namespace GameObjectUtil
 {
+  GameObjectType objectType_fromString(std::string stringdata);
 
-
-  GameObjectType objectType_fromString(std::string object_type);  
-
-
-
+  InstancingType instancingType_fromString(std::string stringdata);
+  BillboardType  billboardType_fromString(std::string stringdata);
 }
 
 

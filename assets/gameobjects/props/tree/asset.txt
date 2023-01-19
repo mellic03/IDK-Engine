@@ -1,0 +1,10 @@
+#gameobject tree
+#interactivity billboard
+
+#GameObjectType GAMEOBJECT_BILLBOARD
+#InstancingType INSTANCING_OFF
+#BillboardType BILLBOARD_FIXED
+
+#geometry tree.dae
+#physics PHYSICS_NONE
+#exit

@@ -29,22 +29,22 @@ void Renderer::compileShaders(void)
   this->createShader("gbuffer_geometrypass/background",   SHADER_BACKGROUND);
   this->createShader("gbuffer_geometrypass/terrain",      SHADER_TERRAIN);
 
-  this->createShader("gbuffer_geometrypass/billboard",    SHADER_BILLBOARD);
+  this->createShader("gbuffer_geometrypass/billboard_fixed",    SHADER_BILLBOARD_FIXED);
+  this->createShader("gbuffer_geometrypass/billboard_follow",   SHADER_BILLBOARD_FOLLOW);
+
   this->createShader("gbuffer_geometrypass/actor",        SHADER_ACTOR);
   this->createShader("lightsource",                       SHADER_LIGHTSOURCE);
 
-  this->createShader("screenquad",            SHADER_SCREENQUAD);
 
+  this->createShader("screenquad",            SHADER_SCREENQUAD);
   this->createShader("volumetriclights",      SHADER_VOLUMETRIC_LIGHT);
   this->createShader("blur",                  SHADER_BLUR_DOWNSAMPLE);
   this->createShader("blur/blur_upsample",         SHADER_BLUR_UPSAMPLE);
   this->createShader("additive",              SHADER_ADDITIVE);
 
+
   this->createShader("gbuffer_lighting",      SHADER_GBUFFER_LIGHTING);
   this->createShader("fxaa",                  SHADER_FXAA);
-  this->createShader("texture_to_quad",       SHADER_TEXTURE_TO_QUAD);
-
-  this->createShader("tonemap",               SHADER_TONEMAP);
 
 
   // Shadows
@@ -111,6 +111,7 @@ void Renderer::init(void)
 
 }
 
+
 void Renderer::genDepthCubemap(GLuint *FBO, GLuint *texture)
 {
   glDeleteFramebuffers(1, FBO); 
@@ -136,6 +137,7 @@ void Renderer::genDepthCubemap(GLuint *FBO, GLuint *texture)
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
+
 
 void Renderer::useShader(ShaderType shader)
 {
@@ -419,7 +421,7 @@ void Renderer::genBlurBuffers(int x, int y)
     int res_x = x / pow(2, i+1);
     int res_y = y / pow(2, i+1);
 
-    if (res_x <= 8 || res_y <= 8)
+    if (res_x <= this->bloom.min_downsample_resolution || res_y <= this->bloom.min_downsample_resolution)
     {
       this->num_blur_FBOs = i;
       break;
@@ -816,7 +818,23 @@ void Renderer::drawTerrain(Model *model, Transform *transform, float threshold, 
 
 void Renderer::drawBillboard(Model *model, Transform *transform)
 {
+  this->active_shader->setMat4("model", transform->getModelMatrix());
 
+  GLCALL( glActiveTexture(GL_TEXTURE0) );
+  this->active_shader->setInt("diffuseMap", 0);
+
+  for (auto &mesh: model->m_meshes)
+  {
+    GLCALL(glBindVertexArray(mesh.VAO));
+
+    for (size_t i=0; i<mesh.IBOS.size(); i++)
+    {
+      glBindTexture(GL_TEXTURE_2D, mesh.materials[i].diffuseMap.m_texture_obj);
+
+      GLCALL( glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBOS[i]) );
+      GLCALL( glDrawElements(GL_TRIANGLES, mesh.indices[i].size(), GL_UNSIGNED_INT, (void *)0) );
+    }
+  }
  
 }
 

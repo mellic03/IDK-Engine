@@ -3,17 +3,20 @@ local function v_init()
   return {x = 0, y = 0, z = 0};
 end
 
--- Return the position of the object with ID objectID
+-- Return the position of an object
 function GetPos(objectID) return v_init(); end;
 
--- Set the position of the object with ID objectID
+-- Set the position of an object
 function SetPos(objectID, x, y, z) end;
 
--- Return the velocity of the object with ID objectID
+-- Return the velocity of an object
 function GetVel(objectID) return v_init(); end;
 
--- Set the velocity of the object with ID objectID
+-- Set the velocity of an object
 function SetVel(objectID, x, y, z) end;
+
+-- Add to the rotation of an object
+function AddRot(objectID, x, y, z) end;
 
 function SetJumpForce(force) end;
 function SetMoveForce(force) end;

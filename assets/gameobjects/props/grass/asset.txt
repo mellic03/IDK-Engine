@@ -1,6 +1,10 @@
 #gameobject grass
 #interactivity billboard
+
 #GameObjectType GAMEOBJECT_BILLBOARD
+#InstancingType INSTANCING_ON
+#BillboardType BILLBOARD_FOLLOW_CAMERA
+
 #geometry grass.dae
 #physics PHYSICS_NONE
 #exit

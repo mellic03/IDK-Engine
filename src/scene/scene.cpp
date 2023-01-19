@@ -328,9 +328,11 @@ void Scene::drawBackground()
   this->ren->active_shader->setMat4("model", model);
   this->ren->active_shader->setVec3("clearColor", this->ren->clearColor);
 
+  this->ren->active_shader->setVec3("ViewPos", this->ren->cam.m_transform->getPos_worldspace());
+  this->ren->active_shader->setVec3("SunPos", this->m_scenegraph->dirlight.position);
+
   GLCALL(glBindVertexArray(this->ren->quadVAO));
   GLCALL(glDrawArrays(GL_TRIANGLES, 0, 6));
-
 }
 
 
@@ -347,6 +349,10 @@ void Scene::drawGeometry()
   std::list<GameObject *> *actor_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_ACTOR);
   for (auto &actor: *actor_list)
     this->ren->drawModel(actor->m_model, actor->getTransform());
+
+  std::list<GameObject *> *billboard_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_BILLBOARD, INSTANCING_OFF);
+  for (auto &actor: *billboard_list)
+    this->ren->drawModel(actor->m_model, actor->getTransform());
 }
 
 
@@ -356,7 +362,13 @@ void Scene::drawGeometry_batched()
   this->drawStatic();
   this->drawActors();
   this->drawLightsources();
-  this->drawBillboards(ren->colorFBO);
+
+
+  
+  GLCALL( glDisable(GL_CULL_FACE) );
+  this->drawBillboards();
+  this->drawBillboardsInstanced();
+  GLCALL( glEnable(GL_CULL_FACE) );
 }
 
 
@@ -385,14 +397,21 @@ void Scene::drawStatic()
 }
 
 
-void Scene::drawBillboards(GLuint framebuffer)
+void Scene::drawBillboards()
 {
-  GLCALL( glDisable(GL_CULL_FACE) );
+  ren->useShader(SHADER_BILLBOARD_FIXED);
+  std::list<GameObject *> *billboard_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_BILLBOARD, INSTANCING_OFF);
+  for (auto &obj: *billboard_list)
+  {
+    this->ren->drawBillboard(obj->m_model, obj->getTransform());
+  }
+}
 
-  this->m_scenegraph->perFrameUpdate();
 
+void Scene::drawBillboardsInstanced()
+{
+  ren->useShader(SHADER_BILLBOARD_FOLLOW);
 
-  ren->useShader(SHADER_BILLBOARD);
 
   glm::mat4 view_noTranslate = this->ren->cam.view;
   view_noTranslate[3] = glm::vec4(0.0f, 0.0f, 0.f, 1.0f);
@@ -400,15 +419,13 @@ void Scene::drawBillboards(GLuint framebuffer)
   this->ren->active_shader->setInt("diffuseMap", 0);
 
 
-
   std::map<std::string, InstanceData> *map = this->m_scenegraph->getInstanceData();
   for (auto it = map->begin(); it != map->end(); ++it)
   {
-    auto &instance_data = (*it).second;
-    this->ren->drawModelInstanced(instance_data.model, &instance_data);
-  }
+    InstanceData *instance_data = &(it)->second;
 
-  GLCALL( glEnable(GL_CULL_FACE) );
+    this->ren->drawModelInstanced(instance_data->model, instance_data);
+  }
 }
 
 
