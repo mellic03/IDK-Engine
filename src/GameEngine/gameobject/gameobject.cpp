@@ -336,9 +336,6 @@ void GameObject::collideWithObject(GameObject *object)
   if (this->getID() == object->getID())
     return;
 
-  if (object->isHidden() || this->isHidden())
-    return;
-
   if (this->getObjectType() == GAMEOBJECT_BILLBOARD)
     return;
 

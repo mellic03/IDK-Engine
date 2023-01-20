@@ -49,7 +49,7 @@ static void draw_entity_childnodes(SceneGraph *scenegraph, GameObject *object, i
   if (*selected_instance == object->getID())
     flags |= ImGuiTreeNodeFlags_Selected;
 
-  if (ImGui::TreeNodeEx(object->m_template_name.c_str(), flags))
+  if (ImGui::TreeNodeEx(object->getName().c_str(), flags))
   {
     if (ImGui::IsItemClicked())
       *selected_instance = object->getID();

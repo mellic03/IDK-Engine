@@ -26,7 +26,7 @@ void draw_lighting_tab(Renderer *ren, Scene *scene)
   ImGui::Text("Bloom");
   ImGui::Separator();
   ImGui::DragFloat("Threshold", &ren->bloom.threshold, 0.01f, 0.0f, 10.0f);
-  ImGui::DragFloat("Strength", &ren->bloom.bloom_amount, 0.0001f, 0.0f, 1.0f);
+  ImGui::DragFloat("Strength", &ren->bloom.strength, 0.0001f, 0.0f, 1.0f);
   
   int min_res = ren->bloom.min_downsample_resolution;
   ImGui::DragInt("min downsampling resolution", &ren->bloom.min_downsample_resolution, 0.01f, 1, 64);

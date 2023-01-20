@@ -1,5 +1,4 @@
 #gameobject spotlight
-#interactivity misc
 #GameObjectType GAMEOBJECT_LIGHTSOURCE
 #LightSourceType LIGHTSOURCE_SPOT_LIGHT
 #geometry sphere.dae

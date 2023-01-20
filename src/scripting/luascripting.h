@@ -11,6 +11,6 @@
 #include "luainterface.h"
 
 
-void luaInit(Scene *scene, SceneGraph *graph);
+void luaInit(Scene *scene, Renderer *renderer);
 void luaMain(Renderer *ren, Player *player, std::list<GameObject> *gameobjects);
 

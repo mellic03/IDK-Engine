@@ -1,4 +1,5 @@
 #include "../../UIEngine.h"
+#include "entitycomponentui.h"
 
 void EngineUI::properties(Scene *scene)
 {
@@ -13,10 +14,10 @@ void EngineUI::properties(Scene *scene)
   
   ImGui::Begin("Properties");
   {
-    ImGui::PushID(EngineUI::selected_objectID);
-    EngineUI::vec3("emission", &object->emission, 0.1f);
-    ImGui::DragFloat("scale", &object->emission_scale, 0.01f, 0.0f, 10.0f);
-    ImGui::PopID();
+    // ImGui::PushID(EngineUI::selected_objectID);
+    // EngineUI::dragVec3("emission", &object->emission, 0.1f);
+    // ImGui::DragFloat("scale", &object->emission_scale, 0.01f, 0.0f, 10.0f);
+    // ImGui::PopID();
 
 
     ImGui::InputText("Name", &object->m_given_name);
@@ -24,61 +25,19 @@ void EngineUI::properties(Scene *scene)
 
     int count = 0;
 
-    for (auto &component: object->transform_components)
+    for (int i=0; i<COMPONENT_NUM_COMPONENTS; i++)
     {
-      ImGui::PushID(count);
-      component.draw(object);
-      ImGui::PopID();
-      count += 1;
+      if (object->entity_components.hasComponent((EntityComponentType)i))
+        EntityComponentUI::drawComponent(object, object->entity_components.getComponent((EntityComponentType)i));
     }
 
-    for (auto &component: object->lightsource_components)
-    {
-      ImGui::PushID(count);
-      component.draw(object);
-      ImGui::PopID();
-      count += 1;
-    }
-
-    for (auto &component: object->script_components)
-    {
-      ImGui::PushID(count);
-      component.draw(object);
-      ImGui::PopID();
-      count += 1;
-    }
-
-    for (auto &component: object->variable_components)
-    {
-      ImGui::PushID(count);
-      component.draw(object);
-      ImGui::PopID();
-      count += 1;
-    }
-
-    for (auto &component: object->terrain_components)
-    {
-      ImGui::PushID(count);
-      component.draw(object);
-      ImGui::PopID();
-      count += 1;
-    }
 
     ImGui::Dummy(ImVec2(0.0f, 20.0f));
     EntityComponentType component_type = COMPONENT_NONE;
-    if (EntityComponentUI::newComponent(&component_type))
-    {
-      switch (component_type)
-      {
-        case (COMPONENT_TRANSFORM):
-          object->transform_components.push_back(EntityComponent(component_type));
-          break;
 
-        case (COMPONENT_SCRIPT):
-          object->script_components.push_back(EntityComponent(component_type));
-          break;
-      }
-    }
+    if (EntityComponentUI::newComponent(&component_type))
+      object->entity_components.giveComponent(component_type);
+
     ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
   }

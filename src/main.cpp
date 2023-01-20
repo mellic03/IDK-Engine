@@ -4,43 +4,24 @@
   #define ENTRY WinMain
 #endif
 
-#include "include/imgui/imgui.h"
-#include "include/imgui/imgui_impl_sdl.h"
-#include "include/imgui/imgui_impl_opengl3.h"
-
-#include <iostream>
-#include <GL/glew.h>
-#include <GL/glu.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
-#include <stdio.h>
-#include <fstream>
-#include <string>
-#include <sstream>
-
-
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GameEngine/GameEngine.h"
 #include "ui/ui.h"
 #include "scene/scene.h"
 
 #include "scripting/luascripting.h"
-
 #include "audio/audio.h"
-
 
 
 int ENTRY(int argc, const char **argv)
 {
 
-#ifdef COOMDEBUG
-  printf("COOMDEBUG defined\n");
-#else
-  printf("COOMDEBUG NOT defined\n");
-#endif
+  #ifdef COOMDEBUG
+    printf("COOMDEBUG defined\n");
+  #else
+    printf("COOMDEBUG NOT defined\n");
+  #endif
+
 
   SDL_Window *window = NULL;
   SDL_GLContext gl_context;
@@ -98,7 +79,7 @@ int ENTRY(int argc, const char **argv)
 
   scene->m_scenegraph->importScene("assets/scenes/entry.scene", &player);
 
-  luaInit(scene, &scenegraph);
+  luaInit(scene, ren);
 
 
   scene->useRenderer(ren);
@@ -121,7 +102,6 @@ int ENTRY(int argc, const char **argv)
 
   // RENDER LOOP
   //----------------------------------------
-
 
   if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
@@ -185,17 +165,6 @@ int ENTRY(int argc, const char **argv)
     scene->drawBackground();
     scene->drawGeometry_batched();
     //---------------------------------
-
-
-    // Billboards
-    //---------------------------------
-
-
-    
-
-
-    //---------------------------------
-
 
 
     // G-Buffer lighting pass
@@ -312,7 +281,7 @@ int ENTRY(int argc, const char **argv)
     glBindTexture(GL_TEXTURE_2D, ren->billboardColorBuffer);
     ren->active_shader->setInt("bloomTexture", 11);
 
-    ren->active_shader->setFloat("bloomAmount", ren->bloom.bloom_amount);
+    ren->active_shader->setFloat("bloomAmount", ren->bloom.strength);
 
     glBindVertexArray(ren->quadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);

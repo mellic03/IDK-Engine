@@ -115,7 +115,6 @@ uniform sampler2D gNormal;
 uniform sampler2D gAlbedoSpec;
 
 uniform vec3 viewDir;
-vec3 SunPos = 1000 * vec3(10, 15, 10);
 
 const float decay = 1;
 const float decay_cutoff = 0.1;

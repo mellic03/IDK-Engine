@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.24)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
 set(CMAKE_BUILD_PARALLEL_LEVEL 8)
 
-set(COOM_DEBUG_MODE FALSE)
+set(COOM_DEBUG_MODE TRUE)
 
 
 
@@ -54,6 +54,7 @@ file(
   "src/GameEngine/gameobject/*.cpp"
   "src/GameEngine/player/*.cpp"
   "src/GameEngine/scenegraph/*.cpp"
+  "src/GameEngine/scenegraph/fileio/*.cpp"
 
   "src/ui/*.cpp"
   "src/ui/tabs/*.cpp"
@@ -61,6 +62,7 @@ file(
 
   "src/scene/*.cpp"
   "src/scripting/*.cpp"
+  "src/scripting/library/*.cpp"
 
   "src/audio/*.cpp"
 

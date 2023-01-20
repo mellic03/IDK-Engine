@@ -12,6 +12,7 @@ class EntityComponent;
 
 enum GameObjectType {
   GAMEOBJECT_UNDEFINED,
+  GAMEOBJECT_EMPTY,
   GAMEOBJECT_TERRAIN,
   GAMEOBJECT_STATIC,
   GAMEOBJECT_BILLBOARD,
@@ -32,7 +33,18 @@ enum BillboardType {
 };
 
 
+struct GameObjectHeader {
+  std::string template_name = "default";
+  std::string assigned_name = "default";
+  int objectID = 0;
+  int parentID = -1;
+};
+
+
 struct GameObjectData {
+
+  GameObjectType gameobject_type = GAMEOBJECT_UNDEFINED;
+  LightSourceType lightsource_type = LIGHTSOURCE_NONE;
 
   InstancingType instancing_type = INSTANCING_OFF;
   BillboardType billboard_type = BILLBOARD_FIXED;
@@ -40,23 +52,19 @@ struct GameObjectData {
   PhysicsState physics_state = PHYSICS_NONE;
   NavigationState navigation_state = NAVIGATION_NONE;
 
+  void setLightSourceType(LightSourceType type)   { this->lightsource_type = type; };
   void setInstancingType(InstancingType type)     { this->instancing_type  = type; };
   void setBillboardType(BillboardType type)       { this->billboard_type   = type; };
   void setPhysicsState(PhysicsState type)         { this->physics_state    = type; };
   void setNavigationState(NavigationState type)   { this->navigation_state = type; };
-
 };
+
+
 
 
 class GameObject {
 
   private:
-
-    GameObjectType gameobject_type = GAMEOBJECT_UNDEFINED;
-    LightSourceType lightsource_type = LIGHTSOURCE_NONE;
-  
-    bool _has_geometry = false;
-
     std::vector<GameObject *> m_children;
     Transform _transform;
 
@@ -85,38 +93,31 @@ class GameObject {
 
 
   public:
-
+    GameObjectHeader header; 
     GameObjectData data;
 
     glm::vec3 emission = glm::vec3(0.0f);
     float emission_scale = 1.0f;
 
-    int m_ID = 0;
     int parentID = -1;
     GameObject *m_parent = nullptr;
 
-    std::vector<EntityComponent> transform_components;
-    std::vector<EntityComponent> lightsource_components;
-    std::vector<EntityComponent> script_components;
-    std::vector<EntityComponent> variable_components;
-    std::vector<EntityComponent> terrain_components;
+
+    EntityComponentData entity_components;
+
 
     PhysicsEngine::SphereCollider spherecollider;
     PhysicsEngine::CapsuleCollider capsulecollider;
 
 
     Model *m_model;
-    Model *m_volumetric_light_model = nullptr;
     CollisionMesh m_collision_mesh;
 
     std::string m_template_name = "DEFAULT";
     std::string m_given_name = "DEFAULT";
-    std::string m_interactivity = "DEFAULT";
-
 
     glm::vec3 pos_worldspace = glm::vec3(0.0f);
 
-    bool selected = false;
 
     GameObject(void);
 
@@ -128,9 +129,9 @@ class GameObject {
 
     // Object ID
     //---------------------------------------------------------------------------------------------
-    int   getID(void)                                         { return this->m_ID; };
-    int  *getIDptr(void)                                      { return &this->m_ID; };
-    void  setID(int id)                                       { this->m_ID = id; };
+    int   getID(void)                                         { return this->header.objectID;  };
+    int  *getIDptr(void)                                      { return &this->header.objectID; };
+    void  setID(int id)                                       { this->header.objectID = id;    };
 
     std::string getName(void) /*...........................*/ { return this->m_given_name; };
     void setName(std::string name) /*......................*/ { this->m_given_name = name; };
@@ -142,35 +143,15 @@ class GameObject {
 
     // Interactivity
     //---------------------------------------------------------------------------------------------
-    void setObjectType(GameObjectType type)           { this->gameobject_type = type; };
-    GameObjectType getObjectType(void)                { return this->gameobject_type; };
+    void setObjectType(GameObjectType type)           { this->data.gameobject_type = type; };
+    GameObjectType getObjectType(void)                { return this->data.gameobject_type; };
     std::string    getObjectTypeString(void);
     
-    void setLightSourceType(LightSourceType type)     {  };
-
-  
-    void setInteractivity(std::string interactivity)  { this->m_interactivity = interactivity; };
-    bool isNPC(void)              { return this->m_interactivity == "npc"; };
-    bool isEnvironmental(void)    { return this->m_interactivity == "environmental"; };
-    bool isMisc(void)             { return this->m_interactivity == "misc"; };
-    bool isPlayer(void)           { return this->m_interactivity == "player"; };
-
-    bool usePhysics(void)         { return this->m_interactivity == "npc" || this->m_interactivity == "player"; };
-
-    bool isHidden(void)           { return this->_hidden; };
-    bool *isHiddenPtr(void)       { return &this->_hidden; };
-
     GameObject *getParent(void)   { return this->m_parent; };
     //---------------------------------------------------------------------------------------------
 
-
-    bool hasGeometry(void)                          { return this->_has_geometry; };
-    void hasGeometry(bool has_geometry)             { this->_has_geometry = has_geometry; };
-
     bool hasCollisionMesh(void)                     { return this->_has_collisionmesh; };
     void hasCollisionMesh(bool has_collisionmesh)   { this->_has_collisionmesh = has_collisionmesh; };
-
-    bool hasLightSource(void)                       { return this->lightsource_components.size() > 0; };
 
 
     bool hasParent(void)                                { return this->m_parent != nullptr; };

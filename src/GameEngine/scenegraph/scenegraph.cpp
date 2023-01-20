@@ -110,7 +110,6 @@ void SceneGraph::loadObject(std::string directory)
   char buffer[256];
   char stringdata[256];
   int intdata;
-  object.hasGeometry(false);
 
   while (fgets(buffer, 256, fh) != NULL)
   {
@@ -120,14 +119,8 @@ void SceneGraph::loadObject(std::string directory)
     else if (sscanf(buffer, "#GameObjectType %s", stringdata))
       object.setObjectType(GameObjectUtil::objectType_fromString(std::string(stringdata)));
 
-    // if (sscanf(buffer, "#LightSourceType %s", stringdata))
-    //   object.setObjectType(GameObjectUtil::objectType_fromString(std::string(stringdata)));
-
-    else if (sscanf(buffer, "#interactivity %s", stringdata))
-      object.setInteractivity(std::string(stringdata));
-
-    else if (sscanf(buffer, "#GameObjectType %s", stringdata))
-      object.setObjectType(GameObjectUtil::objectType_fromString(std::string(stringdata)));
+    if (sscanf(buffer, "#LightSourceType %s", stringdata))
+      object.data.setLightSourceType(GameObjectUtil::lightsourceType_fromString(std::string(stringdata)));
 
     else if (sscanf(buffer, "#InstancingType %s", stringdata))
       object.data.setInstancingType(GameObjectUtil::instancingType_fromString(std::string(stringdata)));
@@ -143,7 +136,6 @@ void SceneGraph::loadObject(std::string directory)
       new_model.loadDae(directory, std::string(stringdata), object.getObjectType() == GAMEOBJECT_TERRAIN);
       this->m_models.push_back(new_model);
       object.m_model = &*std::prev(this->m_models.end());
-      object.hasGeometry(true);
     }
 
     else if (sscanf(buffer, "#collision %s", stringdata))
@@ -187,117 +179,6 @@ GameObject *SceneGraph::frontObjectPtr(void)
 }
 
 
-void SceneGraph::newObjectInstance(std::string object_name, glm::vec3 pos, glm::vec3 rot)
-{
-  if (object_name == "pointlight" && this->_num_pointlights >= MAX_POINTLIGHTS)
-    return;
-
-  if (object_name == "spotlight" && this->_num_spotlights >= MAX_SPOTLIGHTS)
-    return;
-
-
-  GameObject *objectptr = this->templatePtr(object_name);
-  if (objectptr == nullptr)
-  {
-    printf("Null object pointer (SceneGraph::newObjectInstance)\n");
-    exit(1);
-  }
-
-  GameObject newobj = *objectptr;
-  newobj.m_parent = nullptr;
-  *newobj.getPos() = pos;
-
-  newobj.setName(object_name);
-  newobj.setID(this->m_object_instances.size());
-
-  newobj.transform_components.push_back(EntityComponent(COMPONENT_TRANSFORM));
-
-
-  this->m_object_instances.push_back(newobj);
-
-  if (object_name == "pointlight")
-  {
-    this->rearObjectPtr()->hasGeometry(false);
-    this->rearObjectPtr()->lightsource_components.push_back(EntityComponent(COMPONENT_LIGHTSOURCE, &this->pointlights[this->_num_pointlights]));
-    this->pointlights[this->_num_pointlights].m_transform = this->rearObjectPtr()->getTransform();
-    this->pointlight_parent->giveChild(this->rearObjectPtr());
-    this->_num_pointlights += 1;
-  }
-
-  if (object_name == "spotlight")
-  {
-    this->rearObjectPtr()->hasGeometry(false);
-    this->rearObjectPtr()->lightsource_components.push_back(EntityComponent(COMPONENT_LIGHTSOURCE, &this->spotlights[this->_num_spotlights]));
-    this->spotlights[this->_num_spotlights].m_transform = this->rearObjectPtr()->getTransform();
-    this->spotlight_parent->giveChild(this->rearObjectPtr());
-    this->_num_spotlights += 1;
-  }
-
-  if (object_name == "pointlightcontainer")
-  {
-    this->pointlight_parent = this->rearObjectPtr();
-    this->pointlight_parent->setName("Point Lights");
-    this->pointlight_parent->transform_components.clear();
-  }
-
-  if (object_name == "spotlightcontainer")
-  {
-    this->spotlight_parent = this->rearObjectPtr();
-    this->spotlight_parent->setName("Spot Lights");
-    this->spotlight_parent->transform_components.clear();
-  }
-
-
-  objectptr = this->rearObjectPtr();
-  GameObjectType object_type = objectptr->getObjectType();
-
-  if (objectptr->data.instancing_type == INSTANCING_OFF)
-    this->_object_instances_by_type[object_type].push_back(objectptr);
-  else
-    this->_object_instances_by_type_instanced[object_type].push_back(objectptr);
-
-
-  bool selectable = true;
-  switch (object_type)
-  {
-    case (GAMEOBJECT_UNDEFINED):
-      break;
-
-    case (GAMEOBJECT_TERRAIN):
-      objectptr->terrain_components.push_back(EntityComponent(COMPONENT_TERRAIN));
-      objectptr->terrain_components[0].terrain_component.generateGrassPositions(objectptr->m_model->m_meshes[0].vertices);
-      break;
-
-    case (GAMEOBJECT_STATIC):
-      break;
-
-    case (GAMEOBJECT_BILLBOARD):
-      if (objectptr->data.instancing_type == INSTANCING_ON)
-      {
-        this->addInstanceData(objectptr->getTemplateName(), objectptr->m_model, objectptr->getTransform());
-        selectable = false;
-      }
-      break;
-
-    case (GAMEOBJECT_ACTOR):
-      break;
-
-    case (GAMEOBJECT_PLAYER):
-      this->player_object = objectptr;
-      break;
-
-    case (GAMEOBJECT_LIGHTSOURCE):
-      break;
-  }
-
-  if (selectable)
-  {
-    this->m_selectable_instances.push_back(objectptr);
-  }
-
-}
-
-
 void SceneGraph::clearScene(void)
 {
   this->m_object_instances.clear();
@@ -306,30 +187,19 @@ void SceneGraph::clearScene(void)
   for (int i=0; i<GAMEOBJECT_NUM_TYPES; i++)
     this->_object_instances_by_type[i].clear();
     
+  for (int i=0; i<NUM_POINTLIGHTS; i++)
+  {
+    this->pointlights[i].active = false;
+    this->pointlights[i].shadowmapped = false;
+    this->pointlights[i].m_transform = &this->pointlights[i].default_transform;
+    this->pointlights[i].diffuse = glm::vec3(0.0f);
+  }
 
   this->_num_pointlights = 0;
   this->_num_spotlights = 0;
   this->num_active_pointlights = 0;
   this->num_shadow_pointlights = 0;
   this->_num_active_spotlights = 0;
-
-  this->pointlight_parent = nullptr;
-  this->spotlight_parent = nullptr;
-}
-
-void SceneGraph::defaultScene(void)
-{
-  this->clearScene();
-
-  this->newObjectInstance("pointlightcontainer");
-  this->newObjectInstance("spotlightcontainer");
-
-  for (int i=0; i<NUM_POINTLIGHTS; i++)
-  {
-    this->pointlights[i].active = false;
-    this->pointlights[i].shadowmapped = false;
-    this->pointlights[i].m_transform = &this->pointlights[i].default_transform;
-  }
 }
 
 
@@ -337,241 +207,54 @@ void SceneGraph::sortLights(void)
 {
   this->num_active_pointlights = 0;
   this->num_volumetric_pointlights = 0;
-  this->num_volumetric_shadow_pointlights = 0;
+  this->num_shadowmapped_volumetric_pointlights = 0;
   this->num_shadow_pointlights = 0;
 
+  this->active_pointlights.clear();
+  this->shadowmapped_pointlights.clear();
+  this->volumetric_pointlights.clear();
+  this->shadowmapped_volumetric_pointlights.clear();
 
-  //------------------------------------------------------------------
+
   for (int i=0; i<MAX_POINTLIGHTS; i++)
   {
     if (this->pointlights[i].active)
     {
-      if (this->pointlights[i].shadowmapped && this->pointlights[i].volumetrics_active)
-        this->sorted_volumetric_shadow_pointlights[this->num_volumetric_shadow_pointlights++] = &this->pointlights[i];
-
-      if (this->pointlights[i].shadowmapped)
-        this->sorted_shadow_pointlights[this->num_shadow_pointlights++] = &this->pointlights[i];
-
+      if (!this->pointlights[i].shadowmapped)
+        this->active_pointlights.push_back(&this->pointlights[i]);
       else
-        this->sorted_active_pointlights[this->num_active_pointlights++] = &this->pointlights[i];
-
-      if (!this->pointlights[i].shadowmapped && this->pointlights[i].volumetrics_active)
-        this->sorted_volumetric_pointlights[this->num_volumetric_pointlights++] = &this->pointlights[i];
-    }
-  }
-
-  int c1 = this->num_active_pointlights;
-  int c2 = this->num_shadow_pointlights;
-  int c3 = this->num_volumetric_pointlights;
-  int c4 = this->num_volumetric_shadow_pointlights;
-
-  while (c1 < MAX_POINTLIGHTS)
-    this->sorted_active_pointlights[c1++] = &this->pointlights[0];
-
-  while (c2 < MAX_POINTLIGHTS)
-    this->sorted_shadow_pointlights[c2++] = &this->pointlights[0];
-
-  while (c3 < MAX_POINTLIGHTS)
-    this->sorted_volumetric_pointlights[c3++] = &this->pointlights[0];
-
-  while (c4 < MAX_POINTLIGHTS)
-    this->sorted_volumetric_shadow_pointlights[c4++] = &this->pointlights[0];
-  //------------------------------------------------------------------
-
-}
-
-
-void objectToFile(std::ofstream *stream, GameObject *object)
-{
-  *stream << "#GAMEOBJECT BEGIN" << std::endl;
-
-  *stream << "m_template_name: " << object->getTemplateName() << std::endl;
-  *stream << "m_given_name: "    << object->getName() << std::endl;
-
-  *stream << "objectID: " << object->getID() << std::endl;
-  if (object->getParent() != nullptr)
-    *stream << "parentID: " << object->getParent()->getID() << std::endl;
-  else
-    *stream << "parentID: -1" << std::endl;
-
-  
-  glm::vec3 v;
-  v = object->getTransform()->getPos_worldspace();
-  *stream << "position: " << v.x << " " << v.y << " " << v.z << std::endl;
-
-  v = *object->getVel();
-  *stream << "velocity: " << v.x << " " << v.y << " " << v.z << std::endl;
-
-  glm::quat q = object->getTransform()->orientation;
-  *stream << "orientation: " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << std::endl;
-
-  for (size_t i=0; i<object->script_components.size(); i++)
-  {
-    *stream << "#SCRIPT: ";
-    *stream << object->script_components[i].script_name << std::endl;
-  }
-
-  if (object->lightsource_components.size() >= 1)
-  {
-    *stream << "#LIGHTSOURCE BEGIN" << std::endl;
-    object->lightsource_components[0].toFile(*stream);
-    *stream << "#LIGHTSOURCE END" << std::endl;
-  }
-
-  *stream << "#GAMEOBJECT END\n" << std::endl;
- 
-}
-
-
-void SceneGraph::objectFromFile(std::ifstream &stream, std::string &line)
-{
-
-}
-
-
-void SceneGraph::objectFromFile(std::ifstream &stream, std::string &line, Player *player)
-{
-  int objectID = -1, parentID = -1;
-  GameObject *object = nullptr;
-
-  while (getline(stream, line))
-  {
-    if (line.find("m_template_name") != std::string::npos)
-    {
-      line.erase(0, std::string("m_template_name").size() + 2);
-
-      if (line == "player")
+        this->shadowmapped_pointlights.push_back(&this->pointlights[i]);
+      
+      if (this->pointlights[i].volumetrics_active)
       {
-        this->newObjectInstance("player");
-        object = this->rearObjectPtr();
-        player->useGameObject(object);
-        player->m_gameobject->changePhysState(PHYSICS_FALLING);
-      }
-
-      else
-      {
-        this->newObjectInstance(line);
-        object = this->rearObjectPtr();
+        if (!this->pointlights[i].shadowmapped)
+          this->volumetric_pointlights.push_back(&this->pointlights[i]);
+        else
+          this->shadowmapped_volumetric_pointlights.push_back(&this->pointlights[i]);
       }
     }
-
-    else if (line.find("m_given_name") != std::string::npos)
-    {
-      line.erase(0, std::string("m_given_name").size() + 2);
-      object->setName(line);
-    }
-
-    else if (line.find("parentID") != std::string::npos)
-    {
-      line.erase(0, std::string("parentID").size() + 2);
-      object->parentID = std::stoi(line);
-    }
-
-    else if (line.find("position: ") != std::string::npos)
-    {
-      line.erase(0, std::string("position: ").size());
-      std::stringstream ss;
-      ss << line;
-      glm::vec3 v;
-      int count = 0;
-      float n;
-      while (ss >> n)
-      {
-        v[count] = n;
-        count += 1;
-      }
-      *object->getPos() = v;
-    }
-
-    else if (line.find("velocity: ") != std::string::npos)
-    {
-      line.erase(0, std::string("velocity: ").size());
-      std::stringstream ss;
-      ss << line;
-      glm::vec3 v;
-      int count = 0;
-      float n;
-      while (ss >> n)
-      {
-        v[count] = n;
-        count += 1;
-      }
-      *object->getVel() = v;
-    }
-
-    else if (line.find("orientation: ") != std::string::npos)
-    {
-      line.erase(0, std::string("orientation: ").size());
-      std::stringstream ss;
-      ss << line;
-      glm::quat q;
-      int count = 0;
-      float n;
-      while (ss >> n)
-      {
-        q[count] = n;
-        count += 1;
-      }
-
-      object->getTransform()->orientation = q;
-    }
-
-    else if (line.find("#SCRIPT: ") != std::string::npos)
-    {
-      object->script_components.push_back(EntityComponent(COMPONENT_SCRIPT));
-      line.erase(0, std::string("#SCRIPT: ").size());
-      object->script_components[object->script_components.size()-1].script_name = line;
-    }
-
-    else if (line == "#LIGHTSOURCE BEGIN")
-      object->lightsource_components[0].fromFile(stream);
-
-    else if (line.find("#GAMEOBJECT END") != std::string::npos)
-      return;
   }
+
+
+  this->num_active_pointlights = this->active_pointlights.size();
+  this->num_shadow_pointlights = this->shadowmapped_pointlights.size();
+  this->num_volumetric_pointlights = this->volumetric_pointlights.size();
+  this->num_shadowmapped_volumetric_pointlights = this->shadowmapped_volumetric_pointlights.size();
+
+
+  for (size_t i=this->active_pointlights.size(); i<MAX_POINTLIGHTS; i++)
+    this->active_pointlights.push_back(&this->pointlights[0]);
+
+  for (size_t i=this->shadowmapped_pointlights.size(); i<MAX_POINTLIGHTS; i++)
+    this->shadowmapped_pointlights.push_back(&this->pointlights[0]);
+
+  for (size_t i=this->volumetric_pointlights.size(); i<MAX_POINTLIGHTS; i++)
+    this->volumetric_pointlights.push_back(&this->pointlights[0]);
+
+  for (size_t i=this->shadowmapped_volumetric_pointlights.size(); i<MAX_POINTLIGHTS; i++)
+    this->shadowmapped_volumetric_pointlights.push_back(&this->pointlights[0]);
 }
 
-
-void SceneGraph::exportScene(std::string filepath)
-{
-  std::cout << "exporting scene to: " << filepath << std::endl;
-
-  std::ofstream stream;
-  stream.open(filepath);
-
-  for (auto &object: this->m_object_instances)
-  {
-    objectToFile(&stream, &object);
-  }
-
-  stream.close();
-}
-
-
-void SceneGraph::importScene(std::string filepath, Player *player)
-{
-  this->clearScene();
-
-  std::ifstream stream;
-  stream.open(filepath);
-
-  std::string line;
-
-  // First five objects are always lights + player, load those first
-  while (getline(stream, line))
-  {
-    if (line == "#GAMEOBJECT BEGIN")
-      this->objectFromFile(stream, line, player);
-  }
-
-  for (auto &object: this->m_object_instances)
-  {
-    if (object.parentID != -1 && object.m_template_name != "spotlight" && object.m_template_name != "pointlight")
-      this->objectPtr(object.parentID)->giveChild(this->objectPtr(object.m_ID), false);
-  }
-
-  stream.close();
-}
 
 
 std::list<GameObject *> *SceneGraph::getTemplatesByType(GameObjectType object_type)

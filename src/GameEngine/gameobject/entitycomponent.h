@@ -13,25 +13,19 @@
 
 #include "../../GraphicsEngine/GraphicsEngine.h"
 
-#include "gameobject.h"
-class GameObject;
 
 
 enum EntityComponentType {
   COMPONENT_NONE = 0,
   COMPONENT_TRANSFORM,
-  COMPONENT_LIGHTSOURCE,
+  COMPONENT_POINT_LIGHT,
+  COMPONENT_SPOT_LIGHT,
   COMPONENT_SCRIPT,
   COMPONENT_TERRAIN,
-  COMPONENT_VARIABLE
+  COMPONENT_NUM_COMPONENTS
 };
 
-enum DataType {
-  DATATYPE_INT,
-  DATATYPE_FLOAT,
-  DATATYPE_DOUBLE,
-  DATATYPE_STRING
-};
+
 
 struct TerrainComponent {
   float threshold = 0.5f;
@@ -55,53 +49,28 @@ struct TerrainComponent {
   }
 };
 
-struct VariableComponent {
-  std::string name = "variable";
-  DataType data_type;
-  int int_data;
-  float float_data;
-  double double_data;
-  std::string string_data;
-};
+
 
 class EntityComponent { 
 
-  private:
-
-    EntityComponentType _component_type = COMPONENT_NONE;
-    PointLight *_pointlight = nullptr;
-    SpotLight *_spotlight = nullptr;
-
-    void _draw_pointlight(void);
-    void _draw_spotlight(void);
-    void _draw_lightsource(void);
-
-    void _draw_transform(GameObject *object); 
-    void _draw_script(GameObject *object);
-
-    void _draw_terrain(GameObject *object);
-
-    void _draw_variable(GameObject *object);
-
-
-
   public:
-
+    EntityComponentType component_type = COMPONENT_NONE;
     glm::vec3 *diffuse = nullptr;
+
+    // COMPONENT_POINT_LIGHT
+    PointLight *pointlight;
+  
+    // COMPONENT_SPOT_LIGHT
+    SpotLight *spotlight;
 
     // COMPONENT_SCRIPT
     std::filesystem::path script_path;
     std::string script_name = "LuaScripting/scripts/default";
     bool script_changed = false;
 
-    TerrainComponent  terrain_component;
-    VariableComponent variable_component;
 
-    EntityComponent(EntityComponentType component_type);
-    EntityComponent(EntityComponentType component_type, PointLight *pointlight);
-    EntityComponent(EntityComponentType component_type, SpotLight *spotlight);
-
-    void draw(GameObject *object);
+    EntityComponent() { };
+    EntityComponent(EntityComponentType type) { this->component_type = type; };
 
     void toFile(std::ofstream &stream);
     void fromFile(std::ifstream &stream);
@@ -109,9 +78,74 @@ class EntityComponent {
 };
 
 
+struct EntityComponentData {
 
-namespace EntityComponentUI {
+  private:
 
-  bool newComponent(EntityComponentType *component_type);
+    EntityComponent _entity_components[COMPONENT_NUM_COMPONENTS];
+    bool _has_entity_component[COMPONENT_NUM_COMPONENTS];
+
+    std::vector<EntityComponent> _script_components;
+
+
+  public:
+
+    EntityComponentData(void)
+    {
+      for (int i=0; i<COMPONENT_NUM_COMPONENTS; i++)
+      {
+        this->_entity_components[i] = EntityComponent((EntityComponentType)i);
+        this->_has_entity_component[i] = false;
+      }
+    };
+
+    bool hasComponent(EntityComponentType type)
+    {
+      return this->_has_entity_component[type];
+    };
+
+    void giveComponent(EntityComponentType type)
+    {
+      if (type == COMPONENT_SCRIPT)
+        this->giveScriptComponent("LuaScripting/scripts/default");
+      this->_has_entity_component[type] = true;
+    };
+
+    void giveScriptComponent(std::string script_filepath)
+    {
+      this->_script_components.push_back(EntityComponent(COMPONENT_SCRIPT));
+      this->_script_components[this->_script_components.size() - 1].script_name = script_filepath;
+      this->_has_entity_component[COMPONENT_SCRIPT] = true;
+    };
+
+    void givePointLightComponent(PointLight *pointlight)
+    {
+      this->_has_entity_component[COMPONENT_POINT_LIGHT] = true;
+      this->_entity_components[COMPONENT_POINT_LIGHT].pointlight = pointlight;
+    }
+
+    void giveSpotLightComponent(SpotLight *spotlight)
+    {
+      this->_has_entity_component[COMPONENT_SPOT_LIGHT] = true;
+      this->_entity_components[COMPONENT_SPOT_LIGHT].spotlight = spotlight;
+    }
+
+    EntityComponent *getComponent(EntityComponentType type)
+    {
+      if (!this->hasComponent(type))
+      {
+        printf("Object does not have component: %d\n(entitycomponent.h --> EntityComponentData::getComponent())\n", (int)type);
+        exit(1);
+      }
+
+      return &this->_entity_components[type];
+    };
+
+    std::vector<EntityComponent> *getScriptComponents()
+    {
+      return &this->_script_components;
+    };
 
 };
+
+

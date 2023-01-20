@@ -1,5 +1,6 @@
 #pragma once
 
+#include "glcall.h"
 #include "../transform.h"
 
 struct VolumetricData {
@@ -17,10 +18,9 @@ struct VolumetricData {
 
 
 struct BloomData {
-
   float threshold = 1.0f;
-  float bloom_amount = 0.04f;
-  int min_downsample_resolution = 8;
+  float strength = 0.04f;
+  int min_downsample_resolution = 32;
 };
 
 

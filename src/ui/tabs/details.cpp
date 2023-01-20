@@ -13,13 +13,9 @@ void EngineUI::details(Scene *scene)
     ImGui::Separator();
     ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
-    ImGui::Checkbox("Hidden", object->isHiddenPtr());
-    ImGui::Dummy(ImVec2(0.0f, 20.0f));
-
     ImGui::Text("Info");
     ImGui::Separator();
     ImGui::Text("GameObjectType:      %s", object->getObjectTypeString().c_str());
-    ImGui::Text("environmental:       %s", (object->isEnvironmental() ? "true" : "false"));
     ImGui::Text("physics_state:       %s", object->physStateString().c_str());
     ImGui::Text("navigation_state:    %s", object->navStateString().c_str());
     ImGui::Text("has collision mesh:  %s", object->hasCollisionMesh() ? "true": "false");
@@ -31,5 +27,5 @@ void EngineUI::details(Scene *scene)
 
     ImGui::End();
   }
-
 }
+

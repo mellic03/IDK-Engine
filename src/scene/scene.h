@@ -36,6 +36,8 @@ class Scene {
 
     Scene(void);
 
+    void clearColor(glm::vec3 color);
+
     void sortLights(void);
     void sendLightsToShader(void);
 
@@ -43,7 +45,6 @@ class Scene {
     void usePlayer(Player *playerptr);
     void useSceneGraph(SceneGraph *scenegraph);
     
-    void clear(void);
     void defaultScene(void);
     void importScene(std::string filepath, Player *player);
 

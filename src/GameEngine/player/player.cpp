@@ -16,7 +16,6 @@ void Player::useGameObject(GameObject *gameobject)
 {
   this->m_gameobject = gameobject;
   this->m_gameobject->setName("Player");
-  this->m_gameobject->setInteractivity("player");
   
   this->cam->useTransform(this->getTransform());
 }

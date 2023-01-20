@@ -26,10 +26,16 @@ void draw_save_modal(bool draw, Scene *scene)
     if (changed)
     {
       printf("WEE\n");
-      save_path = save_path.parent_path();
     }
 
     static std::string filename;
+
+    if (save_path.has_extension())
+    {
+      filename = save_path.filename().string();
+      save_path = save_path.parent_path();
+    }
+
     ImGui::InputText("Filename", &filename, 64);
     std::string save_filepath = save_path.string() + "/" + filename;
     std::string relative_save_path = fs::relative(save_path, fs::current_path()).string() + "/" + filename;
@@ -76,7 +82,8 @@ void draw_load_modal(bool draw, Scene *scene)
 
     ImGui::Text("File: %s", selected_filepath.filename().c_str());
 
-    std::string load_path = std::string("assets/scenes/" + selected_filepath.filename().string());
+    
+    std::string load_path = fs::relative(selected_filepath, fs::current_path()).string();
 
     if (ImGui::Button("Load", ImVec2(120, 0)))
     {

@@ -22,7 +22,7 @@ namespace EngineUI {
 
   extern std::stringstream string_stream;
 
-  void vec3(std::string name, glm::vec3 *data, float step);
+  void dragVec3(std::string name, glm::vec3 *data, float min, float max, float speed, const char *format, float default_value);
 
   void sceneHierarchy(Renderer *ren, Scene *scene);
   void properties(Scene *scene);

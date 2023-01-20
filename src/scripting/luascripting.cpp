@@ -1,10 +1,11 @@
 #include "luascripting.h"
 
-void luaInit(Scene *scene, SceneGraph *graph)
+void luaInit(Scene *scene, Renderer *renderer)
 {
-  LuaInterface::init(scene, graph);
+  LuaInterface::init(scene, renderer);
   LuaInterface::compile();
 }
+
 
 void luaMain(Renderer *ren, Player *player, std::list<GameObject> *gameobjects)
 {
@@ -16,7 +17,7 @@ void luaMain(Renderer *ren, Player *player, std::list<GameObject> *gameobjects)
 
   for (auto &object: *gameobjects)
   {
-    for (auto &component: object.script_components)
+    for (EntityComponent component: *object.entity_components.getScriptComponents())
     {
       if (component.script_changed)
         LuaInterface::compile();

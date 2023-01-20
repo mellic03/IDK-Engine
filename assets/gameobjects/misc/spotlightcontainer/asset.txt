@@ -1,3 +1,0 @@
-#gameobject spotlightcontainer
-#interactivity misc
-#exit

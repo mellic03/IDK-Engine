@@ -8,7 +8,8 @@ ImGuiInputFlags EngineUI::script_flags = ImGuiInputTextFlags_AllowTabInput;
 
 std::stringstream EngineUI::string_stream;
 
-void EngineUI::vec3(std::string name, glm::vec3 *data, float step)
+
+void EngineUI::dragVec3(std::string name, glm::vec3 *data, float min, float max, float speed, const char *format, float default_value)
 {
   ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0, 0});
 
@@ -26,21 +27,21 @@ void EngineUI::vec3(std::string name, glm::vec3 *data, float step)
 
       ImGui::TableNextColumn();
       if (ImGui::Button("X", button_size))
-        data->x = 0.0f;
+        data->x = default_value;
       ImGui::SameLine();
-      ImGui::DragFloat("##X", &data->x, step, 0, 0, "%0.3f");
+      ImGui::DragFloat("##X", &data->x, speed, min, max, format);
       
       ImGui::TableNextColumn();
       if (ImGui::Button("Y", button_size))
-        data->y = 0.0f;
+        data->y = default_value;
       ImGui::SameLine();
-      ImGui::DragFloat("##Y", &data->y, step, 0, 0, "%0.3f");
+      ImGui::DragFloat("##Y", &data->y, speed, min, max, format);
 
       ImGui::TableNextColumn();
       if (ImGui::Button("Z", button_size))
-        data->z = 0.0f;
+        data->z = default_value;
       ImGui::SameLine();
-      ImGui::DragFloat("##Z", &data->z, step, 0, 0, "%0.3f");
+      ImGui::DragFloat("##Z", &data->z, speed, min, max, format);
 
     ImGui::PopStyleVar();
 

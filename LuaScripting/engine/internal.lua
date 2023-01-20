@@ -1,30 +1,42 @@
 
-local function v_init()
+local function vectorinit()
   return {x = 0, y = 0, z = 0};
 end
 
--- Return the position of an object
-function GetPos(objectID) return v_init(); end;
 
--- Set the position of an object
-function SetPos(objectID, x, y, z) end;
-
--- Return the velocity of an object
-function GetVel(objectID) return v_init(); end;
-
--- Set the velocity of an object
-function SetVel(objectID, x, y, z) end;
-
--- Add to the rotation of an object
-function AddRot(objectID, x, y, z) end;
-
-function SetJumpForce(force) end;
-function SetMoveForce(force) end;
-
-function SetGravity(force) end;
-
--- Load a scene from filepath where filepath is relative to assets/scenes/
-function LoadScene(filepath) end;
+-- luaLibrary_gameobject
+-----------------------------------------------
+function CE_GameObject_GetPos(objectID) return vectorinit(); end;
+function CE_GameObject_SetPos(objectID, x, y, z) end;
+function CE_GameObject_GetVel(objectID) return vectorinit(); end;
+function CE_GameObject_SetVel(objectID, x, y, z) end;
+function CE_GameObject_AddRot(objectID, x, y, z) end;
+-----------------------------------------------
 
 
-----------------------------------------
+-- luaLibrary_lighting
+-----------------------------------------------
+function CE_Lighting_SetBloomThreshold(threshold) end;
+function CE_Lighting_SetBloomStrength(strength) end;
+-----------------------------------------------
+
+
+-- luaLibrary_physics
+-----------------------------------------------
+function CE_Physics_SetGravity(force) end;
+-----------------------------------------------
+
+
+-- luaLibrary_player
+-----------------------------------------------
+function CE_Player_SetJumpForce(force) end;
+function CE_Player_SetMoveForce(force) end;
+function CE_Player_SetFly(bool) end;
+-----------------------------------------------
+
+
+-- luaLibrary_scene
+-----------------------------------------------
+function CE_Scene_LoadScene(filepath) end;
+function CE_Scene_ClearColor(r, g, b) end;
+-----------------------------------------------

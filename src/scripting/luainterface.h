@@ -8,39 +8,26 @@
 #include "../include/glm/glm.hpp"
 
 
-void register_library(void);
+void register_luaLibrary();
 
 
 namespace LuaInterface {
 
-  // Data Structures
-  //--------------------------------------------------
-
-
-  //--------------------------------------------------
-
   // Variables
   //--------------------------------------------------
   extern lua_State *L;
-  extern Scene *scene;
-  extern SceneGraph *scenegraph;
-  // extern std::vector<int> IDs;
-  // extern std::vector<std::string> scripts;
-  // extern std::vector<glm::vec3> positions;
-  // extern std::vector<glm::vec3> velocities;
+  extern Scene *m_scene;
+  extern SceneGraph *m_scenegraph;
+  extern Renderer *m_renderer;
   //--------------------------------------------------
-
-
 
 
   // Methods
   //--------------------------------------------------
-  void init(Scene *scene, SceneGraph *graph);
+  void init(Scene *scene, Renderer *renderer);
   void compile(void);
-  void begin(void);
   void execute(void);
   //--------------------------------------------------
-
 
 
   // Namespaces

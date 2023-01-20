@@ -1,5 +1,4 @@
 #gameobject pointlight
-#interactivity misc
 #GameObjectType GAMEOBJECT_LIGHTSOURCE
 #LightSourceType LIGHTSOURCE_POINT_LIGHT
 #geometry sphere.dae

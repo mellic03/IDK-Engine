@@ -1,8 +1,4 @@
-
 #gameobject empty
-
-#interactivity misc
-
-
+#GameObjectType GAMEOBJECT_EMPTY
 #exit
 

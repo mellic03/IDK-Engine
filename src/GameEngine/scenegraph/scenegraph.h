@@ -17,10 +17,10 @@
 class SceneGraph {
 
   private:
+
     std::list<GameObject *>  _object_templates_by_type[GAMEOBJECT_NUM_TYPES];
     std::list<GameObject *>  _object_instances_by_type[GAMEOBJECT_NUM_TYPES];
     std::list<GameObject *>  _object_instances_by_type_instanced[GAMEOBJECT_NUM_TYPES];
-
     std::map<std::string, InstanceData> _instance_data;
 
 
@@ -39,27 +39,25 @@ class SceneGraph {
     GameObject *player_object;
 
 
-    GameObject *pointlight_parent;
-    GameObject *spotlight_parent;
     DirLight dirlight;
     PointLight pointlights[MAX_POINTLIGHTS];
     SpotLight spotlights[MAX_SPOTLIGHTS];
     
-    PointLight *sorted_active_pointlights[MAX_POINTLIGHTS], *sorted_shadow_pointlights[MAX_POINTLIGHTS];
-    PointLight *sorted_volumetric_pointlights[MAX_POINTLIGHTS], *sorted_volumetric_shadow_pointlights[MAX_POINTLIGHTS];
-  
+
+    std::vector<PointLight *> active_pointlights, shadowmapped_pointlights, volumetric_pointlights, shadowmapped_volumetric_pointlights;
+    int _num_pointlights = 0,  num_active_pointlights = 0, num_shadow_pointlights = 0;
+    int num_volumetric_pointlights = 0, num_shadowmapped_volumetric_pointlights = 0;
+
+    std::vector<SpotLight *>  active_spotlights,  shadowmapped_spotlights,  volumetric_spotlights, shadowmapped_volumetric_spotlights;
     std::vector<SpotLight *> sorted_spotlights;
     
-    int _num_pointlights = 0,  num_active_pointlights = 0, num_shadow_pointlights = 0;
-    int num_volumetric_pointlights = 0, num_volumetric_shadow_pointlights = 0;
+
+
     int _num_spotlights  = 0,  _num_active_spotlights  = 0;
 
 
     SceneGraph();
     
-    void directoryloadrecursething(std::filesystem::path filepath);
-    void loadObject(std::string directory);
-    void loadObjects(std::string index_filepath);
 
     void addInstanceData(std::string template_name, Model *model, Transform *transform);
     std::map<std::string, InstanceData> *getInstanceData(void);
@@ -72,15 +70,33 @@ class SceneGraph {
     GameObject *frontObjectPtr(void);
     GameObject *rearObjectPtr(void);
 
-    void newObjectInstance(std::string object_name, glm::vec3 pos = glm::vec3(0.0f), glm::vec3 rot = glm::vec3(0.0f));
 
-    void clearScene(void);
-    void defaultScene(void);
-    void sortLights(void);
-    void objectFromFile(std::ifstream &stream, std::string &line);
+    // Object Instantiation
+    //----------------------------------------------------------------------------
+    void newObjectInstance_terrain(GameObject *objectptr);
+    void newObjectInstance_empty(GameObject *objectptr);
+    void newObjectInstance_static(GameObject *objectptr);
+    void newObjectInstance_billboard(GameObject *objectptr);
+    void newObjectInstance_actor(GameObject *objectptr);
+    void newObjectInstance_lightsource(GameObject *objectptr);
+
+    void newObjectInstance(std::string object_name, Transform transform = Transform());
+    //----------------------------------------------------------------------------
+
+    // File IO
+    //----------------------------------------------------------------------------
+    void directoryloadrecursething(std::filesystem::path filepath);
+    void loadObject(std::string directory);
+    void loadObjects(std::string index_filepath);
+
     void objectFromFile(std::ifstream &stream, std::string &line, Player *player);
     void exportScene(std::string filepath);
     void importScene(std::string filepath, Player *player);
+    //----------------------------------------------------------------------------
+
+
+    void clearScene(void);
+    void sortLights(void);
 
     std::list<GameObject *> *getTemplatesByType(GameObjectType object_type);
     std::list<GameObject *> *getInstancesByType(GameObjectType object_type);

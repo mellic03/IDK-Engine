@@ -5,6 +5,6 @@
 #InstancingType INSTANCING_OFF
 #BillboardType BILLBOARD_FIXED
 
-#geometry tree.dae
+#geometry tree2.dae
 #physics PHYSICS_NONE
 #exit

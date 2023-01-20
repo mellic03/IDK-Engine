@@ -1,0 +1,103 @@
+<SCENE>
+</SCENE>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: player
+    assigned name: Player
+    objectID: 0
+    parentID: -1
+  </HEADER>
+  <TRANSFORM>
+    position: -14.9004 -1.6 -11.9189
+    velocity: -2.36065e-06 -0.0585965 2.16528e-06
+    orientation: -0.00441823 -0.189179 -0.000851196 0.98186
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+  </SCRIPTS>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: wall
+    assigned name: wall
+    objectID: 1
+    parentID: -1
+  </HEADER>
+  <TRANSFORM>
+    position: 0 0 0
+    velocity: 0 0 0
+    orientation: 0 0 0 1
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+  </SCRIPTS>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: bunker
+    assigned name: bunker
+    objectID: 2
+    parentID: 1
+  </HEADER>
+  <TRANSFORM>
+    position: -13.72 -1.75 5.89
+    velocity: 0 0 0
+    orientation: 0 0 0 1
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+  </SCRIPTS>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: pointlight
+    assigned name: pointlight
+    objectID: 3
+    parentID: 2
+  </HEADER>
+  <TRANSFORM>
+    position: -13.5 0.707 -17.955
+    velocity: 0 0 0
+    orientation: 0.0912529 0.192459 0.0245922 0.976741
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+  </SCRIPTS>
+  <POINTLIGHT>
+    active: 1
+    shadowmapped: 1
+    volumetrics: 1
+    radius: 25
+    diffuse: 1 1 1
+    ambient: 0.297297 0.297297 0.297297
+    constant: 0
+    linear: 0.09
+    quadratic: 0.032
+    bias: 0.15
+  </POINTLIGHT>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: cube
+    assigned name: cube
+    objectID: 4
+    parentID: 2
+  </HEADER>
+  <TRANSFORM>
+    position: -9.80584 -1.9266 -18.0422
+    velocity: 0 0 0
+    orientation: 2.91434e-16 -5.12227e-09 -7.44469e-09 0.999999
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+    script: LuaScripting/scripts/default
+    script: LuaScripting/scripts/default
+    script: LuaScripting/scripts/default
+  </SCRIPTS>
+</GAMEOBJECT>
+
