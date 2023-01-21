@@ -167,7 +167,8 @@ class Renderer {
 
 
     void drawPrimitive(PrimitiveType type, Model *model, Transform *transform);
-
+    void drawPrimitive_withRadius(PrimitiveType type, Model *model, Transform *transform, float radius);
+    
     void drawTerrain          (Model *model,  Transform *transform, float threshold, float epsilon);
     void drawBillboard        (Model *model,  Transform *transform);
     void drawLightSource      (Model *model,  Transform *transform, glm::vec3 diffuse);

@@ -94,7 +94,7 @@ class GameObject {
 
   public:
 
-    bool in_frustum = false;
+    bool in_frustum = true;
 
     GameObjectHeader header; 
     GameObjectData data;

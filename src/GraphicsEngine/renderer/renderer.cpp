@@ -719,6 +719,11 @@ void unbindTextureUnit(GLenum texture_unit)
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+void Renderer::drawPrimitive_withRadius(PrimitiveType type, Model *model, Transform *transform, float radius)
+{
+  
+} 
+
 
 void Renderer::drawPrimitive(PrimitiveType type, Model *model, Transform *transform)
 {
