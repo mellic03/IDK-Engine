@@ -9,9 +9,9 @@
     parentID: -1
   </HEADER>
   <TRANSFORM>
-    position: -14.9004 -1.6 -11.9189
-    velocity: -2.36065e-06 -0.0585965 2.16528e-06
-    orientation: -0.00441823 -0.189179 -0.000851196 0.98186
+    position: -10.1267 -13.55 -19.4645
+    velocity: -3.44396e-09 0 -7.50028e-08
+    orientation: 0.0124796 -0.977644 -0.0613672 -0.198745
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
@@ -26,7 +26,7 @@
     parentID: -1
   </HEADER>
   <TRANSFORM>
-    position: 0 0 0
+    position: 0 -12 0
     velocity: 0 0 0
     orientation: 0 0 0 1
     scale: 1 1 1
@@ -43,7 +43,7 @@
     parentID: 1
   </HEADER>
   <TRANSFORM>
-    position: -13.72 -1.75 5.89
+    position: -13.72 -13.7 5.89
     velocity: 0 0 0
     orientation: 0 0 0 1
     scale: 1 1 1
@@ -60,7 +60,7 @@
     parentID: 2
   </HEADER>
   <TRANSFORM>
-    position: -13.5 0.707 -17.955
+    position: -13.5 -11.243 -17.955
     velocity: 0 0 0
     orientation: 0.0912529 0.192459 0.0245922 0.976741
     scale: 1 1 1
@@ -72,11 +72,11 @@
     shadowmapped: 1
     volumetrics: 1
     radius: 25
-    diffuse: 1 1 1
-    ambient: 0.297297 0.297297 0.297297
+    diffuse: 0.792875 0.103845 0.996139
+    ambient: 0 0 0
     constant: 0
-    linear: 0.09
-    quadratic: 0.032
+    linear: 0.01
+    quadratic: 0
     bias: 0.15
   </POINTLIGHT>
 </GAMEOBJECT>
@@ -89,15 +89,81 @@
     parentID: 2
   </HEADER>
   <TRANSFORM>
-    position: -9.80584 -1.9266 -18.0422
+    position: -13.306 -13.407 -8.892
     velocity: 0 0 0
-    orientation: 2.91434e-16 -5.12227e-09 -7.44469e-09 0.999999
+    orientation: -0.288796 0.197685 -0.461283 0.81409
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
-    script: LuaScripting/scripts/default
-    script: LuaScripting/scripts/default
-    script: LuaScripting/scripts/default
+    script: LuaScripting/scripts/spin
+  </SCRIPTS>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: tree
+    assigned name: tree
+    objectID: 5
+    parentID: 8
+  </HEADER>
+  <TRANSFORM>
+    position: 16.42 -1.24 -0.27
+    velocity: 0 0 0
+    orientation: 0 0 0 1
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+  </SCRIPTS>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: tree
+    assigned name: tree
+    objectID: 6
+    parentID: 8
+  </HEADER>
+  <TRANSFORM>
+    position: 6.5 -2.48 0
+    velocity: 0 0 0
+    orientation: 0 0 0 1
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+  </SCRIPTS>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: tree
+    assigned name: tree
+    objectID: 7
+    parentID: 8
+  </HEADER>
+  <TRANSFORM>
+    position: -5.13 -5.1 0
+    velocity: 0 0 0
+    orientation: 0 0 0 1
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+  </SCRIPTS>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: empty
+    assigned name: empty
+    objectID: 8
+    parentID: 1
+  </HEADER>
+  <TRANSFORM>
+    position: 6.5 -2.48 0
+    velocity: 0 0 0
+    orientation: 0 0 0 1
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
   </SCRIPTS>
 </GAMEOBJECT>
 

@@ -1,9 +1,7 @@
-
 #gameobject building
 #interactivity environmental
 #GameObjectType GAMEOBJECT_STATIC
 #geometry building.dae
 #collision building.obj
-
 #exit
 

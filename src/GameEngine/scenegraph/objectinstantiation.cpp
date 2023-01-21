@@ -55,6 +55,9 @@ void SceneGraph::newObjectInstance_lightsource(GameObject *objectptr)
     case (LIGHTSOURCE_POINT_LIGHT):
       objectptr->entity_components.givePointLightComponent(&this->pointlights[this->_num_pointlights]);
       this->pointlights[this->_num_pointlights].m_transform = objectptr->getTransform();
+
+      Render::ren.genDepthCubemap(&this->pointlights[this->_num_pointlights].FBO, &this->pointlights[this->_num_pointlights].depthCubemap);
+
       this->_num_pointlights += 1;
       break;
 

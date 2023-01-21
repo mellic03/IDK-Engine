@@ -6,17 +6,12 @@ layout (location = 1) out vec4 BrightColor;
 
 in vec2 TexCoords;
 
-// uniform float kernel[9];
-// float kernelDivisor = 1;
-// uniform float kernelOffsetDivisor;
 
 uniform sampler2D screenTexture;
 uniform sampler2D volumetricLightsTexture;
 uniform sampler2D emissionTexture;
 
 
-uniform float gamma;
-uniform float exposure;
 uniform float bloom_threshold;
 
 

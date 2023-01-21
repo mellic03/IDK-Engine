@@ -255,6 +255,7 @@ void draw_ui_dev2(Renderer *ren, Scene *scene, Player *player, int *x, int *y, i
     EngineUI::scriptBrowser();
     EngineUI::scriptEditor();
     EngineUI::details(scene);
+    EngineUI::debug(ren);
 
     draw_framebuffers(ren);
 

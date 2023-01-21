@@ -7,7 +7,6 @@
 
 #include "../transform.h"
 
-
 class Camera {
 
   private:
@@ -17,7 +16,6 @@ class Camera {
 
 
   public:
-
     Transform *m_transform;
 
     Camera(float near, float far);
@@ -40,7 +38,9 @@ class Camera {
     float *pitch = nullptr, *roll = nullptr, *yaw = nullptr;
     float rot_speed = 0.0003f;
 
+    float near = 1.0f, far = 10.0f;
     float fov = 90.0f;
+    float aspect = 1.0f;
 
     void init(void);
     void input();

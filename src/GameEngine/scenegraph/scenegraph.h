@@ -21,6 +21,7 @@ class SceneGraph {
     std::list<GameObject *>  _object_templates_by_type[GAMEOBJECT_NUM_TYPES];
     std::list<GameObject *>  _object_instances_by_type[GAMEOBJECT_NUM_TYPES];
     std::list<GameObject *>  _object_instances_by_type_instanced[GAMEOBJECT_NUM_TYPES];
+    std::list<GameObject *>  _visible_instances_by_type[GAMEOBJECT_NUM_TYPES];
     std::map<std::string, InstanceData> _instance_data;
 
 
@@ -31,11 +32,12 @@ class SceneGraph {
     std::list<GameObject>     m_object_templates;
     std::list<GameObject>     m_object_instances;
   
-    std::list<GameObject *>   m_dirlight_instances;
+    std::list<GameObject *>   m_dirlight_instances; 
     std::list<GameObject *>   m_spotlight_instances;
     std::list<GameObject *>   m_pointlight_instances;
 
     std::list<GameObject *>   m_selectable_instances;
+  
     GameObject *player_object;
 
 
@@ -95,12 +97,21 @@ class SceneGraph {
     //----------------------------------------------------------------------------
 
 
+    // Wee waa
+    //----------------------------------------------------------------------------
+    void cullObjects(Frustum *frustum);
+    //----------------------------------------------------------------------------
+
+
     void clearScene(void);
-    void sortLights(void);
+    void sortLights(Frustum *frustum);
 
     std::list<GameObject *> *getTemplatesByType(GameObjectType object_type);
+    
     std::list<GameObject *> *getInstancesByType(GameObjectType object_type);
-    std::list<GameObject *> *getInstancesByType(GameObjectType object_type, InstancingType instancing);
+    std::list<GameObject *> *getVisibleInstancesByType(GameObjectType object_type);
 
+    std::list<GameObject *> *getInstancesByType(GameObjectType object_type, InstancingType instancing);
+    std::list<GameObject *> *getVisibleInstancesByType(GameObjectType object_type, InstancingType instancing);
 };
 

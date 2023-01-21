@@ -57,6 +57,8 @@ class Scene {
     void physicsTick_actor_actor(void);
     void physicsTick(void);
 
+    void perFrameUpdate(void);
+
     void drawBackground();
     void drawTerrain();
     void drawStatic();

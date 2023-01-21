@@ -110,14 +110,14 @@ void Shader::mapUniformLocs(void)
 
 void Shader::setVec3(std::string uniform_name, glm::vec3 vec)
 {
-  GLCALL(  this->uniforms[uniform_name] = glGetUniformLocation(this->programID, uniform_name.c_str())  );
-  GLCALL(  glUniform3fv(this->uniforms[uniform_name], 1, glm::value_ptr(vec))  );
+  GLCALL( this->uniforms[uniform_name] = glGetUniformLocation(this->programID, uniform_name.c_str()) );
+  GLCALL( glUniform3fv(this->uniforms[uniform_name], 1, glm::value_ptr(vec)) );
 }
 
 void Shader::setMat4(std::string uniform_name, glm::mat4 mat)
 {
   GLCALL( this->uniforms[uniform_name] = glGetUniformLocation(this->programID, uniform_name.c_str()) );
-  GLCALL(glUniformMatrix4fv(this->uniforms[uniform_name], 1, GL_FALSE, glm::value_ptr(mat)));
+  GLCALL( glUniformMatrix4fv(this->uniforms[uniform_name], 1, GL_FALSE, glm::value_ptr(mat)) );
 }
 
 void Shader::setInt(std::string uniform_name, GLuint value)

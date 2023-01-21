@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.24)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
 set(CMAKE_BUILD_PARALLEL_LEVEL 8)
 
-set(COOM_DEBUG_MODE TRUE)
+set(COOM_DEBUG_MODE FALSE)
 
 
 
@@ -46,6 +46,7 @@ file(
   "src/*.cpp"
 
   "src/GraphicsEngine/*.cpp"
+  "src/GraphicsEngine/primitive/*.cpp"
   "src/GraphicsEngine/model/*.cpp"
   "src/GraphicsEngine/renderer/*.cpp"
   

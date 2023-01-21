@@ -24,10 +24,13 @@ namespace EngineUI {
 
   void dragVec3(std::string name, glm::vec3 *data, float min, float max, float speed, const char *format, float default_value);
 
+  void bitFlagCheckBox(const char *label, unsigned char flag, unsigned char *bits);
+
   void sceneHierarchy(Renderer *ren, Scene *scene);
   void properties(Scene *scene);
   void scriptBrowser(void);
   void scriptEditor(void);
   void details(Scene *scene);
+  void debug(Renderer *ren);
 
 };

@@ -38,13 +38,16 @@ void Renderer::compileShaders(void)
 
   this->createShader("screenquad",            SHADER_SCREENQUAD);
   this->createShader("volumetriclights",      SHADER_VOLUMETRIC_LIGHT);
-  this->createShader("blur",                  SHADER_BLUR_DOWNSAMPLE);
-  this->createShader("blur/blur_upsample",         SHADER_BLUR_UPSAMPLE);
+  this->createShader("blur/blur_downsample",  SHADER_BLUR_DOWNSAMPLE);
+  this->createShader("blur/blur_upsample",    SHADER_BLUR_UPSAMPLE);
   this->createShader("additive",              SHADER_ADDITIVE);
 
 
-  this->createShader("gbuffer_lighting",      SHADER_GBUFFER_LIGHTING);
+  this->createShader("gbuffer_lightingpass/gbuffer_lighting",      SHADER_GBUFFER_LIGHTING);
   this->createShader("fxaa",                  SHADER_FXAA);
+
+
+  this->createShader("debug/wireframe",       SHADER_WIREFRAME);
 
 
   // Shadows
@@ -62,8 +65,14 @@ void Renderer::compileShaders(void)
 
 void Renderer::init(void)
 {
-
   this->compileShaders();
+
+  // Load primitive models
+  //------------------------------------------------------
+  this->_primitives.sphere_primitive.model.loadDae("src/GraphicsEngine/renderer/primitives/", "sphere.dae", false);
+
+  //------------------------------------------------------
+
 
   // Generate screen quad
   //------------------------------------------------------
@@ -188,6 +197,10 @@ void Renderer::setupDirLightDepthmap(glm::vec3 dirlightpos, glm::vec3 dirlightdi
 void Renderer::perFrameUpdate(void)
 {
   this->cam.projection = glm::perspective(glm::radians(this->fov), (float)this->viewport_width/(float)this->viewport_height, this->near_plane, this->far_plane);
+  this->cam.aspect = (float)this->viewport_width/(float)this->viewport_height;
+  this->cam.near = this->near_plane;
+  this->cam.far = this->far_plane;
+  this->_frustum.update(&this->cam, this->cam.aspect , this->fov, this->cam.near, this->cam.far);
 
   for (int i=0; i<SHADER_NUM_SHADERS; i++)
   {
@@ -212,7 +225,6 @@ void Renderer::sendVolumetricData(void)
 
   this->active_shader->setInt("num_volumetric_pointlights", scenegraph->num_volumetric_pointlights);
   this->active_shader->setInt("num_shadow_pointlights", scenegraph->num_shadowmapped_volumetric_pointlights);
-
 
   for (int i=0; i<MAX_POINTLIGHTS; i++)
   {
@@ -708,13 +720,49 @@ void unbindTextureUnit(GLenum texture_unit)
 }
 
 
+void Renderer::drawPrimitive(PrimitiveType type, Model *model, Transform *transform)
+{
+  GLCALL( glDisable(GL_CULL_FACE) );
+
+  Transform localtransform;
+  glm::vec3 p = model->bounding_sphere_pos;
+  p = transform->getModelMatrix() * glm::vec4(p.x, p.y, p.z, 1.0f);
+  localtransform.position = p;
+  localtransform.scale = glm::vec3(model->bounding_sphere_radius);
+
+  this->active_shader->setMat4("model", localtransform.getModelMatrix());
+
+  Mesh *mesh = &this->_primitives.sphere_primitive.model.m_meshes[0];
+
+  glBindVertexArray(mesh->VAO);
+  for (size_t i=0; i<mesh->IBOS.size(); i++)
+  {
+    mesh->materials[i].diffuseMap.bind(  GL_TEXTURE0 );
+    mesh->materials[i].specularMap.bind( GL_TEXTURE1 );
+    mesh->materials[i].normalMap.bind(   GL_TEXTURE2 );
+    mesh->materials[i].emissionMap.bind( GL_TEXTURE3 );
+
+    this->active_shader->setFloat("material.spec_exponent", mesh->materials[i].spec_exponent);
+
+    GLCALL( glPolygonMode(GL_FRONT_AND_BACK, GL_LINE) );
+    GLCALL( glDrawArrays(GL_TRIANGLES, 0, mesh->vertices.size()) );
+    GLCALL( glPolygonMode(GL_FRONT_AND_BACK, GL_FILL) );
+
+  }
+  glBindVertexArray(0);
+
+
+  GLCALL( glEnable(GL_CULL_FACE) );
+}
+
+
 void Renderer::drawModel(Model *model, Transform *transform)
 {
   this->active_shader->setMat4("model", transform->getModelMatrix());
 
-  for (auto &mesh: model->m_meshes)
+  for (Mesh &mesh: model->m_meshes)
   {
-    glBindVertexArray(mesh.VAO);
+    GLCALL( glBindVertexArray(mesh.VAO) );
 
     for (size_t i=0; i<mesh.IBOS.size(); i++)
     {
@@ -734,7 +782,7 @@ void Renderer::drawModel(Model *model, Transform *transform)
       unbindTextureUnit(GL_TEXTURE3);
     }
  
-    glBindVertexArray(0);
+   GLCALL( glBindVertexArray(0) );
   }
 }
 

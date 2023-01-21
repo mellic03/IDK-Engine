@@ -4,12 +4,47 @@ bool Texture::load(std::string filepath, bool useSRGB)
 {
   stbi_set_flip_vertically_on_load(1);
   int width, height, bpp;
-  unsigned char *data = stbi_load(filepath.c_str(), &width, &height, &bpp, STBI_rgb_alpha);
+  
+
+  unsigned char *data;
+
+  // If file exists, load it.
+  // Otherwise, read the -xxxx.png and load the default version
+  //------------------------------------------------------------
+  std::ifstream stream(filepath);
+
+  if (stream.good())
+    data = stbi_load(filepath.c_str(), &width, &height, &bpp, STBI_rgb_alpha);
+
+  else
+  {
+    std::string temp_filepath = filepath;
+    size_t pos = temp_filepath.find("-");
+    
+    // Diffuse map missing
+    if (pos == std::string::npos)
+    {
+      data = stbi_load("src/GraphicsEngine/model/defaultimages/default.png", &width, &height, &bpp, STBI_rgb_alpha);
+    }
+
+    // -specular, -normal or -emission map missing
+    else
+    {
+      temp_filepath.erase(0, pos);
+      filepath = "src/GraphicsEngine/model/defaultimages/default" + temp_filepath;
+      // printf("New filepath: %s\n", filepath.c_str());
+      data = stbi_load("src/GraphicsEngine/model/defaultimages/default-specular.png", &width, &height, &bpp, STBI_rgb_alpha);
+    }
+  }
+  //------------------------------------------------------------
+
+
   if (!data)
   {
     printf("Error loading texture from \"%s\" --%s\n", filepath.c_str(), stbi_failure_reason());
     exit(1);
   }
+
 
   glGenTextures(1, &this->m_texture_obj);
   glBindTexture(GL_TEXTURE_2D, this->m_texture_obj);

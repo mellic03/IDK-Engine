@@ -19,7 +19,10 @@
 #include "../camera.h"
 #include "../lightsource.h"
 #include "../shader.h"
+#include "render_debug.h"
+#include "primitives/primitive.h"
 #include "instancedata.h"
+#include "../frustum.h"
 
 #define DEFAULT_SCREEN_WIDTH 1500
 #define DEFAULT_SCREEN_HEIGHT 900
@@ -31,9 +34,15 @@
 #define NUM_SPOTLIGHTS 2
 
 
+
+
+
 class Renderer {
   
   private:
+    RenderDebugData _debug_data;
+    Primitives _primitives;
+    Frustum _frustum;
 
     float quadVertices[30] = {
       -1.0f,  1.0f,  -0.999f,  0.0f,  1.0f,
@@ -46,7 +55,6 @@ class Renderer {
     };
 
     void createShader(std::string filename, ShaderType type);
-
 
   public:
 
@@ -125,7 +133,8 @@ class Renderer {
     Renderer() { };
 
     void init(void);
-
+    RenderDebugData *getDebugData()  { return &this->_debug_data; };
+    Frustum *getFrustum()            { return &this->_frustum; };
 
     void compileShaders(void);
     void useShader(ShaderType shader);
@@ -157,11 +166,15 @@ class Renderer {
     void resize(int x, int y);
 
 
-    void drawTerrain(Model *model, Transform *transform, float threshold, float epsilon);
-    void drawBillboard(Model *model, Transform *transform);
-    void drawLightSource(Model *model,Transform *transform, glm::vec3 diffuse);
-    void drawModel(Model *model, Transform *transform);
-    void drawModelInstanced(Model *model, InstanceData *instance_data);
+    void drawPrimitive(PrimitiveType type, Model *model, Transform *transform);
+
+    void drawTerrain          (Model *model,  Transform *transform, float threshold, float epsilon);
+    void drawBillboard        (Model *model,  Transform *transform);
+    void drawLightSource      (Model *model,  Transform *transform, glm::vec3 diffuse);
+    void drawModel            (Model *model,  Transform *transform);
+
+    void drawModelInstanced   (Model *model,  InstanceData *instance_data);
+
 };
 
 

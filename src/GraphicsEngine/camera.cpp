@@ -28,8 +28,8 @@ Camera::Camera(float near, float far)
 void Camera::init(void)
 {
 
-
 }
+
 
 void Camera::input()
 {

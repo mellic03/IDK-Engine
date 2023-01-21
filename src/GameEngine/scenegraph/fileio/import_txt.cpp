@@ -4,19 +4,11 @@
 
 void SceneGraph::objectFromFile(std::ifstream &stream, std::string &line, Player *player)
 {
-  int objectID = -1, parentID = -1;
   GameObject *object = nullptr;
-
-  size_t header_start, transform_start, scripts_start, pointlight_start;
 
   while (getline(stream, line))
   {
-    header_start = line.find("<HEADER>");
-    transform_start = line.find("<TRANSFORM>");
-    scripts_start = line.find("<SCRIPTS>");
-    pointlight_start = line.find("<POINTLIGHT>");
-
-    if (header_start != std::string::npos)
+    if (line.find("<HEADER>") != std::string::npos)
     {
       GameObjectHeader header = FileUtil::FromText::objectheader(stream, object);
       this->newObjectInstance(header.template_name);
@@ -31,14 +23,14 @@ void SceneGraph::objectFromFile(std::ifstream &stream, std::string &line, Player
       }
     }
 
-    else if (transform_start != std::string::npos)
+    else if (line.find("<TRANSFORM>") != std::string::npos)
       FileUtil::FromText::transform(stream, object->getTransform());
 
 
-    else if (scripts_start != std::string::npos)
+    else if (line.find("<SCRIPTS>") != std::string::npos)
       FileUtil::FromText::scripts(stream, object);
 
-    else if (pointlight_start != std::string::npos)
+    else if (line.find("<POINTLIGHT>") != std::string::npos)
     {
       FileUtil::FromText::pointlight(stream, object->entity_components.getComponent(COMPONENT_POINT_LIGHT)->pointlight);
     }

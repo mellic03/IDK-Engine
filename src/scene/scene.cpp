@@ -25,16 +25,8 @@ void Scene::clearColor(glm::vec3 color)
 }
 
 
-void Scene::sortLights(void)
-{
-  this->m_scenegraph->sortLights();
-}
-
-
 void Scene::sendLightsToShader(void)
 {
-  this->sortLights();
-
   this->ren->active_shader->setVec3( "clearColor", this->ren->clearColor);
   this->ren->active_shader->setFloat("fog_start", this->ren->fog_start);
   this->ren->active_shader->setFloat("fog_end", this->ren->fog_end);
@@ -308,6 +300,20 @@ void Scene::physicsTick(void)
 }
 
 
+
+void Scene::perFrameUpdate()
+{
+  this->physicsTick();
+
+
+  // Frustum culling
+  //------------------------------------------------------
+  this->m_scenegraph->cullObjects(this->ren->getFrustum());
+  this->m_scenegraph->sortLights(this->ren->getFrustum());
+  //------------------------------------------------------
+}
+
+
 void Scene::drawBackground()
 {
   this->ren->useShader(SHADER_BACKGROUND);
@@ -334,20 +340,16 @@ void Scene::drawBackground()
 
 void Scene::drawGeometry()
 {
-  std::list<GameObject *> *terrain_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_TERRAIN);
-  for (auto &terrain: *terrain_list)
+  for (auto &terrain: *this->m_scenegraph->getInstancesByType(GAMEOBJECT_TERRAIN))
     this->ren->drawModel(terrain->m_model, terrain->getTransform());
    
-  std::list<GameObject *> *static_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_STATIC);
-  for (auto &staticobj: *static_list)
+  for (auto &staticobj: *this->m_scenegraph->getInstancesByType(GAMEOBJECT_STATIC))
     this->ren->drawModel(staticobj->m_model, staticobj->getTransform());
 
-  std::list<GameObject *> *actor_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_ACTOR);
-  for (auto &actor: *actor_list)
+  for (auto &actor: *this->m_scenegraph->getInstancesByType(GAMEOBJECT_ACTOR))
     this->ren->drawModel(actor->m_model, actor->getTransform());
 
-  std::list<GameObject *> *billboard_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_BILLBOARD, INSTANCING_OFF);
-  for (auto &actor: *billboard_list)
+  for (auto &actor: *this->m_scenegraph->getInstancesByType(GAMEOBJECT_BILLBOARD, INSTANCING_OFF))
     this->ren->drawModel(actor->m_model, actor->getTransform());
 }
 
@@ -359,12 +361,35 @@ void Scene::drawGeometry_batched()
   this->drawActors();
   this->drawLightsources();
 
-
   
   GLCALL( glDisable(GL_CULL_FACE) );
   this->drawBillboards();
   this->drawBillboardsInstanced();
   GLCALL( glEnable(GL_CULL_FACE) );
+
+
+  if (this->ren->getDebugData()->getDebugFlag(RenderDebugFlag::DrawBoundingSpheres))
+  {
+    this->ren->useShader(SHADER_WIREFRAME);
+
+    this->ren->active_shader->setMat4("projection", this->ren->cam.projection);
+    this->ren->active_shader->setMat4("view", this->ren->cam.view);
+
+    for (GameObject obj: this->m_scenegraph->m_object_instances)
+    {
+      if (obj.m_model == nullptr)
+        continue;
+
+      glm::vec3 p = obj.m_model->bounding_sphere_pos;
+      p = obj.getTransform()->getModelMatrix() * glm::vec4(p.x, p.y, p.z, 1.0f);
+
+      if (this->ren->getFrustum()->visible(p, obj.m_model->bounding_sphere_radius) == false)
+        continue;
+
+      this->ren->drawPrimitive(PRIMITIVE_SPHERE, obj.m_model, obj.getTransform());
+    }
+  }
+
 }
 
 
@@ -372,11 +397,9 @@ void Scene::drawTerrain()
 {
   ren->useShader(SHADER_TERRAIN);
 
-  std::list<GameObject *> *terrain_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_TERRAIN);
+  std::list<GameObject *> *terrain_list = this->m_scenegraph->getVisibleInstancesByType(GAMEOBJECT_TERRAIN);
   for (auto &obj: *terrain_list)
   {
-    // TerrainComponent tc = obj->terrain_components[0].terrain_component;
-    // this->ren->drawTerrain(obj->m_model, obj->getTransform(), tc.threshold, tc.epsilon);
     this->ren->drawTerrain(obj->m_model, obj->getTransform(), 0.5f, 0.5f);
   }
 }
@@ -386,7 +409,7 @@ void Scene::drawStatic()
 {
   ren->useShader(SHADER_ACTOR);
 
-  std::list<GameObject *> *static_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_STATIC);
+  std::list<GameObject *> *static_list = this->m_scenegraph->getVisibleInstancesByType(GAMEOBJECT_STATIC);
   for (auto &obj: *static_list)
   {
     this->ren->drawModel(obj->m_model, obj->getTransform());
@@ -397,7 +420,7 @@ void Scene::drawStatic()
 void Scene::drawBillboards()
 {
   ren->useShader(SHADER_BILLBOARD_FIXED);
-  std::list<GameObject *> *billboard_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_BILLBOARD, INSTANCING_OFF);
+  std::list<GameObject *> *billboard_list = this->m_scenegraph->getVisibleInstancesByType(GAMEOBJECT_BILLBOARD, INSTANCING_OFF);
   for (auto &obj: *billboard_list)
   {
     this->ren->drawBillboard(obj->m_model, obj->getTransform());
@@ -409,12 +432,10 @@ void Scene::drawBillboardsInstanced()
 {
   ren->useShader(SHADER_BILLBOARD_FOLLOW);
 
-
   glm::mat4 view_noTranslate = this->ren->cam.view;
   view_noTranslate[3] = glm::vec4(0.0f, 0.0f, 0.f, 1.0f);
   this->ren->active_shader->setMat4("view_noTranslate", view_noTranslate);
   this->ren->active_shader->setInt("diffuseMap", 0);
-
 
   std::map<std::string, InstanceData> *map = this->m_scenegraph->getInstanceData();
   for (auto it = map->begin(); it != map->end(); ++it)
@@ -435,7 +456,7 @@ void Scene::drawActors()
   this->ren->active_shader->setInt("material.normalMap", 2);
   this->ren->active_shader->setInt("material.emissionMap", 3);
 
-  std::list<GameObject *> *actor_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_ACTOR);
+  std::list<GameObject *> *actor_list = this->m_scenegraph->getVisibleInstancesByType(GAMEOBJECT_ACTOR);
   for (auto &obj: *actor_list)
   {
     this->ren->active_shader->setVec3("emission", obj->emission);
@@ -452,10 +473,9 @@ void Scene::drawLightsources()
 {
   ren->useShader(SHADER_LIGHTSOURCE);
 
-  std::list<GameObject *> *lightsource_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_LIGHTSOURCE);
+  std::list<GameObject *> *lightsource_list = this->m_scenegraph->getVisibleInstancesByType(GAMEOBJECT_LIGHTSOURCE);
   for (GameObject *obj: *lightsource_list)
   {
-    // this->ren->drawLightSource(obj->m_model, obj->getTransform(), *obj->lightsource_components[0].diffuse);
     this->ren->drawLightSource(obj->m_model, obj->getTransform(), glm::vec3(1.0f));
   }
 }

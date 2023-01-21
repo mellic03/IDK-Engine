@@ -144,6 +144,8 @@ int ENTRY(int argc, const char **argv)
 
     ///////////////////////////////////////////////////////////////////////////////////////////// Render start
 
+    scene->perFrameUpdate();
+
 
     // Render depthmaps
     //---------------------------------
@@ -151,9 +153,6 @@ int ENTRY(int argc, const char **argv)
     scene->drawDepthmaps();
     GLCALL(glDisable(GL_DEPTH_CLAMP));
     //---------------------------------
-
-
-    scene->physicsTick();
 
 
     // G-Buffer geometry pass
@@ -165,6 +164,7 @@ int ENTRY(int argc, const char **argv)
     scene->drawBackground();
     scene->drawGeometry_batched();
     //---------------------------------
+
 
 
     // G-Buffer lighting pass

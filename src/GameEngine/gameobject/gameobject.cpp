@@ -342,8 +342,10 @@ void GameObject::collideWithObject(GameObject *object)
   if (this->getPhysState() == PHYSICS_NONE)
     return;
 
-  glm::vec3 sphere_pos = object->getTransform()->getPos_worldspace();
-  if (glm::distance2(this->getTransform()->getPos_worldspace(), sphere_pos) > object->m_collision_mesh.bounding_sphere_radiusSQ)
+  glm::vec3 p = object->m_model->bounding_sphere_pos;
+  p = object->getTransform()->getModelMatrix() * glm::vec4(p.x, p.y, p.z, 1.0f);
+
+  if (glm::distance2(this->getTransform()->getPos_worldspace(), p) > object->m_model->bounding_sphere_radiusSQ)
     return;
 
 

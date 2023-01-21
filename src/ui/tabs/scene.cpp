@@ -26,11 +26,12 @@ static void draw_new_instance_menu(SceneGraph *scenegraph, int *selected_instanc
     ImGui::Text("New Instance");
     ImGui::Separator();
 
-    draw_submenu("Terrain Objects",       scenegraph, selected_instance, scenegraph->getTemplatesByType(GAMEOBJECT_TERRAIN));
-    draw_submenu("Static Objects",        scenegraph, selected_instance, scenegraph->getTemplatesByType(GAMEOBJECT_STATIC));
-    draw_submenu("Billboard Objects",     scenegraph, selected_instance, scenegraph->getTemplatesByType(GAMEOBJECT_BILLBOARD));
-    draw_submenu("Actor Objects",         scenegraph, selected_instance, scenegraph->getTemplatesByType(GAMEOBJECT_ACTOR));
-    draw_submenu("Lightsource Objects",   scenegraph, selected_instance, scenegraph->getTemplatesByType(GAMEOBJECT_LIGHTSOURCE));
+    draw_submenu("Terrain",       scenegraph, selected_instance, scenegraph->getTemplatesByType(GAMEOBJECT_TERRAIN));
+    draw_submenu("Static",        scenegraph, selected_instance, scenegraph->getTemplatesByType(GAMEOBJECT_STATIC));
+    draw_submenu("Billboard",     scenegraph, selected_instance, scenegraph->getTemplatesByType(GAMEOBJECT_BILLBOARD));
+    draw_submenu("Actor",         scenegraph, selected_instance, scenegraph->getTemplatesByType(GAMEOBJECT_ACTOR));
+    draw_submenu("Lightsource",   scenegraph, selected_instance, scenegraph->getTemplatesByType(GAMEOBJECT_LIGHTSOURCE));
+    draw_submenu("Misc",          scenegraph, selected_instance, scenegraph->getTemplatesByType(GAMEOBJECT_EMPTY));
 
     ImGui::EndPopup();
   }

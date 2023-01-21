@@ -2,12 +2,20 @@
 
 void CollisionMesh::computeBoundingSphere(void)
 {
-  for (auto &vertex: this->m_vertices)
-  {
-    float distSQ = glm::distance2(glm::vec3(0.0f), vertex.position);
-    if (distSQ > this->bounding_sphere_radiusSQ)
-      this->bounding_sphere_radiusSQ = distSQ;
-  }
+  // glm::vec3 total = glm::vec3(0.0f);
+  // for (auto &vertex: this->m_vertices)
+  //   total += vertex.position;
+
+  // glm::vec3 avg = total / (float)this->m_vertices.size();
+  // this->bounding_sphere_pos = avg;
+
+
+  // for (auto &vertex: this->m_vertices)
+  // {
+  //   float distSQ = glm::distance2(avg, vertex.position);
+  //   if (distSQ > this->bounding_sphere_radiusSQ)
+  //     this->bounding_sphere_radiusSQ = distSQ;
+  // }
 }
 
 

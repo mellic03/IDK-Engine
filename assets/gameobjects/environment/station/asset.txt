@@ -1,0 +1,8 @@
+
+#gameobject station
+#GameObjectType GAMEOBJECT_STATIC
+#geometry station.dae
+#collision station.obj
+
+#exit
+

@@ -393,6 +393,69 @@ int Model::colladaImageIndex(std::string dae_id)
 }
 
 
+void Model::computeBoundingSphere(void)
+{
+  // Find the two vertices which are furthest from each other,
+  // the initial bounding sphere center is their midpoint and
+  // the radius is the distance between them divided by two.
+  float max_dist_sq = 0.0f;
+  glm::vec3 max_dist_v1 = glm::vec3(0.0f);
+  glm::vec3 max_dist_v2 = glm::vec3(0.0f);
+
+  for (Mesh mesh: this->m_meshes)
+  {
+    for (auto &v1: mesh.vertices)
+    {
+      for (auto &v2: mesh.vertices)
+      {
+        float distSQ = glm::distance2(v1.position, v2.position);
+        if (distSQ > max_dist_sq)
+        {
+          max_dist_sq = distSQ;
+          max_dist_v1 = v1.position;
+          max_dist_v2 = v2.position;
+        }
+      }
+    }
+  }
+
+  
+  this->bounding_sphere_pos = (max_dist_v1 + max_dist_v2) / 2.0f;
+  this->bounding_sphere_radiusSQ = (sqrt(max_dist_sq) / 2.0f) * (sqrt(max_dist_sq) / 2.0f);
+
+
+  // Loop over vertices again, if any are outside the sphere,
+  // increase the sphere size by the amount the vertex is outside
+  for (Mesh mesh: this->m_meshes)
+  {
+    for (auto &v: mesh.vertices)
+    {
+      float dist = glm::distance2(v.position, this->bounding_sphere_pos);
+      
+      if (dist > this->bounding_sphere_radiusSQ)
+        this->bounding_sphere_radiusSQ += (dist - bounding_sphere_radiusSQ);
+    }
+  }
+
+  this->bounding_sphere_radius = sqrt(this->bounding_sphere_radiusSQ);
+}
+
+void Model::loadBoundingSphere(std::ifstream &stream)
+{
+  std::string line;
+
+  getline(stream, line);
+  std::istringstream input(line);
+  for (int i=0; i<3; i++)
+    input >> this->bounding_sphere_pos[i];
+
+  getline(stream, line);
+  this->bounding_sphere_radius = std::stof(line);
+
+  this->bounding_sphere_radiusSQ = this->bounding_sphere_radius * this->bounding_sphere_radius;
+}
+
+
 void Model::loadDae(std::string directory, std::string filename, bool is_terrain)
 {
   std::ifstream fh;
@@ -458,6 +521,23 @@ void Model::loadDae(std::string directory, std::string filename, bool is_terrain
 
   this->constructMeshes(&doc);
   this->applyMeshTransforms(&doc);
+
+
+  std::ifstream istream(directory + "boundingsphere.txt");
+  if (istream.good())
+    this->loadBoundingSphere(istream);
+
+  else
+  {
+    this->computeBoundingSphere();
+    std::ofstream ostream(directory + "boundingsphere.txt");
+    ostream << this->bounding_sphere_pos.x << " " << this->bounding_sphere_pos.y << " " << this->bounding_sphere_pos.z << "\n";
+    ostream << this->bounding_sphere_radius << std::endl;
+    ostream.close();
+  }
+
+  istream.close();
+
 
   for (auto &mesh: this->m_meshes)
     mesh.setBufferData();

@@ -51,3 +51,16 @@ void EngineUI::dragVec3(std::string name, glm::vec3 *data, float min, float max,
   ImGui::PopStyleVar();
 }
 
+
+void EngineUI::bitFlagCheckBox(const char *label, unsigned char flag, unsigned char *bits)
+{
+  bool active = flag & *bits;
+
+  ImGui::Checkbox(label, &active);
+
+  if (active)
+    *bits = (flag | *bits);
+  else
+    *bits = (~flag & *bits);
+
+}

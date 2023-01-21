@@ -16,6 +16,7 @@ function CE_GameObject_AddRot(objectID, x, y, z) end;
 
 -- luaLibrary_lighting
 -----------------------------------------------
+function CE_Lighting_SetBloomMinResolution(resolution) end;
 function CE_Lighting_SetBloomThreshold(threshold) end;
 function CE_Lighting_SetBloomStrength(strength) end;
 -----------------------------------------------
