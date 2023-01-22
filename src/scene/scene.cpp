@@ -290,8 +290,10 @@ void Scene::physicsTick(void)
   for (auto &staticobj: *static_list)
     this->m_scenegraph->player_object->collideWithObject(staticobj);
 
+
   this->physicsTick_actor_terrain();
   this->physicsTick_actor_actor();
+  
 
   for (auto &obj: this->m_scenegraph->m_object_instances)
   {
@@ -341,17 +343,17 @@ void Scene::drawBackground()
 
 void Scene::drawGeometry()
 {
-  for (auto &terrain: *this->m_scenegraph->getInstancesByType(GAMEOBJECT_TERRAIN))
-    this->ren->drawModel(terrain->m_model, terrain->getTransform());
+  for (auto &object: *this->m_scenegraph->getInstancesByType(GAMEOBJECT_TERRAIN))
+    this->ren->drawModel(object->m_model, object->getTransform());
    
-  for (auto &staticobj: *this->m_scenegraph->getInstancesByType(GAMEOBJECT_STATIC))
-    this->ren->drawModel(staticobj->m_model, staticobj->getTransform());
+  for (auto &object: *this->m_scenegraph->getInstancesByType(GAMEOBJECT_STATIC))
+    this->ren->drawModel(object->m_model, object->getTransform());
 
-  for (auto &actor: *this->m_scenegraph->getInstancesByType(GAMEOBJECT_ACTOR))
-    this->ren->drawModel(actor->m_model, actor->getTransform());
+  for (auto &object: *this->m_scenegraph->getInstancesByType(GAMEOBJECT_ACTOR))
+    this->ren->drawModel(object->m_model, object->getTransform());
 
-  for (auto &actor: *this->m_scenegraph->getInstancesByType(GAMEOBJECT_BILLBOARD, INSTANCING_OFF))
-    this->ren->drawModel(actor->m_model, actor->getTransform());
+  for (auto &object: *this->m_scenegraph->getInstancesByType(GAMEOBJECT_BILLBOARD, INSTANCING_OFF))
+    this->ren->drawModel(object->m_model, object->getTransform());
 }
 
 
@@ -376,23 +378,15 @@ void Scene::drawGeometry_batched()
     this->ren->active_shader->setMat4("projection", this->ren->cam.projection);
     this->ren->active_shader->setMat4("view", this->ren->cam.view);
 
-    for (GameObject obj: this->m_scenegraph->m_object_instances)
-    {
-      if (obj.m_model == nullptr)
-        continue;
 
-      glm::vec3 p = obj.m_model->bounding_sphere_pos;
-      p = obj.getTransform()->getModelMatrix() * glm::vec4(p.x, p.y, p.z, 1.0f);
+    for (GameObject *obj: *this->m_scenegraph->getVisibleInstancesByType(GAMEOBJECT_TERRAIN))
+      this->ren->drawPrimitive(PRIMITIVE_SPHERE, obj->m_model, obj->getTransform());
 
-      if (this->ren->getFrustum()->visible(p, obj.m_model->bounding_sphere_radius) == false)
-        continue;
+     for (GameObject *obj: *this->m_scenegraph->getVisibleInstancesByType(GAMEOBJECT_STATIC))
+      this->ren->drawPrimitive(PRIMITIVE_SPHERE, obj->m_model, obj->getTransform());   
 
-      if (obj.getObjectType() == GAMEOBJECT_LIGHTSOURCE)
-        obj.m_model->bounding_sphere_radius = obj.entity_components.getComponent(COMPONENT_POINT_LIGHT)->pointlight->radius;
-
-      this->ren->drawPrimitive(PRIMITIVE_SPHERE, obj.m_model, obj.getTransform());
-
-    }
+    for (GameObject *obj: *this->m_scenegraph->getVisibleInstancesByType(GAMEOBJECT_ACTOR))
+      this->ren->drawPrimitive(PRIMITIVE_SPHERE, obj->m_model, obj->getTransform());
   }
 
 }
@@ -402,12 +396,10 @@ void Scene::drawTerrain()
 {
   ren->useShader(SHADER_TERRAIN);
 
-  std::list<GameObject *> *terrain_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_TERRAIN);
-  for (auto &obj: *terrain_list)
+  for (auto &obj: *this->m_scenegraph->getInstancesByType(GAMEOBJECT_TERRAIN))
   {
-    if (obj->in_frustum == false)
-      continue;
-    this->ren->drawTerrain(obj->m_model, obj->getTransform(), 0.5f, 0.5f);
+    EntityComponent *tc = obj->entity_components.getComponent(COMPONENT_TERRAIN);
+    this->ren->drawTerrain(obj->m_model, obj->getTransform(), tc->threshold, tc->epsilon);
   }
 }
 
@@ -416,26 +408,17 @@ void Scene::drawStatic()
 {
   ren->useShader(SHADER_ACTOR);
 
-  std::list<GameObject *> *static_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_STATIC);
-  for (auto &obj: *static_list)
-  {
-    if (obj->in_frustum == false)
-      continue;
+  for (auto &obj: *this->m_scenegraph->getInstancesByType(GAMEOBJECT_STATIC))
     this->ren->drawModel(obj->m_model, obj->getTransform());
-  }
 }
 
 
 void Scene::drawBillboards()
 {
   ren->useShader(SHADER_BILLBOARD_FIXED);
-  std::list<GameObject *> *billboard_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_BILLBOARD, INSTANCING_OFF);
-  for (auto &obj: *billboard_list)
-  {
-    if (obj->in_frustum == false)
-      continue;
+  
+  for (auto &obj: *this->m_scenegraph->getVisibleInstancesByType(GAMEOBJECT_BILLBOARD, INSTANCING_OFF))
     this->ren->drawBillboard(obj->m_model, obj->getTransform());
-  }
 }
 
 
@@ -467,17 +450,14 @@ void Scene::drawActors()
   this->ren->active_shader->setInt("material.normalMap", 2);
   this->ren->active_shader->setInt("material.emissionMap", 3);
 
-  std::list<GameObject *> *actor_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_ACTOR);
-  for (auto &obj: *actor_list)
+  for (auto &obj: *this->m_scenegraph->getInstancesByType(GAMEOBJECT_ACTOR))
   {
-    if (obj->in_frustum == false)
-      continue;
-
     this->ren->active_shader->setVec3("emission", obj->emission);
     this->ren->active_shader->setFloat("emission_scale", obj->emission_scale);
 
     this->ren->drawModel(obj->m_model, obj->getTransform());
   }
+
   this->ren->active_shader->setVec3("emission", glm::vec3(0.0f));
   this->ren->active_shader->setFloat("emission_scale", 0.0f);
 }
@@ -487,14 +467,8 @@ void Scene::drawLightsources()
 {
   ren->useShader(SHADER_LIGHTSOURCE);
 
-  std::list<GameObject *> *lightsource_list = this->m_scenegraph->getInstancesByType(GAMEOBJECT_LIGHTSOURCE);
-  for (GameObject *obj: *lightsource_list)
-  {
-    if (obj->in_frustum == false)
-      continue;
-
+  for (GameObject *obj: *this->m_scenegraph->getVisibleInstancesByType(GAMEOBJECT_LIGHTSOURCE))
     this->ren->drawLightSource(obj->m_model, obj->getTransform(), glm::vec3(1.0f));
-  }
 }
 
 

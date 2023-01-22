@@ -88,12 +88,20 @@ void SceneGraph::newObjectInstance(std::string object_name, Transform transform)
     return;
 
 
+  if (templateptr->data.instancing_type == INSTANCING_ON)
+  {
+    Transform *t = new Transform();
+    t->position = transform.position;
+    this->addInstanceData(templateptr->getTemplateName(), templateptr->m_model, t);
+    return;
+  }
+
+
   GameObject newobj = *templateptr;
   newobj.m_parent = nullptr;
   *newobj.getTransform() = transform;
   newobj.setName(object_name);
   newobj.setID(this->m_object_instances.size());
-  // newobj.transform_components.push_back(EntityComponent(COMPONENT_TRANSFORM));
   this->m_object_instances.push_back(newobj);
 
 
@@ -101,12 +109,9 @@ void SceneGraph::newObjectInstance(std::string object_name, Transform transform)
   GameObjectType object_type = objectptr->getObjectType();
 
 
-  if (objectptr->data.instancing_type == INSTANCING_OFF)
-    this->_object_instances_by_type[object_type].push_back(objectptr);
-  else
-    this->_object_instances_by_type_instanced[object_type].push_back(objectptr);
-
+  this->_object_instances_by_type[object_type].push_back(objectptr);
   this->m_selectable_instances.push_back(objectptr);
+  
 
   objectptr->entity_components.giveComponent(COMPONENT_TRANSFORM);
 

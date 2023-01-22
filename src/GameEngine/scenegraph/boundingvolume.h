@@ -1,5 +1,7 @@
 #pragma once
 
+#include <list>
+
 #include "../gameobject/gameobject.h"
 
 
@@ -18,6 +20,11 @@ struct BVNode {
   GameObject *objectptr = nullptr;
   BVNode *left = nullptr, *right = nullptr;
 
+  BVNode *inside  = nullptr;
+  BVNode *overlap = nullptr;
+  BVNode *sibling = nullptr;
+
+
   BVNode() { };
   BVNode(GameObject *objectptr) { this->objectptr = objectptr; };
 };
@@ -33,8 +40,16 @@ class BVTree {
     
     BVTree() { };
 
+    BVNode *getRootNode() { return this->root; };
+
     void clearTree();
     void insert(GameObject *objectptr);
+    void cullObjects(Frustum *frustum, std::list<GameObject *> visible_objects[]);
+    
+    
+    void getPotentialColliders(GameObject *object, std::list<GameObject *> *potential_colliders);
+
+    void print();
 
 
 

@@ -2,7 +2,7 @@
 #gameobject wall
 #interactivity terrain
 #GameObjectType GAMEOBJECT_TERRAIN
-#geometry wall.dae
+#geometry untitled.dae
 #collision collision.obj
 #physics PHYSICS_NONE
 #exit

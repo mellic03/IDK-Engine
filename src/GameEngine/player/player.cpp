@@ -150,10 +150,22 @@ void Player::mouse_input(Renderer *ren, SDL_Event *event)
 
   if (event->type == SDL_MOUSEMOTION && SDL_GetRelativeMouseMode())
   {
-    glm::quat dpitch = glm::angleAxis(-this->cam->rot_speed * event->motion.yrel, glm::vec3(1.0f, 0.0f, 0.0f));
-    glm::quat dyaw   = glm::angleAxis(-this->cam->rot_speed * event->motion.xrel, glm::vec3(0.0f, 1.0f, 0.0f));
+    float deltaPitch = -this->cam->rot_speed * event->motion.yrel;
+    
+    glm::quat dpitch;
+    glm::quat dyaw = glm::angleAxis(-this->cam->rot_speed * event->motion.xrel, glm::vec3(0.0f, 1.0f, 0.0f));
 
-    this->getTransform()->orientation = dyaw * this->getTransform()->orientation * dpitch;
+    if (this->pitch + deltaPitch < -0.57 || this->pitch + deltaPitch > 1.57)
+      dpitch = glm::angleAxis(0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+
+    else
+    {
+      this->pitch += deltaPitch;
+      dpitch = glm::angleAxis(deltaPitch, glm::vec3(1.0f, 0.0f, 0.0f));
+    }
+
+  
+    this->getTransform()->orientation = glm::normalize(dyaw * this->getTransform()->orientation * dpitch);
   }
 
   else if (event->type == SDL_KEYDOWN)

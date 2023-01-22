@@ -9,9 +9,9 @@
     parentID: -1
   </HEADER>
   <TRANSFORM>
-    position: -10.1267 -13.55 -19.4645
-    velocity: -3.44396e-09 0 -7.50028e-08
-    orientation: 0.0124796 -0.977644 -0.0613672 -0.198745
+    position: -22.7499 15.3225 43.0317
+    velocity: -0.656436 0 2.228
+    orientation: 0.235276 0.479128 0.135154 -0.834101
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
@@ -60,7 +60,7 @@
     parentID: 2
   </HEADER>
   <TRANSFORM>
-    position: -13.5 -11.243 -17.955
+    position: -13.5 -13.073 -17.955
     velocity: 0 0 0
     orientation: 0.0912529 0.192459 0.0245922 0.976741
     scale: 1 1 1
@@ -69,9 +69,9 @@
   </SCRIPTS>
   <POINTLIGHT>
     active: 1
-    shadowmapped: 1
-    volumetrics: 1
-    radius: 25
+    shadowmapped: 0
+    volumetrics: 0
+    radius: 8.5
     diffuse: 0.792875 0.103845 0.996139
     ambient: 0 0 0
     constant: 0
@@ -89,9 +89,9 @@
     parentID: 2
   </HEADER>
   <TRANSFORM>
-    position: -13.306 -13.407 -8.892
+    position: -13.466 -13.19 -12.552
     velocity: 0 0 0
-    orientation: -0.288796 0.197685 -0.461283 0.81409
+    orientation: -0.456392 0.52368 -0.295051 0.653247
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
@@ -159,6 +159,74 @@
   </HEADER>
   <TRANSFORM>
     position: 6.5 -2.48 0
+    velocity: 0 0 0
+    orientation: 0 0 0 1
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+  </SCRIPTS>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: building3
+    assigned name: building3
+    objectID: 9
+    parentID: -1
+  </HEADER>
+  <TRANSFORM>
+    position: 0.9 0 43.21
+    velocity: 0 0 0
+    orientation: 0 -0.700262 0 0.713887
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+  </SCRIPTS>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: muscleskele
+    assigned name: muscleskele
+    objectID: 10
+    parentID: 9
+  </HEADER>
+  <TRANSFORM>
+    position: 0.76841 1.39 36.3813
+    velocity: 0 0 0
+    orientation: 0 0.414693 0 0.909962
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+  </SCRIPTS>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: lightsaber
+    assigned name: lightsaber
+    objectID: 11
+    parentID: 9
+  </HEADER>
+  <TRANSFORM>
+    position: -6.80771 0.02 45.999
+    velocity: 0.03 0 0
+    orientation: 0 0 0 1
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+  </SCRIPTS>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: cube
+    assigned name: cube
+    objectID: 12
+    parentID: 9
+  </HEADER>
+  <TRANSFORM>
+    position: -3.02612 1.42 50.1969
     velocity: 0 0 0
     orientation: 0 0 0 1
     scale: 1 1 1

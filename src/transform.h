@@ -7,6 +7,13 @@
 #include "include/glm/gtx/quaternion.hpp"
 
 #include <stdio.h>
+#include <iostream>
+
+std::ostream& operator<<(std::ostream& os, const glm::vec3& vec);
+
+
+
+
 
 struct Transform {
 
@@ -18,6 +25,7 @@ struct Transform {
   glm::vec3 velocity = glm::vec3(0.0f, 0.0f, 0.0f);
   glm::quat orientation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
   glm::vec3 scale = glm::vec3(1.0f);
+  glm::mat4 model_mat = glm::mat4(1.0f);
 
   // Member access
   //-------------------------------------------------------------------------------------------------------------
@@ -32,7 +40,7 @@ struct Transform {
 
   glm::mat4 getOrientation_mat4(void)
   {
-    return this->getModelMatrix();
+    return glm::mat4_cast(this->orientation);
   };
 
   void addRot(glm::vec3 rot)
@@ -52,10 +60,20 @@ struct Transform {
     glm::mat4 model = glm::translate(glm::mat4(1.0f), this->position) * glm::mat4_cast(this->orientation);
 
     if (this->parent != nullptr)
-      return this->parent->getModelMatrix() * glm::scale(model, this->scale);
+    {
+      this->model_mat = this->parent->getModelMatrix() * glm::scale(model, this->scale);
+      return this->model_mat;
+    }
 
-    return glm::scale(model, this->scale);
+    this->model_mat = glm::scale(model, this->scale);
+    return this->model_mat;
   };
+
+
+  glm::mat4 getModelMatrix_stale(void)
+  {
+    return this->model_mat;
+  }
 
   /** Return the model matrix without applying local translation/rotation.
    *  Essentially returns the model matrix of the parent.

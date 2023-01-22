@@ -200,7 +200,7 @@ void Renderer::perFrameUpdate(void)
   this->cam.aspect = (float)this->viewport_width/(float)this->viewport_height;
   this->cam.near = this->near_plane;
   this->cam.far = this->far_plane;
-  this->_frustum.update(&this->cam, this->cam.aspect , this->fov, this->cam.near, this->cam.far);
+  this->_frustum.update(&this->cam, this->cam.aspect, glm::radians(this->fov), this->near_plane, this->far_plane);
 
   for (int i=0; i<SHADER_NUM_SHADERS; i++)
   {
@@ -408,8 +408,6 @@ void Renderer::blurTexture(GLuint input_texture, GLuint output_framebuffer)
     glDrawArrays(GL_TRIANGLES, 0, 6);
   }
   // --------------------------------------------------------------------------
-
-
 
   glBindVertexArray(0);
   GLCALL( glEnable(GL_DEPTH_TEST); );
@@ -719,10 +717,6 @@ void unbindTextureUnit(GLenum texture_unit)
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Renderer::drawPrimitive_withRadius(PrimitiveType type, Model *model, Transform *transform, float radius)
-{
-  
-} 
 
 
 void Renderer::drawPrimitive(PrimitiveType type, Model *model, Transform *transform)
@@ -763,7 +757,7 @@ void Renderer::drawPrimitive(PrimitiveType type, Model *model, Transform *transf
 
 void Renderer::drawModel(Model *model, Transform *transform)
 {
-  this->active_shader->setMat4("model", transform->getModelMatrix());
+  this->active_shader->setMat4("model", transform->getModelMatrix_stale());
 
   for (Mesh &mesh: model->m_meshes)
   {
@@ -794,7 +788,7 @@ void Renderer::drawModel(Model *model, Transform *transform)
 
 void Renderer::drawLightSource(Model *model, Transform *transform, glm::vec3 diffuse)
 {
-  this->active_shader->setMat4("model", transform->getModelMatrix());
+  this->active_shader->setMat4("model", transform->getModelMatrix_stale());
 
   for (auto &mesh: model->m_meshes)
   {
@@ -815,7 +809,7 @@ void Renderer::drawLightSource(Model *model, Transform *transform, glm::vec3 dif
 
 void Renderer::drawTerrain(Model *model, Transform *transform, float threshold, float epsilon)
 {
-  this->active_shader->setMat4("model", transform->getModelMatrix());
+  this->active_shader->setMat4("model", transform->getModelMatrix_stale());
 
   this->active_shader->setFloat("threshold", threshold);
   this->active_shader->setFloat("epsilon",   epsilon);
@@ -871,7 +865,7 @@ void Renderer::drawTerrain(Model *model, Transform *transform, float threshold, 
 
 void Renderer::drawBillboard(Model *model, Transform *transform)
 {
-  this->active_shader->setMat4("model", transform->getModelMatrix());
+  this->active_shader->setMat4("model", transform->getModelMatrix_stale());
 
   GLCALL( glActiveTexture(GL_TEXTURE0) );
   this->active_shader->setInt("diffuseMap", 0);
@@ -882,7 +876,7 @@ void Renderer::drawBillboard(Model *model, Transform *transform)
 
     for (size_t i=0; i<mesh.IBOS.size(); i++)
     {
-      glBindTexture(GL_TEXTURE_2D, mesh.materials[i].diffuseMap.m_texture_obj);
+      GLCALL( glBindTexture(GL_TEXTURE_2D, mesh.materials[i].diffuseMap.m_texture_obj) );
 
       GLCALL( glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBOS[i]) );
       GLCALL( glDrawElements(GL_TRIANGLES, mesh.indices[i].size(), GL_UNSIGNED_INT, (void *)0) );
@@ -895,6 +889,7 @@ void Renderer::drawBillboard(Model *model, Transform *transform)
 void Renderer::drawModelInstanced(Model *model, InstanceData *instance_data)
 {
   GLCALL( glBindBuffer(GL_ARRAY_BUFFER, instance_data->VBO) );
+  GLCALL( glActiveTexture(GL_TEXTURE0) );
   
   for (auto &mesh: model->m_meshes)
   {
@@ -902,9 +897,9 @@ void Renderer::drawModelInstanced(Model *model, InstanceData *instance_data)
 
     for (size_t i=0; i<mesh.indices.size(); i++)
     {
-      GLCALL( glActiveTexture(GL_TEXTURE0) );
       GLCALL( glBindTexture(GL_TEXTURE_2D, mesh.materials[i].diffuseMap.m_texture_obj) );
 
+      GLCALL( glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBOS[i]) );
       glDrawElementsInstanced(GL_TRIANGLES, mesh.indices[i].size(), GL_UNSIGNED_INT, 0, instance_data->model_transforms.size());
     }
   }

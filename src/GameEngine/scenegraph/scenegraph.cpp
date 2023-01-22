@@ -220,7 +220,7 @@ void SceneGraph::sortLights(Frustum *frustum)
     glm::vec3 p = this->pointlights[i].m_transform->getPos_worldspace();
     float radius = this->pointlights[i].radius;
 
-    if (frustum->visible(p, radius) == false)
+    if (frustum->partiallyVisible(p, radius) == false)
       continue;
 
     if (this->pointlights[i].active)
@@ -281,36 +281,38 @@ std::list<GameObject *> *SceneGraph::getInstancesByType(GameObjectType object_ty
 }
 
 
+std::list<GameObject *> *SceneGraph::getVisibleInstancesByType(GameObjectType object_type)
+{
+  return &this->_visible_instances_by_type[object_type];
+}
+std::list<GameObject *> *SceneGraph::getVisibleInstancesByType(GameObjectType object_type, InstancingType instancing)
+{
+  return &this->_visible_instances_by_type[object_type];
+}
+
 void SceneGraph::cullObjects(Frustum *frustum)
 {
   this->_bvtree.clearTree();
 
-  for (GameObject object: this->m_object_instances)
-  {
-    if (object.m_model != nullptr)
-      this->_bvtree.insert(&object);
-  }
 
-  
+  for (GameObject *object: *this->getInstancesByType(GAMEOBJECT_TERRAIN))
+    this->_bvtree.insert(object);
+
+  for (GameObject *object: *this->getInstancesByType(GAMEOBJECT_STATIC))
+    this->_bvtree.insert(object);
+
+  for (GameObject *object: *this->getInstancesByType(GAMEOBJECT_ACTOR))
+    this->_bvtree.insert(object);
+
+  for (GameObject *object: *this->getInstancesByType(GAMEOBJECT_BILLBOARD))
+    this->_bvtree.insert(object);
 
 
+  // system("clear");
+  // this->_bvtree.print();
 
+  for (int i=0; i<(int)GAMEOBJECT_NUM_TYPES; i++)
+    this->_visible_instances_by_type[i].clear();
+  this->_bvtree.cullObjects(frustum, this->_visible_instances_by_type);
 
-  // for (int i=0; i<static_cast<int>(GAMEOBJECT_NUM_TYPES); i++)
-  // {
-  //   std::list<GameObject *> *visible_list = this->getVisibleInstancesByType(static_cast<GameObjectType>(i));
-  //   visible_list->clear();
-
-  //   for (auto &obj: *this->getInstancesByType(static_cast<GameObjectType>(i)))
-  //   {
-  //     if (obj->m_model == nullptr)
-  //       continue;
-
-  //     glm::vec3 p = obj->m_model->bounding_sphere_pos;
-  //     p = obj->getTransform()->getModelMatrix() * glm::vec4(p.x, p.y, p.z, 1.0f);
-
-  //     if (frustum->visible(p, obj->m_model->bounding_sphere_radius))
-  //       visible_list->push_back(obj);
-  //   }
-  // }
 }

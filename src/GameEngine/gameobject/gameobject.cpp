@@ -45,7 +45,7 @@ void GameObject::collideWithMeshes(void)
   for (size_t i=0; i<this->_collision_meshes.size(); i++)
   {
     CollisionMesh *mesh = this->_collision_meshes[i];
-    glm::mat4 model = this->_collision_transforms[i]->getModelMatrix();
+    glm::mat4 model = this->_collision_transforms[i]->getModelMatrix_stale();
 
     for (size_t j=0; j<mesh->m_vertices.size(); j+=3)
     {
@@ -191,8 +191,11 @@ std::string GameObject::getObjectTypeString(void)
 
 void GameObject::perFrameUpdate(Renderer *ren)
 {
+  this->getTransform()->getModelMatrix();
+
   if (this->getPhysState() == PHYSICS_NONE)
     return;
+
 
   // Per frame, add velocity to position, then check physics state
   float damping;

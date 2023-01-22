@@ -111,7 +111,9 @@ class GameObject {
 
     PhysicsEngine::SphereCollider spherecollider;
     PhysicsEngine::CapsuleCollider capsulecollider;
-
+    // glm::vec3 bounding_sphere_pos = glm::vec3(0.0f);
+    // float bounding_sphere_radius = 0.0f;
+    // float bounding_sphere_radiusSQ = 0.0f;
 
     Model *m_model;
     CollisionMesh m_collision_mesh;

@@ -27,6 +27,7 @@ class Player {
     float move_speed = 32.0f;
     float jump_force = 32.0f;
     float friction = 5.0f;
+    float pitch = 0.0f;
 
     Player(Renderer *ren);
 

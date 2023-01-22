@@ -36,9 +36,9 @@ void Camera::input()
   const Uint8 *state = SDL_GetKeyboardState(NULL);
 
   glm::mat4 rotation = glm::inverse(this->m_transform->getOrientation_mat4());
-  // glm::mat4 translation = glm::translate(glm::mat4(1.0f), -this->m_transform->getPos_worldspace());
+  glm::mat4 translation = glm::translate(glm::mat4(1.0f), -this->m_transform->getPos_worldspace());
 
-  this->view = rotation;// * translation;
+  this->view = rotation * translation;
 
   this->front = glm::inverse(rotation) * glm::vec4(0.0f,  0.0f,  -1.0f,  0.0f);
   this->right = glm::inverse(rotation) * glm::vec4(1.0f,  0.0f,  0.0f,  0.0f);

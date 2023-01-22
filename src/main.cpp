@@ -147,6 +147,7 @@ int ENTRY(int argc, const char **argv)
     scene->perFrameUpdate();
 
 
+
     // Render depthmaps
     //---------------------------------
     GLCALL(glEnable(GL_DEPTH_CLAMP));
@@ -293,7 +294,14 @@ int ENTRY(int argc, const char **argv)
 
     glEnable(GL_DEPTH_TEST);
     ///////////////////////////////////////////////////////////////////////////////////////////// Render stop
+    glm::vec2 pt1 = glm::vec2(0.0, 0.0);
+    glm::vec2 pt2 = glm::vec2(1.0, 1.0);
 
+    glBegin(GL_LINES);
+    glColor3f(0.0, 1.0, 0.0);
+    glVertex2f(pt1.x, pt1.y);
+    glVertex2f(pt2.x, pt2.y);
+    glEnd();
 
     ImGui::Render();
 

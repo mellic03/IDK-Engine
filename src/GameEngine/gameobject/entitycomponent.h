@@ -68,6 +68,9 @@ class EntityComponent {
     std::string script_name = "LuaScripting/scripts/default";
     bool script_changed = false;
 
+    // COMPONENT_TERRAIN
+    float threshold = 0.5f;
+    float epsilon = 0.25f;
 
     EntityComponent() { };
     EntityComponent(EntityComponentType type) { this->component_type = type; };

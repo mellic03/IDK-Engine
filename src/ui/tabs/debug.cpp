@@ -1,6 +1,21 @@
 #include "../UIEngine.h"
 
 
+static void drawBoundingSphereHierarchy(BVNode *node)
+{
+  if (ImGui::TreeNodeEx(node->objectptr->getName().c_str(), ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Leaf))
+  {
+    if (node->left != nullptr)
+      drawBoundingSphereHierarchy(node->left);
+
+    ImGui::TreePop();
+  }
+
+  if (node->right != nullptr)
+    drawBoundingSphereHierarchy(node->right);
+
+}
+
 
 void EngineUI::debug(Renderer *ren)
 {
@@ -15,6 +30,15 @@ void EngineUI::debug(Renderer *ren)
     static_cast<unsigned char>(RenderDebugFlag::DrawBoundingSpheres),
     (unsigned char *)(ren->getDebugData()->getDebugFlags())
   );
+
+
+  
+  BVNode *root = World::scene.m_scenegraph->getBVTree()->getRootNode();
+  if (root != nullptr)
+  {
+    drawBoundingSphereHierarchy(root);
+  }  
+
 
   ImGui::End();
 }

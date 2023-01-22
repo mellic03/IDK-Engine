@@ -106,6 +106,66 @@ void EntityComponentUI::drawComponent_script(GameObject *object, EntityComponent
 }
 
 
+void draw_terrain(GameObject *object, EntityComponent *terrain_component)
+{
+  if (ImGui::CollapsingHeader("Terrain"))
+  {
+    ImGui::DragFloat("threshold", &terrain_component->threshold, 0.001f);
+    ImGui::DragFloat("epsilon",   &terrain_component->epsilon,   0.001f);
+  
+    // High code
+    //----------------------------------------------------------------
+    static bool first = true;
+
+    if (first)
+    {
+      if (ImGui::Button("Do the thing"))
+      {
+        first = false;
+        
+        int count = 0;
+
+        glm::mat4 model_mat = object->getTransform()->getModelMatrix();
+
+        for (size_t i=0; i<object->m_model->m_meshes[0].vertices.size(); i+=1)
+        {
+          Vertex vertex = object->m_model->m_meshes[0].vertices[i];
+
+          float density = vertex.color.g;
+
+          glm::vec3 p = vertex.position;
+          
+          p = model_mat * glm::vec4(p.x, p.y, p.z, 1.0f);
+
+          for (int i=0; i<ceil(density*25.0f); i++)
+          {
+            float r1 = -1.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.5f - -1.5f)));
+            float r2 = -1.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.5f - -1.5f)));
+            Transform transform;
+            transform.position = p + glm::vec3(r1, 0.0f, r2);
+            World::scene.m_scenegraph->newObjectInstance("grass", transform);
+            count += 1;
+          }
+
+        }
+
+
+        auto data = World::scene.m_scenegraph->getInstanceData();
+        InstanceData *iData = &data->at("grass");
+        iData->genVBO();
+        iData->setVertexAttribs();
+
+        printf("Placed %d grass instances\n", count);
+
+      }
+    }
+    //----------------------------------------------------------------
+
+
+  }
+}
+
+
 
 void EntityComponentUI::drawComponent(GameObject *object, EntityComponent *entity_component)
 {
@@ -126,22 +186,24 @@ void EntityComponentUI::drawComponent(GameObject *object, EntityComponent *entit
 
 
     case (COMPONENT_SCRIPT):
-      std::vector<EntityComponent> *script_components = object->entity_components.getScriptComponents();
-      
-      int i = 0;
-      for (EntityComponent script_component: *script_components)
       {
-        ImGui::PushID(i);
-        EntityComponentUI::drawComponent_script(object, &script_component);
-        ImGui::PopID();
-        i += 1;
+        std::vector<EntityComponent> *script_components = object->entity_components.getScriptComponents();
+        
+        int i = 0;
+        for (EntityComponent script_component: *script_components)
+        {
+          ImGui::PushID(i);
+          EntityComponentUI::drawComponent_script(object, &script_component);
+          ImGui::PopID();
+          i += 1;
+        }
       }
       break;
   
 
-    // case (COMPONENT_TERRAIN):
-    //   this->_draw_terrain(object);
-    //   break;
+    case (COMPONENT_TERRAIN):
+      draw_terrain(object, entity_component);
+      break;
   
 
     // case (COMPONENT_VARIABLE):
