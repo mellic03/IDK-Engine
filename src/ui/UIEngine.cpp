@@ -64,3 +64,20 @@ void EngineUI::bitFlagCheckBox(const char *label, unsigned char flag, unsigned c
     *bits = (~flag & *bits);
 
 }
+
+
+std::string EngineUI::getObjectIcon(GameObjectType type)
+{
+  static constexpr char icons[8][4] = {
+    ICON_FA_LIGHTBULB_O,
+    ICON_FA_CUBE,
+    ICON_FA_TREE,
+    ICON_FA_BUILDING,
+    ICON_FA_TREE,
+    ICON_FA_USER_O,
+    ICON_FA_LIGHTBULB_O,
+    ICON_FA_LIGHTBULB_O,
+  };
+
+  return icons[type];
+}

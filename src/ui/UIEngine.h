@@ -10,6 +10,7 @@
 #include "../scripting/luainterface.h"
 
 #include "filebrowser.h"
+#include "../IconsFontAwesome4.h"
 
 
 namespace EngineUI {
@@ -32,5 +33,8 @@ namespace EngineUI {
   void scriptEditor(void);
   void details(Scene *scene);
   void debug(Renderer *ren);
+
+
+  std::string getObjectIcon(GameObjectType type);
 
 };

@@ -50,7 +50,12 @@ static void draw_entity_childnodes(SceneGraph *scenegraph, GameObject *object, i
   if (*selected_instance == object->getID())
     flags |= ImGuiTreeNodeFlags_Selected;
 
-  if (ImGui::TreeNodeEx(object->getName().c_str(), flags))
+
+  std::string label = "";
+  label += EngineUI::getObjectIcon(object->getObjectType());
+  label += object->getName();
+
+  if (ImGui::TreeNodeEx(label.c_str(), flags))
   {
     if (ImGui::IsItemClicked())
       *selected_instance = object->getID();
@@ -89,9 +94,9 @@ static void draw_entity_childnodes(SceneGraph *scenegraph, GameObject *object, i
 void EngineUI::sceneHierarchy(Renderer *ren, Scene *scene)
 {
   ImGui::Begin("Scene Hierarchy");
-  
-  draw_new_instance_menu(scene->m_scenegraph, &EngineUI::selected_objectID);
 
+
+  draw_new_instance_menu(scene->m_scenegraph, &EngineUI::selected_objectID);
   
   if (ImGui::TreeNodeEx("Scene Hierarchy", ImGuiTreeNodeFlags_DefaultOpen))
   {

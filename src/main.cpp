@@ -96,7 +96,13 @@ int ENTRY(int argc, const char **argv)
   ImGui_ImplOpenGL3_Init("#version 330");
   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
   io.Fonts->AddFontFromFileTTF("./assets/fonts/OpenSans-VariableFont_wdth,wght.ttf", 18.0f);
+
+  static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
+  ImFontConfig icons_config; icons_config.MergeMode = true; icons_config.PixelSnapH = true;
+  io.Fonts->AddFontFromFileTTF( "src/fontawesome-webfont.ttf", 16.0f, &icons_config, icons_ranges );
+
   ImGui::StyleColorsLight();
+  
   //----------------------------------------
 
 

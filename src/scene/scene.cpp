@@ -307,7 +307,6 @@ void Scene::perFrameUpdate()
 {
   this->physicsTick();
 
-
   // Frustum culling
   //------------------------------------------------------
   Frustum *frustum = this->ren->getFrustum();
