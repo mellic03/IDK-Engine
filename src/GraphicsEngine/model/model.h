@@ -73,3 +73,26 @@ class Model {
 };
 
 
+
+struct ModelLOD {
+
+  private:
+    std::vector<Model> _models;
+    int _default_lod = 0;
+
+  public:
+    void loadLOD(int lod, std::string directory, std::string filename, bool is_terrain)
+    {
+      while (this->_models.size() <= static_cast<size_t>(lod))
+        this->_models.push_back(Model());
+      
+      this->_models[lod].loadDae(directory, filename, is_terrain);
+    }; 
+
+    Model *getLOD(int lod)          { return &this->_models[lod]; };
+    Model *getMaxLOD()              { return &this->_models[0];   };
+    Model *getMinLOD()              { return &this->_models[this->_models.size() - 1]; };
+    int getLevelsLOD()              { return this->_models.size(); };
+    int *getDefaultLOD()            { return &this->_default_lod; };
+    Model *getDefaultLOD_model()    { return &this->_models[this->_default_lod]; };
+};

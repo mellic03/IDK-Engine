@@ -16,15 +16,11 @@ namespace LuaInterface {
   // Variables
   //--------------------------------------------------
   extern lua_State *L;
-  extern Scene *m_scene;
-  extern SceneGraph *m_scenegraph;
-  extern Renderer *m_renderer;
   //--------------------------------------------------
 
 
   // Methods
   //--------------------------------------------------
-  void init(Scene *scene, Renderer *renderer);
   void compile(void);
   void execute(void);
   //--------------------------------------------------

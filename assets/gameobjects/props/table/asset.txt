@@ -3,4 +3,5 @@
 #interactivity environmental
 #PhysicsState PHYSICS_NONE 
 #geometry table.dae
+#meshlod 0 table.dae
 #exit

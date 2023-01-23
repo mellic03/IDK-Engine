@@ -1,5 +1,5 @@
-
 #gameobject fren
 #interactivity npc
 #geometry fren.dae
+#meshlod 0 fren.dae
 #exit

@@ -144,10 +144,6 @@ class Renderer {
     void setupDirLightDepthmap(glm::vec3 dirlightpos, glm::vec3 dirlightdir);
     void perFrameUpdate(void);
 
-    void sendVolumetricData(void);
-
-
-
     void copyTexture(GLuint src, GLuint dest);
     void blurTexture(GLuint input_texture, GLuint output_framebuffer);
     void additiveBlend(GLuint texture_1, GLuint texture_2);

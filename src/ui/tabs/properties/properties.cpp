@@ -1,9 +1,9 @@
 #include "../../UIEngine.h"
 #include "entitycomponentui.h"
 
-void EngineUI::properties(Scene *scene)
+void EngineUI::properties()
 {
-  SceneGraph *scenegraph = scene->m_scenegraph;
+  SceneGraph *scenegraph = &Scene::scenegraph;
   if (scenegraph->m_object_instances.size() == 0)
     return;
 
@@ -19,8 +19,28 @@ void EngineUI::properties(Scene *scene)
     // ImGui::DragFloat("scale", &object->emission_scale, 0.01f, 0.0f, 10.0f);
     // ImGui::PopID();
 
+    bool icon_changed = false;
+    std::string title = EngineUI::getObjectIcon(object->getData()->ui_icon_type);
 
-    ImGui::InputText("Name", &object->m_given_name);
+    if (ImGui::Button(title.c_str()))
+      ImGui::OpenPopup("change icon");
+
+    if (ImGui::BeginPopup("change icon"))
+    {
+      for (int i=0; i<(int)GAMEOBJECT_NUM_TYPES; i++)
+      {
+        if (ImGui::MenuItem(EngineUI::getObjectIcon((GameObjectType)i).c_str()))
+          object->getData()->setUiIconType((GameObjectType)i);
+      }
+      ImGui::EndPopup();
+    }
+
+    ImGui::SameLine();
+
+    std::string label = "##" + std::to_string(object->getID());
+    ImGui::InputText(label.c_str(), &object->m_given_name);
+
+
     ImGui::Separator();
 
     int count = 0;

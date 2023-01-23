@@ -463,7 +463,7 @@ void Model::loadDae(std::string directory, std::string filename, bool is_terrain
 
   if (fh.is_open() == false)
   {
-    printf("Error opening file: %s\n", filename.c_str());
+    printf("[Model::loadDae()] Error opening file: %s\n", filename.c_str());
     exit(1);
   }
 

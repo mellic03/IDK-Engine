@@ -26,7 +26,7 @@ void SceneGraph::newObjectInstance_static(GameObject *objectptr)
 
 void SceneGraph::newObjectInstance_billboard(GameObject *objectptr)
 {
-  if (objectptr->data.instancing_type == INSTANCING_ON)
+  if (objectptr->getData()->instancing_type == INSTANCING_ON)
   {
     this->addInstanceData(objectptr->getTemplateName(), objectptr->m_model, objectptr->getTransform());
   }
@@ -41,7 +41,7 @@ void SceneGraph::newObjectInstance_actor(GameObject *objectptr)
 
 void SceneGraph::newObjectInstance_lightsource(GameObject *objectptr)
 {
-  LightSourceType lightsource_type = objectptr->data.lightsource_type;
+  LightSourceType lightsource_type = objectptr->getData()->lightsource_type;
 
   switch (lightsource_type)
   {
@@ -72,7 +72,7 @@ void SceneGraph::newObjectInstance_lightsource(GameObject *objectptr)
 
 
 
-void SceneGraph::newObjectInstance(std::string object_name, Transform transform)
+void SceneGraph::newObjectInstance(std::string object_name, Transform *transform)
 {
   GameObject *templateptr = this->templatePtr(object_name);
   if (templateptr == nullptr)
@@ -81,25 +81,23 @@ void SceneGraph::newObjectInstance(std::string object_name, Transform transform)
     exit(1);
   }
 
-  LightSourceType lightsource_type = templateptr->data.lightsource_type;
+  LightSourceType lightsource_type = templateptr->getData()->lightsource_type;
   if (lightsource_type == LIGHTSOURCE_POINT_LIGHT && this->_num_pointlights >= MAX_POINTLIGHTS)
     return;
   else if (lightsource_type == LIGHTSOURCE_SPOT_LIGHT && this->_num_spotlights >= MAX_SPOTLIGHTS)
     return;
 
 
-  if (templateptr->data.instancing_type == INSTANCING_ON)
+  if (templateptr->getData()->instancing_type == INSTANCING_ON)
   {
-    Transform *t = new Transform();
-    t->position = transform.position;
-    this->addInstanceData(templateptr->getTemplateName(), templateptr->m_model, t);
+    this->addInstanceData(templateptr->getTemplateName(), templateptr->m_model, transform);
     return;
   }
 
 
   GameObject newobj = *templateptr;
   newobj.m_parent = nullptr;
-  *newobj.getTransform() = transform;
+  *newobj.getTransform() = *transform;
   newobj.setName(object_name);
   newobj.setID(this->m_object_instances.size());
   this->m_object_instances.push_back(newobj);

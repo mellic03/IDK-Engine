@@ -2,5 +2,6 @@
 #interactivity billboard
 #GameObjectType GAMEOBJECT_ACTOR
 #geometry cube.dae
+#meshlod 0 cube.dae
 #physics PHYSICS_NONE
 #exit

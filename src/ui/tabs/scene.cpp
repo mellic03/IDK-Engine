@@ -19,12 +19,14 @@ static void draw_submenu(const char *title, SceneGraph *scenegraph, int *selecte
 }
 
 
-static void draw_new_instance_menu(SceneGraph *scenegraph, int *selected_instance)
+static void draw_new_instance_menu(int *selected_instance)
 {
   if (ImGui::BeginPopupContextWindow("New Instance"))
   {
     ImGui::Text("New Instance");
     ImGui::Separator();
+
+    SceneGraph *scenegraph = &Scene::scenegraph;
 
     draw_submenu("Terrain",       scenegraph, selected_instance, scenegraph->getTemplatesByType(GAMEOBJECT_TERRAIN));
     draw_submenu("Static",        scenegraph, selected_instance, scenegraph->getTemplatesByType(GAMEOBJECT_STATIC));
@@ -38,7 +40,7 @@ static void draw_new_instance_menu(SceneGraph *scenegraph, int *selected_instanc
 }
 
 
-static void draw_entity_childnodes(SceneGraph *scenegraph, GameObject *object, int *selected_instance)
+static void draw_entity_childnodes(GameObject *object, int *selected_instance)
 {
   ImGui::PushID(object->getID());
 
@@ -52,8 +54,8 @@ static void draw_entity_childnodes(SceneGraph *scenegraph, GameObject *object, i
 
 
   std::string label = "";
-  label += EngineUI::getObjectIcon(object->getObjectType());
-  label += object->getName();
+  label += EngineUI::getObjectIcon(object->getData()->getUiIconType());
+  label += "  " + object->getName();
 
   if (ImGui::TreeNodeEx(label.c_str(), flags))
   {
@@ -73,7 +75,7 @@ static void draw_entity_childnodes(SceneGraph *scenegraph, GameObject *object, i
       {
         IM_ASSERT(payload->DataSize == sizeof(int));
         int selectedobj = *(int *)payload->Data;
-        object->giveChild(scenegraph->objectPtr(selectedobj));
+        object->giveChild(Scene::scenegraph.objectPtr(selectedobj));
       }
       ImGui::EndDragDropTarget();
     }
@@ -81,7 +83,7 @@ static void draw_entity_childnodes(SceneGraph *scenegraph, GameObject *object, i
     std::vector<GameObject *> children = object->getChildren();
     for (size_t i=0; i<children.size(); i++)
     {
-      draw_entity_childnodes(scenegraph, children[i], selected_instance);
+      draw_entity_childnodes(children[i], selected_instance);
     }
 
     ImGui::TreePop();
@@ -91,12 +93,12 @@ static void draw_entity_childnodes(SceneGraph *scenegraph, GameObject *object, i
 }
 
 
-void EngineUI::sceneHierarchy(Renderer *ren, Scene *scene)
+void EngineUI::sceneHierarchy(Renderer *ren)
 {
   ImGui::Begin("Scene Hierarchy");
 
 
-  draw_new_instance_menu(scene->m_scenegraph, &EngineUI::selected_objectID);
+  draw_new_instance_menu(&EngineUI::selected_objectID);
   
   if (ImGui::TreeNodeEx("Scene Hierarchy", ImGuiTreeNodeFlags_DefaultOpen))
   {
@@ -106,15 +108,15 @@ void EngineUI::sceneHierarchy(Renderer *ren, Scene *scene)
       {
         IM_ASSERT(payload->DataSize == sizeof(int));
         int selectedobj = *(int *)payload->Data;
-        scene->m_scenegraph->objectPtr(EngineUI::selected_objectID)->clearParent();
+        Scene::scenegraph.objectPtr(EngineUI::selected_objectID)->clearParent();
       }
       ImGui::EndDragDropTarget();
     }
 
-    for (auto &object: scene->m_scenegraph->m_selectable_instances)
+    for (auto &object: Scene::scenegraph.m_selectable_instances)
       if (object->hasParent() == false)
       {
-        draw_entity_childnodes(scene->m_scenegraph, object, &EngineUI::selected_objectID);
+        draw_entity_childnodes(object, &EngineUI::selected_objectID);
 
         // if (object.getTemplateName() == "wall")
         //   break;

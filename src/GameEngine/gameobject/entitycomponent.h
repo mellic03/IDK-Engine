@@ -22,6 +22,7 @@ enum EntityComponentType {
   COMPONENT_SPOT_LIGHT,
   COMPONENT_SCRIPT,
   COMPONENT_TERRAIN,
+  COMPONENT_LOD,
   COMPONENT_NUM_COMPONENTS
 };
 
@@ -64,7 +65,7 @@ class EntityComponent {
     SpotLight *spotlight;
 
     // COMPONENT_SCRIPT
-    std::filesystem::path script_path;
+    std::filesystem::path script_path = std::filesystem::path(std::filesystem::current_path() / "LuaScripting/scripts/default.lua");
     std::string script_name = "LuaScripting/scripts/default";
     bool script_changed = false;
 
@@ -117,6 +118,7 @@ struct EntityComponentData {
     void giveScriptComponent(std::string script_filepath)
     {
       this->_script_components.push_back(EntityComponent(COMPONENT_SCRIPT));
+      this->_script_components[this->_script_components.size() - 1].script_path = std::filesystem::current_path() / script_filepath;
       this->_script_components[this->_script_components.size() - 1].script_name = script_filepath;
       this->_has_entity_component[COMPONENT_SCRIPT] = true;
     };

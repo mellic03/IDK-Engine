@@ -3,17 +3,25 @@ cmake_minimum_required(VERSION 3.24)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
 set(CMAKE_BUILD_PARALLEL_LEVEL 8)
 
-set(COOM_DEBUG_MODE FALSE)
 
+
+set(COOM_DEBUG FALSE)
+set(COOM_SHIPPING FALSE)
 
 
 add_compile_options( -pedantic -Wextra )
 
-if (COOM_DEBUG_MODE)
+if (COOM_DEBUG)
   add_compile_options( -g )
-  add_definitions( -DCOOMDEBUG )
+  add_definitions( -DCOOM_DEBUG )
 else()
   add_compile_options( -Ofast )
+endif()
+
+if (COOM_SHIPPING)
+  add_definitions( -DCOOM_SHIPPING )
+else()
+
 endif()
 
 set (CMAKE_CXX_FLAGS "-lstdc++fs -std=c++17 -fdiagnostics-color=always")
@@ -57,6 +65,9 @@ file(
   "src/GameEngine/scenegraph/*.cpp"
   "src/GameEngine/scenegraph/fileio/*.cpp"
 
+  "src/EditorUI/*.cpp"
+  "src/EditorUI/tabs/*.cpp"
+
   "src/ui/*.cpp"
   "src/ui/tabs/*.cpp"
   "src/ui/tabs/properties/*.cpp"
@@ -67,12 +78,8 @@ file(
 
   "src/audio/*.cpp"
 
-  
   "src/include/stb_image/*.cpp"
   "src/include/imgui/*.cpp"
-  "src/include/tiny_gltf/*.h"
-  "src/include/tiny_gltf/*.hpp"
-  "src/include/tiny_gltf/*.cpp"
 )
 
 

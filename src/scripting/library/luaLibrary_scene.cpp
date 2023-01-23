@@ -6,7 +6,7 @@
 extern "C" int loadScene(lua_State *LS)
 {
   const char *scene_name = lua_tostring(LS, 1);
-  LuaInterface::m_scenegraph->importScene("assets/scenes/" + std::string(scene_name), LuaInterface::m_scene->player);
+  Scene::importScene("assets/scenes/" + std::string(scene_name));
 
   return 0;
 }
@@ -18,7 +18,7 @@ extern "C" int clearColor(lua_State *LS)
   float g = lua_tonumber(LS, 2);
   float b = lua_tonumber(LS, 3);
 
-  LuaInterface::m_scene->clearColor(glm::vec3(r, g, b) / 255.0f);
+  Scene::clearColor(glm::vec3(r, g, b) / 255.0f);
 
   return 0;
 }

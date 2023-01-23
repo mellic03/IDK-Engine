@@ -7,7 +7,7 @@
 namespace fs = std::filesystem;
 
 
-void draw_save_modal(bool draw, Scene *scene)
+void draw_save_modal(bool draw)
 {
   if (draw)
     ImGui::OpenPopup("Save Scene");
@@ -45,7 +45,7 @@ void draw_save_modal(bool draw, Scene *scene)
     if (ImGui::Button("Save", ImVec2(120, 0)))
     {
       std::cout << "exporting scene to: " << relative_save_path << std::endl;
-      scene->m_scenegraph->exportScene(relative_save_path);
+      Scene::scenegraph.exportScene(relative_save_path);
       ImGui::CloseCurrentPopup();
     }
 
@@ -59,7 +59,7 @@ void draw_save_modal(bool draw, Scene *scene)
 }
 
 
-void draw_load_modal(bool draw, Scene *scene)
+void draw_load_modal(bool draw)
 {
   if (draw)
     ImGui::OpenPopup("Load Scene");
@@ -87,7 +87,7 @@ void draw_load_modal(bool draw, Scene *scene)
 
     if (ImGui::Button("Load", ImVec2(120, 0)))
     {
-      scene->importScene(load_path.c_str(), scene->player);
+      Scene::importScene(load_path.c_str());
       ImGui::CloseCurrentPopup();
     }
 
@@ -100,7 +100,7 @@ void draw_load_modal(bool draw, Scene *scene)
 }
 
 
-void draw_main_menu_bar(Renderer *ren, Scene *scene)
+void draw_main_menu_bar()
 {
   bool show_save_modal = false;
   bool show_load_modal = false;
@@ -111,7 +111,7 @@ void draw_main_menu_bar(Renderer *ren, Scene *scene)
     if (ImGui::BeginMenu("File"))
     {
       if (ImGui::MenuItem("New", "CTRL+N"))
-        scene->defaultScene();
+        Scene::defaultScene();
 
       if (ImGui::MenuItem("Save", "CTRL+S"))
         show_save_modal = true;
@@ -140,8 +140,8 @@ void draw_main_menu_bar(Renderer *ren, Scene *scene)
     ImGui::EndMainMenuBar();
   }
 
-  draw_save_modal(show_save_modal, scene);
-  draw_load_modal(show_load_modal, scene);
+  draw_save_modal(show_save_modal);
+  draw_load_modal(show_load_modal);
 
   if (show)
     ImGui::ShowDemoWindow(&show);

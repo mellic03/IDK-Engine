@@ -3,6 +3,8 @@
 #interactivity terrain
 #GameObjectType GAMEOBJECT_TERRAIN
 #geometry untitled.dae
+#meshlod 0 untitled.dae
+
 #collision collision.obj
 #physics PHYSICS_NONE
 #exit

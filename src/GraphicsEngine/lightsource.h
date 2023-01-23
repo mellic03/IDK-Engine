@@ -35,10 +35,10 @@ enum LightSourceType {
 struct DirLight {
   glm::vec3 position = glm::vec3(10.0f, 15.0f, 10.0f);
   glm::vec3 direction = glm::vec3(0.0, -1.0, 0.0);
-  glm::vec3 diffuse = glm::vec3(0.82f, 0.69f, 0.37f);
-  glm::vec3 ambient = glm::vec3(0.26f, 0.26f, 0.26f);
+  glm::vec3 diffuse = glm::vec3(1.0f);
+  glm::vec3 ambient = glm::vec3(16.0/255.0);
   float bias = 0.15f;
-  float fog_intensity = 0.005f;
+  float fog_intensity = 0.001f;
 };
 
 struct PointLight {

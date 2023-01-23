@@ -6,5 +6,8 @@
 #BillboardType BILLBOARD_FIXED
 
 #geometry tree2.dae
+#meshlod 0 tree2.dae
+#meshlod 1 tree2_lod1.dae
+#meshlod 2 tree2_lod2.dae
 #physics PHYSICS_NONE
 #exit

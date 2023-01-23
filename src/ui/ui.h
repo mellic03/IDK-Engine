@@ -11,14 +11,13 @@
 
 namespace fs = std::filesystem;
 
-void draw_main_menu_bar(Renderer *ren, Scene *scene);
+void draw_main_menu_bar();
 
-void draw_ui(Renderer *ren, Scene *scene, Player *player, int *x, int *y, int *w, int *h, const char *devlevel);
+void draw_ui(Renderer *ren, int *x, int *y, int *w, int *h);
 
 
 // Scene tab
 //----------------------------------------------------------------------------------
-void draw_scene_tab(Renderer *ren, Scene *scene, int *selected_instance);
+void draw_scene_tab(Renderer *ren, int *selected_instance);
 //----------------------------------------------------------------------------------
-
 

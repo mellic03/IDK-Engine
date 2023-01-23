@@ -9,9 +9,9 @@
     parentID: -1
   </HEADER>
   <TRANSFORM>
-    position: -22.7499 15.3225 43.0317
-    velocity: -0.656436 0 2.228
-    orientation: 0.235276 0.479128 0.135154 -0.834101
+    position: 2.37458 -1.57761 -19.6085
+    velocity: 3.39554e-16 0 1.13089e-13
+    orientation: -0.0193183 0.979782 0.11796 0.160437
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
@@ -91,7 +91,7 @@
   <TRANSFORM>
     position: -13.466 -13.19 -12.552
     velocity: 0 0 0
-    orientation: -0.456392 0.52368 -0.295051 0.653247
+    orientation: 0.13198 0.0632932 0.526768 -0.83485
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
@@ -189,12 +189,12 @@
     template name: muscleskele
     assigned name: muscleskele
     objectID: 10
-    parentID: 9
+    parentID: 1
   </HEADER>
   <TRANSFORM>
-    position: 0.76841 1.39 36.3813
-    velocity: 0 0 0
-    orientation: 0 0.414693 0 0.909962
+    position: -13.88 -4.60536 -0.529
+    velocity: -1.4013e-44 0 1.4013e-44
+    orientation: 0 -0.871586 0 -0.490243
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
@@ -203,14 +203,14 @@
 
 <GAMEOBJECT>
   <HEADER>
-    template name: lightsaber
-    assigned name: lightsaber
+    template name: cube
+    assigned name: cube
     objectID: 11
     parentID: 9
   </HEADER>
   <TRANSFORM>
-    position: -6.80771 0.02 45.999
-    velocity: 0.03 0 0
+    position: -3.02612 1.42 50.1969
+    velocity: 0 0 0
     orientation: 0 0 0 1
     scale: 1 1 1
   </TRANSFORM>
@@ -223,10 +223,10 @@
     template name: cube
     assigned name: cube
     objectID: 12
-    parentID: 9
+    parentID: -1
   </HEADER>
   <TRANSFORM>
-    position: -3.02612 1.42 50.1969
+    position: 1.87 0 -12.84
     velocity: 0 0 0
     orientation: 0 0 0 1
     scale: 1 1 1

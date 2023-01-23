@@ -1,19 +1,6 @@
 #include "luainterface.h"
 
-
 lua_State *LuaInterface::L;
-Scene *LuaInterface::m_scene;
-SceneGraph *LuaInterface::m_scenegraph;
-Renderer *LuaInterface::m_renderer;
-
-
-void LuaInterface::init(Scene *scene, Renderer *renderer)
-{
-  LuaInterface::m_scene = scene;
-  LuaInterface::m_scenegraph = scene->m_scenegraph;
-  LuaInterface::m_renderer = renderer;
-}
-
 
 void LuaInterface::compile(void)
 {

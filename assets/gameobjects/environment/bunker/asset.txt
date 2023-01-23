@@ -3,6 +3,7 @@
 #interactivity environmental
 #GameObjectType GAMEOBJECT_STATIC
 #geometry bunker.dae
+#meshlod 0 bunker.dae
 #collision collision.obj
 #physics PHYSICS_NONE
 #exit

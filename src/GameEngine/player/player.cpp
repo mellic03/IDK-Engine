@@ -4,13 +4,18 @@ Player::Player(Renderer *ren)
 {
   this->cam = &ren->cam;
 
-  this->footstepsound.load("assets/audio/footsteps.wav");
-
   // this->useWeapon(WEAPON_SHOTGUN);
   // this->getWeapon()->loadModel("assets/player/gun/");
   // this->getWeapon()->hip_pos = glm::vec3(+0.10f, -0.10f, -0.15f);
   // this->getWeapon()->aim_pos = glm::vec3( 0.00f, -0.015f, -0.10f);
 }
+
+
+void Player::init()
+{
+  this->footstepsound.load("assets/audio/footsteps.wav");
+}
+
 
 void Player::useGameObject(GameObject *gameobject)
 {
@@ -155,7 +160,7 @@ void Player::mouse_input(Renderer *ren, SDL_Event *event)
     glm::quat dpitch;
     glm::quat dyaw = glm::angleAxis(-this->cam->rot_speed * event->motion.xrel, glm::vec3(0.0f, 1.0f, 0.0f));
 
-    if (this->pitch + deltaPitch < -0.57 || this->pitch + deltaPitch > 1.57)
+    if (this->pitch + deltaPitch < -1.40 || this->pitch + deltaPitch > 1.55)
       dpitch = glm::angleAxis(0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 
     else

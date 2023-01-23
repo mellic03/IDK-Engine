@@ -33,7 +33,7 @@ void EngineUI::debug(Renderer *ren)
 
 
   
-  BVNode *root = World::scene.m_scenegraph->getBVTree()->getRootNode();
+  BVNode *root = Scene::scenegraph.getBVTree()->getRootNode();
   if (root != nullptr)
   {
     drawBoundingSphereHierarchy(root);

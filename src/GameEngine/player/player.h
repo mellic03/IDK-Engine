@@ -11,10 +11,9 @@
 class Player {
   
   private:
-  //   WeaponType m_active_weapon = WEAPON_SHOTGUN;
-  //   Weapon m_weapons[1];
-  //   Weapon *m_active_weapon_ptr;
+
     AudioEngine::Sound footstepsound;
+
 
 
   public:
@@ -30,6 +29,8 @@ class Player {
     float pitch = 0.0f;
 
     Player(Renderer *ren);
+
+    void init();
 
     // Member Access
     //----------------------------------------------------

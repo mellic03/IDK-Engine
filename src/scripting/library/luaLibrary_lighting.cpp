@@ -5,7 +5,7 @@
 extern "C" int setBloomMinResolution(lua_State *LS)
 {
   int min_resolution = lua_tointeger(LS, 1);
-  LuaInterface::m_renderer->bloom.min_downsample_resolution = min_resolution;
+  Render::ren.bloom.min_downsample_resolution = min_resolution;
 
   return 0;
 }
@@ -14,7 +14,7 @@ extern "C" int setBloomMinResolution(lua_State *LS)
 extern "C" int setBloomThreshold(lua_State *LS)
 {
   float threshold = lua_tonumber(LS, 1);
-  LuaInterface::m_renderer->bloom.threshold = threshold;  
+  Render::ren.bloom.threshold = threshold;  
 
   return 0;
 }
@@ -23,7 +23,7 @@ extern "C" int setBloomThreshold(lua_State *LS)
 extern "C" int setBloomStrength(lua_State *LS)
 {
   float strength = lua_tonumber(LS, 1);
-  LuaInterface::m_renderer->bloom.strength = strength;  
+  Render::ren.bloom.strength = strength;  
 
   return 0;
 }

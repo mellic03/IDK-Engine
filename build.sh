@@ -11,8 +11,7 @@ ninja
 cd ..
 
 cp ./build/CoomEngine ./output/CoomEngine
-cp -r ./assets ./output/assets
-cp ./config.txt ./output/config.txt
+cp -r ./assets ./output/
 cp ./imgui.ini ./output/imgui.ini
 
 cp -r ./LuaScripting ./output/

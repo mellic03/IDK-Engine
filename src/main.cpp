@@ -4,22 +4,31 @@
   #define ENTRY WinMain
 #endif
 
+// #define COOM_SHIPPING
+#ifndef COOM_SHIPPING
+  #include "ui/ui.h"
+  #include "EditorUI/EditorUI.h"
+#endif
+
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GameEngine/GameEngine.h"
-#include "ui/ui.h"
 #include "scene/scene.h"
-
 #include "scripting/luascripting.h"
 #include "audio/audio.h"
 
 
 int ENTRY(int argc, const char **argv)
 {
-
-  #ifdef COOMDEBUG
-    printf("COOMDEBUG defined\n");
+  #ifdef COOM_DEBUG
+    printf("COOM_DEBUG defined\n");
   #else
-    printf("COOMDEBUG NOT defined\n");
+    printf("COOM_DEBUG NOT defined\n");
+  #endif
+
+  #ifdef COOM_SHIPPING
+    printf("COOM_SHIPPING defined\n");
+  #else
+    printf("COOM_SHIPPING NOT defined\n");
   #endif
 
 
@@ -32,14 +41,13 @@ int ENTRY(int argc, const char **argv)
     return 1;
   }
 
-  AudioEngine::init();
 
   window = SDL_CreateWindow(
     "Coom Engine",
     SDL_WINDOWPOS_CENTERED,
     SDL_WINDOWPOS_CENTERED,
-    DEFAULT_SCREEN_WIDTH,
-    DEFAULT_SCREEN_HEIGHT,
+    1000,
+    1000,
     SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED
   );
 
@@ -63,75 +71,70 @@ int ENTRY(int argc, const char **argv)
   SDL_Event event;
 
 
-  // RENDERER SETUP
+  // ENGINE SETUP
   //----------------------------------------
   Renderer *ren = &Render::ren;
   ren->init();
-  Player player(ren);
 
-  SceneGraph scenegraph;
-  scenegraph.loadObjects("assets/index.txt");
+  AudioEngine::init();
 
-  Scene *scene = &World::scene;
-  scene->useSceneGraph(&scenegraph);
-  scene->usePlayer(&player);
-  scene->defaultScene();
+  Scene::init();
+  Scene::scenegraph.loadObjects("assets/index.txt");
+  Scene::defaultScene();
+  Scene::importScene("assets/scenes/entry.scene");
 
-  scene->m_scenegraph->importScene("assets/scenes/entry.scene", &player);
-
-  luaInit(scene, ren);
-
-
-  scene->useRenderer(ren);
+  luaInit();
   //----------------------------------------
+
 
 
   // IMGUI SETUP
   //----------------------------------------
-  IMGUI_CHECKVERSION();
-  ImGui::CreateContext();
-  ImGuiIO& io = ImGui::GetIO(); (void)io;
-  ImGui::StyleColorsDark();
-  ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
-  ImGui_ImplOpenGL3_Init("#version 330");
-  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-  io.Fonts->AddFontFromFileTTF("./assets/fonts/OpenSans-VariableFont_wdth,wght.ttf", 18.0f);
+  #ifndef COOM_SHIPPING
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::StyleColorsDark();
+    ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
+    ImGui_ImplOpenGL3_Init("#version 330");
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.Fonts->AddFontFromFileTTF("./assets/fonts/OpenSans-VariableFont_wdth,wght.ttf", 18.0f);
 
-  static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
-  ImFontConfig icons_config; icons_config.MergeMode = true; icons_config.PixelSnapH = true;
-  io.Fonts->AddFontFromFileTTF( "src/fontawesome-webfont.ttf", 16.0f, &icons_config, icons_ranges );
+    static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
+    ImFontConfig icons_config; icons_config.MergeMode = true; icons_config.PixelSnapH = true;
+    io.Fonts->AddFontFromFileTTF( "src/fontawesome-webfont.ttf", 16.0f, &icons_config, icons_ranges );
 
-  ImGui::StyleColorsLight();
-  
+    ImGui::StyleColorsLight();
+  #endif
   //----------------------------------------
 
 
   // RENDER LOOP
   //----------------------------------------
-
-  if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
-  GLCALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));  
-
-
   Uint64 start = SDL_GetPerformanceCounter(), end = SDL_GetPerformanceCounter();
   while (1)
   {
-    glm::vec3 v = player.cam->front;
+    glm::vec3 v = Scene::player.cam->front;
     v = glm::normalize(v);
     AudioEngine::listener_dir = &v;
-    AudioEngine::listener_pos = player.getPos();
+    AudioEngine::listener_pos = Scene::player.getPos();
 
     start = end;
     end = SDL_GetPerformanceCounter();
-
-    // Start the Dear ImGui frame
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame();
-    ImGui::NewFrame();
-
     int x, y, w, h;
-    draw_ui(ren, scene, &player, &x, &y, &w, &h, "--dev2");
+
+    #ifndef COOM_SHIPPING
+      // Start the Dear ImGui frame
+      ImGui_ImplOpenGL3_NewFrame();
+      ImGui_ImplSDL2_NewFrame();
+      ImGui::NewFrame();
+      draw_ui(ren, &x, &y, &w, &h);
+    #else
+      SDL_GetWindowSize(window, &w, &h);
+    #endif
+
+    if (ren->viewport_width != w || ren->viewport_height != h)
+      ren->resize(w, h);
 
     ren->perFrameUpdate();
 
@@ -140,24 +143,28 @@ int ENTRY(int argc, const char **argv)
     while (SDL_PollEvent(&event))
     {
       if (!SDL_GetRelativeMouseMode())
-        ImGui_ImplSDL2_ProcessEvent(&event);
+      {
+        #ifndef COOM_SHIPPING
+          ImGui_ImplSDL2_ProcessEvent(&event);
+        #endif
+      }
       if (event.type == SDL_QUIT)
         exit(0);
-      player.mouse_input(ren, &event);
+      Scene::player.mouse_input(ren, &event);
     }
-    player.key_input(ren);
+    Scene::player.key_input(ren);
     //---------------------------------
 
     ///////////////////////////////////////////////////////////////////////////////////////////// Render start
 
-    scene->perFrameUpdate();
+    Scene::perFrameUpdate();
 
 
 
     // Render depthmaps
     //---------------------------------
     GLCALL(glEnable(GL_DEPTH_CLAMP));
-    scene->drawDepthmaps();
+    Scene::drawDepthmaps();
     GLCALL(glDisable(GL_DEPTH_CLAMP));
     //---------------------------------
 
@@ -168,8 +175,8 @@ int ENTRY(int argc, const char **argv)
     GLCALL(glBindFramebuffer(GL_FRAMEBUFFER, ren->gbufferFBO));
     GLCALL(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
     GLCALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-    scene->drawBackground();
-    scene->drawGeometry_batched();
+    Scene::drawBackground();
+    Scene::drawGeometry_batched();
     //---------------------------------
 
 
@@ -183,7 +190,7 @@ int ENTRY(int argc, const char **argv)
 
 
     ren->useShader(SHADER_GBUFFER_LIGHTING);
-    scene->sendLightsToShader();
+    Scene::sendLightsToShader();
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, ren->gbuffer_position);
@@ -222,8 +229,8 @@ int ENTRY(int argc, const char **argv)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     ren->useShader(SHADER_VOLUMETRIC_LIGHT);
-    scene->sendLightsToShader();
-    ren->sendVolumetricData();
+    Scene::sendLightsToShader();
+    Scene::sendVolumetricData();
     ren->active_shader->setVec3("viewDir", ren->cam.front);
     
     glBindVertexArray(ren->quadVAO);
@@ -269,7 +276,7 @@ int ENTRY(int argc, const char **argv)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //---------------------------------
 
-    ren->blurTexture(ren->generalColorBuffers[1], ren->billboardFBO);
+
 
 
     // FXAA
@@ -277,7 +284,13 @@ int ENTRY(int argc, const char **argv)
     GLCALL(glViewport(0, 0, w, h));
 
     ren->useShader(SHADER_FXAA);
-    glBindFramebuffer(GL_FRAMEBUFFER, ren->screenQuadFBO);
+
+    #ifndef COOM_SHIPPING
+      glBindFramebuffer(GL_FRAMEBUFFER, ren->screenQuadFBO);
+    #else
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    #endif
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glActiveTexture(GL_TEXTURE10);
@@ -300,24 +313,26 @@ int ENTRY(int argc, const char **argv)
 
     glEnable(GL_DEPTH_TEST);
     ///////////////////////////////////////////////////////////////////////////////////////////// Render stop
-    glm::vec2 pt1 = glm::vec2(0.0, 0.0);
-    glm::vec2 pt2 = glm::vec2(1.0, 1.0);
 
-    glBegin(GL_LINES);
-    glColor3f(0.0, 1.0, 0.0);
-    glVertex2f(pt1.x, pt1.y);
-    glVertex2f(pt2.x, pt2.y);
-    glEnd();
 
-    ImGui::Render();
+    #ifndef COOM_SHIPPING
+      ImGui::Render();
+      ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    #else
 
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    #endif
+
+  
     SDL_GL_SwapWindow(window);
     double dtime_milliseconds = ((end - start)*1000 / (double)SDL_GetPerformanceFrequency() );
-    ren->deltaTime = dtime_milliseconds / 1000;
-    ren->deltaTime = io.DeltaTime;
     
-    luaMain(ren, &player, &scenegraph.m_object_instances);
+    #ifndef COOM_SHIPPING
+      ren->deltaTime = io.DeltaTime;
+    #else
+      ren->deltaTime = dtime_milliseconds / 1000;
+    #endif
+
+    luaMain(ren, &Scene::player, &Scene::scenegraph.m_object_instances);
   }
   //----------------------------------------
 

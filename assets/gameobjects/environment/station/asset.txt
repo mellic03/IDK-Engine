@@ -2,6 +2,7 @@
 #gameobject station
 #GameObjectType GAMEOBJECT_STATIC
 #geometry station.dae
+#meshlod 0 station.dae
 #collision station.obj
 
 #exit

@@ -6,7 +6,7 @@
 extern "C" int setMoveForce(lua_State *LS)
 {
   float force = lua_tonumber(LS, 1);
-  LuaInterface::m_scene->player->move_speed = force;
+  Scene::player.move_speed = force;
 
   return 0;
 }
@@ -15,7 +15,7 @@ extern "C" int setMoveForce(lua_State *LS)
 extern "C" int setJumpForce(lua_State *LS)
 {
   float force = lua_tonumber(LS, 1);
-  LuaInterface::m_scene->player->jump_force = force;
+  Scene::player.jump_force = force;
 
   return 0;
 }
@@ -24,7 +24,7 @@ extern "C" int setJumpForce(lua_State *LS)
 extern "C" int setFly(lua_State *LS)
 {
   bool fly = lua_toboolean(LS, 1);
-  LuaInterface::m_scene->player->fly = fly;
+  Scene::player.fly = fly;
 
   return 0;
 }

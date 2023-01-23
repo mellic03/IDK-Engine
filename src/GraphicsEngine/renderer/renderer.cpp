@@ -179,7 +179,7 @@ void Renderer::postProcess(void)
 void Renderer::setupDirLightDepthmap(glm::vec3 dirlightpos, glm::vec3 dirlightdir)
 {
   float near = 1.0f;
-  float far = 55.0f;
+  float far = 100.0f;
   glm::mat4 lightProjection = glm::ortho(-35.0f, 35.0f, -35.0f, 35.0f, near, far);
   
   glm::vec3 v = glm::inverse(this->cam.view) * glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
@@ -207,107 +207,6 @@ void Renderer::perFrameUpdate(void)
     this->useShader(&this->shaders[i]);
     this->shaders[i].setMat4("projection", this->cam.projection);
     this->shaders[i].setMat4("view", this->cam.view);
-  }
-}
-
-
-void Renderer::sendVolumetricData(void)
-{
-  this->active_shader->setInt("volumetrics.num_samples",         this->volumetrics.num_samples);
-  this->active_shader->setFloat("volumetrics.step_size",         this->volumetrics.step_size);
-  this->active_shader->setFloat("volumetrics.step_multiplier",   this->volumetrics.step_multiplier);
-  this->active_shader->setInt("volumetrics.resolution_divisor",  this->volumetrics.resolution_divisor);
-  this->active_shader->setInt("volumetrics.num_blur_passes",     this->volumetrics.num_blur_passes);
-  
-
-  SceneGraph *scenegraph = World::scene.m_scenegraph;
-  char buffer[256];
-
-  this->active_shader->setInt("num_volumetric_pointlights", scenegraph->num_volumetric_pointlights);
-  this->active_shader->setInt("num_shadow_pointlights", scenegraph->num_shadowmapped_volumetric_pointlights);
-
-  for (int i=0; i<MAX_POINTLIGHTS; i++)
-  {
-    sprintf(buffer, "volumetric_pointlights[%d].radius", i);
-    this->active_shader->setFloat(buffer, scenegraph->volumetric_pointlights[i]->radius);
-
-    sprintf(buffer, "volumetric_pointlights[%d].ambient", i);
-    this->active_shader->setVec3( buffer, scenegraph->volumetric_pointlights[i]->ambient);
-
-    sprintf(buffer, "volumetric_pointlights[%d].diffuse", i);
-    this->active_shader->setVec3( buffer, scenegraph->volumetric_pointlights[i]->diffuse);
-
-    sprintf(buffer, "volumetric_pointlights[%d].position", i);
-    this->active_shader->setVec3( buffer, scenegraph->volumetric_pointlights[i]->m_transform->getPos_worldspace());
-
-    sprintf(buffer, "volumetric_pointlights[%d].constant", i);
-    this->active_shader->setFloat(buffer, scenegraph->volumetric_pointlights[i]->constant);
-    
-    sprintf(buffer, "volumetric_pointlights[%d].linear", i);
-    this->active_shader->setFloat(buffer, scenegraph->volumetric_pointlights[i]->linear);
-
-    sprintf(buffer, "volumetric_pointlights[%d].quadratic", i);
-    this->active_shader->setFloat(buffer, scenegraph->volumetric_pointlights[i]->quadratic);
-
-    sprintf(buffer, "volumetric_pointlights[%d].bias", i);
-    this->active_shader->setFloat(buffer, scenegraph->volumetric_pointlights[i]->bias);
-
-    sprintf(buffer, "volumetric_pointlights[%d].fog_constant", i);
-    this->active_shader->setFloat(buffer, scenegraph->volumetric_pointlights[i]->fog_constant);
-
-    sprintf(buffer, "volumetric_pointlights[%d].fog_linear", i);
-    this->active_shader->setFloat(buffer, scenegraph->volumetric_pointlights[i]->fog_linear);
-
-    sprintf(buffer, "volumetric_pointlights[%d].fog_quadratic", i);
-    this->active_shader->setFloat(buffer, scenegraph->volumetric_pointlights[i]->fog_quadratic);
-
-    sprintf(buffer, "volumetric_pointlights[%d].fog_intensity", i);
-    this->active_shader->setFloat(buffer, scenegraph->volumetric_pointlights[i]->fog_intensity);
-  }
-
-  for (int i=0; i<MAX_POINTLIGHTS; i++)
-  {
-    glActiveTexture(GL_TEXTURE11 + i);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, scenegraph->shadowmapped_volumetric_pointlights[i]->depthCubemap);
-    sprintf(buffer, "shadow_pointlights[%d].depthCubemap", i);
-    this->active_shader->setInt(buffer, 11 + i);
-
-
-    sprintf(buffer, "shadow_pointlights[%d].radius", i);
-    this->active_shader->setFloat(buffer, scenegraph->shadowmapped_volumetric_pointlights[i]->radius);
-
-    sprintf(buffer, "shadow_pointlights[%d].ambient", i);
-    this->active_shader->setVec3( buffer, scenegraph->shadowmapped_volumetric_pointlights[i]->ambient);
-
-    sprintf(buffer, "shadow_pointlights[%d].diffuse", i);
-    this->active_shader->setVec3( buffer, scenegraph->shadowmapped_volumetric_pointlights[i]->diffuse);
-
-    sprintf(buffer, "shadow_pointlights[%d].position", i);
-    this->active_shader->setVec3( buffer, scenegraph->shadowmapped_volumetric_pointlights[i]->m_transform->getPos_worldspace());
-
-    sprintf(buffer, "shadow_pointlights[%d].constant", i);
-    this->active_shader->setFloat(buffer, scenegraph->shadowmapped_volumetric_pointlights[i]->constant);
-    
-    sprintf(buffer, "shadow_pointlights[%d].linear", i);
-    this->active_shader->setFloat(buffer, scenegraph->shadowmapped_volumetric_pointlights[i]->linear);
-
-    sprintf(buffer, "shadow_pointlights[%d].quadratic", i);
-    this->active_shader->setFloat(buffer, scenegraph->shadowmapped_volumetric_pointlights[i]->quadratic);
-
-    sprintf(buffer, "shadow_pointlights[%d].bias", i);
-    this->active_shader->setFloat(buffer, scenegraph->shadowmapped_volumetric_pointlights[i]->bias);
-
-    sprintf(buffer, "shadow_pointlights[%d].fog_constant", i);
-    this->active_shader->setFloat(buffer, scenegraph->shadowmapped_volumetric_pointlights[i]->fog_constant);
-
-    sprintf(buffer, "shadow_pointlights[%d].fog_linear", i);
-    this->active_shader->setFloat(buffer, scenegraph->shadowmapped_volumetric_pointlights[i]->fog_linear);
-
-    sprintf(buffer, "shadow_pointlights[%d].fog_quadratic", i);
-    this->active_shader->setFloat(buffer, scenegraph->shadowmapped_volumetric_pointlights[i]->fog_quadratic);
-
-    sprintf(buffer, "shadow_pointlights[%d].fog_intensity", i);
-    this->active_shader->setFloat(buffer, scenegraph->shadowmapped_volumetric_pointlights[i]->fog_intensity);
   }
 }
 

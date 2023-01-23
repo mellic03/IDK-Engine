@@ -52,11 +52,19 @@ struct GameObjectData {
   PhysicsState physics_state = PHYSICS_NONE;
   NavigationState navigation_state = NAVIGATION_NONE;
 
+  GameObjectType ui_icon_type = GAMEOBJECT_UNDEFINED;
+
+
   void setLightSourceType(LightSourceType type)   { this->lightsource_type = type; };
   void setInstancingType(InstancingType type)     { this->instancing_type  = type; };
   void setBillboardType(BillboardType type)       { this->billboard_type   = type; };
   void setPhysicsState(PhysicsState type)         { this->physics_state    = type; };
   void setNavigationState(NavigationState type)   { this->navigation_state = type; };
+
+  void setUiIconType(GameObjectType type)         { this->ui_icon_type = type; };
+
+
+  GameObjectType getUiIconType()                  { return this->ui_icon_type; };
 };
 
 
@@ -65,8 +73,13 @@ struct GameObjectData {
 class GameObject {
 
   private:
+    GameObjectData _data;
+
     std::vector<GameObject *> m_children;
     Transform _transform;
+
+    ModelLOD *_modelLOD;
+    int _lod = 0;
 
     // Physics
     //----------------------------------------------------
@@ -97,14 +110,12 @@ class GameObject {
     bool in_frustum = true;
 
     GameObjectHeader header; 
-    GameObjectData data;
 
     glm::vec3 emission = glm::vec3(0.0f);
     float emission_scale = 1.0f;
 
     int parentID = -1;
     GameObject *m_parent = nullptr;
-
 
     EntityComponentData entity_components;
 
@@ -132,26 +143,44 @@ class GameObject {
     glm::vec3 *getVel(void)           { return this->_transform.getVel(); };
 
 
-    // Object ID
+    // Getters
     //---------------------------------------------------------------------------------------------
+    GameObjectData *getData()                                 { return &this->_data; };
+
     int   getID(void)                                         { return this->header.objectID;  };
     int  *getIDptr(void)                                      { return &this->header.objectID; };
-    void  setID(int id)                                       { this->header.objectID = id;    };
 
-    std::string getName(void) /*...........................*/ { return this->m_given_name; };
-    void setName(std::string name) /*......................*/ { this->m_given_name = name; };
-
+    std::string getName(void)                                 { return this->m_given_name; };
     std::string getTemplateName(void)                         { return this->m_template_name; };
-    void setTemplateName(std::string name)                    { this->m_template_name = name; };
+
+    GameObjectType getObjectType(void)                        { return this->_data.gameobject_type; };
+    std::string    getObjectTypeString(void);
+
+    int *getLOD();
+    int getLevelsLOD();
+
+    Model *getModel(void);
+    Model *getModel(int lod);
     //---------------------------------------------------------------------------------------------
+
+
+    // Setters
+    //---------------------------------------------------------------------------------------------
+    void setID(int id);
+  
+    void setName(std::string name);
+    void setTemplateName(std::string name);
+  
+    void setObjectType(GameObjectType type);
+
+    void setModelLOD(ModelLOD *modelLOD);
+    //---------------------------------------------------------------------------------------------
+
+
 
 
     // Interactivity
     //---------------------------------------------------------------------------------------------
-    void setObjectType(GameObjectType type)           { this->data.gameobject_type = type; };
-    GameObjectType getObjectType(void)                { return this->data.gameobject_type; };
-    std::string    getObjectTypeString(void);
-    
     GameObject *getParent(void)   { return this->m_parent; };
     //---------------------------------------------------------------------------------------------
 

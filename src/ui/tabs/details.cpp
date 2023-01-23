@@ -1,9 +1,9 @@
 #include "../UIEngine.h"
 
 
-void EngineUI::details(Scene *scene)
+void EngineUI::details()
 {
-  GameObject *object = scene->m_scenegraph->objectPtr(EngineUI::selected_objectID);
+  GameObject *object = Scene::scenegraph.objectPtr(EngineUI::selected_objectID);
   if (object == nullptr)
     return;
     

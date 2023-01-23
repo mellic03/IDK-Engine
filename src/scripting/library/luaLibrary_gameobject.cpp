@@ -7,7 +7,7 @@ extern "C" int setPhysicsState(lua_State *LS)
 {
   int objectID = lua_tointeger(LS, 1) - 1;
   const char *physics_state = lua_tostring(LS, 1);
-  LuaInterface::m_scenegraph->objectPtr(objectID)->changePhysState(physics_state);
+  Scene::scenegraph.objectPtr(objectID)->changePhysState(physics_state);
 
   return 0;
 }
@@ -16,7 +16,7 @@ extern "C" int setPhysicsState(lua_State *LS)
 extern "C" int getPos(lua_State *LS)
 {
   int objectID = lua_tointeger(LS, 1) - 1;
-  GameObject *object = LuaInterface::m_scenegraph->objectPtr(objectID);
+  GameObject *object = Scene::scenegraph.objectPtr(objectID);
   glm::vec3 pos = *object->getPos();
 
   lua_newtable(LS);
@@ -41,7 +41,7 @@ extern "C" int setPos(lua_State *LS)
   float y = lua_tonumber(LS, 3);
   float z = lua_tonumber(LS, 4);
 
-  GameObject *object = LuaInterface::m_scenegraph->objectPtr(objectID);
+  GameObject *object = Scene::scenegraph.objectPtr(objectID);
   *object->getPos() = glm::vec3(x, y, z);
 
   return 0;
@@ -51,7 +51,7 @@ extern "C" int setPos(lua_State *LS)
 extern "C" int getVel(lua_State *LS)
 {
   int objectID = lua_tointeger(LS, 1) - 1;
-  GameObject *object = LuaInterface::m_scenegraph->objectPtr(objectID);
+  GameObject *object = Scene::scenegraph.objectPtr(objectID);
   glm::vec3 vel = *object->getVel();
 
   lua_newtable(LS);
@@ -76,7 +76,7 @@ extern "C" int setVel(lua_State *LS)
   float y = lua_tonumber(LS, 3);
   float z = lua_tonumber(LS, 4);
 
-  GameObject *object = LuaInterface::m_scenegraph->objectPtr(objectID);
+  GameObject *object = Scene::scenegraph.objectPtr(objectID);
   *object->getVel() = glm::vec3(x, y, z);
 
   return 0;
@@ -90,7 +90,7 @@ extern "C" int addToVel(lua_State *LS)
   float y = lua_tonumber(LS, 3);
   float z = lua_tonumber(LS, 4);
 
-  GameObject *object = LuaInterface::m_scenegraph->objectPtr(objectID);
+  GameObject *object = Scene::scenegraph.objectPtr(objectID);
   *object->getVel() += glm::vec3(x, y, z);
 
   return 0;
@@ -104,7 +104,7 @@ extern "C" int addRot(lua_State *LS)
   float y = lua_tonumber(LS, 3);
   float z = lua_tonumber(LS, 4);
   
-  GameObject *object = LuaInterface::m_scenegraph->objectPtr(objectID);
+  GameObject *object = Scene::scenegraph.objectPtr(objectID);
   object->getTransform()->addRot(glm::vec3(x, y, z));
 
   return 0;

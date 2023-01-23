@@ -61,13 +61,12 @@ void InstanceData::setVertexAttribs()
 
 void InstanceData::perFrameUpdate()
 {
+  for (size_t i=0; i<this->model_transforms.size(); i++)
+    this->model_matrices[i] = this->model_transforms[i]->getModelMatrix();
+
+
   GLCALL( glBindBuffer(GL_ARRAY_BUFFER, this->VBO) );
   GLCALL( glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4) * this->model_matrices.size(), &this->model_matrices[0], GL_STATIC_DRAW) );
-
-  for (size_t i=0; i<this->model_transforms.size(); i++)
-  {
-    this->model_matrices[i] = this->model_transforms[i]->getModelMatrix();
-  }
 
   GLCALL( glBindBuffer(GL_ARRAY_BUFFER, 0) );
 }

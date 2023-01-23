@@ -27,12 +27,13 @@ namespace EngineUI {
 
   void bitFlagCheckBox(const char *label, unsigned char flag, unsigned char *bits);
 
-  void sceneHierarchy(Renderer *ren, Scene *scene);
-  void properties(Scene *scene);
-  void scriptBrowser(void);
-  void scriptEditor(void);
-  void details(Scene *scene);
+  void sceneHierarchy(Renderer *ren);
+  void properties();
+  void scriptBrowser();
+  void scriptEditor();
+  void details();
   void debug(Renderer *ren);
+  void models();
 
 
   std::string getObjectIcon(GameObjectType type);

@@ -2,4 +2,5 @@
 #GameObjectType GAMEOBJECT_LIGHTSOURCE
 #LightSourceType LIGHTSOURCE_SPOT_LIGHT
 #geometry sphere.dae
+#meshlod 0 sphere.dae
 #exit

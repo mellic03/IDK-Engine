@@ -17,7 +17,7 @@ namespace PhysicsEngine {
     glm::vec3 pos = glm::vec3(0.0f);
     glm::vec3 vel = glm::vec3(0.0f);
     float top = 0.5f;
-    float bottom = 1.5f;
+    float bottom = 2.0f;
     float radius  = 0.5f;
   };
 

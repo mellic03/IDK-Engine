@@ -102,7 +102,9 @@ void SceneGraph::loadObject(std::string directory)
   std::string filepath = directory + "asset.txt";
 
   GameObject object;
+  GameObjectData *objectData = object.getData();
   Model new_model;
+  ModelLOD new_modelLod;
 
   FILE *fh = fopen(filepath.c_str(), "r");
 
@@ -111,25 +113,32 @@ void SceneGraph::loadObject(std::string directory)
   int intdata;
 
 
+
   while (fgets(buffer, 256, fh) != NULL)
   {
     if (sscanf(buffer, "#gameobject %s", stringdata))
       object.setTemplateName(std::string(stringdata));
 
+
     else if (sscanf(buffer, "#GameObjectType %s", stringdata))
       object.setObjectType(GameObjectUtil::objectType_fromString(std::string(stringdata)));
 
-    if (sscanf(buffer, "#LightSourceType %s", stringdata))
-      object.data.setLightSourceType(GameObjectUtil::lightsourceType_fromString(std::string(stringdata)));
+
+    else if (sscanf(buffer, "#LightSourceType %s", stringdata))
+      objectData->setLightSourceType(GameObjectUtil::lightsourceType_fromString(std::string(stringdata)));
+
 
     else if (sscanf(buffer, "#InstancingType %s", stringdata))
-      object.data.setInstancingType(GameObjectUtil::instancingType_fromString(std::string(stringdata)));
+      objectData->setInstancingType(GameObjectUtil::instancingType_fromString(std::string(stringdata)));
+
 
     else if (sscanf(buffer, "#BilloardType %s", stringdata))
-      object.data.setBillboardType(GameObjectUtil::billboardType_fromString(std::string(stringdata)));
+      objectData->setBillboardType(GameObjectUtil::billboardType_fromString(std::string(stringdata)));
+
 
     else if (sscanf(buffer, "#physics %s", stringdata))
       object.changePhysState(std::string(stringdata));
+
 
     else if (sscanf(buffer, "#geometry %s", stringdata))
     {
@@ -138,11 +147,21 @@ void SceneGraph::loadObject(std::string directory)
       object.m_model = &*std::prev(this->m_models.end());
     }
 
+
+    else if (sscanf(buffer, "#meshlod %d %s", &intdata, stringdata))
+    {
+      new_modelLod.loadLOD(intdata, directory, std::string(stringdata), object.getObjectType() == GAMEOBJECT_TERRAIN);
+      this->_modelLODs.push_back(new_modelLod);
+      object.setModelLOD(&*std::prev(this->_modelLODs.end()));
+    }
+
+
     else if (sscanf(buffer, "#collision %s", stringdata))
     {
       object.m_collision_mesh.load(directory + std::string(stringdata));
       object.hasCollisionMesh(true);
     }
+
 
     else if (strstr(buffer, "#exit"))
       break;
@@ -260,6 +279,11 @@ void SceneGraph::sortLights(Frustum *frustum)
     this->shadowmapped_volumetric_pointlights.push_back(&this->pointlights[0]);
 }
 
+
+std::list<GameObject> *SceneGraph::getTemplates()
+{
+  return &this->m_object_templates;
+}
 
 
 std::list<GameObject *> *SceneGraph::getTemplatesByType(GameObjectType object_type)

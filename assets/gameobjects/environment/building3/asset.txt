@@ -2,5 +2,6 @@
 #interactivity environmental
 #GameObjectType GAMEOBJECT_STATIC
 #geometry building3.dae
+#meshlod 0 building3.dae
 #collision collision.obj
 #exit

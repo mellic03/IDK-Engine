@@ -1,8 +1,7 @@
 #include "luascripting.h"
 
-void luaInit(Scene *scene, Renderer *renderer)
+void luaInit()
 {
-  LuaInterface::init(scene, renderer);
   LuaInterface::compile();
 }
 
@@ -14,13 +13,17 @@ void luaMain(Renderer *ren, Player *player, std::list<GameObject> *gameobjects)
   std::vector<glm::vec3> positions, velocities;
 
   auto element = gameobjects->begin();
+  
 
   for (auto &object: *gameobjects)
   {
     for (EntityComponent component: *object.entity_components.getScriptComponents())
     {
       if (component.script_changed)
+      {
         LuaInterface::compile();
+        component.script_changed = false;
+      }
 
       IDs.push_back(object.getID() + 1);
       scripts.push_back(component.script_name);

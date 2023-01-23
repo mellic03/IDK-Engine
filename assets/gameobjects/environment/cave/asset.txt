@@ -1,6 +1,7 @@
 #gameobject cave
 #interactivity environmental
 #geometry cave.dae
+#meshlod cave.dae
 #collision collision.obj
 #physics PHYSICS_NONE
 #exit

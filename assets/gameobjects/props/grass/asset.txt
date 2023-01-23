@@ -6,5 +6,6 @@
 #BillboardType BILLBOARD_FOLLOW_CAMERA
 
 #geometry grass.dae
+#meshlod 0 grass.dae
 #physics PHYSICS_NONE
 #exit

@@ -12,14 +12,14 @@ int selected_pointlight = 0;  const char *point_options[4] = {"1", "2", "3", "4"
 int selected_spotlight = 0;   const char *spot_options[4] = {"1", "2"};
 
 
-void draw_lighting_tab(Renderer *ren, Scene *scene)
+void draw_lighting_tab(Renderer *ren)
 {
   ImGui::Text("Directional Light");
   ImGui::Separator();
-  ImGui::DragFloat3("Position", &scene->m_scenegraph->dirlight.position[0], 0.1f);
-  ImGui::ColorEdit3("Diffuse", &scene->m_scenegraph->dirlight.diffuse[0], 0.1f);
-  ImGui::ColorEdit3("Ambient", &scene->m_scenegraph->dirlight.ambient[0], 0.1f);
-  ImGui::DragFloat("Fog intensity", &scene->m_scenegraph->dirlight.fog_intensity, 0.01f);
+  ImGui::DragFloat3("Position",       &Scene::scenegraph.dirlight.position[0], 0.1f);
+  ImGui::ColorEdit3("Diffuse",        &Scene::scenegraph.dirlight.diffuse[0], 0.1f);
+  ImGui::ColorEdit3("Ambient",        &Scene::scenegraph.dirlight.ambient[0], 0.1f);
+  ImGui::DragFloat("Fog intensity",   &Scene::scenegraph.dirlight.fog_intensity, 0.01f);
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
 
@@ -120,10 +120,10 @@ void draw_render_tab(Renderer *ren)
 }
 
 
-void draw_physics_tab(Renderer *ren, Player *player)
+void draw_physics_tab(Renderer *ren)
 {
   ImGui::SliderFloat("Gravity", &PhysicsEngine::gravity, 0, 10);
-  ImGui::Checkbox("Fly", &player->fly);
+  ImGui::Checkbox("Fly", &Scene::player.fly);
 }
 
 
@@ -187,7 +187,6 @@ static void draw_framebuffers_n(Renderer *ren, ImVec2 viewportsize, int n, std::
 }
 
 
-
 void draw_framebuffers(Renderer *ren)
 {
   ImGui::Begin("Frame Buffers");
@@ -242,26 +241,25 @@ void draw_framebuffers(Renderer *ren)
 }
 
 
-
-
-void draw_ui_dev2(Renderer *ren, Scene *scene, Player *player, int *x, int *y, int *w, int *h, ImGuiWindowFlags windowflags)
+void draw_ui_dev2(Renderer *ren, int *x, int *y, int *w, int *h, ImGuiWindowFlags windowflags)
 {
   ImGui::Begin("Root", NULL, windowflags);
   {
     ImGui::DockSpace(ImGui::GetID("dock"));
 
-    EngineUI::sceneHierarchy(ren, scene);
-    EngineUI::properties(scene);
+    EngineUI::sceneHierarchy(ren);
+    EngineUI::properties();
     EngineUI::scriptBrowser();
     EngineUI::scriptEditor();
-    EngineUI::details(scene);
+    EngineUI::details();
     EngineUI::debug(ren);
+    EngineUI::models();
 
     draw_framebuffers(ren);
 
     ImGui::Begin("Lighting");
     {
-      draw_lighting_tab(ren, scene);
+      draw_lighting_tab(ren);
       ImGui::End();
     }
   
@@ -273,7 +271,7 @@ void draw_ui_dev2(Renderer *ren, Scene *scene, Player *player, int *x, int *y, i
 
     ImGui::Begin("Physics");
     {
-      draw_physics_tab(ren, player);
+      draw_physics_tab(ren);
       ImGui::End();
     }
 
@@ -296,49 +294,19 @@ void draw_ui_dev2(Renderer *ren, Scene *scene, Player *player, int *x, int *y, i
 }
 
 
-void draw_ui_dev1(Renderer *ren, Scene *scene, Player *player, int *x, int *y, int *w, int *h)
+
+void draw_ui(Renderer *ren, int *x, int *y, int *w, int *h)
 {
-  *w = (int)ImGui::GetIO().DisplaySize.x;
-  *h = (int)ImGui::GetIO().DisplaySize.y;
+  draw_main_menu_bar();
 
-  if (ren->viewport_width != *w || ren->viewport_height != *h)
-    ren->resize(*w, *h);
+  ImGuiWindowFlags windowflags = 0;
+  windowflags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+  windowflags |= ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoFocusOnAppearing;
+  windowflags |= ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_MenuBar;
+  windowflags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBringToFrontOnFocus;
 
-}
+  ImGui::SetNextWindowPos({0, 0});
+  ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
 
-void draw_ui_dev0(Renderer *ren, Scene *scene, Player *player, int *x, int *y, int *w, int *h)
-{
-
-}
-
-
-
-void draw_ui(Renderer *ren, Scene *scene, Player *player, int *x, int *y, int *w, int *h, const char *devlevel)
-{
-  if (strcmp(devlevel, "--dev2") == 0)
-  {
-    draw_main_menu_bar(ren, scene);
-
-    ImGuiWindowFlags windowflags = 0;
-    windowflags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-    windowflags |= ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoFocusOnAppearing;
-    windowflags |= ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_MenuBar;
-    windowflags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBringToFrontOnFocus;
-
-    ImGui::SetNextWindowPos({0, 0});
-    ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
-
-    draw_ui_dev2(ren, scene, player, x, y, w, h, windowflags);
-  }
-
-  else if (strcmp(devlevel, "--dev1") == 0)
-  {
-    draw_ui_dev2(ren, scene, player, x, y, w, h, 0);
-  
-    *w = (int)ImGui::GetIO().DisplaySize.x;
-    *h = (int)ImGui::GetIO().DisplaySize.y;
-
-    if (ren->viewport_width != *w || ren->viewport_height != *h)
-      ren->resize(*w, *h);
-  }
+  draw_ui_dev2(ren, x, y, w, h, windowflags);
 }

@@ -3,5 +3,6 @@
 #interactivity environmental
 #GameObjectType GAMEOBJECT_ACTOR
 #geometry ground.dae
+#meshlod 0 ground.dae
 #collision collision.obj
 #exit

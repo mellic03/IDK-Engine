@@ -26,6 +26,8 @@ class SceneGraph {
     std::list<GameObject *>  _visible_instances_by_type[GAMEOBJECT_NUM_TYPES];
     std::map<std::string, InstanceData> _instance_data;
 
+    std::list<ModelLOD> _modelLODs;
+
 
   public:
 
@@ -84,7 +86,7 @@ class SceneGraph {
     void newObjectInstance_actor(GameObject *objectptr);
     void newObjectInstance_lightsource(GameObject *objectptr);
 
-    void newObjectInstance(std::string object_name, Transform transform = Transform());
+    void newObjectInstance(std::string object_name, Transform *transform = new Transform());
     //----------------------------------------------------------------------------
 
     // File IO
@@ -109,6 +111,7 @@ class SceneGraph {
     void clearScene(void);
     void sortLights(Frustum *frustum);
 
+    std::list<GameObject>   *getTemplates();
     std::list<GameObject *> *getTemplatesByType(GameObjectType object_type);
     
     std::list<GameObject *> *getInstancesByType(GameObjectType object_type);
