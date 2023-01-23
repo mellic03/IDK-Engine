@@ -11,6 +11,11 @@ int GameObject::getLevelsLOD()
   return this->_modelLOD->getLevelsLOD();
 }
 
+ModelLOD *GameObject::getModelLOD()
+{
+  return this->_modelLOD;
+}
+
 Model *GameObject::getModel(void)
 {
   return this->_modelLOD->getLOD(this->_lod);

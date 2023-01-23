@@ -57,7 +57,11 @@ void draw_render_tab(Renderer *ren)
     ren->compileShaders();
   }
 
-  ImGui::ColorEdit3("Clear colour", (float*)&ren->clearColor);
+  ImGui::ColorEdit3("Sky colour", (float*)&ren->clearColor);
+  ImGui::ColorEdit3("Horizon colour", (float*)&ren->horizonColor);
+  ImGui::DragFloat("start", &ren->transition_start, 0.01f);
+  ImGui::DragFloat("stop", &ren->transition_stop, 0.01f);
+
   ImGui::SliderFloat("Fog start", &ren->fog_start, 0.0f, 100.0f, "%0.1f", 0);
   ImGui::SliderFloat("Fog end",   &ren->fog_end,   0.0f, 1000.0f, "%0.1f", 0);
 
@@ -253,7 +257,7 @@ void draw_ui_dev2(Renderer *ren, int *x, int *y, int *w, int *h, ImGuiWindowFlag
     EngineUI::scriptEditor();
     EngineUI::details();
     EngineUI::debug(ren);
-    EngineUI::models();
+    EngineUI::gameobjects();
 
     draw_framebuffers(ren);
 

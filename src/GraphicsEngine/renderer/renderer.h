@@ -84,7 +84,11 @@ class Renderer {
     };
     float kernel_divisor = 1.0f, kernel_offset_divisor = 600.0f;
 
-    glm::vec4 clearColor = glm::vec4(29.0f/255.0f, 60.0f/255.0f, 60.0f/255.0f, 1.0f);
+    glm::vec4 clearColor = glm::vec4(59.0f/255.0f, 134.0f/255.0f, 134.0f/255.0f, 1.0f);
+    glm::vec4 horizonColor = glm::vec4(161.0f/255.0f, 90.0f/255.0f, 34.0f/255.0f, 1.0f);
+    float transition_start = 0.470f;
+    float transition_stop = 1.050f;
+
     float fog_start = 10, fog_end = 1000;
     float exposure = 1.0f, gamma = 2.2f;
 

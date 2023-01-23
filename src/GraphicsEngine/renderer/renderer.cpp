@@ -185,9 +185,14 @@ void Renderer::setupDirLightDepthmap(glm::vec3 dirlightpos, glm::vec3 dirlightdi
   glm::vec3 v = glm::inverse(this->cam.view) * glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
   v.y = 0.0f;
 
-  glm::mat4 lightView = glm::lookAt( this->cam.m_transform->getPos_worldspace() - 15.0f*v + dirlightpos, 
-                                     this->cam.m_transform->getPos_worldspace() - 15.0f*v,
+  // glm::mat4 lightView = glm::lookAt( this->cam.m_transform->getPos_worldspace() - 15.0f*v + dirlightpos, 
+  //                                    this->cam.m_transform->getPos_worldspace() - 15.0f*v,
+  //                                    glm::vec3( 0.0f, 1.0f,  0.0f));
+
+  glm::mat4 lightView = glm::lookAt( dirlightpos, 
+                                     glm::vec3(0.0f),
                                      glm::vec3( 0.0f, 1.0f,  0.0f));
+
 
   this->lightSpaceMatrix = lightProjection * lightView;
   this->active_shader->setMat4("lightSpaceMatrix", this->lightSpaceMatrix);

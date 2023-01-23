@@ -276,6 +276,7 @@ int ENTRY(int argc, const char **argv)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //---------------------------------
 
+    ren->blurTexture(ren->generalColorBuffers[1], ren->billboardFBO);
 
 
 

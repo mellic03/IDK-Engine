@@ -430,7 +430,11 @@ void Scene::drawBackground()
   model = glm::scale(model, glm::vec3(width, height, 1.0f));
   model = glm::translate(model, glm::vec3(0.0f, 0.0f, -0.99 * Render::ren.far_plane));
   Render::ren.active_shader->setMat4("model", model);
-  Render::ren.active_shader->setVec3("clearColor", Render::ren.clearColor);
+  Render::ren.active_shader->setVec3("skyColor", Render::ren.clearColor);
+  Render::ren.active_shader->setVec3("horizonColor", Render::ren.horizonColor);
+  Render::ren.active_shader->setFloat("start", Render::ren.transition_start);
+  Render::ren.active_shader->setFloat("stop", Render::ren.transition_stop);
+
 
   Render::ren.active_shader->setVec3("ViewPos", Render::ren.cam.m_transform->getPos_worldspace());
   Render::ren.active_shader->setVec3("SunPos", Scene::scenegraph.dirlight.position);
@@ -558,16 +562,16 @@ void Scene::drawGeometry_batched()
 void Scene::drawGeometry()
 {
   for (auto &object: *Scene::scenegraph.getInstancesByType(GAMEOBJECT_TERRAIN))
-    Render::ren.drawModel(object->getModel(), object->getTransform());
+    Render::ren.drawModel(object->getModelLOD()->getMinLOD(), object->getTransform());
    
   for (auto &object: *Scene::scenegraph.getInstancesByType(GAMEOBJECT_STATIC))
-    Render::ren.drawModel(object->getModel(), object->getTransform());
+    Render::ren.drawModel(object->getModelLOD()->getMinLOD(), object->getTransform());
 
   for (auto &object: *Scene::scenegraph.getInstancesByType(GAMEOBJECT_ACTOR))
-    Render::ren.drawModel(object->getModel(), object->getTransform());
+    Render::ren.drawModel(object->getModelLOD()->getMinLOD(), object->getTransform());
 
   for (auto &object: *Scene::scenegraph.getInstancesByType(GAMEOBJECT_BILLBOARD, INSTANCING_OFF))
-    Render::ren.drawModel(object->getModel(), object->getTransform());
+    Render::ren.drawModel(object->getModelLOD()->getMinLOD(), object->getTransform());
 }
 
 

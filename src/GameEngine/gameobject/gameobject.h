@@ -159,6 +159,8 @@ class GameObject {
     int *getLOD();
     int getLevelsLOD();
 
+    ModelLOD *getModelLOD();
+
     Model *getModel(void);
     Model *getModel(int lod);
     //---------------------------------------------------------------------------------------------

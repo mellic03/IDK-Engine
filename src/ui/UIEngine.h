@@ -33,7 +33,7 @@ namespace EngineUI {
   void scriptEditor();
   void details();
   void debug(Renderer *ren);
-  void models();
+  void gameobjects();
 
 
   std::string getObjectIcon(GameObjectType type);
