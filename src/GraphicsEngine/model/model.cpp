@@ -233,22 +233,22 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
   int geometry_number = 0;
   while (node != nullptr)
   {
-    rapidxml::xml_node<> *meshNode = node->first_node("mesh");
-
-
-    this->m_meshes.push_back(Mesh());
-    Mesh *mesh = &this->m_meshes[this->m_meshes.size() - 1];
-    mesh->m_dae_id = "#" + std::string(node->first_attribute("id")->value());
-
 
     // For each <mesh>
+    rapidxml::xml_node<> *meshNode = node->first_node("mesh");
     while (meshNode != nullptr)
     {
-      rapidxml::xml_node<> *triangleNode = meshNode->first_node("triangles");
-      // For each <triangles>
+      this->m_meshes.push_back(Mesh());
+      Mesh *mesh = &this->m_meshes[this->m_meshes.size() - 1];
+      mesh->m_dae_id = "#" + std::string(node->first_attribute("id")->value());
 
+
+      // For each <triangles>
+      rapidxml::xml_node<> *triangleNode = meshNode->first_node("triangles");
       while (triangleNode != nullptr)
       {
+        int num_triangles = std::stoi(triangleNode->first_attribute("count")->value());
+
         rapidxml::xml_node<> *n = triangleNode->first_node("p");
 
         mesh->IBOS.push_back(0);
@@ -266,16 +266,17 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
         std::vector<int> indices;
         std::istringstream input(string_array);
 
-
         int i;
         while (input >> i)
           indices.push_back(i);
+
 
         int pos_offset  = this->_geometry_position_offsets[geometry_number];
         int norm_offset = this->_geometry_normal_offsets[geometry_number];
         int tex_offset  = this->_geometry_texcoord_offsets[geometry_number];
         int col_offset  = this->_geometry_color_offsets[geometry_number];
-    
+
+
         if (this->_colors.size() == 0)
         {
           for (size_t i=0; i<indices.size()/3; i+=1)
@@ -287,9 +288,8 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
             vertex->normal    = this->_normals   [norm_offset + indices[3*i + 1]];
             vertex->texcoords = this->_texcoords [tex_offset + indices[3*i + 2]];
 
-            mesh->indices[mesh->indices.size() - 1].push_back(mesh->vertices.size() - 1);
+            mesh->indices[mesh->indices.size()-1].push_back(mesh->vertices.size() - 1);
           }
-          this->_mesh_vertex_offsets.push_back(indices.size()/3);
         }
 
         else
@@ -304,9 +304,8 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
             vertex->texcoords = this->_texcoords [tex_offset + indices[4*i + 2]];
             vertex->color     = this->_colors    [col_offset + indices[4*i + 3]];
 
-            mesh->indices[mesh->indices.size() - 1].push_back(mesh->vertices.size() - 1);
+            mesh->indices[mesh->indices.size()-1].push_back(mesh->vertices.size() - 1);
           }
-          this->_mesh_vertex_offsets.push_back(indices.size()/4);
         }
 
 
@@ -336,19 +335,15 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
           v1->tangent = tangent;
           v2->tangent = tangent;
           v3->tangent = tangent;
-
-          this->_vertices.push_back(v1);
-          this->_vertices.push_back(v2);
-          this->_vertices.push_back(v3);
         }
         //----------------------------------------------------
-       triangleNode = triangleNode->next_sibling("triangles");
+         triangleNode = triangleNode->next_sibling("triangles");
       }
 
+      geometry_number += 1;
       meshNode = meshNode->next_sibling();
     }
 
-    geometry_number += 1;
 
     node = node->next_sibling("geometry");
   }
@@ -368,6 +363,12 @@ void Model::applyMeshTransforms(rapidxml::xml_document<> *doc)
   while (node != nullptr)
   {
     glm::mat4 mat = parseArray_mat4(node->first_node("matrix")->value());
+
+    if (node->first_node("instance_geometry") == nullptr)
+    {
+      node = node->next_sibling();
+      continue;
+    }
 
     std::string id = node->first_node("instance_geometry")->first_attribute("url")->value();
     Mesh *mesh = this->meshPtr(id);
@@ -506,7 +507,6 @@ void Model::loadVertices(rapidxml::xml_document<> *doc)
           colors = parseArray_vec4(colorsNode->first_node("float_array")->value());
 
 
-
       for (size_t i=0; i<positions.size(); i+=1)
         this->_positions.push_back(positions[i]);
       this->_geometry_position_offsets.push_back(positions.size());
@@ -627,14 +627,9 @@ void Model::loadAnimations(rapidxml::xml_document<> *doc)
 
 
 
-    // This is where you left off.
-    // Don't worry, it's okay. You'll get it right soon :)
-
     //-------------------------------------------------------------------------
-    // The std::string "source" is the name of the bone which
+    // The std::string "source_bone" is the name of the bone which
     // the weights under library_animations->animation->animation apply to.
-    printf("source bone: %s\n", source_bone.c_str());
-
     Animation::Joint *joint = this->_armature.find(source_bone);
     if (joint != nullptr)
     {
@@ -642,17 +637,22 @@ void Model::loadAnimations(rapidxml::xml_document<> *doc)
 
       rapidxml::xml_node<> *matrixNode = animationNode->first_node("source")->next_sibling("source");
       std::vector<glm::mat4> keyframe_matrices = stringToMat4Array(matrixNode->first_node("float_array")->value());  
-      
+
       joint->keyframe_times = keyframe_times;
       joint->keyframe_matrices = keyframe_matrices;
-      printf("num keyframes: %d\n", joint->keyframe_times.size());
-      printf("num matrices: %d\n\n", joint->keyframe_matrices.size());
+    }
+
+    else
+    {
+      printf("[Model::loadAnimations()] Could not find joint: %s\n", source_bone.c_str());
+      exit(1);
     }
     //-------------------------------------------------------------------------
 
 
     animationNode = animationNode->next_sibling("animation");
   }
+
 }
 
 
@@ -660,8 +660,6 @@ static void recurse_loadArmature(rapidxml::xml_node<> *node, Animation::Armature
 {
   if (node == nullptr)
     return;
-
-  armature->joints.push_back(joint);
 
   rapidxml::xml_node<> *nd = node->first_node("node");
 
@@ -674,36 +672,14 @@ static void recurse_loadArmature(rapidxml::xml_node<> *node, Animation::Armature
     glm::mat4 transform = parseArray_mat4(nd->first_node("matrix")->value());
 
     Animation::Joint *child_joint = new Animation::Joint(id, name, type, transform);
+    child_joint->parent = joint;
     joint->children.push_back(child_joint);
+    armature->joints.push_back(child_joint);
 
     recurse_loadArmature(nd, armature, child_joint); 
 
     nd = nd->next_sibling("node");
   }
-}
-
-
-static void printBVTree(const std::string &prefix, const Animation::Joint *node)
-{
-  if (node == nullptr)
-    return;
-  
-  std::cout << prefix;
-  std::cout << "    ";
-  std::cout << node->_name_str << "   id_str: " << node->_id_str << "   ID: " << node->_id << std::endl;
-
-  for (Animation::Joint *child: node->children)
-    printBVTree(prefix + "    ", child);
-
-}
-
-
-void printTree(Animation::Joint *root)
-{
-  printf("\n\n");
-  if (root != nullptr)
-    printBVTree(std::string(""), root);
-  printf("\n\n");
 }
 
 
@@ -730,9 +706,10 @@ void Model::loadArmature(rapidxml::xml_document<> *doc)
   std::string id   = node->first_attribute("id")->value();
   std::string name = node->first_attribute("name")->value();
   std::string type = node->first_attribute("type")->value();
-  glm::mat4 transform = parseArray_mat4(node->first_node("matrix")->value());
+  glm::mat4 bindTransform = parseArray_mat4(node->first_node("matrix")->value());
 
-  this->_armature.root = new Animation::Joint(id, name, type, transform);
+  this->_armature.root = new Animation::Joint(id, name, type, bindTransform);
+  this->_armature.joints.push_back(this->_armature.root);
 
   rapidxml::xml_node<> *nd = node;
   while (nd != nullptr)
@@ -741,11 +718,37 @@ void Model::loadArmature(rapidxml::xml_document<> *doc)
     nd = nd->next_sibling("node");
   }
 
-  // printf("\n\nModel: %s\n", this->m_name.c_str());
-  // printBVTree("", this->_armature.root);
-
   //--------------------------------------------------------------------------
 }
+
+static void printBVTree(const std::string &prefix, const Animation::Joint *node)
+{
+  if (node == nullptr)
+    return;
+  
+  std::cout << prefix;
+  std::cout << "    ";
+  std::cout << node->_name_str << "    ";
+
+  if (node->keyframe_matrices.size() > 0)
+  {
+    for (int i=0; i<4; i++)
+      for (int j=0; j<4; j++)
+        printf("%f ", node->keyframe_matrices[0][i][j]);
+  printf("\n");
+
+    for (int i=0; i<4; i++)
+      for (int j=0; j<4; j++)
+        printf("%f ", node->keyframe_matrices[1][i][j]);
+  }
+
+  printf("\n");
+
+  for (Animation::Joint *child: node->children)
+    printBVTree(prefix + "    ", child);
+
+}
+
 
 
 void Model::loadArmatureWeights(rapidxml::xml_document<> *doc)
@@ -777,6 +780,15 @@ void Model::loadArmatureWeights(rapidxml::xml_document<> *doc)
     joint->_id = i;
   }
 
+  rapidxml::xml_node<> *bindNode = jointIDNode->next_sibling();
+  std::vector<glm::mat4> bind_matrices = stringToMat4Array(bindNode->first_node("float_array")->value());
+
+  for (size_t i=0; i<bind_matrices.size(); i++)
+  {
+    auto *joint = this->_armature.find(i);
+    joint->inverseBindTransform = bind_matrices[i];
+  }
+
 
   rapidxml::xml_node<> *weightsNode = jointIDNode->next_sibling()->next_sibling();
   std::vector<float> weights = stringToFloatArray(weightsNode->first_node("float_array")->value());
@@ -794,10 +806,29 @@ void Model::loadArmatureWeights(rapidxml::xml_document<> *doc)
     size_t v_end = 2*vcount[i];
     size_t end = (vcount[i] <= 3) ? v_end : 6;
 
-    for (int j=cursor, k=0; j<cursor+end; j+=2, k+=1)
+    for (Mesh &mesh: this->m_meshes)
     {
-      this->_vertices[i]->joint_ids[k] = v[j+0];
-      this->_vertices[i]->weights[k]   = weights[v[j+1]];
+      for (Vertex &vertex: mesh.vertices)
+      {
+        if (vertex.position == this->_positions[i])
+        {
+          if (vcount[i] >= 1)
+          {
+            vertex.joint_ids.x = v[cursor];
+            vertex.weights.x   = weights[v[cursor+1]];
+          }
+          if (vcount[i] >= 2)
+          {
+            vertex.joint_ids.y = v[cursor+2];
+            vertex.weights.y   = weights[v[cursor+3]];
+          }
+          if (vcount[i] >= 3)
+          {
+            vertex.joint_ids.z = v[cursor+4];
+            vertex.weights.z   = weights[v[cursor+5]];
+          }
+        }
+      }
     }
 
     cursor += v_end;
@@ -806,12 +837,25 @@ void Model::loadArmatureWeights(rapidxml::xml_document<> *doc)
 
 
   // Normalize weights
-  for (Vertex *v: this->_vertices)
+  for (Mesh &mesh: this->m_meshes)
   {
-    float max = glm::max(v->weights[0], glm::max(v->weights[1], v->weights[2]));
-    v->weights /= max;
+    for (Vertex &vertex: mesh.vertices)
+    {
+      float sum = vertex.weights[0] + vertex.weights[1] + vertex.weights[2];
+      vertex.weights /= sum;
+    }
   }
 
+  // for (size_t i=0; i<bind_matrices.size(); i++)
+  // {
+  //   Animation::Joint *joint = this->_armature.find(i);
+  //   joint->localBindTransform = bind_matrices[i];
+
+  //   for (auto &mat: joint->keyframe_matrices)
+  //   {
+  //     mat = joint->localBindTransform * mat;
+  //   }
+  // }
 }
 
 
@@ -908,6 +952,59 @@ void Model::loadDae(std::string directory, std::string filename, bool is_terrain
 
   for (auto &mesh: this->m_meshes)
     mesh.setBufferData();
+
+
+  if (this->_animated && this->m_name == "assets/gameobjects/npc/test/test.dae")
+  {
+    // printf("keyframes: %d\n", this->_armature.joints[1]->keyframe_matrices.size());
+
+    // for (Mesh mesh: this->m_meshes)
+    // {
+    //   int i = 0;
+    //   for (Vertex v: mesh.vertices)
+    //   {
+    //     printf("this->_vertices[%d]: xyz: { %f %f %f }, IDs: { %d %d %d }, weights: { %f %f %f }\n",
+    //       i,
+    //       v.position.x,
+    //       v.position.y,
+    //       v.position.z,
+    //       v.joint_ids[0],
+    //       v.joint_ids[1],
+    //       v.joint_ids[2],
+    //       v.weights[0],
+    //       v.weights[1],
+    //       v.weights[2]
+    //     );
+      
+    //     i += 1;
+    //   }
+    // }
+
+
+    // printf("model: %s\n", this->m_name.c_str());
+
+
+    for (auto &joint: this->_armature.joints)
+    {
+      printf("Joint: %s\n", joint->_name_str.c_str());
+
+      for (auto &mat: joint->keyframe_matrices)
+      {
+        for (int i=0; i<4; i++)
+        {
+          for (int j=0; j<4; j++)
+          {
+            printf("%f ", mat[i][j]);
+          }
+          printf("\n");
+        }
+        printf("\n");
+      }
+    }
+
+    // printBVTree("", this->_armature.root);
+    printf("\n\n");
+  }
 
 }
 

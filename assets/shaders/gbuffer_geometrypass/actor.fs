@@ -20,6 +20,7 @@ uniform Material material;
 uniform vec3 emission;
 uniform float emission_scale;
 
+
 void main()
 {
   gPosition = vec4(FragPos, 1.0);

@@ -38,7 +38,7 @@ class Model {
     std::vector<glm::vec4> _colors;
 
     std::vector<int>    _mesh_vertex_offsets;
-    std::vector<Vertex *> _vertices;
+    std::vector<Vertex> _vertices;
 
     Animation::Armature _armature;
 
@@ -91,6 +91,8 @@ class Model {
 
     void loadDae(std::string directory, std::string filename, bool instanced);
     bool isAnimated() { return this->_animated; };
+
+    Animation::Armature *getArmature()  { return &this->_armature; };
 };
 
 

@@ -17,7 +17,10 @@ struct Animation::Joint {
   std::string _type_str = "";
 
   int _id = 0;
-  glm::mat4 transform = glm::mat4(1.0f);
+  glm::mat4 localBindTransform = glm::mat4(1.0f);
+  glm::mat4 inverseBindTransform = glm::mat4(1.0f);
+
+  Animation::Joint *parent = nullptr;
   std::list<Animation::Joint *> children;
 
   std::vector<float> keyframe_times;
@@ -34,8 +37,36 @@ struct Animation::Joint {
     this->_id_str   = id;
     this->_name_str = name;
     this->_type_str = type;
-    this->transform = t;
+    this->localBindTransform = t;
   };
+
+
+  glm::mat4 computeBindTransform()
+  {
+    Animation::Joint *joint = this->parent;
+    glm::mat4 bind = this->localBindTransform;
+    
+    while (joint != nullptr)
+    {
+      bind = this->parent->computeBindTransform() * bind;
+      joint = joint->parent;
+    }
+
+    return bind;  
+  };
+
+  glm::mat4 computeInvBindTransform()
+  {
+    return glm::inverse(this->computeBindTransform());
+    // if (this->parent != nullptr)
+    //   return this->parent->computeInvBindTransform() * this->inverseBindTransform;
+
+    // else
+    //   return this->inverseBindTransform;
+  };
+
+
+
 };
 
 

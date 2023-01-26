@@ -657,9 +657,51 @@ void Renderer::drawPrimitive(PrimitiveType type, glm::vec3 pos, float radius, Tr
 }
 
 
+int frame = 0;
+int anim = 0;
 void Renderer::drawModel(Model *model, Transform *transform)
 {
   this->active_shader->setMat4("model", transform->getModelMatrix_stale());
+
+  if (frame == 144)
+  {
+    anim += 1;
+    frame = 0;
+  }
+  if (anim == 20)
+    anim = 0;
+
+  if (model->isAnimated())
+  {
+    size_t i = 0;
+
+    for (i=0; i<model->getArmature()->joints.size(); i++)
+    {
+      Animation::Joint *joint = model->getArmature()->find(i);
+      if (joint->keyframe_matrices.size() > 0)
+      {
+        glm::mat4 mat = glm::transpose(joint->keyframe_matrices[anim]);
+        glm::mat4 bind = glm::transpose((joint->inverseBindTransform));
+        mat = mat*bind;
+
+        this->active_shader->setMat4("boneTransforms[" + std::to_string(i) + "]", mat);
+      }
+    }
+
+    while (i < 10)
+    {
+      this->active_shader->setMat4("boneTransforms[" + std::to_string(i) + "]", glm::mat4(1.0f));
+      i += 1;
+    }
+    frame += 1;
+  }
+
+  else
+  {
+    for (int i=0; i<10; i++)
+      this->active_shader->setMat4("boneTransforms[" + std::to_string(i) + "]", glm::mat4(1.0f));
+  }
+
 
   for (Mesh &mesh: model->m_meshes)
   {
@@ -685,6 +727,7 @@ void Renderer::drawModel(Model *model, Transform *transform)
  
    GLCALL( glBindVertexArray(0) );
   }
+
 }
 
 

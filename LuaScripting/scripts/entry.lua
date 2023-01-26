@@ -7,7 +7,7 @@ return function(objectID, engine)
   CE_Player_SetMoveForce(16.0);
   CE_Player_SetFly(true);
 
-  CE_Physics_SetGravity(10.0);
+  CE_Physics_SetGravity(0.0);
 
   CE_Lighting_SetBloomMinResolution(64);
   CE_Lighting_SetBloomThreshold(0.150);
