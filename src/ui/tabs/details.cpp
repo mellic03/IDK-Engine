@@ -16,6 +16,7 @@ void EngineUI::details()
     ImGui::Text("Info");
     ImGui::Separator();
     ImGui::Text("GameObjectType:      %s", object->getObjectTypeString().c_str());
+    ImGui::Text("Animated:            %s", object->getData()->isAnimated() ? "true" : "false");
     ImGui::Text("physics_state:       %s", object->physStateString().c_str());
     ImGui::Text("navigation_state:    %s", object->navStateString().c_str());
     ImGui::Text("has collision mesh:  %s", object->hasCollisionMesh() ? "true": "false");

@@ -1,0 +1,6 @@
+#gameobject testanimation
+#GameObjectType GAMEOBJECT_ACTOR
+
+#meshlod 0 test.dae
+
+#exit

@@ -12,6 +12,7 @@
 #include "../../include/imgui/imgui_impl_opengl3.h"
 
 #include "../../GraphicsEngine/GraphicsEngine.h"
+#include "../physics.h"
 
 
 
@@ -23,134 +24,117 @@ enum EntityComponentType {
   COMPONENT_SCRIPT,
   COMPONENT_TERRAIN,
   COMPONENT_LOD,
+  COMPONENT_SPHERE_COLLIDER,
+  COMPONENT_CAPSULE_COLLIDER,
+  COMPONENT_MESH_COLLIDER,
   COMPONENT_NUM_COMPONENTS
 };
 
 
 
+struct TransformComponent {
+
+};
+
+
+struct ScriptComponent {
+  std::filesystem::path script_path = std::filesystem::path(std::filesystem::current_path() / "LuaScripting/scripts/default.lua");
+  std::string script_name = "LuaScripting/scripts/default";
+  bool script_changed = false;
+
+  ScriptComponent(std::string line)  { this->script_name = line; };
+};
+
+
 struct TerrainComponent {
   float threshold = 0.5f;
-  float epsilon   = 0.25f;
-
-  std::vector<Transform> grass_transforms;
-  void generateGrassPositions(std::vector<Vertex> &vertices)
-  {
-    for (auto &vertex: vertices)
-    {
-      if (glm::normalize(vertex.normal).y > 0.95f)
-      {
-        for (int i=0; i<10; i++)
-        {
-          Transform transform;
-          *transform.getPos() = vertex.position + glm::vec3(((float)(rand()%4)-2.0f) / (float)(rand()%10), 0.0f, ((float)(rand()%4)-2.0f) / (float)(rand()%10));
-          this->grass_transforms.push_back(transform);
-        }
-      }
-    }
-  }
+  float epsilon = 0.25f;
 };
 
 
+struct LODComponent {
 
-class EntityComponent { 
-
-  public:
-    EntityComponentType component_type = COMPONENT_NONE;
-    glm::vec3 *diffuse = nullptr;
-
-    // COMPONENT_POINT_LIGHT
-    PointLight *pointlight;
-  
-    // COMPONENT_SPOT_LIGHT
-    SpotLight *spotlight;
-
-    // COMPONENT_SCRIPT
-    std::filesystem::path script_path = std::filesystem::path(std::filesystem::current_path() / "LuaScripting/scripts/default.lua");
-    std::string script_name = "LuaScripting/scripts/default";
-    bool script_changed = false;
-
-    // COMPONENT_TERRAIN
-    float threshold = 0.5f;
-    float epsilon = 0.25f;
-
-    EntityComponent() { };
-    EntityComponent(EntityComponentType type) { this->component_type = type; };
-
-    void toFile(std::ofstream &stream);
-    void fromFile(std::ifstream &stream);
 
 };
 
 
-struct EntityComponentData {
+struct PointLightComponent {
+  PointLight *pointlight;
+};
+
+
+struct SpotLightComponent {
+  SpotLight *spotlight;
+};
+
+
+struct SphereColliderComponent {
+  bool visualise = false;
+
+  PhysicsEngine::SphereCollider *sphere_collider = nullptr;
+};
+
+
+struct CapsuleColliderComponent {
+  bool visualise = false;
+
+  PhysicsEngine::CapsuleCollider *capsule_collider = nullptr;
+};
+
+
+struct MeshColliderComponent {
+
+};
+
+
+
+class EntityComponents {
 
   private:
 
-    EntityComponent _entity_components[COMPONENT_NUM_COMPONENTS];
-    bool _has_entity_component[COMPONENT_NUM_COMPONENTS];
+    bool _has_component[COMPONENT_NUM_COMPONENTS] = { false };
 
-    std::vector<EntityComponent> _script_components;
+    TransformComponent            _transform_component;
+    std::vector<ScriptComponent>  _script_components;
+    TerrainComponent              _terrain_component;
+    LODComponent                  _lod_component;
+    PointLightComponent           _pointlight_component;
+    SpotLightComponent            _spotlight_component;
+    SphereColliderComponent       _spherecollider_component;
+    CapsuleColliderComponent      _capsulecollider_component;
+    MeshColliderComponent         _meshcollider_component;
+
 
 
   public:
 
-    EntityComponentData(void)
-    {
-      for (int i=0; i<COMPONENT_NUM_COMPONENTS; i++)
-      {
-        this->_entity_components[i] = EntityComponent((EntityComponentType)i);
-        this->_has_entity_component[i] = false;
-      }
-    };
+    std::vector<ScriptComponent> *getScriptComponents()     { return &this->_script_components; };
+    TransformComponent *getTransformComponent()             { return &this->_transform_component; };
+    TerrainComponent *getTerrainComponent()                 { return &this->_terrain_component; };
+    LODComponent *getLODComponent()                         { return &this->_lod_component; };
+    PointLight *getPointLightComponent()                    { return this->_pointlight_component.pointlight; };
+    SpotLight *getSpotLightComponent()                      { return this->_spotlight_component.spotlight; };
+    SphereColliderComponent *getSphereColliderComponent()   { return &this->_spherecollider_component; };
+    CapsuleColliderComponent *getCapsuleColliderComponent() { return &this->_capsulecollider_component; };
+    MeshColliderComponent *getMeshColliderComponent()        { return &this->_meshcollider_component; };
 
-    bool hasComponent(EntityComponentType type)
-    {
-      return this->_has_entity_component[type];
-    };
 
-    void giveComponent(EntityComponentType type)
-    {
-      if (type == COMPONENT_SCRIPT)
-        this->giveScriptComponent("LuaScripting/scripts/default");
-      this->_has_entity_component[type] = true;
-    };
+    void giveComponent(ScriptComponent    component);
+    void giveComponent(TransformComponent component);
+    void giveComponent(TerrainComponent   component);
+    void giveComponent(LODComponent       component);
 
-    void giveScriptComponent(std::string script_filepath)
-    {
-      this->_script_components.push_back(EntityComponent(COMPONENT_SCRIPT));
-      this->_script_components[this->_script_components.size() - 1].script_path = std::filesystem::current_path() / script_filepath;
-      this->_script_components[this->_script_components.size() - 1].script_name = script_filepath;
-      this->_has_entity_component[COMPONENT_SCRIPT] = true;
-    };
+    void giveComponent(PointLight *pointlight);
+    void giveComponent(SpotLight  *spotlight);
 
-    void givePointLightComponent(PointLight *pointlight)
-    {
-      this->_has_entity_component[COMPONENT_POINT_LIGHT] = true;
-      this->_entity_components[COMPONENT_POINT_LIGHT].pointlight = pointlight;
-    }
+    void giveComponent(PhysicsEngine::SphereCollider  *sphereCollider);
+    void giveComponent(PhysicsEngine::CapsuleCollider  *capsuleCollider);
+    void giveComponent(MeshColliderComponent meshcollider);
 
-    void giveSpotLightComponent(SpotLight *spotlight)
-    {
-      this->_has_entity_component[COMPONENT_SPOT_LIGHT] = true;
-      this->_entity_components[COMPONENT_SPOT_LIGHT].spotlight = spotlight;
-    }
 
-    EntityComponent *getComponent(EntityComponentType type)
-    {
-      if (!this->hasComponent(type))
-      {
-        printf("Object does not have component: %d\n(entitycomponent.h --> EntityComponentData::getComponent())\n", (int)type);
-        exit(1);
-      }
-
-      return &this->_entity_components[type];
-    };
-
-    std::vector<EntityComponent> *getScriptComponents()
-    {
-      return &this->_script_components;
-    };
-
+    bool hasComponent(EntityComponentType type);
 };
+
+
 
 

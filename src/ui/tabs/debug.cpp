@@ -25,7 +25,14 @@ void EngineUI::debug(Renderer *ren)
   ImGui::Separator();
 
 
-  EngineUI::bitFlagCheckBox(
+  EngineUI::bitFlagCheckbox(
+    "Draw sphere colliders",
+    static_cast<unsigned char>(RenderDebugFlag::DrawColliders),
+    (unsigned char *)(ren->getDebugData()->getDebugFlags())
+  );
+
+
+  EngineUI::bitFlagCheckbox(
     "Draw bounding spheres",
     static_cast<unsigned char>(RenderDebugFlag::DrawBoundingSpheres),
     (unsigned char *)(ren->getDebugData()->getDebugFlags())

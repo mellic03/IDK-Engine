@@ -140,14 +140,6 @@ void SceneGraph::loadObject(std::string directory)
       object.changePhysState(std::string(stringdata));
 
 
-    else if (sscanf(buffer, "#geometry %s", stringdata))
-    {
-      new_model.loadDae(directory, std::string(stringdata), object.getObjectType() == GAMEOBJECT_TERRAIN);
-      this->m_models.push_back(new_model);
-      object.m_model = &*std::prev(this->m_models.end());
-    }
-
-
     else if (sscanf(buffer, "#meshlod %d %s", &intdata, stringdata))
     {
       new_modelLod.loadLOD(intdata, directory, std::string(stringdata), object.getObjectType() == GAMEOBJECT_TERRAIN);
@@ -165,6 +157,17 @@ void SceneGraph::loadObject(std::string directory)
 
     else if (strstr(buffer, "#exit"))
       break;
+  }
+
+  if (object.getModelLOD() != nullptr)
+  {
+    Model *model = object.getModelLOD()->getDefaultLOD_model();
+    
+    object.getData()->isAnimated(model->isAnimated());
+
+    object.getCullingData()->setLocalBoundingSpherePos(model->bounding_sphere_pos);
+    object.getCullingData()->bounding_sphere_radius = model->bounding_sphere_radius;
+    object.getCullingData()->bounding_sphere_radiusSQ = model->bounding_sphere_radiusSQ;
   }
 
   this->m_object_templates.push_back(object);
@@ -286,6 +289,12 @@ std::list<GameObject> *SceneGraph::getTemplates()
 }
 
 
+std::list<GameObject *> *SceneGraph::getInstancesByTemplateName(std::string template_name)
+{
+  return &this->_object_instances_by_template_name[template_name];
+}
+
+
 std::list<GameObject *> *SceneGraph::getTemplatesByType(GameObjectType object_type)
 {
   return &this->_object_templates_by_type[object_type];
@@ -331,6 +340,7 @@ void SceneGraph::cullObjects(Frustum *frustum)
   for (GameObject *object: *this->getInstancesByType(GAMEOBJECT_BILLBOARD))
     this->_bvtree.insert(object);
 
+  this->_bvtree.insert(this->player_object);
 
   // system("clear");
   // this->_bvtree.print();

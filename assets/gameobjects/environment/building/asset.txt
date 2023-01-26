@@ -1,7 +1,6 @@
 #gameobject building
 #interactivity environmental
 #GameObjectType GAMEOBJECT_STATIC
-#geometry building.dae
 
 #meshlod 0 building.dae
 

@@ -43,6 +43,13 @@ struct GameObjectHeader {
 
 struct GameObjectData {
 
+  private:
+    bool _animated = false;
+
+
+  public:
+
+
   GameObjectType gameobject_type = GAMEOBJECT_UNDEFINED;
   LightSourceType lightsource_type = LIGHTSOURCE_NONE;
 
@@ -65,8 +72,36 @@ struct GameObjectData {
 
 
   GameObjectType getUiIconType()                  { return this->ui_icon_type; };
+
+
+  void isAnimated(bool animated)  { this->_animated = animated; };
+  bool isAnimated()   { return this->_animated; };
+
 };
 
+
+struct CullingData {
+
+  private:
+    glm::vec3 _local_bounding_sphere_pos = glm::vec3(0.0f);
+
+  public:
+
+    void setLocalBoundingSpherePos(glm::vec3 pos)   { this->_local_bounding_sphere_pos = pos; };
+    glm::vec3 getLocalBoundingSpherePos()           { return this->_local_bounding_sphere_pos; };
+
+    glm::vec3 bounding_sphere_pos = glm::vec3(0.0f);
+    float bounding_sphere_radius = 0.0f;
+    float bounding_sphere_radiusSQ = 0.0f;
+};
+
+
+struct LODData {
+
+  int  level_of_detail = 0;
+  bool override_global_lod = false;
+
+};
 
 
 
@@ -78,8 +113,12 @@ class GameObject {
     std::vector<GameObject *> m_children;
     Transform _transform;
 
-    ModelLOD *_modelLOD;
-    int _lod = 0;
+    CullingData _culling_data;
+
+    LODData _lod_data;
+    ModelLOD *_modelLOD = nullptr;
+
+    EntityComponents _entity_components;
 
     // Physics
     //----------------------------------------------------
@@ -117,7 +156,7 @@ class GameObject {
     int parentID = -1;
     GameObject *m_parent = nullptr;
 
-    EntityComponentData entity_components;
+    // EntityComponentData entity_components;
 
 
     PhysicsEngine::SphereCollider spherecollider;
@@ -126,7 +165,6 @@ class GameObject {
     // float bounding_sphere_radius = 0.0f;
     // float bounding_sphere_radiusSQ = 0.0f;
 
-    Model *m_model;
     CollisionMesh m_collision_mesh;
 
     std::string m_template_name = "DEFAULT";
@@ -156,13 +194,18 @@ class GameObject {
     GameObjectType getObjectType(void)                        { return this->_data.gameobject_type; };
     std::string    getObjectTypeString(void);
 
-    int *getLOD();
+    CullingData *getCullingData();
+
+    LODData *getLODData();
+    int *getLOD_value();
     int getLevelsLOD();
 
     ModelLOD *getModelLOD();
 
     Model *getModel(void);
     Model *getModel(int lod);
+
+    EntityComponents *getComponents();
     //---------------------------------------------------------------------------------------------
 
 

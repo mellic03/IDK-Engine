@@ -1,7 +1,9 @@
 #include "../../UIEngine.h"
 #include "entitycomponentui.h"
 
-void EngineUI::properties()
+
+
+void EngineUI::instanceProperties()
 {
   SceneGraph *scenegraph = &Scene::scenegraph;
   if (scenegraph->m_object_instances.size() == 0)
@@ -12,7 +14,7 @@ void EngineUI::properties()
     return;
 
   
-  ImGui::Begin("Properties");
+  ImGui::Begin("Instance Properties");
   {
     // ImGui::PushID(EngineUI::selected_objectID);
     // EngineUI::dragVec3("emission", &object->emission, 0.1f);
@@ -45,19 +47,17 @@ void EngineUI::properties()
 
     int count = 0;
 
+    EntityComponents *components = object->getComponents();
+
     for (int i=0; i<COMPONENT_NUM_COMPONENTS; i++)
     {
-      if (object->entity_components.hasComponent((EntityComponentType)i))
-        EntityComponentUI::drawComponent(object, object->entity_components.getComponent((EntityComponentType)i));
+      if (components->hasComponent((EntityComponentType)i))
+        EntityComponentUI::drawComponent(object, components, (EntityComponentType)i);
     }
 
 
     ImGui::Dummy(ImVec2(0.0f, 20.0f));
-    EntityComponentType component_type = COMPONENT_NONE;
-
-    if (EntityComponentUI::newComponent(&component_type))
-      object->entity_components.giveComponent(component_type);
-
+    EntityComponentUI::newComponent(object);
     ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
   }

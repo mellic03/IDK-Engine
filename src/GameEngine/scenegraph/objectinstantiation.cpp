@@ -11,7 +11,7 @@ void SceneGraph::newObjectInstance_empty(GameObject *objectptr)
 
 void SceneGraph::newObjectInstance_terrain(GameObject *objectptr)
 {
-  objectptr->entity_components.giveComponent(COMPONENT_TERRAIN);
+  objectptr->getComponents()->giveComponent(TerrainComponent());
   // objectptr->terrain_components.push_back(EntityComponent(COMPONENT_TERRAIN));
   // objectptr->terrain_components[0].terrain_component.generateGrassPositions(objectptr->m_model->m_meshes[0].vertices);
 
@@ -28,7 +28,7 @@ void SceneGraph::newObjectInstance_billboard(GameObject *objectptr)
 {
   if (objectptr->getData()->instancing_type == INSTANCING_ON)
   {
-    this->addInstanceData(objectptr->getTemplateName(), objectptr->m_model, objectptr->getTransform());
+    this->addInstanceData(objectptr->getTemplateName(), objectptr->getModel(), objectptr->getTransform());
   }
 }
 
@@ -53,7 +53,7 @@ void SceneGraph::newObjectInstance_lightsource(GameObject *objectptr)
       break;
 
     case (LIGHTSOURCE_POINT_LIGHT):
-      objectptr->entity_components.givePointLightComponent(&this->pointlights[this->_num_pointlights]);
+      objectptr->getComponents()->giveComponent(&this->pointlights[this->_num_pointlights]);
       this->pointlights[this->_num_pointlights].m_transform = objectptr->getTransform();
 
       Render::ren.genDepthCubemap(&this->pointlights[this->_num_pointlights].FBO, &this->pointlights[this->_num_pointlights].depthCubemap);
@@ -62,7 +62,7 @@ void SceneGraph::newObjectInstance_lightsource(GameObject *objectptr)
       break;
 
     case (LIGHTSOURCE_SPOT_LIGHT):
-      objectptr->entity_components.giveSpotLightComponent(&this->spotlights[this->_num_spotlights]);
+      objectptr->getComponents()->giveComponent(&this->spotlights[this->_num_spotlights]);
       this->spotlights[this->_num_spotlights].m_transform = objectptr->getTransform();
       this->_num_spotlights += 1;
       break;
@@ -90,7 +90,7 @@ void SceneGraph::newObjectInstance(std::string object_name, Transform *transform
 
   if (templateptr->getData()->instancing_type == INSTANCING_ON)
   {
-    this->addInstanceData(templateptr->getTemplateName(), templateptr->m_model, transform);
+    this->addInstanceData(templateptr->getTemplateName(), templateptr->getModel(), transform);
     return;
   }
 
@@ -108,10 +108,11 @@ void SceneGraph::newObjectInstance(std::string object_name, Transform *transform
 
 
   this->_object_instances_by_type[object_type].push_back(objectptr);
+  this->_object_instances_by_template_name[objectptr->getTemplateName()].push_back(objectptr);
   this->m_selectable_instances.push_back(objectptr);
   
 
-  objectptr->entity_components.giveComponent(COMPONENT_TRANSFORM);
+  objectptr->getComponents()->giveComponent(TransformComponent());
 
   switch (object_type)
   {

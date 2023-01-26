@@ -20,9 +20,14 @@ class SceneGraph {
 
     BVTree _bvtree;
 
+    std::map<std::string, std::list<GameObject *>>  _object_instances_by_template_name;
+
     std::list<GameObject *>  _object_templates_by_type[GAMEOBJECT_NUM_TYPES];
+
     std::list<GameObject *>  _object_instances_by_type[GAMEOBJECT_NUM_TYPES];
+    std::list<GameObject *>  _object_instances_by_type_animated[GAMEOBJECT_NUM_TYPES];
     std::list<GameObject *>  _object_instances_by_type_instanced[GAMEOBJECT_NUM_TYPES];
+
     std::list<GameObject *>  _visible_instances_by_type[GAMEOBJECT_NUM_TYPES];
     std::map<std::string, InstanceData> _instance_data;
 
@@ -112,6 +117,8 @@ class SceneGraph {
     void sortLights(Frustum *frustum);
 
     std::list<GameObject>   *getTemplates();
+
+    std::list<GameObject *> *getInstancesByTemplateName(std::string template_name);
     std::list<GameObject *> *getTemplatesByType(GameObjectType object_type);
     
     std::list<GameObject *> *getInstancesByType(GameObjectType object_type);

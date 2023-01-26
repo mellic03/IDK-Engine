@@ -623,15 +623,13 @@ void unbindTextureUnit(GLenum texture_unit)
 
 
 
-void Renderer::drawPrimitive(PrimitiveType type, Model *model, Transform *transform)
+void Renderer::drawPrimitive(PrimitiveType type, glm::vec3 pos, float radius, Transform *transform)
 {
   GLCALL( glDisable(GL_CULL_FACE) );
 
   Transform localtransform;
-  glm::vec3 p = model->bounding_sphere_pos;
-  p = transform->getModelMatrix() * glm::vec4(p.x, p.y, p.z, 1.0f);
-  localtransform.position = p;
-  localtransform.scale = glm::vec3(model->bounding_sphere_radius);
+  localtransform.position = pos;
+  localtransform.scale = glm::vec3(radius);
 
   this->active_shader->setMat4("model", localtransform.getModelMatrix());
 

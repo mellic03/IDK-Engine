@@ -252,12 +252,12 @@ void draw_ui_dev2(Renderer *ren, int *x, int *y, int *w, int *h, ImGuiWindowFlag
     ImGui::DockSpace(ImGui::GetID("dock"));
 
     EngineUI::sceneHierarchy(ren);
-    EngineUI::properties();
+    EngineUI::instanceProperties();
+    EngineUI::globalProperties();
     EngineUI::scriptBrowser();
     EngineUI::scriptEditor();
     EngineUI::details();
     EngineUI::debug(ren);
-    EngineUI::gameobjects();
 
     draw_framebuffers(ren);
 

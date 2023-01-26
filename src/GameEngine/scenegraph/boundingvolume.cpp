@@ -34,26 +34,21 @@ static void swapNodes( BVNode *a , BVNode *b)
 
 static void recursiveInsert(BVNode *node, GameObject *obj)
 {
-  glm::vec3 p;
+  glm::vec3 nodePos = node->objectptr->getCullingData()->bounding_sphere_pos;
+  float nodeRadiusSQ  = node->objectptr->getCullingData()->bounding_sphere_radiusSQ;
 
-  p = node->objectptr->m_model->bounding_sphere_pos;
-  glm::vec3 nodePos = node->objectptr->getTransform()->getModelMatrix() * glm::vec4(p.x, p.y, p.z, 1.0f);
-  float nodeRadius  = node->objectptr->m_model->bounding_sphere_radius;
-
-  p = obj->m_model->bounding_sphere_pos;
-  glm::vec3 objectptrPos = obj->getTransform()->getModelMatrix() * glm::vec4(p.x, p.y, p.z, 1.0f);
-  float objectptrRadius  = obj->m_model->bounding_sphere_radius;
-
+  glm::vec3 objectptrPos = obj->getCullingData()->bounding_sphere_pos;
+  float objectptrRadiusSQ  = obj->getCullingData()->bounding_sphere_radiusSQ;
 
 
   // If objects sphere is larger than node objects sphere,
   // it is definitely not inside, so check if the 
   // nodes sphere is inside the objects sphere.
-  float dist = glm::distance(objectptrPos, nodePos);
+  float distSQ = glm::distance2(objectptrPos, nodePos);
 
-  if (objectptrRadius >= nodeRadius)
+  if (objectptrRadiusSQ >= nodeRadiusSQ)
   {
-    if (dist < objectptrRadius - nodeRadius)
+    if (distSQ < objectptrRadiusSQ - nodeRadiusSQ)
     {
       // Replace node with new node(obj)
       // old node becomes left node of new node(obj);
@@ -82,7 +77,7 @@ static void recursiveInsert(BVNode *node, GameObject *obj)
 
   // If small is less than big.radius - small.radius away from big.center, small is inside big.
   // Already established that objectptrs sphere is smaller than node objects sphere.
-  if (dist < nodeRadius - objectptrRadius)
+  if (distSQ < nodeRadiusSQ - objectptrRadiusSQ)
   {
     if (node->left == nullptr)
       node->left = new BVNode(obj);
@@ -138,34 +133,16 @@ void BVTree::insert(GameObject *obj)
 }
 
 
-
-
-// static void clear(BVNode *node)
-// {
-//   if (node == nullptr)
-//     return;
-  
-//   clear(node->left);
-//   delete node->left;
-
-//   clear(node->right);
-//   delete node->right;
-// }
-
-
 static void clear(BVNode *node)
 {
   if (node == nullptr)
     return;
   
-  clear(node->inside);
-  delete node->inside;
+  clear(node->left);
+  delete node->left;
 
-  clear(node->overlap);
-  delete node->overlap;
-
-  clear(node->sibling);
-  delete node->sibling;
+  clear(node->right);
+  delete node->right;
 }
 
 
@@ -194,10 +171,8 @@ static void weewoo(BVNode *node, Frustum *frustum, std::list<GameObject *> visib
   if (node->right != nullptr)
     weewoo(node->right, frustum, visible_objects);
 
-
-  glm::vec3 p = node->objectptr->m_model->bounding_sphere_pos;
-  glm::vec3 nodePos = node->objectptr->getTransform()->getModelMatrix() * glm::vec4(p.x, p.y, p.z, 1.0f);
-  float nodeRadius  = node->objectptr->m_model->bounding_sphere_radius;
+  glm::vec3 nodePos = node->objectptr->getCullingData()->bounding_sphere_pos;
+  float nodeRadius  = node->objectptr->getCullingData()->bounding_sphere_radius;
 
 
   if (frustum->entirelyVisible(nodePos, nodeRadius))
@@ -253,9 +228,9 @@ static BVNode *recurse_getPotentialColliders(BVNode *node, BVNode *localRoot, bo
 
   // Traverse tree until object is found.
 
-  // If the object is found, add all child objects to list, then
-  // go back up the tree until reaching the first node where we went left
-  // and traverse back down adding all children to list.
+  // If the object is found, then go back up the tree until
+  // reaching the first node where we went left
+  // and recursively add all children of that node to the list.
   
   if (node->objectptr->getID() != object->getID())
   {

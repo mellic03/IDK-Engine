@@ -20,11 +20,6 @@ struct BVNode {
   GameObject *objectptr = nullptr;
   BVNode *left = nullptr, *right = nullptr;
 
-  BVNode *inside  = nullptr;
-  BVNode *overlap = nullptr;
-  BVNode *sibling = nullptr;
-
-
   BVNode() { };
   BVNode(GameObject *objectptr) { this->objectptr = objectptr; };
 };

@@ -16,13 +16,11 @@ bool GameObject::_groundTest(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec
 
   glm::vec3 intersect_point;
 
-  this->pos_worldspace = this->getTransform()->getPos_worldspace();
-
-  bool intersects = PE::ray_intersects_triangle(this->pos_worldspace, ray, v0, v1, v2, &intersect_point);
+  bool intersects = PE::ray_intersects_triangle(*this->getPos(), ray, v0, v1, v2, &intersect_point);
 
   if (intersects)
   {
-    float dist = glm::distance(this->pos_worldspace, intersect_point);
+    float dist = glm::distance(*this->getPos(), intersect_point);
     if (dist >= 0 && dist < (this->capsulecollider.bottom + 0.05f))
     {
       float overlap = (this->capsulecollider.bottom + 0.05f) - dist;
@@ -41,11 +39,10 @@ void GameObject::collideWithMeshes(void)
 
   this->changePhysState(PHYSICS_FALLING);
 
-
   for (size_t i=0; i<this->_collision_meshes.size(); i++)
   {
     CollisionMesh *mesh = this->_collision_meshes[i];
-    glm::mat4 model = this->_collision_transforms[i]->getModelMatrix_stale();
+    glm::mat4 model = glm::inverse(this->getTransform()->getModelMatrix_noLocalTransform()) * this->_collision_transforms[i]->getModelMatrix();
 
     for (size_t j=0; j<mesh->m_vertices.size(); j+=3)
     {
@@ -61,12 +58,29 @@ void GameObject::collideWithMeshes(void)
       glm::vec3 dir;
       bool edge_collision = false;
       float dist = INFINITY;
-      
-      this->capsulecollider.pos = *this->getPos();
-      this->capsulecollider.vel = *this->getVel();
-      PE::capsule_triangle_detect(&this->capsulecollider, vert0, vert1, vert2, &dist, &edge_collision, &dir);
-      *this->getPos() = this->capsulecollider.pos;
-      *this->getVel() = this->capsulecollider.vel;
+
+      // if (this->getComponents()->hasComponent(COMPONENT_SPHERE_COLLIDER))
+      // {
+      //   this->spherecollider.pos = *this->getPos();
+      //   this->spherecollider.vel = *this->getVel();
+
+      //   if (PE::sphere_triangle_detect(&this->spherecollider, vert0, vert1, vert2, &dist, &edge_collision, &dir))
+      //     PE::sphere_triangle_response(&this->spherecollider, vert0, vert1, vert2, dist, edge_collision, dir);
+
+      //   *this->getPos() = (this->spherecollider.pos);
+      //   *this->getVel() = (this->spherecollider.vel);
+      // }
+
+      // if (this->getComponents()->hasComponent(COMPONENT_CAPSULE_COLLIDER))
+      {
+        this->capsulecollider.pos = *this->getPos();
+        this->capsulecollider.vel = *this->getVel();
+
+        PE::capsule_triangle_detect(&this->capsulecollider, vert0, vert1, vert2, &dist, &edge_collision, &dir);
+
+        *this->getPos() = (this->capsulecollider.pos);
+        *this->getVel() = (this->capsulecollider.vel);
+      }
       
       
       if (this->getPhysState() == PHYSICS_FALLING)
@@ -74,7 +88,6 @@ void GameObject::collideWithMeshes(void)
           this->changePhysState(PHYSICS_GROUNDED);
     }
   }
-
 
   this->_collision_transforms.clear();
   this->_collision_meshes.clear();
@@ -174,6 +187,7 @@ void GameObject::changeNavState(NavigationState new_state)
   }
 }
 
+
 std::string GameObject::getObjectTypeString(void)
 {
   switch (this->getObjectType())
@@ -189,13 +203,17 @@ std::string GameObject::getObjectTypeString(void)
   }
 }
 
+
 void GameObject::perFrameUpdate(Renderer *ren)
 {
   this->getTransform()->getModelMatrix();
 
+  glm::vec3 p = this->getCullingData()->getLocalBoundingSpherePos();
+  p = this->getTransform()->getModelMatrix_stale() * glm::vec4(p.x, p.y, p.z, 1.0f);
+  this->getCullingData()->bounding_sphere_pos = p;
+
   if (this->getPhysState() == PHYSICS_NONE)
     return;
-
 
   // Per frame, add velocity to position, then check physics state
   float damping;
@@ -336,6 +354,11 @@ void GameObject::setParent(GameObject *parent, bool keepGlobalPos)
  */
 void GameObject::collideWithObject(GameObject *object)
 {
+  bool c1 = this->getComponents()->hasComponent(COMPONENT_SPHERE_COLLIDER);
+  bool c2 = this->getComponents()->hasComponent(COMPONENT_CAPSULE_COLLIDER);
+  if (c2 == false)
+    return;
+
   if (this->getID() == object->getID())
     return;
 
@@ -345,15 +368,13 @@ void GameObject::collideWithObject(GameObject *object)
   if (this->getPhysState() == PHYSICS_NONE)
     return;
 
-  glm::vec3 p = object->m_model->bounding_sphere_pos;
-  p = object->getTransform()->getModelMatrix() * glm::vec4(p.x, p.y, p.z, 1.0f);
+  glm::vec3 p0 = this->getTransform()->getPos_worldspace();
+  glm::vec3 p1 = object->getCullingData()->bounding_sphere_pos;
 
-  if (glm::distance2(this->getTransform()->getPos_worldspace(), p) > object->m_model->bounding_sphere_radiusSQ)
+  if (glm::distance2(p0, p1) > object->getCullingData()->bounding_sphere_radiusSQ)
     return;
-
 
   this->_collision_meshes.push_back(object->getCollisionMesh());
   this->_collision_transforms.push_back(object->getTransform());
 }
-
 

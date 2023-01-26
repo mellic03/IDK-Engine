@@ -5,7 +5,7 @@ enum class RenderDebugFlag: unsigned char
 {
   None                  = 0b00000000,
   DrawBoundingSpheres   = 0b00000001,
-  SomeOtherThing        = 0b00000010,
+  DrawColliders         = 0b00000010,
 
 };
 

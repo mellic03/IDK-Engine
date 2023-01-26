@@ -39,8 +39,3 @@ namespace PhysicsEngine {
   void capsule_triangle_response(CapsuleCollider *capsule, Vertex v0, Vertex v1, Vertex v2, float dist, bool edge_collision, glm::vec3 dir);
 
 };
-
-
-
-
-

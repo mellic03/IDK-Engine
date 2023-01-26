@@ -17,7 +17,7 @@ void luaMain(Renderer *ren, Player *player, std::list<GameObject> *gameobjects)
 
   for (auto &object: *gameobjects)
   {
-    for (EntityComponent component: *object.entity_components.getScriptComponents())
+    for (ScriptComponent component: *object.getComponents()->getScriptComponents())
     {
       if (component.script_changed)
       {

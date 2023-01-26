@@ -1,6 +1,8 @@
 #include "UIEngine.h"
 
 int EngineUI::selected_objectID = 0;
+GameObject *EngineUI::selected_gameobject_template = nullptr;
+
 FileBrowser EngineUI::filebrowser;
 
 char EngineUI::script_buffer[4096];
@@ -52,7 +54,7 @@ void EngineUI::dragVec3(std::string name, glm::vec3 *data, float min, float max,
 }
 
 
-void EngineUI::bitFlagCheckBox(const char *label, unsigned char flag, unsigned char *bits)
+void EngineUI::bitFlagCheckbox(const char *label, unsigned char flag, unsigned char *bits)
 {
   bool active = flag & *bits;
 
@@ -83,4 +85,17 @@ std::string EngineUI::getObjectIcon(GameObjectType type)
   return icons[type];
 }
 
+
+std::string EngineUI::getComponentIcon(EntityComponentType type)
+{
+
+  switch (type)
+  {
+    default:
+    case (COMPONENT_TRANSFORM):  return ICON_FA_ARROWS;
+    case (COMPONENT_TERRAIN):    return ICON_FA_TREE;
+    case (COMPONENT_SCRIPT):     return ICON_FA_FILE_O;
+  }
+
+}
 

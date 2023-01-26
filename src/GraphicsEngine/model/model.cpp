@@ -102,6 +102,76 @@ glm::mat4 parseArray_mat4(std::string string_array)
 }
 
 
+std::vector<float> stringToFloatArray(std::string str)
+{
+  std::istringstream input(str);
+  std::vector<float> float_array;
+  float f;
+  while (input >> f)
+    float_array.push_back(f);
+
+  return float_array;
+}
+
+
+std::vector<int> stringToIntArray(std::string str)
+{
+  std::istringstream input(str);
+  std::vector<int> int_array;
+  int i;
+  while (input >> i)
+    int_array.push_back(i);
+
+  return int_array;
+}
+
+
+std::vector<std::string> stringToStringArray(std::string str)
+{
+  std::istringstream input(str);
+  std::vector<std::string> str_array;
+  std::string stri;
+  while (input >> str)
+    str_array.push_back(str);
+
+  return str_array;
+}
+
+
+std::vector<glm::mat4> stringToMat4Array(std::string str)
+{
+  std::istringstream input(str);
+  std::vector<glm::mat4> mat4_array;
+  glm::mat4 mat;
+
+  int i = 0, j = 0;
+  float f;
+
+  while (input >> f)
+  {
+    mat[i][j] = f;
+    j+=1;
+
+    if (j == 4)
+    {
+      j = 0;
+      i += 1;
+    }
+
+    if (i == 4)
+    {
+      i = 0;
+      j = 0;
+
+      mat4_array.push_back(mat);
+    }
+  }
+
+  return mat4_array;
+}
+
+
+
 Mesh *Model::meshPtr(std::string dae_id)
 {
   for (auto &mesh: this->m_meshes)
@@ -160,9 +230,10 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
   node = node->first_node("geometry");
 
   // For each "geometry"
-  for (node; node != nullptr; node = node->next_sibling())
+  int geometry_number = 0;
+  while (node != nullptr)
   {
-    rapidxml::xml_node<> *nd = node->first_node("mesh");
+    rapidxml::xml_node<> *meshNode = node->first_node("mesh");
 
 
     this->m_meshes.push_back(Mesh());
@@ -170,117 +241,116 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
     mesh->m_dae_id = "#" + std::string(node->first_attribute("id")->value());
 
 
-    nd = nd->first_node("source")->first_node("float_array");
-    std::vector<glm::vec3> positions = parseArray_vec3(nd->value());
-
-    nd = nd->parent()->next_sibling()->first_node("float_array");
-    std::vector<glm::vec3> normals = parseArray_vec3(nd->value());
-
-    nd = nd->parent()->next_sibling()->first_node("float_array");
-    std::vector<glm::vec2> texcoords = parseArray_vec2(nd->value());
-
-
-    std::vector<glm::vec4> vertcolors;
-
-
-    if (this->is_terrain)
+    // For each <mesh>
+    while (meshNode != nullptr)
     {
-      nd = nd->parent()->next_sibling()->first_node("float_array");
-      vertcolors = parseArray_vec4(nd->value());
+      rapidxml::xml_node<> *triangleNode = meshNode->first_node("triangles");
+      // For each <triangles>
+
+      while (triangleNode != nullptr)
+      {
+        rapidxml::xml_node<> *n = triangleNode->first_node("p");
+
+        mesh->IBOS.push_back(0);
+        mesh->indices.push_back(std::vector<GLuint>());
+
+
+        ColladaEffect *effectptr = this->colladaEffectPtr_materialID(triangleNode->first_attribute("material")->value());
+        mesh->materials.push_back(Material());
+        mesh->materials[mesh->materials.size() - 1].diffuseMap  = *this->texturePtr(effectptr->m_image_dae_id);
+        mesh->materials[mesh->materials.size() - 1].specularMap = *this->texturePtr(effectptr->m_image_dae_id + "-specular");
+        mesh->materials[mesh->materials.size() - 1].emissionMap = *this->texturePtr(effectptr->m_image_dae_id + "-emission");
+        mesh->materials[mesh->materials.size() - 1].normalMap   = *this->texturePtr(effectptr->m_image_dae_id + "-normal");
+
+        std::string string_array = n->value();
+        std::vector<int> indices;
+        std::istringstream input(string_array);
+
+
+        int i;
+        while (input >> i)
+          indices.push_back(i);
+
+        int pos_offset  = this->_geometry_position_offsets[geometry_number];
+        int norm_offset = this->_geometry_normal_offsets[geometry_number];
+        int tex_offset  = this->_geometry_texcoord_offsets[geometry_number];
+        int col_offset  = this->_geometry_color_offsets[geometry_number];
+    
+        if (this->_colors.size() == 0)
+        {
+          for (size_t i=0; i<indices.size()/3; i+=1)
+          {
+            mesh->vertices.push_back(Vertex());
+            Vertex *vertex = &mesh->vertices[mesh->vertices.size() - 1];
+
+            vertex->position  = this->_positions [pos_offset + indices[3*i + 0]];
+            vertex->normal    = this->_normals   [norm_offset + indices[3*i + 1]];
+            vertex->texcoords = this->_texcoords [tex_offset + indices[3*i + 2]];
+
+            mesh->indices[mesh->indices.size() - 1].push_back(mesh->vertices.size() - 1);
+          }
+          this->_mesh_vertex_offsets.push_back(indices.size()/3);
+        }
+
+        else
+        {
+          for (size_t i=0; i<indices.size()/4; i+=1)
+          {
+            mesh->vertices.push_back(Vertex());
+            Vertex *vertex = &mesh->vertices[mesh->vertices.size() - 1];
+
+            vertex->position  = this->_positions [pos_offset + indices[4*i + 0]];
+            vertex->normal    = this->_normals   [norm_offset + indices[4*i + 1]];
+            vertex->texcoords = this->_texcoords [tex_offset + indices[4*i + 2]];
+            vertex->color     = this->_colors    [col_offset + indices[4*i + 3]];
+
+            mesh->indices[mesh->indices.size() - 1].push_back(mesh->vertices.size() - 1);
+          }
+          this->_mesh_vertex_offsets.push_back(indices.size()/4);
+        }
+
+
+        // Calculate vertex tangents
+        //----------------------------------------------------
+        for (size_t i=0; i<mesh->vertices.size(); i+=3)
+        {
+          Vertex *v1 = &mesh->vertices[i+0];
+          Vertex *v2 = &mesh->vertices[i+1];
+          Vertex *v3 = &mesh->vertices[i+2];
+
+          glm::vec3 p1 = v1->position,  p2 = v2->position,  p3 = v3->position;
+          glm::vec2 t1 = v1->texcoords, t2 = v2->texcoords, t3 = v3->texcoords;
+
+          glm::vec3 edge1 = p2 - p1;
+          glm::vec3 edge2 = p3 - p1;
+          glm::vec2 deltaUV1 = t2 - t1;
+          glm::vec2 deltaUV2 = t3 - t1;
+
+          float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+          glm::vec3 tangent = {
+            f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x),
+            f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y),
+            f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z)
+          };
+
+          v1->tangent = tangent;
+          v2->tangent = tangent;
+          v3->tangent = tangent;
+
+          this->_vertices.push_back(v1);
+          this->_vertices.push_back(v2);
+          this->_vertices.push_back(v3);
+        }
+        //----------------------------------------------------
+       triangleNode = triangleNode->next_sibling("triangles");
+      }
+
+      meshNode = meshNode->next_sibling();
     }
 
+    geometry_number += 1;
 
-    // For each "triangles"
-    nd = nd->parent()->parent()->first_node("triangles");
-    while (nd != nullptr)
-    {
-      rapidxml::xml_node<> *n = nd->first_node("p");
-
-      mesh->IBOS.push_back(0);
-      mesh->indices.push_back(std::vector<GLuint>());
-
-
-      ColladaEffect *effectptr = this->colladaEffectPtr_materialID(nd->first_attribute("material")->value());
-
-      mesh->materials.push_back(Material());
-      mesh->materials[mesh->materials.size() - 1].diffuseMap  = *this->texturePtr(effectptr->m_image_dae_id);
-      mesh->materials[mesh->materials.size() - 1].specularMap = *this->texturePtr(effectptr->m_image_dae_id + "-specular");
-      mesh->materials[mesh->materials.size() - 1].emissionMap = *this->texturePtr(effectptr->m_image_dae_id + "-emission");
-      mesh->materials[mesh->materials.size() - 1].normalMap   = *this->texturePtr(effectptr->m_image_dae_id + "-normal");
-
-      std::string string_array = n->value();
-      std::vector<int> indices;
-      std::istringstream input(string_array);
-
-
-      int i;
-      while (input >> i)
-        indices.push_back(i);
-
-      if (!this->is_terrain)
-      {
-        for (size_t i=0; i<indices.size()/3; i+=1)
-        {
-          mesh->vertices.push_back(Vertex());
-          Vertex *vertex = &mesh->vertices[mesh->vertices.size() - 1];
-
-          vertex->position  = positions[indices[3*i + 0]];
-          vertex->normal    = normals  [indices[3*i + 1]];
-          vertex->texcoords = texcoords[indices[3*i + 2]];
-
-          mesh->indices[mesh->indices.size() - 1].push_back(mesh->vertices.size() - 1);
-        }
-      }
-
-      else
-      {
-        for (size_t i=0; i<indices.size()/4; i+=1)
-        {
-          mesh->vertices.push_back(Vertex());
-          Vertex *vertex = &mesh->vertices[mesh->vertices.size() - 1];
-
-          vertex->position  = positions [indices[4*i + 0]];
-          vertex->normal    = normals   [indices[4*i + 1]];
-          vertex->texcoords = texcoords [indices[4*i + 2]];
-          vertex->color     = vertcolors[indices[4*i + 3]];
-
-          mesh->indices[mesh->indices.size() - 1].push_back(mesh->vertices.size() - 1);
-        }
-      }
-
-
-      // Calculate vertex tangents
-      //----------------------------------------------------
-      for (size_t i=0; i<mesh->vertices.size(); i+=3)
-      {
-        Vertex *v1 = &mesh->vertices[i+0];
-        Vertex *v2 = &mesh->vertices[i+1];
-        Vertex *v3 = &mesh->vertices[i+2];
-
-        glm::vec3 p1 = v1->position,  p2 = v2->position,  p3 = v3->position;
-        glm::vec2 t1 = v1->texcoords, t2 = v2->texcoords, t3 = v3->texcoords;
-
-        glm::vec3 edge1 = p2 - p1;
-        glm::vec3 edge2 = p3 - p1;
-        glm::vec2 deltaUV1 = t2 - t1;
-        glm::vec2 deltaUV2 = t3 - t1;
-
-        float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-        glm::vec3 tangent = {
-          f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x),
-          f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y),
-          f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z)
-        };
-
-        v1->tangent = tangent;
-        v2->tangent = tangent;
-        v3->tangent = tangent;
-      }
-      //----------------------------------------------------
-
-
-      nd = nd->next_sibling();
-    }
+    node = node->next_sibling("geometry");
   }
 
 }
@@ -288,6 +358,9 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
 
 void Model::applyMeshTransforms(rapidxml::xml_document<> *doc)
 {
+  if (this->_animated)
+    return;
+
   rapidxml::xml_node<> *node = doc->first_node();
   node = node->first_node("library_visual_scenes")->first_node("visual_scene");
   node = node->first_node("node");
@@ -393,6 +466,76 @@ int Model::colladaImageIndex(std::string dae_id)
 }
 
 
+void Model::loadVertices(rapidxml::xml_document<> *doc)
+{
+  rapidxml::xml_node<> *node = doc->first_node();
+
+  rapidxml::xml_node<> *geometryNode = node->first_node("library_geometries")->first_node("geometry");
+
+
+  this->_geometry_position_offsets.push_back(0);
+  this->_geometry_normal_offsets.push_back(0);
+  this->_geometry_texcoord_offsets.push_back(0);
+  this->_geometry_color_offsets.push_back(0);
+
+
+  // Load vertices
+  //--------------------------------------------------------------------
+
+  node = doc->first_node();
+  geometryNode = node->first_node("library_geometries")->first_node("geometry");
+
+  while (geometryNode != nullptr)
+  {
+    rapidxml::xml_node<> *meshNode = geometryNode->first_node("mesh");
+
+    while (meshNode != nullptr)
+    {
+      rapidxml::xml_node<> *positionsNode = meshNode->first_node("source");
+      rapidxml::xml_node<> *normalsNode   = positionsNode->next_sibling();
+      rapidxml::xml_node<> *texCoordsNode = normalsNode->next_sibling();
+      rapidxml::xml_node<> *colorsNode    = texCoordsNode->next_sibling();
+
+      std::vector<glm::vec3> positions = parseArray_vec3(positionsNode->first_node("float_array")->value());
+      std::vector<glm::vec3> normals   = parseArray_vec3(normalsNode->first_node("float_array")->value());
+      std::vector<glm::vec2> texCoords = parseArray_vec2(texCoordsNode->first_node("float_array")->value());
+
+      std::vector<glm::vec4> colors;
+      if (colorsNode != nullptr)
+        if (colorsNode->first_attribute("name") != nullptr)
+          colors = parseArray_vec4(colorsNode->first_node("float_array")->value());
+
+
+
+      for (size_t i=0; i<positions.size(); i+=1)
+        this->_positions.push_back(positions[i]);
+      this->_geometry_position_offsets.push_back(positions.size());
+
+      for (size_t i=0; i<normals.size(); i+=1)
+        this->_normals.push_back(normals[i]);
+      this->_geometry_normal_offsets.push_back(normals.size());
+
+      for (size_t i=0; i<texCoords.size(); i+=1)
+        this->_texcoords.push_back(texCoords[i]);
+      this->_geometry_texcoord_offsets.push_back(texCoords.size());
+
+      for (size_t i=0; i<colors.size(); i+=1)
+        this->_colors.push_back(colors[i]);
+      this->_geometry_color_offsets.push_back(colors.size());
+
+
+      this->_num_meshes += 1;
+      meshNode = meshNode->next_sibling("mesh");
+    }
+
+    this->_num_geometries += 1;
+    geometryNode = geometryNode->next_sibling("geometry");
+  }
+  //--------------------------------------------------------------------
+
+}
+
+
 void Model::computeBoundingSphere(void)
 {
   // Find the two vertices which are furthest from each other,
@@ -440,6 +583,7 @@ void Model::computeBoundingSphere(void)
   this->bounding_sphere_radius = sqrt(this->bounding_sphere_radiusSQ);
 }
 
+
 void Model::loadBoundingSphere(std::ifstream &stream)
 {
   std::string line;
@@ -454,6 +598,222 @@ void Model::loadBoundingSphere(std::ifstream &stream)
 
   this->bounding_sphere_radiusSQ = this->bounding_sphere_radius * this->bounding_sphere_radius;
 }
+
+
+void Model::loadAnimations(rapidxml::xml_document<> *doc)
+{
+  if (this->_animated == false)
+    return;
+
+  rapidxml::xml_node<> *node = doc->first_node();
+
+  node = node->first_node("library_animations");
+
+  rapidxml::xml_node<> *animationNode = node->first_node("animation")->first_node("animation");
+
+  while (animationNode != nullptr)
+  {
+    std::string source_bone = animationNode->first_node("source")->first_attribute("id")->value();
+    
+    source_bone.erase(0, this->_armature.name.size() + 1);
+
+    size_t pos = source_bone.find("_");
+    if (pos != std::string::npos)
+      source_bone.erase(0, pos + 1);
+  
+    pos = source_bone.find("_pose_matrix-input");
+    if (pos != std::string::npos)
+      source_bone.erase(pos, std::string("_pose_matrix-input").size());
+
+
+
+    // This is where you left off.
+    // Don't worry, it's okay. You'll get it right soon :)
+
+    //-------------------------------------------------------------------------
+    // The std::string "source" is the name of the bone which
+    // the weights under library_animations->animation->animation apply to.
+    printf("source bone: %s\n", source_bone.c_str());
+
+    Animation::Joint *joint = this->_armature.find(source_bone);
+    if (joint != nullptr)
+    {
+      std::vector<float> keyframe_times = stringToFloatArray(animationNode->first_node("source")->first_node("float_array")->value());
+
+      rapidxml::xml_node<> *matrixNode = animationNode->first_node("source")->next_sibling("source");
+      std::vector<glm::mat4> keyframe_matrices = stringToMat4Array(matrixNode->first_node("float_array")->value());  
+      
+      joint->keyframe_times = keyframe_times;
+      joint->keyframe_matrices = keyframe_matrices;
+      printf("num keyframes: %d\n", joint->keyframe_times.size());
+      printf("num matrices: %d\n\n", joint->keyframe_matrices.size());
+    }
+    //-------------------------------------------------------------------------
+
+
+    animationNode = animationNode->next_sibling("animation");
+  }
+}
+
+
+static void recurse_loadArmature(rapidxml::xml_node<> *node, Animation::Armature *armature, Animation::Joint *joint)
+{
+  if (node == nullptr)
+    return;
+
+  armature->joints.push_back(joint);
+
+  rapidxml::xml_node<> *nd = node->first_node("node");
+
+  // For each child joint
+  while (nd != nullptr)
+  {
+    std::string id   = nd->first_attribute("id")->value();
+    std::string name = nd->first_attribute("name")->value();
+    std::string type = nd->first_attribute("type")->value();
+    glm::mat4 transform = parseArray_mat4(nd->first_node("matrix")->value());
+
+    Animation::Joint *child_joint = new Animation::Joint(id, name, type, transform);
+    joint->children.push_back(child_joint);
+
+    recurse_loadArmature(nd, armature, child_joint); 
+
+    nd = nd->next_sibling("node");
+  }
+}
+
+
+static void printBVTree(const std::string &prefix, const Animation::Joint *node)
+{
+  if (node == nullptr)
+    return;
+  
+  std::cout << prefix;
+  std::cout << "    ";
+  std::cout << node->_name_str << "   id_str: " << node->_id_str << "   ID: " << node->_id << std::endl;
+
+  for (Animation::Joint *child: node->children)
+    printBVTree(prefix + "    ", child);
+
+}
+
+
+void printTree(Animation::Joint *root)
+{
+  printf("\n\n");
+  if (root != nullptr)
+    printBVTree(std::string(""), root);
+  printf("\n\n");
+}
+
+
+void Model::loadArmature(rapidxml::xml_document<> *doc)
+{
+  rapidxml::xml_node<> *node = doc->first_node();
+
+  if (node->first_node("library_animations") == nullptr)
+    return;
+
+  this->_animated = true;
+
+  // Load armature hierachy
+  //--------------------------------------------------------------------------
+  node = node->first_node("library_visual_scenes");
+  node = node->first_node("visual_scene")->first_node("node");
+  
+  this->_armature.name = node->first_attribute("id")->value();
+  printf("armature name: %s\n", this->_armature.name.c_str());
+
+  node = node->first_node("node");
+
+
+  std::string id   = node->first_attribute("id")->value();
+  std::string name = node->first_attribute("name")->value();
+  std::string type = node->first_attribute("type")->value();
+  glm::mat4 transform = parseArray_mat4(node->first_node("matrix")->value());
+
+  this->_armature.root = new Animation::Joint(id, name, type, transform);
+
+  rapidxml::xml_node<> *nd = node;
+  while (nd != nullptr)
+  {
+    recurse_loadArmature(nd, &this->_armature, this->_armature.root);
+    nd = nd->next_sibling("node");
+  }
+
+  // printf("\n\nModel: %s\n", this->m_name.c_str());
+  // printBVTree("", this->_armature.root);
+
+  //--------------------------------------------------------------------------
+}
+
+
+void Model::loadArmatureWeights(rapidxml::xml_document<> *doc)
+{
+  if (this->_animated == false)
+    return;
+
+  rapidxml::xml_node<> *node = doc->first_node();
+
+  // Load joint-weight information
+  //--------------------------------------------------------------------------
+  node = node->first_node("library_controllers");
+  node = node->first_node("controller")->first_node("skin");
+
+
+  rapidxml::xml_node<> *skinNode = node;
+
+  rapidxml::xml_node<> *jointIDNode = skinNode->first_node("source");
+  std::vector<std::string> jointnames = stringToStringArray(jointIDNode->first_node("Name_array")->value());
+  for (size_t i=0; i<jointnames.size(); i++)
+  {
+    Animation::Joint *joint = this->_armature.find(jointnames[i]);
+    if (joint == nullptr)
+    {
+      printf("[Model::loadArmatureWeights()]: joint == nullptr (jointname: %s)\n", jointnames[i].c_str());
+      printf("Model: %s\n", this->m_name.c_str());
+      exit(1);
+    }
+    joint->_id = i;
+  }
+
+
+  rapidxml::xml_node<> *weightsNode = jointIDNode->next_sibling()->next_sibling();
+  std::vector<float> weights = stringToFloatArray(weightsNode->first_node("float_array")->value());
+  
+
+  rapidxml::xml_node<> *vertexWeightsNode = node->first_node("vertex_weights");
+  
+
+  std::vector<int> vcount = stringToIntArray(vertexWeightsNode->first_node("vcount")->value());
+  std::vector<int> v      = stringToIntArray(vertexWeightsNode->first_node("v")->value());
+
+  size_t cursor = 0;
+  for (size_t i=0; i<vcount.size(); i++)
+  {
+    size_t v_end = 2*vcount[i];
+    size_t end = (vcount[i] <= 3) ? v_end : 6;
+
+    for (int j=cursor, k=0; j<cursor+end; j+=2, k+=1)
+    {
+      this->_vertices[i]->joint_ids[k] = v[j+0];
+      this->_vertices[i]->weights[k]   = weights[v[j+1]];
+    }
+
+    cursor += v_end;
+  }
+  //--------------------------------------------------------------------------
+
+
+  // Normalize weights
+  for (Vertex *v: this->_vertices)
+  {
+    float max = glm::max(v->weights[0], glm::max(v->weights[1], v->weights[2]));
+    v->weights /= max;
+  }
+
+}
+
 
 
 void Model::loadDae(std::string directory, std::string filename, bool is_terrain)
@@ -491,6 +851,8 @@ void Model::loadDae(std::string directory, std::string filename, bool is_terrain
   this->loadLibraryEffects(&doc);
   this->loadLibraryMaterials(&doc);
 
+  this->_mesh_vertex_offsets.push_back(0);
+  this->loadVertices(&doc);
 
   if (this->is_terrain)
   {
@@ -519,9 +881,14 @@ void Model::loadDae(std::string directory, std::string filename, bool is_terrain
     }
   }
 
+
+  this->loadArmature(&doc);
+
   this->constructMeshes(&doc);
   this->applyMeshTransforms(&doc);
 
+  this->loadArmatureWeights(&doc);
+  this->loadAnimations(&doc);
 
   std::ifstream istream(directory + "boundingsphere.txt");
   if (istream.good())

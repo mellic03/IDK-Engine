@@ -32,7 +32,7 @@ void SceneGraph::objectFromFile(std::ifstream &stream, std::string &line, Player
 
     else if (line.find("<POINTLIGHT>") != std::string::npos)
     {
-      FileUtil::FromText::pointlight(stream, object->entity_components.getComponent(COMPONENT_POINT_LIGHT)->pointlight);
+      FileUtil::FromText::pointlight(stream, object->getComponents()->getPointLightComponent());
     }
 
 

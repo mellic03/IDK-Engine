@@ -27,25 +27,42 @@ void Mesh::setBufferData(void)
   glBindBuffer(GL_ARRAY_BUFFER, this->VBO); 
   glBufferData(GL_ARRAY_BUFFER, this->vertices.size() * sizeof(Vertex), &this->vertices[0], GL_STATIC_DRAW);
 
+  unsigned long offset = 0;
+
   // Position
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offset);
+  offset += sizeof(glm::vec3);
   glEnableVertexAttribArray(0);
 
   // Vertex normal
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(glm::vec3)));
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offset);
+  offset += sizeof(glm::vec3);
   glEnableVertexAttribArray(1);
 
   // UV
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(2*sizeof(glm::vec3)));
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offset);
+  offset += sizeof(glm::vec2);
   glEnableVertexAttribArray(2);
 
   // Tangent
-  glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(2*sizeof(glm::vec3) + sizeof(glm::vec2)));
+  glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offset);
+  offset += sizeof(glm::vec3);
   glEnableVertexAttribArray(3);
 
-  // color
-  glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(3*sizeof(glm::vec3) + sizeof(glm::vec2)));
+  // Color
+  glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offset);
+  offset += sizeof(glm::vec4);
   glEnableVertexAttribArray(4);
+
+  // // Joint IDs
+  glVertexAttribIPointer(5, 3, GL_INT, sizeof(Vertex), (void *)offset);
+  offset += sizeof(glm::ivec3);
+  glEnableVertexAttribArray(5);
+
+  // Joint weights
+  glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offset);
+  offset += sizeof(glm::vec3);
+  glEnableVertexAttribArray(6);
 
 
   // Indexing

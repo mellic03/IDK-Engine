@@ -12,6 +12,7 @@
 
 #include "daeloader.h"
 #include "material.h"
+#include "animation/animation.h"
 
 
 struct Vertex {
@@ -20,6 +21,8 @@ struct Vertex {
   glm::vec2 texcoords = glm::vec2(0.0f);
   glm::vec3 tangent = glm::vec3(0.0f);
   glm::vec3 color = glm::vec4(0.0f);
+  glm::ivec3 joint_ids = glm::ivec3(-1);
+  glm::vec3 weights = glm::vec3(0.0f);
 };
 
 

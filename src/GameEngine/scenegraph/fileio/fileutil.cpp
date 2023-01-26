@@ -42,8 +42,8 @@ void FileUtil::ToText::scripts(std::ofstream &stream, GameObject *object, std::s
 {
   stream << indentation << "<SCRIPTS>\n";
 
-  std::vector<EntityComponent> *script_components = object->entity_components.getScriptComponents();
-  for (EntityComponent script_component: *script_components)
+  std::vector<ScriptComponent> *script_components = object->getComponents()->getScriptComponents();
+  for (ScriptComponent script_component: *script_components)
     stream << indentation + "  " << "script: " << script_component.script_name << "\n";
   
   stream << indentation << "</SCRIPTS>" << std::endl;
@@ -208,7 +208,7 @@ void FileUtil::FromText::scripts(std::ifstream &stream, GameObject *object)
     if (script_start != std::string::npos)
     {
       line.erase(0, script_start + std::string("script: ").size());
-      object->entity_components.giveScriptComponent(line);
+      object->getComponents()->giveComponent(ScriptComponent(line));
     }
 
     else if (line.find("</SCRIPTS>") != std::string::npos)

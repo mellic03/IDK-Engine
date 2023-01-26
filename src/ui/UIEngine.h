@@ -13,29 +13,51 @@
 #include "../IconsFontAwesome4.h"
 
 
+#define ICON_COMPONENT_TRANSFORM (ICON_FA_ARROWS)
+#define ICON_COMPONENT_TERRAIN   (ICON_FA_TREE)
+#define ICON_COMPONENT_SCRIPT    (ICON_FA_FILE_O)
+#define ICON_COMPONENT_LOD       (ICON_FA_EYE)
+#define ICON_COMPONENT_SPHERE    (ICON_FA_ARROW_CIRCLE_UP)
+
+
 namespace EngineUI {
 
+  namespace IconLabels {
+    extern std::string TRANSFORM_LABEL;
+    extern std::string SCRIPT_LABEL;
+    extern std::string LOD_LABEL;
+    extern std::string SPHERE_LABEL;
+    extern std::string CAPSULE_LABEL;
+    extern std::string MESH_LABEL;
+  };
+
+
   extern int selected_objectID;
+  extern GameObject *selected_gameobject_template;
+
   extern FileBrowser filebrowser;
 
   extern char script_buffer[4096];
   extern ImGuiInputFlags script_flags;
-
   extern std::stringstream string_stream;
+
 
   void dragVec3(std::string name, glm::vec3 *data, float min, float max, float speed, const char *format, float default_value);
 
-  void bitFlagCheckBox(const char *label, unsigned char flag, unsigned char *bits);
+  void bitFlagCheckbox(const char *label, unsigned char flag, unsigned char *bits);
 
   void sceneHierarchy(Renderer *ren);
-  void properties();
+  void instanceProperties();
   void scriptBrowser();
   void scriptEditor();
   void details();
   void debug(Renderer *ren);
-  void gameobjects();
 
+
+  void gameobjects();
+  void globalProperties();
 
   std::string getObjectIcon(GameObjectType type);
+  std::string getComponentIcon(EntityComponentType type);
 
 };

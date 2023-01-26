@@ -1,9 +1,20 @@
 #include "gameobject.h"
 
 
-int *GameObject::getLOD()
+CullingData *GameObject::getCullingData()
 {
-  return &this->_lod;
+  return &this->_culling_data;
+}
+
+
+LODData *GameObject::getLODData()
+{
+  return &this->_lod_data;
+}
+
+int *GameObject::getLOD_value()
+{
+  return &this->_lod_data.level_of_detail;
 }
 
 int GameObject::getLevelsLOD()
@@ -18,10 +29,19 @@ ModelLOD *GameObject::getModelLOD()
 
 Model *GameObject::getModel(void)
 {
-  return this->_modelLOD->getLOD(this->_lod);
+  if (this->getLODData()->override_global_lod)
+    return this->_modelLOD->getLOD_model_override(this->getLODData()->level_of_detail);
+  else
+    return this->_modelLOD->getLOD_model(this->_lod_data.level_of_detail);
 }
 
 Model *GameObject::getModel(int lod)
 {
-  return this->_modelLOD->getLOD(lod);
+  return this->_modelLOD->getLOD_model(lod);
+}
+
+
+EntityComponents *GameObject::getComponents()
+{
+  return &this->_entity_components;
 }

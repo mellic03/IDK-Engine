@@ -7274,6 +7274,11 @@ bool ImGui::MenuItem(const char* label, const char* shortcut, bool selected, boo
     return MenuItemEx(label, NULL, shortcut, selected, enabled);
 }
 
+bool ImGui::MenuItem(std::string label, const char* shortcut, bool selected, bool enabled)
+{
+    return MenuItemEx(label.c_str(), NULL, shortcut, selected, enabled);
+}
+
 bool ImGui::MenuItem(const char* label, const char* shortcut, bool* p_selected, bool enabled)
 {
     if (MenuItemEx(label, NULL, shortcut, p_selected ? *p_selected : false, enabled))

@@ -5,7 +5,7 @@ set(CMAKE_BUILD_PARALLEL_LEVEL 8)
 
 
 
-set(COOM_DEBUG FALSE)
+set(COOM_DEBUG TRUE)
 set(COOM_SHIPPING FALSE)
 
 
@@ -56,6 +56,7 @@ file(
   "src/GraphicsEngine/*.cpp"
   "src/GraphicsEngine/primitive/*.cpp"
   "src/GraphicsEngine/model/*.cpp"
+  "src/GraphicsEngine/model/animation/*.cpp"
   "src/GraphicsEngine/renderer/*.cpp"
   
   "src/GameEngine/*.cpp"
@@ -71,6 +72,7 @@ file(
   "src/ui/*.cpp"
   "src/ui/tabs/*.cpp"
   "src/ui/tabs/properties/*.cpp"
+  "src/ui/tabs/gameobjects/*.cpp"
 
   "src/scene/*.cpp"
   "src/scripting/*.cpp"

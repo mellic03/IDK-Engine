@@ -3,7 +3,6 @@
 #interactivity environmental
 #GameObjectType GAMEOBJECT_STATIC
 
-#geometry building2.dae
 #meshlod 0 building2.dae
 #collision building2.obj
 

@@ -2,62 +2,73 @@
 #include "entitycomponentui.h"
 
 
-bool EntityComponentUI::newComponent(EntityComponentType *component_type)
+void EntityComponentUI::newComponent(GameObject *object)
 {
+  const std::string id = " ##" + std::to_string(object->getID());
+
   if (ImGui::Button("Add Component"))
     ImGui::OpenPopup("New");
 
+  EntityComponents *components = object->getComponents();
+
   if (ImGui::BeginPopup("New"))
   {
-    if (ImGui::MenuItem("Transform"))
-      *component_type = COMPONENT_TRANSFORM;
+    if (ImGui::MenuItem(EngineUI::IconLabels::TRANSFORM_LABEL + id))
+      components->giveComponent(TransformComponent());
 
-    if (ImGui::MenuItem("Script"))
-      *component_type = COMPONENT_SCRIPT;
+    else if (ImGui::MenuItem(EngineUI::IconLabels::SCRIPT_LABEL + id))
+      components->giveComponent(ScriptComponent("LuaScripting/scripts/default"));
 
-    if (ImGui::MenuItem("Level of Detail"))
-      *component_type = COMPONENT_LOD;
+    else if (ImGui::MenuItem(EngineUI::IconLabels::LOD_LABEL + id))
+      components->giveComponent(LODComponent());
+
+    else if (ImGui::MenuItem(EngineUI::IconLabels::SPHERE_LABEL + id))
+      components->giveComponent(&object->spherecollider);
+
+    else if (ImGui::MenuItem(EngineUI::IconLabels::CAPSULE_LABEL + id))
+      components->giveComponent(&object->capsulecollider);
+
+    else if (ImGui::MenuItem(EngineUI::IconLabels::MESH_LABEL + id))
+      components->giveComponent(MeshColliderComponent());
 
     ImGui::EndPopup();
   }
-
-  return *component_type != COMPONENT_NONE;
 }
 
 
-void drawComponent_pointlight(GameObject *object, EntityComponent *entity_component)
+void drawComponent_pointlight(GameObject *object, PointLight *pointlight)
 {
   ImGui::PushID(object->getID());
 
   if (ImGui::CollapsingHeader("Pointlight"))
   {
-    ImGui::Checkbox("Enabled", &entity_component->pointlight->active);
+    ImGui::Checkbox("Enabled", &pointlight->active);
 
-    bool shadowed = entity_component->pointlight->shadowmapped;
-    ImGui::Checkbox("Shadow mapping", &entity_component->pointlight->shadowmapped);
-    if (shadowed != entity_component->pointlight->shadowmapped)
-      Render::ren.genDepthCubemap(&entity_component->pointlight->FBO, &entity_component->pointlight->depthCubemap);
+    bool shadowed = pointlight->shadowmapped;
+    ImGui::Checkbox("Shadow mapping", &pointlight->shadowmapped);
+    if (shadowed != pointlight->shadowmapped)
+      Render::ren.genDepthCubemap(&pointlight->FBO, &pointlight->depthCubemap);
 
-    ImGui::ColorEdit3("ambient", (float*)&entity_component->pointlight->ambient);
-    ImGui::ColorEdit3("diffuse", (float*)&entity_component->pointlight->diffuse);
+    ImGui::ColorEdit3("ambient", (float*)&pointlight->ambient);
+    ImGui::ColorEdit3("diffuse", (float*)&pointlight->diffuse);
 
-    ImGui::DragFloat("radius", &entity_component->pointlight->radius, 0.1f, 0.0f, 50.0f);
-    ImGui::DragFloat("constant", &entity_component->pointlight->constant, 0.1f, 0.0f, 100.0f);
-    ImGui::DragScalar("linear", ImGuiDataType_Float, &entity_component->pointlight->linear,       0.001f, 0);
-    ImGui::DragScalar("quadratic", ImGuiDataType_Float, &entity_component->pointlight->quadratic, 0.001f, 0);
-    ImGui::DragScalar("bias", ImGuiDataType_Float, &entity_component->pointlight->bias,            0.001f, 0);
+    ImGui::DragFloat("radius", &pointlight->radius, 0.1f, 0.0f, 50.0f);
+    ImGui::DragFloat("constant", &pointlight->constant, 0.1f, 0.0f, 100.0f);
+    ImGui::DragScalar("linear", ImGuiDataType_Float, &pointlight->linear,       0.001f, 0);
+    ImGui::DragScalar("quadratic", ImGuiDataType_Float, &pointlight->quadratic, 0.001f, 0);
+    ImGui::DragScalar("bias", ImGuiDataType_Float, &pointlight->bias,            0.001f, 0);
 
-    ImGui::Checkbox("Volumetrics", &entity_component->pointlight->volumetrics_active);
-    ImGui::DragScalar("fog constant",  ImGuiDataType_Float, &entity_component->pointlight->fog_constant,    0.001f, 0);
-    ImGui::DragScalar("fog linear",    ImGuiDataType_Float, &entity_component->pointlight->fog_linear,      0.001f, 0);
-    ImGui::DragScalar("fog quadratic", ImGuiDataType_Float, &entity_component->pointlight->fog_quadratic,   0.001f, 0);
-    ImGui::DragScalar("fog intensity", ImGuiDataType_Float, &entity_component->pointlight->fog_intensity,   0.001f, 0);
+    ImGui::Checkbox("Volumetrics", &pointlight->volumetrics_active);
+    ImGui::DragScalar("fog constant",  ImGuiDataType_Float, &pointlight->fog_constant,    0.001f, 0);
+    ImGui::DragScalar("fog linear",    ImGuiDataType_Float, &pointlight->fog_linear,      0.001f, 0);
+    ImGui::DragScalar("fog quadratic", ImGuiDataType_Float, &pointlight->fog_quadratic,   0.001f, 0);
+    ImGui::DragScalar("fog intensity", ImGuiDataType_Float, &pointlight->fog_intensity,   0.001f, 0);
   }
   ImGui::PopID();
 }
 
 
-void EntityComponentUI::drawComponent_transform(GameObject *object, EntityComponent *entity_component)
+static void drawComponent_transform(GameObject *object, TransformComponent *transformComponent)
 {
   char buffer[64];
   sprintf(buffer, "Transform ##%d", object->getID());
@@ -82,33 +93,33 @@ void EntityComponentUI::drawComponent_transform(GameObject *object, EntityCompon
 }
 
 
-void EntityComponentUI::drawComponent_script(GameObject *object, EntityComponent *entity_component)
+static void drawComponent_script(GameObject *object, ScriptComponent *scriptComponent)
 {
-  entity_component->script_changed = false;
+  scriptComponent->script_changed = false;
 
   std::string label = "";
   label += ICON_FA_FILE_O;
-  label += "  Script        " + entity_component->script_path.filename().string();
+  label += "  Script        " + scriptComponent->script_path.filename().string();
   label += " ##" + std::to_string(object->getID());
 
   if (ImGui::CollapsingHeader(label.c_str(), ImGuiTreeNodeFlags_AllowItemOverlap))
   {
-    if (ImGui::Button(std::string(entity_component->script_name + ".lua").c_str()))
+    if (ImGui::Button(std::string(scriptComponent->script_name + ".lua").c_str()))
       ImGui::OpenPopup("Change Script");
 
     ImGui::SetNextWindowSize({300, 300});
     if (ImGui::BeginPopup("Change Script"))
     {
-      EngineUI::draw_directory_recursive(fs::current_path()/"LuaScripting/scripts", &entity_component->script_path, &entity_component->script_changed);
+      EngineUI::draw_directory_recursive(fs::current_path()/"LuaScripting/scripts", &scriptComponent->script_path, &scriptComponent->script_changed);
       
-      if (entity_component->script_changed)
+      if (scriptComponent->script_changed)
       {
 
-        fs::path filepath = fs::relative(entity_component->script_path, ".");
-        entity_component->script_name = filepath.string();
-        entity_component->script_name.erase(entity_component->script_name.size() - 4);
+        fs::path filepath = fs::relative(scriptComponent->script_path, ".");
+        scriptComponent->script_name = filepath.string();
+        scriptComponent->script_name.erase(scriptComponent->script_name.size() - 4);
       
-        entity_component->script_path = filepath;
+        scriptComponent->script_path = filepath;
 
 
         printf("script_path: %s\n", filepath.c_str());
@@ -132,7 +143,7 @@ glm::vec3 calculate_barycentric(float x, float y, glm::vec2 v1, glm::vec2 v2, gl
   return weights;
 }
 
-static void draw_terrain(GameObject *object, EntityComponent *terrain_component)
+static void draw_terrain(GameObject *object, TerrainComponent *terrain_component)
 {
   std::string label = "";
   label += ICON_FA_TREE;
@@ -157,11 +168,11 @@ static void draw_terrain(GameObject *object, EntityComponent *terrain_component)
 
         glm::mat4 model_mat = object->getTransform()->getModelMatrix();
 
-        for (size_t i=0; i<object->m_model->m_meshes[0].vertices.size(); i+=3)
+        for (size_t i=0; i<object->getModel()->m_meshes[0].vertices.size(); i+=3)
         {
-          Vertex v1 = object->m_model->m_meshes[0].vertices[i+0];
-          Vertex v2 = object->m_model->m_meshes[0].vertices[i+1];
-          Vertex v3 = object->m_model->m_meshes[0].vertices[i+2];
+          Vertex v1 = object->getModel()->m_meshes[0].vertices[i+0];
+          Vertex v2 = object->getModel()->m_meshes[0].vertices[i+1];
+          Vertex v3 = object->getModel()->m_meshes[0].vertices[i+2];
 
           if (glm::normalize(v1.normal).y < 0.7f)
             continue;
@@ -222,53 +233,86 @@ static void draw_terrain(GameObject *object, EntityComponent *terrain_component)
     }
     //----------------------------------------------------------------
 
-
   }
 }
 
 
-static void draw_lod(GameObject *object, EntityComponent *lod_component)
+static void draw_lod(GameObject *object, LODComponent *lod_component)
 {
   std::string label = "";
   label += ICON_FA_EYE;
   label += "  Level of Detail ##" + std::to_string(object->getID());
 
+
   if (ImGui::CollapsingHeader(label.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
   {
-    const int max_lod = object->getLevelsLOD() - 1;
-    ImGui::SliderInt("LOD", object->getLOD(), 0, max_lod);
+    ImGui::Checkbox("Override Global", &object->getLODData()->override_global_lod);
+
+    if (object->getLODData()->override_global_lod)
+    {
+      const int max_lod = object->getLevelsLOD() - 1;
+      ImGui::SliderInt("LOD", object->getLOD_value(), 0, max_lod);
+    }
   }
 
 }
 
 
-void EntityComponentUI::drawComponent(GameObject *object, EntityComponent *entity_component)
+static void draw_sphere(GameObject *object, SphereColliderComponent *sphereColliderComponent)
 {
-  switch (entity_component->component_type)
+  std::string label = "";
+  label += ICON_COMPONENT_SPHERE;
+  label += "  Sphere Collider ##" + std::to_string(object->getID());
+
+  if (ImGui::CollapsingHeader(label.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    ImGui::Checkbox("Visualise", &sphereColliderComponent->visualise);
+    ImGui::DragFloat("Radius", &sphereColliderComponent->sphere_collider->radius);
+  }
+}
+
+
+static void draw_capsule(GameObject *object, CapsuleColliderComponent *capsuleColliderComponent)
+{
+  std::string label = "";
+  label += ICON_COMPONENT_SPHERE;
+  label += "  Capsule Collider ##" + std::to_string(object->getID());
+
+  if (ImGui::CollapsingHeader(label.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    ImGui::Checkbox("Visualise", &capsuleColliderComponent->visualise);
+    ImGui::DragFloat("Radius", &capsuleColliderComponent->capsule_collider->radius);
+  }
+}
+
+
+void EntityComponentUI::drawComponent(GameObject *object, EntityComponents *components, EntityComponentType component_type)
+{
+  switch (component_type)
   {
     case (COMPONENT_NONE):
       break;
 
 
     case (COMPONENT_TRANSFORM):
-      EntityComponentUI::drawComponent_transform(object, entity_component);
+      drawComponent_transform(object, components->getTransformComponent());
       break;
 
 
     case (COMPONENT_POINT_LIGHT):
-      drawComponent_pointlight(object, entity_component);
+      drawComponent_pointlight(object, components->getPointLightComponent());
       break;
 
 
     case (COMPONENT_SCRIPT):
       {
-        std::vector<EntityComponent> *script_components = object->entity_components.getScriptComponents();
+        std::vector<ScriptComponent> *script_components = components->getScriptComponents();
         
         int i = 0;
-        for (EntityComponent script_component: *script_components)
+        for (ScriptComponent script_component: *script_components)
         {
           ImGui::PushID(i);
-          EntityComponentUI::drawComponent_script(object, &script_component);
+          drawComponent_script(object, &script_component);
           ImGui::PopID();
           i += 1;
         }
@@ -277,18 +321,24 @@ void EntityComponentUI::drawComponent(GameObject *object, EntityComponent *entit
   
 
     case (COMPONENT_TERRAIN):
-      draw_terrain(object, entity_component);
+      draw_terrain(object, components->getTerrainComponent());
       break;
     
     
     case (COMPONENT_LOD):
-      draw_lod(object, entity_component);
+      draw_lod(object, components->getLODComponent());
+      break;
+
+  
+    case (COMPONENT_SPHERE_COLLIDER):
+      draw_sphere(object, components->getSphereColliderComponent());
+      break;
+
+
+    case (COMPONENT_CAPSULE_COLLIDER):
+      draw_capsule(object, components->getCapsuleColliderComponent());
       break;
   
-
-    // case (COMPONENT_VARIABLE):
-    //   this->_draw_variable(object);
-    //   break;
   }
 
 }

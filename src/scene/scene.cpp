@@ -378,7 +378,6 @@ void Scene::physicsTick_actor_actor()
 }
 
 
-
 void Scene::physicsTick()
 {
   std::list<GameObject *> *terrain_list = Scene::scenegraph.getInstancesByType(GAMEOBJECT_TERRAIN);
@@ -450,7 +449,7 @@ void Scene::drawTerrain()
 
   for (auto &obj: *Scene::scenegraph.getInstancesByType(GAMEOBJECT_TERRAIN))
   {
-    EntityComponent *tc = obj->entity_components.getComponent(COMPONENT_TERRAIN);
+    TerrainComponent *tc = obj->getComponents()->getTerrainComponent();
     Render::ren.drawTerrain(obj->getModel(), obj->getTransform(), tc->threshold, tc->epsilon);
   }
 }
@@ -493,7 +492,6 @@ void Scene::drawBillboardsInstanced()
 }
 
 
-
 void Scene::drawActors()
 {
   Render::ren.useShader(SHADER_ACTOR);
@@ -521,7 +519,7 @@ void Scene::drawLightsources()
   Render::ren.useShader(SHADER_LIGHTSOURCE);
 
   for (GameObject *obj: *Scene::scenegraph.getVisibleInstancesByType(GAMEOBJECT_LIGHTSOURCE))
-    Render::ren.drawLightSource(obj->m_model, obj->getTransform(), glm::vec3(1.0f));
+    Render::ren.drawLightSource(obj->getModel(), obj->getTransform(), glm::vec3(1.0f));
 }
 
 
@@ -546,15 +544,35 @@ void Scene::drawGeometry_batched()
     Render::ren.active_shader->setMat4("projection", Render::ren.cam.projection);
     Render::ren.active_shader->setMat4("view", Render::ren.cam.view);
 
-
     for (GameObject *obj: *Scene::scenegraph.getVisibleInstancesByType(GAMEOBJECT_TERRAIN))
-      Render::ren.drawPrimitive(PRIMITIVE_SPHERE, obj->m_model, obj->getTransform());
+      Render::ren.drawPrimitive(PRIMITIVE_SPHERE, obj->getCullingData()->bounding_sphere_pos, obj->getCullingData()->bounding_sphere_radius, obj->getTransform());
 
      for (GameObject *obj: *Scene::scenegraph.getVisibleInstancesByType(GAMEOBJECT_STATIC))
-      Render::ren.drawPrimitive(PRIMITIVE_SPHERE, obj->m_model, obj->getTransform());   
+      Render::ren.drawPrimitive(PRIMITIVE_SPHERE, obj->getCullingData()->bounding_sphere_pos, obj->getCullingData()->bounding_sphere_radius, obj->getTransform());   
 
     for (GameObject *obj: *Scene::scenegraph.getVisibleInstancesByType(GAMEOBJECT_ACTOR))
-      Render::ren.drawPrimitive(PRIMITIVE_SPHERE, obj->m_model, obj->getTransform());
+      Render::ren.drawPrimitive(PRIMITIVE_SPHERE, obj->getCullingData()->bounding_sphere_pos, obj->getCullingData()->bounding_sphere_radius, obj->getTransform());
+  
+    for (GameObject *obj: *Scene::scenegraph.getVisibleInstancesByType(GAMEOBJECT_BILLBOARD))
+      Render::ren.drawPrimitive(PRIMITIVE_SPHERE, obj->getCullingData()->bounding_sphere_pos, obj->getCullingData()->bounding_sphere_radius, obj->getTransform());
+  }
+  
+  if (Render::ren.getDebugData()->getDebugFlag(RenderDebugFlag::DrawColliders))
+  {
+    Render::ren.useShader(SHADER_WIREFRAME);
+
+    Render::ren.active_shader->setMat4("projection", Render::ren.cam.projection);
+    Render::ren.active_shader->setMat4("view", Render::ren.cam.view);
+
+    for (GameObject *obj: *Scene::scenegraph.getVisibleInstancesByType(GAMEOBJECT_ACTOR))
+    {
+      if (obj->getComponents()->hasComponent(COMPONENT_SPHERE_COLLIDER))
+      {
+        glm::vec3 pos = obj->getTransform()->getPos_worldspace();
+        float radius = obj->getComponents()->getSphereColliderComponent()->sphere_collider->radius;
+        Render::ren.drawPrimitive(PRIMITIVE_SPHERE, pos, radius, obj->getTransform());
+      }
+    }
   }
 
 }
@@ -562,16 +580,16 @@ void Scene::drawGeometry_batched()
 void Scene::drawGeometry()
 {
   for (auto &object: *Scene::scenegraph.getInstancesByType(GAMEOBJECT_TERRAIN))
-    Render::ren.drawModel(object->getModelLOD()->getMinLOD(), object->getTransform());
+    Render::ren.drawModel(object->getModelLOD()->getShadowLOD_model(), object->getTransform());
    
   for (auto &object: *Scene::scenegraph.getInstancesByType(GAMEOBJECT_STATIC))
-    Render::ren.drawModel(object->getModelLOD()->getMinLOD(), object->getTransform());
+    Render::ren.drawModel(object->getModelLOD()->getShadowLOD_model(), object->getTransform());
 
   for (auto &object: *Scene::scenegraph.getInstancesByType(GAMEOBJECT_ACTOR))
-    Render::ren.drawModel(object->getModelLOD()->getMinLOD(), object->getTransform());
+    Render::ren.drawModel(object->getModelLOD()->getShadowLOD_model(), object->getTransform());
 
   for (auto &object: *Scene::scenegraph.getInstancesByType(GAMEOBJECT_BILLBOARD, INSTANCING_OFF))
-    Render::ren.drawModel(object->getModelLOD()->getMinLOD(), object->getTransform());
+    Render::ren.drawModel(object->getModelLOD()->getShadowLOD_model(), object->getTransform());
 }
 
 

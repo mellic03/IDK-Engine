@@ -12,8 +12,10 @@ static void objectToFile(std::ofstream &stream, GameObject *object)
   FileUtil::ToText::transform(stream, object->getTransform(), indentation);
   FileUtil::ToText::scripts(stream, object, indentation);
   
-  if (object->entity_components.hasComponent(COMPONENT_POINT_LIGHT))
-    FileUtil::ToText::pointlight(stream, object->entity_components.getComponent(COMPONENT_POINT_LIGHT)->pointlight, indentation);
+  EntityComponents *components = object->getComponents();
+
+  if (components->hasComponent(COMPONENT_POINT_LIGHT))
+    FileUtil::ToText::pointlight(stream, components->getPointLightComponent(), indentation);
 
 
   // for (size_t i=0; i<object->script_components.size(); i++)
