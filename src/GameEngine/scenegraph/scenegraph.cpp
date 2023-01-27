@@ -110,6 +110,7 @@ void SceneGraph::loadObject(std::string directory)
 
   char buffer[256];
   char stringdata[256];
+  char stringdata2[256];
   int intdata;
 
 
@@ -147,6 +148,10 @@ void SceneGraph::loadObject(std::string directory)
       object.setModelLOD(&*std::prev(this->_modelLODs.end()));
     }
 
+    else if (sscanf(buffer, "#animationlod %d %s %s", &intdata, &stringdata, stringdata2))
+    {
+      object.getModelLOD()->loadAnimationLOD(intdata, std::string(stringdata), std::string(directory), std::string(stringdata2));
+    }
 
     else if (sscanf(buffer, "#collision %s", stringdata))
     {

@@ -27,10 +27,12 @@ uniform mat4 boneTransforms[10];
 void main()
 {
   vec4 position = vec4(0.0);
+  vec4 normal = vec4(0.0);
 
   if (jointIDs[0] == -1)
   {
-    position += vec4(aPos, 1.0);
+    position = vec4(aPos, 1.0);
+    normal = vec4(aNormal, 1.0);
   }
 
   else
@@ -43,10 +45,11 @@ void main()
       }
 
       position += jointWeights[i] * boneTransforms[jointIDs[i]] * vec4(aPos, 1.0);
+      normal += jointWeights[i] * boneTransforms[jointIDs[i]] * vec4(aNormal, 0.0);
     }
   }
 
-  vec4 worldPos = model * position;
+  vec4 worldPos = model * vec4(position.xyz, 1.0);
   FragPos = worldPos.xyz;
   TexCoords = aTexCoords;
 
@@ -56,7 +59,7 @@ void main()
   //------------------------------------------------------------------
   mat3 normalMatrix = mat3(model);
   vec3 T = normalize(normalMatrix * aTangent);
-  vec3 N = normalize(normalMatrix * aNormal.xyz);
+  vec3 N = normalize(normalMatrix * normal.xyz);
   T = normalize(T - dot(T, N) * N);
   vec3 B = cross(N, T);
   TBN = mat3(T, B, N);

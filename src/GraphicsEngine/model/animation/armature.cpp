@@ -15,28 +15,37 @@ Animation::Joint::Joint(std::string id, std::string name, std::string type, glm:
 };
 
 
-
-static void recurse_computePose(Animation::Joint *joint, glm::mat4 parent_transform, int keyframe)
+glm::mat4 Animation::Joint::getAnimationMatrix(float time)
 {
-  glm::mat4 animationMatrix = glm::mat4(1.0f);
+  float closest_index = -1;
+  float closest_value = INFINITY;
 
-  if (joint->keyframe_matrices.size() > static_cast<size_t>(keyframe))
+  for (size_t i=0; i<this->keyframe_times.size(); i++)
   {
-    animationMatrix = joint->keyframe_matrices[keyframe];
+    float value = fabs(time - this->keyframe_times[i]);
+    if (value < closest_value)
+    {
+      closest_value = value;
+      closest_index = i;
+    }
   }
-  
 
-  joint->finalBoneTransform = parent_transform * joint->localTransform * animationMatrix;
-
-  for (Animation::Joint *child: joint->children)
-    recurse_computePose(child, joint->finalBoneTransform, keyframe);
-
-  joint->finalBoneTransform = joint->finalBoneTransform * joint->inverseBindTransform;
-  
+  return (closest_index == -1) ? this->localTransform : this->keyframe_matrices[closest_index];
 }
 
 
-void Animation::Armature::computePose(int keyframe)
+static void recurse_computePose(Animation::Joint *joint, glm::mat4 parent_finalBoneTransform, float keyframe_time)
 {
-  recurse_computePose(this->root, glm::inverse(this->root->inverseBindTransform), keyframe);
+  joint->finalBoneTransform = parent_finalBoneTransform * joint->getAnimationMatrix(keyframe_time);
+
+  for (Animation::Joint *child: joint->children)
+    recurse_computePose(child, joint->finalBoneTransform, keyframe_time);
+
+  joint->finalBoneTransform = joint->finalBoneTransform * joint->inverseBindTransform;
+}
+
+
+void Animation::Armature::computePose(float keyframe_time)
+{
+  recurse_computePose(this->root, glm::mat4(1.0f), keyframe_time);
 }

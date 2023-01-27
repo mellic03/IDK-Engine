@@ -40,7 +40,6 @@ class Model {
     std::vector<int>    _mesh_vertex_offsets;
     std::vector<Vertex> _vertices;
 
-    Animation::Armature _armature;
 
     bool _animated = false;
     int _num_geometries = 0;
@@ -60,9 +59,12 @@ class Model {
   
 
     void loadVertices(rapidxml::xml_document<> *doc);
-    void loadArmature(rapidxml::xml_document<> *doc);
-    void loadArmatureWeights(rapidxml::xml_document<> *doc);
-    void loadAnimations(rapidxml::xml_document<> *doc);
+    void loadArmature(rapidxml::xml_document<> *doc, Animation::Armature *armature);
+    void loadArmatureWeights(rapidxml::xml_document<> *doc, Animation::Armature *armature);
+    void loadAnimations(rapidxml::xml_document<> *doc, Animation::Armature *armature);
+
+
+
     void constructMeshes(rapidxml::xml_document<> *doc);
     void applyMeshTransforms(rapidxml::xml_document<> *doc);
     void loadLibraryImages(rapidxml::xml_document<> *doc);
@@ -73,7 +75,12 @@ class Model {
     void computeBoundingSphere(void);
     void loadBoundingSphere(std::ifstream &stream);
 
+
   public:
+
+    Animation::AnimationController _animation_controller;
+    Animation::Armature _armatures[4];
+    Animation::Armature _armature;
 
     glm::vec3 bounding_sphere_pos  = glm::vec3(0.0f);
     float bounding_sphere_radius   = 0.0f;
@@ -90,16 +97,19 @@ class Model {
 
 
     void loadDae(std::string directory, std::string filename, bool instanced);
+    void loadAnimation(std::string animation_name, std::string directory, std::string filename);
+
+
     bool isAnimated() { return this->_animated; };
 
-    Animation::Armature *getArmature()  { return &this->_armature; };
+    Animation::Animation *getAnimation(std::string name);
 };
 
 
 
 struct ModelLOD {
 
-  private:  
+  private:
     bool _first_loaded = false;
     std::vector<Model> _models;
     std::vector<float> _lod_distances;
@@ -109,39 +119,26 @@ struct ModelLOD {
 
   public:
 
-    bool isEmpty()  { return !this->_first_loaded; };
+    bool isEmpty();
 
-    void loadLOD(int lod, std::string directory, std::string filename, bool is_terrain)
-    {
-      while (this->_models.size() <= static_cast<size_t>(lod))
-      {
-        this->_models.push_back(Model());
-        this->_lod_distances.push_back(0.0f);
-      }
-      
-      this->_models[lod].loadDae(directory, filename, is_terrain);
-      this->_first_loaded = true;
-    }; 
+    void loadLOD(int lod, std::string directory, std::string filename, bool is_terrain);
 
-    std::vector<float> *getLODDistances() { return &this->_lod_distances; };
+    std::vector<float> *getLODDistances();
 
-    Model *getLOD_model(int lod)
-    {
-      if (lod >= this->_max_lod)
-        return &this->_models[lod];
-      else 
-        return &this->_models[this->_max_lod];
-    };
-    Model *getLOD_model_override(int lod)  { return &this->_models[lod]; };
+    Model *getLOD_model(int lod);
+    Model *getLOD_model_override(int lod);
 
 
-    Model *getDefaultLOD_model()    { return &this->_models[this->_default_lod]; };
-    Model *getMaxLOD_model()        { return &this->_models[this->_max_lod];     };
-    Model *getMinLOD_model()        { return &this->_models[this->_models.size() - 1]; };
-    Model *getShadowLOD_model()     { return &this->_models[this->_shadow_lod];  };
+    Model *getDefaultLOD_model();
+    Model *getMaxLOD_model();
+    Model *getMinLOD_model();
+    Model *getShadowLOD_model();
 
-    int    getLevelsLOD()           { return this->_models.size(); };
-    int   *getDefaultLOD_value()    { return &this->_default_lod;  };
-    int   *getMaxLOD_value()        { return &this->_max_lod;      };
-    int   *getShadowLOD_value()     { return &this->_shadow_lod;   };
+    int    getLevelsLOD();
+    int   *getDefaultLOD_value();
+    int   *getMaxLOD_value();
+    int   *getShadowLOD_value();
+
+    void loadAnimationLOD(int lod, std::string animation_name, std::string directory, std::string filename);
+
 };

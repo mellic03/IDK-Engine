@@ -600,7 +600,7 @@ void Model::loadBoundingSphere(std::ifstream &stream)
 }
 
 
-void Model::loadAnimations(rapidxml::xml_document<> *doc)
+void Model::loadAnimations(rapidxml::xml_document<> *doc, Animation::Armature *armature)
 {
   if (this->_animated == false)
     return;
@@ -615,7 +615,7 @@ void Model::loadAnimations(rapidxml::xml_document<> *doc)
   {
     std::string source_bone = animationNode->first_node("source")->first_attribute("id")->value();
     
-    source_bone.erase(0, this->_armature.name.size() + 1);
+    source_bone.erase(0, armature->name.size() + 1);
 
     size_t pos = source_bone.find("_");
     if (pos != std::string::npos)
@@ -630,7 +630,7 @@ void Model::loadAnimations(rapidxml::xml_document<> *doc)
     //-------------------------------------------------------------------------
     // The std::string "source_bone" is the name of the bone which
     // the weights under library_animations->animation->animation apply to.
-    Animation::Joint *joint = this->_armature.find(source_bone);
+    Animation::Joint *joint = armature->find(source_bone);
     if (joint != nullptr)
     {
       std::vector<float> keyframe_times = stringToFloatArray(animationNode->first_node("source")->first_node("float_array")->value());
@@ -684,12 +684,15 @@ static void recurse_loadArmature(rapidxml::xml_node<> *node, Animation::Armature
 }
 
 
-void Model::loadArmature(rapidxml::xml_document<> *doc)
+void Model::loadArmature(rapidxml::xml_document<> *doc, Animation::Armature *armature)
 {
   rapidxml::xml_node<> *node = doc->first_node();
 
   if (node->first_node("library_animations") == nullptr)
-    return;
+  {
+    printf("[Model::loadArmature()] Can't find library_animations: %s\n", this->m_name.c_str());
+    exit(1);
+  }
 
   this->_animated = true;
 
@@ -698,8 +701,8 @@ void Model::loadArmature(rapidxml::xml_document<> *doc)
   node = node->first_node("library_visual_scenes");
   node = node->first_node("visual_scene")->first_node("node");
   
-  this->_armature.name = node->first_attribute("id")->value();
-  printf("armature name: %s\n", this->_armature.name.c_str());
+  armature->name = node->first_attribute("id")->value();
+  printf("armature name: %s\n", armature->name.c_str());
 
   node = node->first_node("node");
 
@@ -710,14 +713,14 @@ void Model::loadArmature(rapidxml::xml_document<> *doc)
   glm::mat4 bindTransform = parseArray_mat4(node->first_node("matrix")->value());
   // bindTransform = glm::rotate(bindTransform, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
-  this->_armature.root = new Animation::Joint(id, name, type, bindTransform);
-  this->_armature.root->_id = this->_armature.joints.size();
-  this->_armature.joints.push_back(this->_armature.root);
+  armature->root = new Animation::Joint(id, name, type, bindTransform);
+  armature->root->_id = armature->joints.size();
+  armature->joints.push_back(armature->root);
 
   rapidxml::xml_node<> *nd = node;
   while (nd != nullptr)
   {
-    recurse_loadArmature(nd, &this->_armature, this->_armature.root);
+    recurse_loadArmature(nd, armature, armature->root);
     nd = nd->next_sibling("node");
   }
 
@@ -741,7 +744,7 @@ static void printBVTree(const std::string &prefix, const Animation::Joint *node)
 
 
 
-void Model::loadArmatureWeights(rapidxml::xml_document<> *doc)
+void Model::loadArmatureWeights(rapidxml::xml_document<> *doc, Animation::Armature *armature)
 {
   if (this->_animated == false)
     return;
@@ -765,7 +768,7 @@ void Model::loadArmatureWeights(rapidxml::xml_document<> *doc)
 
   for (size_t i=0; i<bind_matrices.size(); i++)
   {
-    auto *joint = this->_armature.find(jointnames[i]);
+    auto *joint = armature->find(jointnames[i]);
     joint->inverseBindTransform = bind_matrices[i];
   }
 
@@ -794,22 +797,22 @@ void Model::loadArmatureWeights(rapidxml::xml_document<> *doc)
         {
           if (vcount[i] >= 1)
           {
-            vertex.joint_ids.x = this->_armature.find(jointnames[v[cursor]])->_id;
+            vertex.joint_ids.x = armature->find(jointnames[v[cursor]])->_id;
             vertex.weights.x   = weights[v[cursor+1]];
           }
           if (vcount[i] >= 2)
           {
-            vertex.joint_ids.y = this->_armature.find(jointnames[v[cursor+2]])->_id;
+            vertex.joint_ids.y = armature->find(jointnames[v[cursor+2]])->_id;
             vertex.weights.y   = weights[v[cursor+3]];
           }
           if (vcount[i] >= 3)
           {
-            vertex.joint_ids.z = this->_armature.find(jointnames[v[cursor+4]])->_id;
+            vertex.joint_ids.z = armature->find(jointnames[v[cursor+4]])->_id;
             vertex.weights.z   = weights[v[cursor+5]];
           }
           if (vcount[i] >= 4)
           {
-            vertex.joint_ids[3] = this->_armature.find(jointnames[v[cursor+6]])->_id;
+            vertex.joint_ids[3] = armature->find(jointnames[v[cursor+6]])->_id;
             vertex.weights[3]   = weights[v[cursor+7]];
           }
         }
@@ -831,16 +834,6 @@ void Model::loadArmatureWeights(rapidxml::xml_document<> *doc)
     }
   }
 
-  // for (size_t i=0; i<bind_matrices.size(); i++)
-  // {
-  //   Animation::Joint *joint = this->_armature.find(i);
-  //   joint->localTransform = bind_matrices[i];
-
-  //   for (auto &mat: joint->keyframe_matrices)
-  //   {
-  //     mat = joint->localTransform * mat;
-  //   }
-  // }
 }
 
 
@@ -910,14 +903,8 @@ void Model::loadDae(std::string directory, std::string filename, bool is_terrain
     }
   }
 
-
-  this->loadArmature(&doc);
-
   this->constructMeshes(&doc);
   this->applyMeshTransforms(&doc);
-
-  this->loadArmatureWeights(&doc);
-  this->loadAnimations(&doc);
 
   std::ifstream istream(directory + "boundingsphere.txt");
   if (istream.good())
@@ -938,60 +925,69 @@ void Model::loadDae(std::string directory, std::string filename, bool is_terrain
   for (auto &mesh: this->m_meshes)
     mesh.setBufferData();
 
-
-  if (this->_animated)
-  {
-
-    this->_armature.sortJoints();
-
-    // printf("keyframes: %d\n", this->_armature.joints[1]->keyframe_matrices.size());
-
-    // for (Mesh mesh: this->m_meshes)
-    // {
-    //   int i = 0;
-    //   for (Vertex v: mesh.vertices)
-    //   {
-    //     printf("this->_vertices[%d]: xyz: { %f %f %f }, IDs: { %d %d %d }, weights: { %f %f %f }\n",
-    //       i,
-    //       v.position.x,
-    //       v.position.y,
-    //       v.position.z,
-    //       v.joint_ids[0],
-    //       v.joint_ids[1],
-    //       v.joint_ids[2],
-    //       v.weights[0],
-    //       v.weights[1],
-    //       v.weights[2]
-    //     );
-      
-    //     i += 1;
-    //   }
-    // }
-
-    // printf("model: %s\n", this->m_name.c_str());
-
-
-    // for (auto &joint: this->_armature.joints)
-    // {
-    //   printf("Joint: %s\n", joint->_name_str.c_str());
-
-    //   for (auto &mat: joint->keyframe_matrices)
-    //   {
-    //     for (int i=0; i<4; i++)
-    //     {
-    //       for (int j=0; j<4; j++)
-    //       {
-    //         printf("%f ", mat[i][j]);
-    //       }
-    //       printf("\n");
-    //     }
-    //     printf("\n");
-    //   }
-    // }
-
-    printBVTree("", this->_armature.root);
-    printf("\n\n");
-  }
-
 }
 
+
+Animation::Animation *Model::getAnimation(std::string name)
+{
+  return this->_animation_controller.getAnimation(name);
+}
+
+
+void Model::loadAnimation(std::string animation_name, std::string directory, std::string filename)
+{
+  std::ifstream fh;
+  fh.open(directory + filename);
+  if (fh.is_open() == false)
+  {
+    printf("[Model::loadDae()] Error opening file: %s\n", filename.c_str());
+    exit(1);
+  }
+
+  std::string raw_document = "";
+  std::string line;
+  while (getline(fh, line))
+    raw_document += line;
+    
+  fh.close();
+
+
+  rapidxml::xml_document<> doc;
+  doc.parse<0>((char *)raw_document.c_str());
+
+
+  Animation::Animation *animation = this->getAnimation(animation_name);
+  Animation::Armature *armature = animation->getArmature();
+
+  this->loadArmature(&doc, armature);
+  this->loadArmatureWeights(&doc, armature);
+  this->loadAnimations(&doc, armature);
+  armature->sortJoints();
+
+  for (Mesh &mesh: this->m_meshes)
+    mesh.setBufferData();
+
+  // for (Mesh mesh: this->m_meshes)
+  // {
+  //   int i = 0;
+  //   for (Vertex v: mesh.vertices)
+  //   {
+  //     printf("this->_vertices[%d]: xyz: { %f %f %f }, IDs: { %d %d %d }, weights: { %f %f %f }\n",
+  //       i,
+  //       v.position.x,
+  //       v.position.y,
+  //       v.position.z,
+  //       v.joint_ids[0],
+  //       v.joint_ids[1],
+  //       v.joint_ids[2],
+  //       v.weights[0],
+  //       v.weights[1],
+  //       v.weights[2]
+  //     );
+  //   }
+  // }
+
+
+  printf("\n\nAnimation: %s\n", animation_name.c_str());
+  printBVTree("", armature->root);
+}

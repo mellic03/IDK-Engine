@@ -9,9 +9,9 @@
     parentID: -1
   </HEADER>
   <TRANSFORM>
-    position: -20.7188 11.3634 -8.35678
+    position: -13.9549 2.01721 21.9112
     velocity: 3.39554e-16 0 1.13089e-13
-    orientation: -0.0417077 -0.931689 -0.113444 0.342559
+    orientation: 0.0545022 0.0300887 0.00165135 -0.998059
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
@@ -89,7 +89,7 @@
     parentID: 7
   </HEADER>
   <TRANSFORM>
-    position: 16.42 -1.24 -0.27
+    position: 16.42 -0.64 -0.27
     velocity: 0 0 0
     orientation: 0 -0.871586 0 -0.490243
     scale: 1 1 1
@@ -106,7 +106,7 @@
     parentID: 7
   </HEADER>
   <TRANSFORM>
-    position: 6.5 -2.48 0
+    position: 6.5 -1.88 0
     velocity: 0 0 0
     orientation: 0 -0.871586 0 -0.490243
     scale: 1 1 1
@@ -123,7 +123,7 @@
     parentID: 7
   </HEADER>
   <TRANSFORM>
-    position: -5.13 -5.1 -4.76837e-07
+    position: -5.13 -4.5 -4.76837e-07
     velocity: 0 0 0
     orientation: 0 -0.871586 0 -0.490243
     scale: 1 1 1
@@ -140,7 +140,7 @@
     parentID: 1
   </HEADER>
   <TRANSFORM>
-    position: 6.5 -2.48 0
+    position: 6.5 -1.88 0
     velocity: 0 0 0
     orientation: 0 0 0 1
     scale: 1 1 1
@@ -157,10 +157,44 @@
     parentID: 1
   </HEADER>
   <TRANSFORM>
-    position: -15.59 6.105 -0.529
+    position: -13.78 2.585 7.501
     velocity: -1.4013e-44 0 1.4013e-44
-    orientation: 0.00016308 -0.707116 -0.707116 -0.00016305
+    orientation: 0 6.36584e-12 1.90719e-12 -1.00001
     scale: 1 0.84 1
+  </TRANSFORM>
+  <SCRIPTS>
+  </SCRIPTS>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: cube
+    assigned name: cube
+    objectID: 9
+    parentID: -1
+  </HEADER>
+  <TRANSFORM>
+    position: -13.74 11.98 0
+    velocity: 0 0 0
+    orientation: 0 0 0 1
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+  </SCRIPTS>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: cube
+    assigned name: cube
+    objectID: 10
+    parentID: -1
+  </HEADER>
+  <TRANSFORM>
+    position: -17.44 11.98 0
+    velocity: 0 0 0
+    orientation: 0 0 0 1
+    scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
   </SCRIPTS>

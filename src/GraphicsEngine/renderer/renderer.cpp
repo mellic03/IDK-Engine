@@ -666,24 +666,30 @@ void Renderer::drawModel(Model *model, Transform *transform)
   for (int i=0; i<10; i++)
     this->active_shader->setMat4("boneTransforms[" + std::to_string(i) + "]", glm::mat4(1.0f));
 
-
-  if (frame == 144)
+  if (frame == 400)
   {
     anim += 1;
     frame = 0;
   }
-  if (anim == 20)
+  if (anim >= 20)
     anim = 0;
+
+  float keyframe_time = (float)frame / 400.0f;
 
   if (model->isAnimated())
   {
-    model->getArmature()->computePose(anim);
+    Animation::Animation *animation = model->getAnimation("run");
+    Animation::Armature *armature = animation->getArmature();
 
-    for (size_t i=0; i<model->getArmature()->joints.size(); i++)
+    keyframe_time *= 0.83f;
+
+
+    armature->computePose(keyframe_time);
+
+    for (size_t i=0; i<armature->joints.size(); i++)
     {
-      Animation::Joint *joint = model->getArmature()->find(i);
-      glm::mat4 mat = joint->finalBoneTransform;
-      this->active_shader->setMat4("boneTransforms[" + std::to_string(i) + "]", mat);
+      Animation::Joint *joint = armature->joints_sorted[i];
+      this->active_shader->setMat4("boneTransforms[" + std::to_string(i) + "]", joint->finalBoneTransform);
     }
 
     frame += 1;

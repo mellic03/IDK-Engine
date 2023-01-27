@@ -1,6 +1,9 @@
 #gameobject testanimation
 #GameObjectType GAMEOBJECT_ACTOR
 
-#meshlod 0 test.dae
+#meshlod 0 test2.dae
+#animationlod 0 run run.dae
+#animationlod 0 punch punch.dae
+
 
 #exit
