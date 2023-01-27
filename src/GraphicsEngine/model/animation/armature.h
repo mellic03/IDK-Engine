@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <vector>
 #include "../../../transform.h"
 
 
@@ -16,57 +17,21 @@ struct Animation::Joint {
   std::string _name_str = "";
   std::string _type_str = "";
 
-  int _id = 0;
-  glm::mat4 localBindTransform = glm::mat4(1.0f);
+  int _id = -1;
+  glm::mat4 localTransform = glm::mat4(1.0f);
   glm::mat4 inverseBindTransform = glm::mat4(1.0f);
+  glm::mat4 finalBoneTransform = glm::mat4(1.0f);
 
   Animation::Joint *parent = nullptr;
   std::list<Animation::Joint *> children;
+
 
   std::vector<float> keyframe_times;
   std::vector<glm::mat4> keyframe_matrices;
 
   Joint()  { };
 
-  Joint(std::string id, std::string name, std::string type, glm::mat4 t)
-  {
-    std::size_t pos = name.find(".");
-    if (pos != std::string::npos)
-      name.replace(pos, 1, "_");
-    
-    this->_id_str   = id;
-    this->_name_str = name;
-    this->_type_str = type;
-    this->localBindTransform = t;
-  };
-
-
-  glm::mat4 computeBindTransform()
-  {
-    Animation::Joint *joint = this->parent;
-    glm::mat4 bind = this->localBindTransform;
-    
-    while (joint != nullptr)
-    {
-      bind = this->parent->computeBindTransform() * bind;
-      joint = joint->parent;
-    }
-
-    return bind;  
-  };
-
-  glm::mat4 computeInvBindTransform()
-  {
-    return glm::inverse(this->computeBindTransform());
-    // if (this->parent != nullptr)
-    //   return this->parent->computeInvBindTransform() * this->inverseBindTransform;
-
-    // else
-    //   return this->inverseBindTransform;
-  };
-
-
-
+  Joint(std::string id, std::string name, std::string type, glm::mat4 t);
 };
 
 
@@ -76,6 +41,7 @@ class Animation::Armature {
     std::string name = "";
 
     std::vector<Animation::Joint *> joints;
+    std::vector<Animation::Joint *> joints_sorted;
 
     Animation::Joint *root = nullptr;
     Armature() { };
@@ -87,7 +53,7 @@ class Animation::Armature {
           return joint;
       
       return nullptr;
-    }
+    };
 
     Animation::Joint *find(int id)
     {
@@ -96,6 +62,20 @@ class Animation::Armature {
           return joint;
       
       return nullptr;
-    }
+    };
+
+    void sortJoints()
+    {
+      this->joints_sorted.clear();
+      for (size_t i=0; i<this->joints.size(); i++)
+      {
+        Animation::Joint *joint = this->find(i);
+        if (joint != nullptr)
+          this->joints_sorted.push_back(joint);
+      }
+    };
+
+
+    void computePose(int keyframe);
 };
 

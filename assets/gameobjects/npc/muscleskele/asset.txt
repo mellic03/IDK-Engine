@@ -2,7 +2,7 @@
 #interactivity npc
 #GameObjectType GAMEOBJECT_ACTOR
 
-#meshlod 0 muscleskele2.dae
+#meshlod 0 muscleskele.dae
 #meshlod 1 muscleskele_lod1.dae
 
 #physics PHYSICS_FALLING

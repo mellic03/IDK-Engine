@@ -663,6 +663,10 @@ void Renderer::drawModel(Model *model, Transform *transform)
 {
   this->active_shader->setMat4("model", transform->getModelMatrix_stale());
 
+  for (int i=0; i<10; i++)
+    this->active_shader->setMat4("boneTransforms[" + std::to_string(i) + "]", glm::mat4(1.0f));
+
+
   if (frame == 144)
   {
     anim += 1;
@@ -673,33 +677,16 @@ void Renderer::drawModel(Model *model, Transform *transform)
 
   if (model->isAnimated())
   {
-    size_t i = 0;
+    model->getArmature()->computePose(anim);
 
-    for (i=0; i<model->getArmature()->joints.size(); i++)
+    for (size_t i=0; i<model->getArmature()->joints.size(); i++)
     {
       Animation::Joint *joint = model->getArmature()->find(i);
-      if (joint->keyframe_matrices.size() > 0)
-      {
-        glm::mat4 mat = glm::transpose(joint->keyframe_matrices[anim]);
-        glm::mat4 bind = glm::transpose((joint->inverseBindTransform));
-        mat = mat*bind;
-
-        this->active_shader->setMat4("boneTransforms[" + std::to_string(i) + "]", mat);
-      }
+      glm::mat4 mat = joint->finalBoneTransform;
+      this->active_shader->setMat4("boneTransforms[" + std::to_string(i) + "]", mat);
     }
 
-    while (i < 10)
-    {
-      this->active_shader->setMat4("boneTransforms[" + std::to_string(i) + "]", glm::mat4(1.0f));
-      i += 1;
-    }
     frame += 1;
-  }
-
-  else
-  {
-    for (int i=0; i<10; i++)
-      this->active_shader->setMat4("boneTransforms[" + std::to_string(i) + "]", glm::mat4(1.0f));
   }
 
 

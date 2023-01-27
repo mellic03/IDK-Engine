@@ -9,44 +9,12 @@
 #include "../glcall.h"
 
 
-Mesh::Mesh(void)
-{
-  glGenVertexArrays(1, &this->VAO);
-  glGenBuffers(1, &this->VBO);
-}
+Mesh::Mesh(void)  { }
 
-
-void Mesh::load(std::string filepath)
-{
-
-}
 
 
 void Mesh::setBufferData(void)
 {
-  // if (this->vertices[0].weights[0] != 0.0f && this->vertices.size() < 100)
-  // {
-  //   int i = 0;
-  //   for (Vertex v: this->vertices)
-  //   {
-  //     printf("this->_vertices[%d]: xyz: { %f %f %f }, IDs: { %d %d %d }, weights: { %f %f %f }\n",
-  //       i,
-  //       v.position.x,
-  //       v.position.y,
-  //       v.position.z,
-  //       v.joint_ids[0],
-  //       v.joint_ids[1],
-  //       v.joint_ids[2],
-  //       v.weights[0],
-  //       v.weights[1],
-  //       v.weights[2]
-  //     );
-    
-  //     i += 1;
-  //   }
-  // }
-
-
   glDeleteVertexArrays(1, &this->VAO);
   glDeleteBuffers(1, &this->VBO);
 
@@ -88,12 +56,12 @@ void Mesh::setBufferData(void)
 
   // Joint weights
   GLCALL( glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offset) );
-  offset += 3 * sizeof(float);
+  offset += 4 * sizeof(float);
   GLCALL( glEnableVertexAttribArray(5) );
 
   // Joint IDs
   glVertexAttribIPointer(6, 3, GL_INT, sizeof(Vertex), (void *)offset);
-  offset += 3 * sizeof(int);
+  offset += 4 * sizeof(int);
   GLCALL( glEnableVertexAttribArray(6) );
 
 

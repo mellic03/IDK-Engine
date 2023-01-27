@@ -149,7 +149,7 @@ std::vector<glm::mat4> stringToMat4Array(std::string str)
 
   while (input >> f)
   {
-    mat[i][j] = f;
+    mat[j][i] = f;
     j+=1;
 
     if (j == 4)
@@ -637,7 +637,7 @@ void Model::loadAnimations(rapidxml::xml_document<> *doc)
 
       rapidxml::xml_node<> *matrixNode = animationNode->first_node("source")->next_sibling("source");
       std::vector<glm::mat4> keyframe_matrices = stringToMat4Array(matrixNode->first_node("float_array")->value());  
-
+      
       joint->keyframe_times = keyframe_times;
       joint->keyframe_matrices = keyframe_matrices;
     }
@@ -672,6 +672,7 @@ static void recurse_loadArmature(rapidxml::xml_node<> *node, Animation::Armature
     glm::mat4 transform = parseArray_mat4(nd->first_node("matrix")->value());
 
     Animation::Joint *child_joint = new Animation::Joint(id, name, type, transform);
+    child_joint->_id = armature->joints.size();
     child_joint->parent = joint;
     joint->children.push_back(child_joint);
     armature->joints.push_back(child_joint);
@@ -707,8 +708,10 @@ void Model::loadArmature(rapidxml::xml_document<> *doc)
   std::string name = node->first_attribute("name")->value();
   std::string type = node->first_attribute("type")->value();
   glm::mat4 bindTransform = parseArray_mat4(node->first_node("matrix")->value());
+  // bindTransform = glm::rotate(bindTransform, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
   this->_armature.root = new Animation::Joint(id, name, type, bindTransform);
+  this->_armature.root->_id = this->_armature.joints.size();
   this->_armature.joints.push_back(this->_armature.root);
 
   rapidxml::xml_node<> *nd = node;
@@ -728,21 +731,8 @@ static void printBVTree(const std::string &prefix, const Animation::Joint *node)
   
   std::cout << prefix;
   std::cout << "    ";
-  std::cout << node->_name_str << "    ";
+  std::cout << node->_name_str << "  ID: " << node->_id << "\n";
 
-  if (node->keyframe_matrices.size() > 0)
-  {
-    for (int i=0; i<4; i++)
-      for (int j=0; j<4; j++)
-        printf("%f ", node->keyframe_matrices[0][i][j]);
-  printf("\n");
-
-    for (int i=0; i<4; i++)
-      for (int j=0; j<4; j++)
-        printf("%f ", node->keyframe_matrices[1][i][j]);
-  }
-
-  printf("\n");
 
   for (Animation::Joint *child: node->children)
     printBVTree(prefix + "    ", child);
@@ -768,24 +758,14 @@ void Model::loadArmatureWeights(rapidxml::xml_document<> *doc)
 
   rapidxml::xml_node<> *jointIDNode = skinNode->first_node("source");
   std::vector<std::string> jointnames = stringToStringArray(jointIDNode->first_node("Name_array")->value());
-  for (size_t i=0; i<jointnames.size(); i++)
-  {
-    Animation::Joint *joint = this->_armature.find(jointnames[i]);
-    if (joint == nullptr)
-    {
-      printf("[Model::loadArmatureWeights()]: joint == nullptr (jointname: %s)\n", jointnames[i].c_str());
-      printf("Model: %s\n", this->m_name.c_str());
-      exit(1);
-    }
-    joint->_id = i;
-  }
+
 
   rapidxml::xml_node<> *bindNode = jointIDNode->next_sibling();
   std::vector<glm::mat4> bind_matrices = stringToMat4Array(bindNode->first_node("float_array")->value());
 
   for (size_t i=0; i<bind_matrices.size(); i++)
   {
-    auto *joint = this->_armature.find(i);
+    auto *joint = this->_armature.find(jointnames[i]);
     joint->inverseBindTransform = bind_matrices[i];
   }
 
@@ -814,18 +794,23 @@ void Model::loadArmatureWeights(rapidxml::xml_document<> *doc)
         {
           if (vcount[i] >= 1)
           {
-            vertex.joint_ids.x = v[cursor];
+            vertex.joint_ids.x = this->_armature.find(jointnames[v[cursor]])->_id;
             vertex.weights.x   = weights[v[cursor+1]];
           }
           if (vcount[i] >= 2)
           {
-            vertex.joint_ids.y = v[cursor+2];
+            vertex.joint_ids.y = this->_armature.find(jointnames[v[cursor+2]])->_id;
             vertex.weights.y   = weights[v[cursor+3]];
           }
           if (vcount[i] >= 3)
           {
-            vertex.joint_ids.z = v[cursor+4];
+            vertex.joint_ids.z = this->_armature.find(jointnames[v[cursor+4]])->_id;
             vertex.weights.z   = weights[v[cursor+5]];
+          }
+          if (vcount[i] >= 4)
+          {
+            vertex.joint_ids[3] = this->_armature.find(jointnames[v[cursor+6]])->_id;
+            vertex.weights[3]   = weights[v[cursor+7]];
           }
         }
       }
@@ -849,11 +834,11 @@ void Model::loadArmatureWeights(rapidxml::xml_document<> *doc)
   // for (size_t i=0; i<bind_matrices.size(); i++)
   // {
   //   Animation::Joint *joint = this->_armature.find(i);
-  //   joint->localBindTransform = bind_matrices[i];
+  //   joint->localTransform = bind_matrices[i];
 
   //   for (auto &mat: joint->keyframe_matrices)
   //   {
-  //     mat = joint->localBindTransform * mat;
+  //     mat = joint->localTransform * mat;
   //   }
   // }
 }
@@ -954,8 +939,11 @@ void Model::loadDae(std::string directory, std::string filename, bool is_terrain
     mesh.setBufferData();
 
 
-  if (this->_animated && this->m_name == "assets/gameobjects/npc/test/test.dae")
+  if (this->_animated)
   {
+
+    this->_armature.sortJoints();
+
     // printf("keyframes: %d\n", this->_armature.joints[1]->keyframe_matrices.size());
 
     // for (Mesh mesh: this->m_meshes)
@@ -980,29 +968,28 @@ void Model::loadDae(std::string directory, std::string filename, bool is_terrain
     //   }
     // }
 
-
     // printf("model: %s\n", this->m_name.c_str());
 
 
-    for (auto &joint: this->_armature.joints)
-    {
-      printf("Joint: %s\n", joint->_name_str.c_str());
+    // for (auto &joint: this->_armature.joints)
+    // {
+    //   printf("Joint: %s\n", joint->_name_str.c_str());
 
-      for (auto &mat: joint->keyframe_matrices)
-      {
-        for (int i=0; i<4; i++)
-        {
-          for (int j=0; j<4; j++)
-          {
-            printf("%f ", mat[i][j]);
-          }
-          printf("\n");
-        }
-        printf("\n");
-      }
-    }
+    //   for (auto &mat: joint->keyframe_matrices)
+    //   {
+    //     for (int i=0; i<4; i++)
+    //     {
+    //       for (int j=0; j<4; j++)
+    //       {
+    //         printf("%f ", mat[i][j]);
+    //       }
+    //       printf("\n");
+    //     }
+    //     printf("\n");
+    //   }
+    // }
 
-    // printBVTree("", this->_armature.root);
+    printBVTree("", this->_armature.root);
     printf("\n\n");
   }
 

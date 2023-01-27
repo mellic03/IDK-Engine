@@ -9,9 +9,9 @@
     parentID: -1
   </HEADER>
   <TRANSFORM>
-    position: 2.37458 -1.57761 -19.6085
+    position: -20.7188 11.3634 -8.35678
     velocity: 3.39554e-16 0 1.13089e-13
-    orientation: -0.0193183 0.979782 0.11796 0.160437
+    orientation: -0.0417077 -0.931689 -0.113444 0.342559
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
@@ -81,18 +81,34 @@
   </POINTLIGHT>
 </GAMEOBJECT>
 
+<GAMEOBJECT>
+  <HEADER>
+    template name: tree
+    assigned name: tree
+    objectID: 4
+    parentID: 7
+  </HEADER>
+  <TRANSFORM>
+    position: 16.42 -1.24 -0.27
+    velocity: 0 0 0
+    orientation: 0 -0.871586 0 -0.490243
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+  </SCRIPTS>
+</GAMEOBJECT>
 
 <GAMEOBJECT>
   <HEADER>
     template name: tree
     assigned name: tree
     objectID: 5
-    parentID: 8
+    parentID: 7
   </HEADER>
   <TRANSFORM>
-    position: 16.42 -1.24 -0.27
+    position: 6.5 -2.48 0
     velocity: 0 0 0
-    orientation: 0 0 0 1
+    orientation: 0 -0.871586 0 -0.490243
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
@@ -104,29 +120,12 @@
     template name: tree
     assigned name: tree
     objectID: 6
-    parentID: 8
+    parentID: 7
   </HEADER>
   <TRANSFORM>
-    position: 6.5 -2.48 0
+    position: -5.13 -5.1 -4.76837e-07
     velocity: 0 0 0
-    orientation: 0 0 0 1
-    scale: 1 1 1
-  </TRANSFORM>
-  <SCRIPTS>
-  </SCRIPTS>
-</GAMEOBJECT>
-
-<GAMEOBJECT>
-  <HEADER>
-    template name: tree
-    assigned name: tree
-    objectID: 7
-    parentID: 8
-  </HEADER>
-  <TRANSFORM>
-    position: -5.13 -5.1 0
-    velocity: 0 0 0
-    orientation: 0 0 0 1
+    orientation: 0 -0.871586 0 -0.490243
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
@@ -137,7 +136,7 @@
   <HEADER>
     template name: empty
     assigned name: empty
-    objectID: 8
+    objectID: 7
     parentID: 1
   </HEADER>
   <TRANSFORM>
@@ -150,19 +149,18 @@
   </SCRIPTS>
 </GAMEOBJECT>
 
-
 <GAMEOBJECT>
   <HEADER>
     template name: testanimation
     assigned name: testanimation
-    objectID: 10
+    objectID: 8
     parentID: 1
   </HEADER>
   <TRANSFORM>
-    position: -13.88 -4.60536 -0.529
+    position: -15.59 6.105 -0.529
     velocity: -1.4013e-44 0 1.4013e-44
-    orientation: 0 -0.871586 0 -0.490243
-    scale: 1 1 1
+    orientation: 0.00016308 -0.707116 -0.707116 -0.00016305
+    scale: 1 0.84 1
   </TRANSFORM>
   <SCRIPTS>
   </SCRIPTS>

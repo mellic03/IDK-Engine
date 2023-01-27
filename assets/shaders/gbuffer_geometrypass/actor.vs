@@ -7,8 +7,8 @@ layout (location = 3) in vec3 aTangent;
 
 layout (location = 4) in vec4 aColor;
 
-layout (location = 5) in vec3 jointWeights;
-layout (location = 6) in ivec3 jointIDs;
+layout (location = 5) in vec4 jointWeights;
+layout (location = 6) in ivec4 jointIDs;
 
 
 out vec2 TexCoords;
@@ -28,14 +28,22 @@ void main()
 {
   vec4 position = vec4(0.0);
 
-  for (int i=0; i<3; i++)
+  if (jointIDs[0] == -1)
   {
-    if (jointIDs[i] == -1)
-    {
-      break;
-    }
+    position += vec4(aPos, 1.0);
+  }
 
-    position += (jointWeights[i] * boneTransforms[jointIDs[i]]) * vec4(aPos, 1.0);
+  else
+  {
+    for (int i=0; i<4; i++)
+    {
+      if (jointIDs[i] == -1)
+      {
+        break;
+      }
+
+      position += jointWeights[i] * boneTransforms[jointIDs[i]] * vec4(aPos, 1.0);
+    }
   }
 
   vec4 worldPos = model * position;
