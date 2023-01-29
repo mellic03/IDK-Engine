@@ -2,7 +2,7 @@
 
 #include "../glcall.h"
 
-#include "../../transform.h"
+#include "../transform/transform.h"
 #include "../model/model.h"
 
 struct InstanceData {

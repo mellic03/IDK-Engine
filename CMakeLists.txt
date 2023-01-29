@@ -54,6 +54,7 @@ file(
   "src/*.cpp"
 
   "src/GraphicsEngine/*.cpp"
+  "src/GraphicsEngine/transform/*.cpp"
   "src/GraphicsEngine/primitive/*.cpp"
   "src/GraphicsEngine/model/*.cpp"
   "src/GraphicsEngine/model/animation/*.cpp"

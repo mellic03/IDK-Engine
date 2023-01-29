@@ -58,7 +58,7 @@ int ENTRY(int argc, const char **argv)
 
   gl_context = SDL_GL_CreateContext(window);
   SDL_GL_MakeCurrent(window, gl_context);
-  SDL_GL_SetSwapInterval(0); // vsync
+  SDL_GL_SetSwapInterval(1); // vsync
   SDL_SetRelativeMouseMode(SDL_FALSE);
 
   if (glewInit() != GLEW_OK)

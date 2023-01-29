@@ -32,7 +32,8 @@ void Renderer::compileShaders(void)
   this->createShader("gbuffer_geometrypass/billboard_fixed",    SHADER_BILLBOARD_FIXED);
   this->createShader("gbuffer_geometrypass/billboard_follow",   SHADER_BILLBOARD_FOLLOW);
 
-  this->createShader("gbuffer_geometrypass/actor",        SHADER_ACTOR);
+  this->createShader("gbuffer_geometrypass/actor",           SHADER_ACTOR);
+  this->createShader("gbuffer_geometrypass/actor_animated",  SHADER_ACTOR_ANIMATED);
   this->createShader("lightsource",                       SHADER_LIGHTSOURCE);
 
 
@@ -657,44 +658,9 @@ void Renderer::drawPrimitive(PrimitiveType type, glm::vec3 pos, float radius, Tr
 }
 
 
-int frame = 0;
-int anim = 0;
 void Renderer::drawModel(Model *model, Transform *transform)
 {
   this->active_shader->setMat4("model", transform->getModelMatrix_stale());
-
-  for (int i=0; i<10; i++)
-    this->active_shader->setMat4("boneTransforms[" + std::to_string(i) + "]", glm::mat4(1.0f));
-
-  if (frame == 400)
-  {
-    anim += 1;
-    frame = 0;
-  }
-  if (anim >= 20)
-    anim = 0;
-
-  float keyframe_time = (float)frame / 400.0f;
-
-  if (model->isAnimated())
-  {
-    Animation::Animation *animation = model->getAnimation("run");
-    Animation::Armature *armature = animation->getArmature();
-
-    keyframe_time *= 0.83f;
-
-
-    armature->computePose(keyframe_time);
-
-    for (size_t i=0; i<armature->joints.size(); i++)
-    {
-      Animation::Joint *joint = armature->joints_sorted[i];
-      this->active_shader->setMat4("boneTransforms[" + std::to_string(i) + "]", joint->finalBoneTransform);
-    }
-
-    frame += 1;
-  }
-
 
   for (Mesh &mesh: model->m_meshes)
   {
@@ -718,10 +684,36 @@ void Renderer::drawModel(Model *model, Transform *transform)
       unbindTextureUnit(GL_TEXTURE3);
     }
  
-   GLCALL( glBindVertexArray(0) );
+    GLCALL( glBindVertexArray(0) );
+  }
+}
+
+
+
+void Renderer::drawModelAnimated(Model *model, Transform *transform, Animation::Animation *animation)
+{
+  this->useShader(SHADER_ACTOR_ANIMATED);
+
+  for (int i=0; i<Animation::MAX_BONES; i++)
+    this->active_shader->setMat4("boneTransforms[" + std::to_string(i) + "]", glm::mat4(1.0f));
+
+
+  Animation::Armature *armature = animation->getArmature();
+  float keyframe_time = animation->getTime();
+  armature->computePose(keyframe_time);
+
+  for (size_t i=0; i<armature->joints.size(); i++)
+  {
+    Animation::Joint *joint = armature->joints[i];
+    glm::mat4 boneTransform = joint->getBoneTransformMatrix(keyframe_time);
+    this->active_shader->setMat4("boneTransforms[" + std::to_string(i) + "]", boneTransform);
   }
 
+  this->drawModel(model, transform);
+
+  animation->advance(this->deltaTime);
 }
+
 
 
 void Renderer::drawLightSource(Model *model, Transform *transform, glm::vec3 diffuse)

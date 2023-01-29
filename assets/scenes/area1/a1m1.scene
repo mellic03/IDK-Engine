@@ -9,9 +9,9 @@
     parentID: -1
   </HEADER>
   <TRANSFORM>
-    position: -13.9549 2.01721 21.9112
+    position: -18.7571 4.40905 8.2787
     velocity: 3.39554e-16 0 1.13089e-13
-    orientation: 0.0545022 0.0300887 0.00165135 -0.998059
+    orientation: -0.0902507 -0.680271 -0.0850031 0.722399
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
@@ -159,7 +159,7 @@
   <TRANSFORM>
     position: -13.78 2.585 7.501
     velocity: -1.4013e-44 0 1.4013e-44
-    orientation: 0 6.36584e-12 1.90719e-12 -1.00001
+    orientation: -5.90403e-17 -1.35125e-08 4.36936e-09 -1.00001
     scale: 1 0.84 1
   </TRANSFORM>
   <SCRIPTS>

@@ -55,12 +55,12 @@ void Mesh::setBufferData(void)
   GLCALL( glEnableVertexAttribArray(4) );
 
   // Joint weights
-  GLCALL( glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offset) );
+  GLCALL( glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offset) );
   offset += 4 * sizeof(float);
   GLCALL( glEnableVertexAttribArray(5) );
 
   // Joint IDs
-  glVertexAttribIPointer(6, 3, GL_INT, sizeof(Vertex), (void *)offset);
+  glVertexAttribIPointer(6, 4, GL_INT, sizeof(Vertex), (void *)offset);
   offset += 4 * sizeof(int);
   GLCALL( glEnableVertexAttribArray(6) );
 

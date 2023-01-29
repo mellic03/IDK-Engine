@@ -8,7 +8,7 @@
 
 #include "../../include/rapidxml/rapidxml.hpp"
 #include "../../include/glm/glm.hpp"
-#include "../../transform.h"
+#include "../transform/transform.h"
 
 #include "daeloader.h"
 #include "material.h"

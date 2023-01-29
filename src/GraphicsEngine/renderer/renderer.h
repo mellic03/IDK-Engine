@@ -13,7 +13,7 @@
 
 #include "../glcall.h"
 
-#include "../../transform.h"
+#include "../transform/transform.h"
 
 #include "../model/model.h"
 #include "../camera.h"
@@ -172,6 +172,7 @@ class Renderer {
     void drawBillboard        (Model *model,  Transform *transform);
     void drawLightSource      (Model *model,  Transform *transform, glm::vec3 diffuse);
     void drawModel            (Model *model,  Transform *transform);
+    void drawModelAnimated    (Model *model,  Transform *transform, Animation::Animation *animation);
 
     void drawModelInstanced   (Model *model,  InstanceData *instance_data);
 

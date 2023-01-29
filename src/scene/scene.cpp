@@ -505,8 +505,17 @@ void Scene::drawActors()
   {
     Render::ren.active_shader->setVec3("emission", obj->emission);
     Render::ren.active_shader->setFloat("emission_scale", obj->emission_scale);
+
+    Model *model = obj->getModel();
+
+    if (model->isAnimated())
+    {
+      Render::ren.drawModelAnimated(model, obj->getTransform(), model->getAnimation("run"));
+      Render::ren.useShader(SHADER_ACTOR);
+    }
    
-    Render::ren.drawModel(obj->getModel(), obj->getTransform());
+    else
+      Render::ren.drawModel(model, obj->getTransform());
   }
 
   Render::ren.active_shader->setVec3("emission", glm::vec3(0.0f));

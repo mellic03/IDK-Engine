@@ -536,6 +536,9 @@ void Model::loadVertices(rapidxml::xml_document<> *doc)
 }
 
 
+
+
+
 void Model::computeBoundingSphere(void)
 {
   // Find the two vertices which are furthest from each other,
@@ -598,6 +601,9 @@ void Model::loadBoundingSphere(std::ifstream &stream)
 
   this->bounding_sphere_radiusSQ = this->bounding_sphere_radius * this->bounding_sphere_radius;
 }
+
+
+
 
 
 void Model::loadAnimations(rapidxml::xml_document<> *doc, Animation::Armature *armature)
@@ -711,7 +717,6 @@ void Model::loadArmature(rapidxml::xml_document<> *doc, Animation::Armature *arm
   std::string name = node->first_attribute("name")->value();
   std::string type = node->first_attribute("type")->value();
   glm::mat4 bindTransform = parseArray_mat4(node->first_node("matrix")->value());
-  // bindTransform = glm::rotate(bindTransform, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
   armature->root = new Animation::Joint(id, name, type, bindTransform);
   armature->root->_id = armature->joints.size();
@@ -727,6 +732,7 @@ void Model::loadArmature(rapidxml::xml_document<> *doc, Animation::Armature *arm
   //--------------------------------------------------------------------------
 }
 
+
 static void printBVTree(const std::string &prefix, const Animation::Joint *node)
 {
   if (node == nullptr)
@@ -741,7 +747,6 @@ static void printBVTree(const std::string &prefix, const Animation::Joint *node)
     printBVTree(prefix + "    ", child);
 
 }
-
 
 
 void Model::loadArmatureWeights(rapidxml::xml_document<> *doc, Animation::Armature *armature)
@@ -770,6 +775,7 @@ void Model::loadArmatureWeights(rapidxml::xml_document<> *doc, Animation::Armatu
   {
     auto *joint = armature->find(jointnames[i]);
     joint->inverseBindTransform = bind_matrices[i];
+    joint->is_animated = true;
   }
 
 
@@ -778,16 +784,26 @@ void Model::loadArmatureWeights(rapidxml::xml_document<> *doc, Animation::Armatu
   
 
   rapidxml::xml_node<> *vertexWeightsNode = node->first_node("vertex_weights");
-  
-
   std::vector<int> vcount = stringToIntArray(vertexWeightsNode->first_node("vcount")->value());
   std::vector<int> v      = stringToIntArray(vertexWeightsNode->first_node("v")->value());
+
+
+  for (size_t i=0; i<vcount.size(); i++)
+  {
+    this->_jointIDs.push_back(std::vector<int>());
+    this->_jointWeights.push_back(std::vector<float>());
+  }
 
   size_t cursor = 0;
   for (size_t i=0; i<vcount.size(); i++)
   {
     size_t v_end = 2*vcount[i];
-    size_t end = (vcount[i] <= 3) ? v_end : 6;
+
+    for (size_t j=cursor; j<cursor+v_end; j+=2)
+    {
+      this->_jointIDs[i].push_back(armature->find(jointnames[v[j + 0]])->_id);
+      this->_jointWeights[i].push_back(weights[v[j + 1]]);
+    }
 
     for (Mesh &mesh: this->m_meshes)
     {
@@ -795,25 +811,53 @@ void Model::loadArmatureWeights(rapidxml::xml_document<> *doc, Animation::Armatu
       {
         if (vertex.position == this->_positions[i])
         {
-          if (vcount[i] >= 1)
+          std::vector<int>   jids;
+          std::vector<float> jweights;
+
+          for (size_t j=cursor, k=0; j<cursor+v_end; j+=2, k+=1)
           {
-            vertex.joint_ids.x = armature->find(jointnames[v[cursor]])->_id;
-            vertex.weights.x   = weights[v[cursor+1]];
+            jids.push_back(armature->find(jointnames[v[j + 0]])->_id);         
+            jweights.push_back(weights[v[j + 1]]);
           }
-          if (vcount[i] >= 2)
+
+
+          if (jids.size() > 4)
           {
-            vertex.joint_ids.y = armature->find(jointnames[v[cursor+2]])->_id;
-            vertex.weights.y   = weights[v[cursor+3]];
+            // Sort weights
+            for (size_t k=0; k<jids.size(); k++)
+            {
+              for (size_t m=0; m<k; m++)
+              {
+                if (k != m)
+                {
+                  if (jweights[k] > jweights[m])
+                  {
+                    int tempint = jids[k];
+                    jids[k] = jids[m];
+                    jids[m] = tempint;
+
+                    float tempfloat = jweights[k];
+                    jweights[k] = jweights[m];
+                    jweights[m] = tempfloat;
+                  }
+                }
+              }
+            }
+
+            for (size_t j=0; j<4; j++)
+            {
+              vertex.joint_ids[j] = jids[j];
+              vertex.weights[j]   = jweights[j];
+            }
           }
-          if (vcount[i] >= 3)
+
+          else
           {
-            vertex.joint_ids.z = armature->find(jointnames[v[cursor+4]])->_id;
-            vertex.weights.z   = weights[v[cursor+5]];
-          }
-          if (vcount[i] >= 4)
-          {
-            vertex.joint_ids[3] = armature->find(jointnames[v[cursor+6]])->_id;
-            vertex.weights[3]   = weights[v[cursor+7]];
+            for (size_t j=0; j<jids.size(); j++)
+            {
+              vertex.joint_ids[j] = jids[j];
+              vertex.weights[j]   = jweights[j];
+            }
           }
         }
       }
@@ -821,6 +865,7 @@ void Model::loadArmatureWeights(rapidxml::xml_document<> *doc, Animation::Armatu
 
     cursor += v_end;
   }
+
   //--------------------------------------------------------------------------
 
 
@@ -829,12 +874,14 @@ void Model::loadArmatureWeights(rapidxml::xml_document<> *doc, Animation::Armatu
   {
     for (Vertex &vertex: mesh.vertices)
     {
-      float sum = vertex.weights[0] + vertex.weights[1] + vertex.weights[2];
+      float sum = vertex.weights[0] + vertex.weights[1] + vertex.weights[2] + vertex.weights[3];
       vertex.weights /= sum;
     }
   }
 
 }
+
+
 
 
 
@@ -873,7 +920,6 @@ void Model::loadDae(std::string directory, std::string filename, bool is_terrain
   this->loadLibraryEffects(&doc);
   this->loadLibraryMaterials(&doc);
 
-  this->_mesh_vertex_offsets.push_back(0);
   this->loadVertices(&doc);
 
   if (this->is_terrain)
@@ -928,10 +974,20 @@ void Model::loadDae(std::string directory, std::string filename, bool is_terrain
 }
 
 
+
+
 Animation::Animation *Model::getAnimation(std::string name)
 {
   return this->_animation_controller.getAnimation(name);
 }
+
+
+Animation::AnimationController *Model::getAnimController()
+{
+  return &this->_animation_controller;
+}
+
+
 
 
 void Model::loadAnimation(std::string animation_name, std::string directory, std::string filename)
@@ -962,32 +1018,36 @@ void Model::loadAnimation(std::string animation_name, std::string directory, std
   this->loadArmature(&doc, armature);
   this->loadArmatureWeights(&doc, armature);
   this->loadAnimations(&doc, armature);
-  armature->sortJoints();
+
+  armature->globalInverseTransform = glm::inverse(armature->root->transform);
+  armature->computeLocalTransforms();
+  armature->computeFinalTransforms();
+
+
+  float largest = 0.0f;
+  for (Animation::Joint *joint: armature->joints)
+  {
+    while (joint->keyframe_finalBoneTransforms.size() < joint->keyframe_matrices.size())
+      joint->keyframe_finalBoneTransforms.push_back(glm::mat4(1.0f));
+
+    for (float f: joint->keyframe_times)
+    {
+      if (f > largest)
+        largest = f;
+    }
+
+
+  }
+
+  animation->setLength(largest);
+
+  this->_animated = true;
+
+
 
   for (Mesh &mesh: this->m_meshes)
+  {
     mesh.setBufferData();
+  }
 
-  // for (Mesh mesh: this->m_meshes)
-  // {
-  //   int i = 0;
-  //   for (Vertex v: mesh.vertices)
-  //   {
-  //     printf("this->_vertices[%d]: xyz: { %f %f %f }, IDs: { %d %d %d }, weights: { %f %f %f }\n",
-  //       i,
-  //       v.position.x,
-  //       v.position.y,
-  //       v.position.z,
-  //       v.joint_ids[0],
-  //       v.joint_ids[1],
-  //       v.joint_ids[2],
-  //       v.weights[0],
-  //       v.weights[1],
-  //       v.weights[2]
-  //     );
-  //   }
-  // }
-
-
-  printf("\n\nAnimation: %s\n", animation_name.c_str());
-  printBVTree("", armature->root);
 }

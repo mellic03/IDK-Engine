@@ -13,7 +13,7 @@
 
 #include "daeloader.h"
 #include "mesh.h"
-#include "../../transform.h"
+#include "../transform/transform.h"
 
 
 enum ModelType {
@@ -37,8 +37,8 @@ class Model {
     std::vector<glm::vec2> _texcoords;
     std::vector<glm::vec4> _colors;
 
-    std::vector<int>    _mesh_vertex_offsets;
-    std::vector<Vertex> _vertices;
+    std::vector<std::vector<int>>   _jointIDs;
+    std::vector<std::vector<float>> _jointWeights;
 
 
     bool _animated = false;
@@ -103,6 +103,7 @@ class Model {
     bool isAnimated() { return this->_animated; };
 
     Animation::Animation *getAnimation(std::string name);
+    Animation::AnimationController *getAnimController();
 };
 
 

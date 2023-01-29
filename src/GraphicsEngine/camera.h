@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 #include <GL/glu.h>
 
-#include "../transform.h"
+#include "transform/transform.h"
 
 class Camera {
 

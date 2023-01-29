@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../transform.h"
 #include "camera.h"
 
 struct Plane {

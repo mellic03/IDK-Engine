@@ -5,7 +5,6 @@
 #include "weapon.h"
 
 #include "../../keylog.h"
-#include "../../transform.h"
 #include "../../audio/AudioEngine.h"
 
 class Player {
