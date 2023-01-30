@@ -697,19 +697,16 @@ void Renderer::drawModelAnimated(Model *model, Transform *transform, Animation::
   for (int i=0; i<Animation::MAX_BONES; i++)
     this->active_shader->setMat4("boneTransforms[" + std::to_string(i) + "]", glm::mat4(1.0f));
 
-
   Animation::Armature *armature = animation->getArmature();
-  float keyframe_time = animation->getTime();
-  armature->computePose(keyframe_time);
+  armature->computePose(animation->getTime());
 
   for (size_t i=0; i<armature->joints.size(); i++)
   {
-    Animation::Joint *joint = armature->joints[i];
-    glm::mat4 boneTransform = joint->getBoneTransformMatrix(keyframe_time);
+    glm::mat4 boneTransform = armature->joints[i]->getBoneTransformMatrix(animation->getTime());
     this->active_shader->setMat4("boneTransforms[" + std::to_string(i) + "]", boneTransform);
   }
-
   this->drawModel(model, transform);
+
 
   animation->advance(this->deltaTime);
 }

@@ -42,8 +42,8 @@ int   *ModelLOD::getShadowLOD_value()     { return &this->_shadow_lod;   };
 
 
 
-void ModelLOD::loadAnimationLOD(int lod, std::string animation_name, std::string directory, std::string filename)
+void ModelLOD::loadAnimationLOD(int lod, std::string animation_name, Animation::AnimationController *animationController, std::string directory, std::string filename)
 {
-  this->_models[lod].loadAnimation(animation_name, directory, filename);
+  this->_models[lod].loadAnimation(animation_name, animationController, directory, filename);
 }
 

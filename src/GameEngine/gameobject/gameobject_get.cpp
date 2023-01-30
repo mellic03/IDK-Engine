@@ -45,3 +45,22 @@ EntityComponents *GameObject::getComponents()
 {
   return &this->_entity_components;
 }
+
+
+
+Animation::AnimationController *GameObject::getAnimationController()
+{
+  return &this->_animation_controller;
+}
+
+Animation::Animation *GameObject::getAnimation()
+{
+  return this->_animation_controller.getAnimation();
+}
+
+Animation::Animation *GameObject::getAnimation(std::string animation_name)
+{
+  return this->_animation_controller.getAnimation(animation_name);
+}
+
+

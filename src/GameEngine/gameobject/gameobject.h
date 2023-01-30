@@ -49,33 +49,32 @@ struct GameObjectData {
 
   public:
 
+    GameObjectType gameobject_type = GAMEOBJECT_UNDEFINED;
+    LightSourceType lightsource_type = LIGHTSOURCE_NONE;
 
-  GameObjectType gameobject_type = GAMEOBJECT_UNDEFINED;
-  LightSourceType lightsource_type = LIGHTSOURCE_NONE;
+    InstancingType instancing_type = INSTANCING_OFF;
+    BillboardType billboard_type = BILLBOARD_FIXED;
 
-  InstancingType instancing_type = INSTANCING_OFF;
-  BillboardType billboard_type = BILLBOARD_FIXED;
+    PhysicsState physics_state = PHYSICS_NONE;
+    NavigationState navigation_state = NAVIGATION_NONE;
 
-  PhysicsState physics_state = PHYSICS_NONE;
-  NavigationState navigation_state = NAVIGATION_NONE;
-
-  GameObjectType ui_icon_type = GAMEOBJECT_UNDEFINED;
-
-
-  void setLightSourceType(LightSourceType type)   { this->lightsource_type = type; };
-  void setInstancingType(InstancingType type)     { this->instancing_type  = type; };
-  void setBillboardType(BillboardType type)       { this->billboard_type   = type; };
-  void setPhysicsState(PhysicsState type)         { this->physics_state    = type; };
-  void setNavigationState(NavigationState type)   { this->navigation_state = type; };
-
-  void setUiIconType(GameObjectType type)         { this->ui_icon_type = type; };
+    GameObjectType ui_icon_type = GAMEOBJECT_UNDEFINED;
 
 
-  GameObjectType getUiIconType()                  { return this->ui_icon_type; };
+    void setLightSourceType(LightSourceType type)   { this->lightsource_type = type; };
+    void setInstancingType(InstancingType type)     { this->instancing_type  = type; };
+    void setBillboardType(BillboardType type)       { this->billboard_type   = type; };
+    void setPhysicsState(PhysicsState type)         { this->physics_state    = type; };
+    void setNavigationState(NavigationState type)   { this->navigation_state = type; };
+
+    void setUiIconType(GameObjectType type)         { this->ui_icon_type = type; };
 
 
-  void isAnimated(bool animated)  { this->_animated = animated; };
-  bool isAnimated()   { return this->_animated; };
+    GameObjectType getUiIconType()                  { return this->ui_icon_type; };
+
+
+    void isAnimated(bool animated)  { this->_animated = animated; };
+    bool isAnimated()   { return this->_animated; };
 
 };
 
@@ -120,6 +119,9 @@ class GameObject {
 
     EntityComponents _entity_components;
 
+    Animation::Animation _animation;
+    Animation::AnimationController _animation_controller;
+
     // Physics
     //----------------------------------------------------
     PhysicsState m_physics_state = PHYSICS_NONE;
@@ -148,7 +150,7 @@ class GameObject {
 
     bool in_frustum = true;
 
-    GameObjectHeader header; 
+    GameObjectHeader header;
 
     glm::vec3 emission = glm::vec3(0.0f);
     float emission_scale = 1.0f;
@@ -206,6 +208,10 @@ class GameObject {
     Model *getModel(int lod);
 
     EntityComponents *getComponents();
+    
+    Animation::AnimationController *getAnimationController();
+    Animation::Animation *getAnimation();
+    Animation::Animation *getAnimation(std::string animation_name);
     //---------------------------------------------------------------------------------------------
 
 

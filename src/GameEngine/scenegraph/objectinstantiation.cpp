@@ -12,9 +12,6 @@ void SceneGraph::newObjectInstance_empty(GameObject *objectptr)
 void SceneGraph::newObjectInstance_terrain(GameObject *objectptr)
 {
   objectptr->getComponents()->giveComponent(TerrainComponent());
-  // objectptr->terrain_components.push_back(EntityComponent(COMPONENT_TERRAIN));
-  // objectptr->terrain_components[0].terrain_component.generateGrassPositions(objectptr->m_model->m_meshes[0].vertices);
-
 }
 
 
@@ -81,11 +78,15 @@ void SceneGraph::newObjectInstance(std::string object_name, Transform *transform
     exit(1);
   }
 
-  LightSourceType lightsource_type = templateptr->getData()->lightsource_type;
-  if (lightsource_type == LIGHTSOURCE_POINT_LIGHT && this->_num_pointlights >= MAX_POINTLIGHTS)
-    return;
-  else if (lightsource_type == LIGHTSOURCE_SPOT_LIGHT && this->_num_spotlights >= MAX_SPOTLIGHTS)
-    return;
+  {
+    LightSourceType lightsource_type = templateptr->getData()->lightsource_type;
+
+    if (lightsource_type == LIGHTSOURCE_POINT_LIGHT && this->_num_pointlights >= MAX_POINTLIGHTS)
+      return;
+
+    else if (lightsource_type == LIGHTSOURCE_SPOT_LIGHT && this->_num_spotlights >= MAX_SPOTLIGHTS)
+      return;
+  }
 
 
   if (templateptr->getData()->instancing_type == INSTANCING_ON)

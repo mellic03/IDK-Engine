@@ -14,8 +14,7 @@ layout (location = 6) in ivec4 jointIDs;
 
 out vec2 TexCoords;
 out vec3 FragPos;
-out mat3 TBN;
-
+out vec3 Normal;
 
 uniform mat4 projection;
 uniform mat4 view;
@@ -28,7 +27,7 @@ uniform mat4 boneTransforms[64];
 void main()
 {
   vec4 position = vec4(0.0);
-  vec4 normal = vec4(0.0);
+  vec3 normal = vec3(0.0);
 
   bool done = false;
 
@@ -40,7 +39,7 @@ void main()
     }
 
     position += jointWeights[i] * boneTransforms[jointIDs[i]] * vec4(aPos, 1.0);
-    normal += jointWeights[i] * boneTransforms[jointIDs[i]] * vec4(aNormal, 0.0);
+    normal += jointWeights[i] * mat3(boneTransforms[jointIDs[i]]) * aNormal;
 
     done = true;
   }
@@ -48,7 +47,7 @@ void main()
   if (!done)
   {
     position = vec4(aPos, 1.0);
-    normal = vec4(aNormal, 1.0);
+    normal = aNormal;
   }
 
   vec4 worldPos = model * vec4(position.xyz, 1.0);
@@ -59,11 +58,6 @@ void main()
 
   // tangent-space to world-space transform
   //------------------------------------------------------------------
-  mat3 normalMatrix = mat3(model);
-  vec3 T = normalize(normalMatrix * aTangent);
-  vec3 N = normalize(normalMatrix * normal.xyz);
-  T = normalize(T - dot(T, N) * N);
-  vec3 B = cross(N, T);
-  TBN = mat3(T, B, N);
+  Normal = normal;
   //------------------------------------------------------------------
 }

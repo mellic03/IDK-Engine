@@ -97,7 +97,7 @@ class Model {
 
 
     void loadDae(std::string directory, std::string filename, bool instanced);
-    void loadAnimation(std::string animation_name, std::string directory, std::string filename);
+    void loadAnimation(std::string name, Animation::AnimationController *animationController, std::string directory, std::string filename);
 
 
     bool isAnimated() { return this->_animated; };
@@ -140,6 +140,6 @@ struct ModelLOD {
     int   *getMaxLOD_value();
     int   *getShadowLOD_value();
 
-    void loadAnimationLOD(int lod, std::string animation_name, std::string directory, std::string filename);
+    void loadAnimationLOD(int lod, std::string animation_name, Animation::AnimationController *animationController, std::string directory, std::string filename);
 
 };

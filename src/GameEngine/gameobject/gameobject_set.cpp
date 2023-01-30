@@ -2,8 +2,6 @@
 
 
 
-
-
 void GameObject::setID(int id)
 {
   this->header.objectID = id;

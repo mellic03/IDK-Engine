@@ -9,6 +9,10 @@
 
 
 
+void EntityComponents::giveComponent(EntityComponentType type)
+{
+  this->_has_component[type] = true;
+};
 
 
 void EntityComponents::giveComponent(ScriptComponent component)

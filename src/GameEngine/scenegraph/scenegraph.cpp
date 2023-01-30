@@ -150,7 +150,15 @@ void SceneGraph::loadObject(std::string directory)
 
     else if (sscanf(buffer, "#animationlod %d %s %s", &intdata, &stringdata, stringdata2))
     {
-      object.getModelLOD()->loadAnimationLOD(intdata, std::string(stringdata), std::string(directory), std::string(stringdata2));
+      object.getModelLOD()->loadAnimationLOD(
+        intdata,
+        std::string(stringdata),
+        object.getAnimationController(),
+        std::string(directory),
+        std::string(stringdata2)
+      );
+
+      object.getComponents()->giveComponent(COMPONENT_ANIMATION);
     }
 
     else if (sscanf(buffer, "#collision %s", stringdata))

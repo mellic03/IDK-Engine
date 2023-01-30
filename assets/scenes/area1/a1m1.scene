@@ -160,7 +160,7 @@
     position: -13.78 2.585 7.501
     velocity: -1.4013e-44 0 1.4013e-44
     orientation: -5.90403e-17 -1.35125e-08 4.36936e-09 -1.00001
-    scale: 1 0.84 1
+    scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
   </SCRIPTS>

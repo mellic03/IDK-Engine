@@ -10,6 +10,16 @@ namespace Animation {
     return &this->_armature;
   }
 
+  void Animation::setName(std::string name)
+  {
+    this->_name = name;
+  }
+
+  std::string Animation::getName()
+  {
+    return this->_name;
+  }
+
   void Animation::setLength(float length)
   {
     this->_length = length;
@@ -37,12 +47,34 @@ namespace Animation {
 
 
 
+  void AnimationController::setActiveAnimation(std::string name)
+  {
+    this->_active_animation = name;
+  }
 
 
+
+  Animation *AnimationController::getAnimation()
+  {
+    return &this->_animations[this->_active_animation];
+  }
 
   Animation *AnimationController::getAnimation(std::string name)
   {
     return &this->_animations[name];
   }
 
+  std::map<std::string, Animation> *AnimationController::getAnimations()
+  {
+    return &this->_animations;
+  }
+
+
+  Animation *AnimationController::newAnimation(std::string name)
+  {
+    this->_animations[name].setName(name);
+    this->_active_animation = name;
+  
+    return &this->_animations[name];
+  }
 }

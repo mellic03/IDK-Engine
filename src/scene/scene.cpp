@@ -510,10 +510,11 @@ void Scene::drawActors()
 
     if (model->isAnimated())
     {
-      Render::ren.drawModelAnimated(model, obj->getTransform(), model->getAnimation("run"));
-      Render::ren.useShader(SHADER_ACTOR);
+      Shader *temp = Render::ren.active_shader;
+      Render::ren.drawModelAnimated(model, obj->getTransform(), obj->getAnimation());
+      Render::ren.active_shader = temp;
     }
-   
+  
     else
       Render::ren.drawModel(model, obj->getTransform());
   }

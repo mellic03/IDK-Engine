@@ -27,6 +27,7 @@ enum EntityComponentType {
   COMPONENT_SPHERE_COLLIDER,
   COMPONENT_CAPSULE_COLLIDER,
   COMPONENT_MESH_COLLIDER,
+  COMPONENT_ANIMATION,
   COMPONENT_NUM_COMPONENTS
 };
 
@@ -116,8 +117,9 @@ class EntityComponents {
     SpotLight *getSpotLightComponent()                      { return this->_spotlight_component.spotlight; };
     SphereColliderComponent *getSphereColliderComponent()   { return &this->_spherecollider_component; };
     CapsuleColliderComponent *getCapsuleColliderComponent() { return &this->_capsulecollider_component; };
-    MeshColliderComponent *getMeshColliderComponent()        { return &this->_meshcollider_component; };
+    MeshColliderComponent *getMeshColliderComponent()       { return &this->_meshcollider_component; };
 
+    void giveComponent(EntityComponentType type);
 
     void giveComponent(ScriptComponent    component);
     void giveComponent(TransformComponent component);

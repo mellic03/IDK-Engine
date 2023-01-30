@@ -710,7 +710,7 @@ void Model::loadArmature(rapidxml::xml_document<> *doc, Animation::Armature *arm
   armature->name = node->first_attribute("id")->value();
   printf("armature name: %s\n", armature->name.c_str());
 
-  node = node->first_node("node");
+  // node = node->first_node("node");
 
 
   std::string id   = node->first_attribute("id")->value();
@@ -990,7 +990,7 @@ Animation::AnimationController *Model::getAnimController()
 
 
 
-void Model::loadAnimation(std::string animation_name, std::string directory, std::string filename)
+void Model::loadAnimation(std::string name, Animation::AnimationController *animationController, std::string directory, std::string filename)
 {
   std::ifstream fh;
   fh.open(directory + filename);
@@ -1012,16 +1012,14 @@ void Model::loadAnimation(std::string animation_name, std::string directory, std
   doc.parse<0>((char *)raw_document.c_str());
 
 
-  Animation::Animation *animation = this->getAnimation(animation_name);
+
+  Animation::Animation *animation = animationController->newAnimation(name);
   Animation::Armature *armature = animation->getArmature();
 
   this->loadArmature(&doc, armature);
   this->loadArmatureWeights(&doc, armature);
   this->loadAnimations(&doc, armature);
 
-  armature->globalInverseTransform = glm::inverse(armature->root->transform);
-  armature->computeLocalTransforms();
-  armature->computeFinalTransforms();
 
 
   float largest = 0.0f;
@@ -1035,14 +1033,15 @@ void Model::loadAnimation(std::string animation_name, std::string directory, std
       if (f > largest)
         largest = f;
     }
-
-
   }
-
   animation->setLength(largest);
+
+
+  
 
   this->_animated = true;
 
+  printBVTree("", armature->root);
 
 
   for (Mesh &mesh: this->m_meshes)

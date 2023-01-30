@@ -8,7 +8,7 @@ layout (location = 3) out vec4 gEmission;
 
 in vec2 TexCoords;
 in vec3 FragPos;
-in mat3 TBN;
+in vec3 Normal;
 
 
 struct Material {
@@ -25,10 +25,7 @@ void main()
 {
   gPosition = vec4(FragPos, 1.0);
 
-  vec3 normal = texture(material.normalMap, TexCoords).rgb;
-  normal = normal * 2.0 - 1.0; 
-  normal = normalize(TBN * normal);
-  gNormal = vec4(normal, 1.0);
+  gNormal = vec4(Normal, 1.0);
 
 
   gAlbedoSpec.rgb = texture(material.diffuseMap, TexCoords).rgb ;

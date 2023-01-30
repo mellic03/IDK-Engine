@@ -31,6 +31,7 @@ struct Animation::Joint {
   glm::mat4 inverseBindTransform = glm::mat4(1.0f);
 
   glm::mat4 finalTransform = glm::mat4(1.0f);
+  glm::mat4 finalTransform_previous = glm::mat4(1.0f);
 
 
   Joint *parent = nullptr;
@@ -39,6 +40,8 @@ struct Animation::Joint {
   std::vector<float> keyframe_times;
   std::vector<glm::mat4> keyframe_matrices;
   std::vector<glm::mat4> keyframe_finalBoneTransforms;
+
+  float alpha = 0.0f;
 
   Joint()  { };
 
@@ -55,8 +58,8 @@ class Animation::Armature {
 
   private:
 
-    void _computeLocalTransforms(Animation::Joint *joint, glm::mat4 parent_localTransform);
-    void _computePose(Animation::Joint *joint, glm::mat4 parent_finalBoneTransform, float keyframe_time);
+    void _computeFinalTransforms(Joint *joint, glm::mat4 parent_localTransform, float keyframe_time);
+    void _computePose(Joint *joint, glm::mat4 parent_finalBoneTransform, float keyframe_time);
 
 
 
@@ -74,8 +77,7 @@ class Animation::Armature {
     Joint *find(std::string name_str);
     Joint *find(int id);
 
-    void computeLocalTransforms();
-    void computeFinalTransforms();
     void computePose(float keyframe_time);
+
 };
 
