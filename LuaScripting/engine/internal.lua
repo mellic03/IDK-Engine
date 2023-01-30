@@ -4,6 +4,8 @@ local function vectorinit()
 end
 
 
+PlayerID = 1;
+
 -- luaLibrary_gameobject
 -----------------------------------------------
 function CE_GameObject_GetPos(objectID) return vectorinit(); end;
@@ -11,6 +13,7 @@ function CE_GameObject_SetPos(objectID, x, y, z) end;
 function CE_GameObject_GetVel(objectID) return vectorinit(); end;
 function CE_GameObject_SetVel(objectID, x, y, z) end;
 function CE_GameObject_AddRot(objectID, x, y, z) end;
+function CE_GameObject_SetPath(objectID, x, y, z) end;
 -----------------------------------------------
 
 

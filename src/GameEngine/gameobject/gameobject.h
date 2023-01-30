@@ -6,31 +6,15 @@
 #include "../computemesh/computemesh.h"
 #include "../physics.h"
 
+#include "gameobjectdata.h"
+
 #include "entitycomponent.h"
 class EntityComponent;
 
 
-enum GameObjectType {
-  GAMEOBJECT_UNDEFINED,
-  GAMEOBJECT_EMPTY,
-  GAMEOBJECT_TERRAIN,
-  GAMEOBJECT_STATIC,
-  GAMEOBJECT_BILLBOARD,
-  GAMEOBJECT_ACTOR,
-  GAMEOBJECT_PLAYER,
-  GAMEOBJECT_LIGHTSOURCE,
-  GAMEOBJECT_NUM_TYPES
-};
 
-enum InstancingType {
-  INSTANCING_OFF,
-  INSTANCING_ON
-};
 
-enum BillboardType {
-  BILLBOARD_FIXED,
-  BILLBOARD_FOLLOW_CAMERA
-};
+
 
 
 struct GameObjectHeader {
@@ -38,44 +22,6 @@ struct GameObjectHeader {
   std::string assigned_name = "default";
   int objectID = 0;
   int parentID = -1;
-};
-
-
-struct GameObjectData {
-
-  private:
-    bool _animated = false;
-
-
-  public:
-
-    GameObjectType gameobject_type = GAMEOBJECT_UNDEFINED;
-    LightSourceType lightsource_type = LIGHTSOURCE_NONE;
-
-    InstancingType instancing_type = INSTANCING_OFF;
-    BillboardType billboard_type = BILLBOARD_FIXED;
-
-    PhysicsState physics_state = PHYSICS_NONE;
-    NavigationState navigation_state = NAVIGATION_NONE;
-
-    GameObjectType ui_icon_type = GAMEOBJECT_UNDEFINED;
-
-
-    void setLightSourceType(LightSourceType type)   { this->lightsource_type = type; };
-    void setInstancingType(InstancingType type)     { this->instancing_type  = type; };
-    void setBillboardType(BillboardType type)       { this->billboard_type   = type; };
-    void setPhysicsState(PhysicsState type)         { this->physics_state    = type; };
-    void setNavigationState(NavigationState type)   { this->navigation_state = type; };
-
-    void setUiIconType(GameObjectType type)         { this->ui_icon_type = type; };
-
-
-    GameObjectType getUiIconType()                  { return this->ui_icon_type; };
-
-
-    void isAnimated(bool animated)  { this->_animated = animated; };
-    bool isAnimated()   { return this->_animated; };
-
 };
 
 
@@ -105,6 +51,19 @@ struct AnimationData {
 };
 
 
+
+// You stopped here,
+// You were thinking about how to
+// set an objects nav path from lua
+struct NavigationData {
+
+  std::vector<glm::vec3> path;
+  NavigationState state;
+
+  void setPath(glm::vec3 target);
+};
+
+
 struct LODData {
 
   int  level_of_detail = 0;
@@ -122,6 +81,7 @@ class GameObject {
     std::vector<GameObject *> m_children;
     Transform _transform;
 
+    NavigationData _navigation_data;
     CullingData _culling_data;
 
     LODData _lod_data;
@@ -156,12 +116,12 @@ class GameObject {
     bool _groundTest(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal);
 
 
-
   public:
 
     bool in_frustum = true;
 
     GameObjectHeader header;
+
 
     glm::vec3 emission = glm::vec3(0.0f);
     float emission_scale = 1.0f;
@@ -169,14 +129,9 @@ class GameObject {
     int parentID = -1;
     GameObject *m_parent = nullptr;
 
-    // EntityComponentData entity_components;
-
 
     PhysicsEngine::SphereCollider spherecollider;
     PhysicsEngine::CapsuleCollider capsulecollider;
-    // glm::vec3 bounding_sphere_pos = glm::vec3(0.0f);
-    // float bounding_sphere_radius = 0.0f;
-    // float bounding_sphere_radiusSQ = 0.0f;
 
     CollisionMesh m_collision_mesh;
 
@@ -225,6 +180,8 @@ class GameObject {
     Animation::AnimationController *getAnimationController();
     Animation::Animation *getAnimation();
     Animation::Animation *getAnimation(std::string animation_name);
+
+    NavigationData *navData();
     //---------------------------------------------------------------------------------------------
 
 

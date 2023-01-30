@@ -38,6 +38,8 @@ namespace Scene {
 
 
 
+  void animationTick();
+
   void physicsTick_actor_terrain();
   void physicsTick_actor_actor();
   void physicsTick();
@@ -46,7 +48,9 @@ namespace Scene {
   void perFrameUpdate();
 
   void drawGeometry_batched();
+  void drawGeometry_animated();
   void drawGeometry();
+
 
   void drawBackground();
   void drawTerrain();

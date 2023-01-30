@@ -114,7 +114,6 @@ void SceneGraph::loadObject(std::string directory)
   int intdata;
 
 
-
   while (fgets(buffer, 256, fh) != NULL)
   {
     if (sscanf(buffer, "#gameobject %s", stringdata))
@@ -129,12 +128,15 @@ void SceneGraph::loadObject(std::string directory)
       objectData->setLightSourceType(GameObjectUtil::lightsourceType_fromString(std::string(stringdata)));
 
 
-    else if (sscanf(buffer, "#InstancingType %s", stringdata))
-      objectData->setInstancingType(GameObjectUtil::instancingType_fromString(std::string(stringdata)));
-
-
     else if (sscanf(buffer, "#BilloardType %s", stringdata))
       objectData->setBillboardType(GameObjectUtil::billboardType_fromString(std::string(stringdata)));
+
+
+    else if (sscanf(buffer, "#GameObjectFlag %s", stringdata))
+    {
+      GameObjectFlag flag = GameObjectUtil::objectFlag_fromString(stringdata);
+      objectData->setFlag(flag, true);
+    }
 
 
     else if (sscanf(buffer, "#physics %s", stringdata))
@@ -161,6 +163,12 @@ void SceneGraph::loadObject(std::string directory)
       object.getComponents()->giveComponent(COMPONENT_ANIMATION);
     }
 
+    else if (sscanf(buffer, "#navmesh %s", stringdata))
+    {
+      // object.getData()->navMesh(stringdata);
+      this->_navmeshes.push_back(NavMesh(stringdata));
+    }
+
     else if (sscanf(buffer, "#collision %s", stringdata))
     {
       object.m_collision_mesh.load(directory + std::string(stringdata));
@@ -176,7 +184,7 @@ void SceneGraph::loadObject(std::string directory)
   {
     Model *model = object.getModelLOD()->getDefaultLOD_model();
     
-    object.getData()->isAnimated(model->isAnimated());
+    object.getData()->setFlag(GameObjectFlag::ANIMATED, model->isAnimated());
 
     object.getCullingData()->setLocalBoundingSpherePos(model->bounding_sphere_pos);
     object.getCullingData()->bounding_sphere_radius = model->bounding_sphere_radius;
@@ -219,7 +227,7 @@ void SceneGraph::clearScene(void)
   this->m_selectable_instances.clear();
 
   for (int i=0; i<GAMEOBJECT_NUM_TYPES; i++)
-    this->_object_instances_by_type[i].clear();
+    this->_object_instances[i].clear();
     
   for (int i=0; i<NUM_POINTLIGHTS; i++)
   {
@@ -314,52 +322,70 @@ std::list<GameObject *> *SceneGraph::getTemplatesByType(GameObjectType object_ty
 }
 
 
-std::list<GameObject *> *SceneGraph::getInstancesByType(GameObjectType object_type)
+
+
+
+std::list<GameObject> *SceneGraph::getObjects()
 {
-  return &this->_object_instances_by_type[object_type];
+  return &this->m_object_instances;
 }
-std::list<GameObject *> *SceneGraph::getInstancesByType(GameObjectType object_type, InstancingType instancing)
+
+
+std::list<GameObject *> *SceneGraph::getObjects(GameObjectType object_type)
 {
-  if (instancing == INSTANCING_ON)
-    return &this->_object_instances_by_type_instanced[object_type];
-  else
-    return &this->_object_instances_by_type[object_type];
+  return &this->_object_instances[object_type];
 }
+
+
+std::list<GameObject *> *SceneGraph::getObjects(GameObjectType object_type, GameObjectFlag flags)
+{
+  if (static_cast<bool>(flags & GameObjectFlag::INSTANCED))
+    return &this->_object_instances_instanced[object_type];
+
+  if (static_cast<bool>(flags & GameObjectFlag::ANIMATED))
+    return &this->_object_instances_animated[object_type];
+
+  return &this->_object_instances[object_type];
+}
+
+
+
 
 
 std::list<GameObject *> *SceneGraph::getVisibleInstancesByType(GameObjectType object_type)
 {
   return &this->_visible_instances_by_type[object_type];
 }
-std::list<GameObject *> *SceneGraph::getVisibleInstancesByType(GameObjectType object_type, InstancingType instancing)
+std::list<GameObject *> *SceneGraph::getVisibleInstancesByType(GameObjectType object_type, GameObjectFlag flags)
 {
   return &this->_visible_instances_by_type[object_type];
 }
 
+
 void SceneGraph::cullObjects(Frustum *frustum)
 {
-  this->_bvtree.clearTree();
+  this->_geometry_bvtree.clearTree();
 
 
-  for (GameObject *object: *this->getInstancesByType(GAMEOBJECT_TERRAIN))
-    this->_bvtree.insert(object);
+  for (GameObject *object: *this->getObjects(GAMEOBJECT_TERRAIN))
+    this->_geometry_bvtree.insert(object);
 
-  for (GameObject *object: *this->getInstancesByType(GAMEOBJECT_STATIC))
-    this->_bvtree.insert(object);
+  for (GameObject *object: *this->getObjects(GAMEOBJECT_STATIC))
+    this->_geometry_bvtree.insert(object);
 
-  for (GameObject *object: *this->getInstancesByType(GAMEOBJECT_ACTOR))
-    this->_bvtree.insert(object);
+  for (GameObject *object: *this->getObjects(GAMEOBJECT_ACTOR))
+    this->_geometry_bvtree.insert(object);
 
-  for (GameObject *object: *this->getInstancesByType(GAMEOBJECT_BILLBOARD))
-    this->_bvtree.insert(object);
+  for (GameObject *object: *this->getObjects(GAMEOBJECT_BILLBOARD))
+    this->_geometry_bvtree.insert(object);
 
-  this->_bvtree.insert(this->player_object);
+  this->_geometry_bvtree.insert(this->player_object);
 
   // system("clear");
-  // this->_bvtree.print();
+  // this->_geometry_bvtree.print();
 
   for (int i=0; i<(int)GAMEOBJECT_NUM_TYPES; i++)
     this->_visible_instances_by_type[i].clear();
-  this->_bvtree.cullObjects(frustum, this->_visible_instances_by_type);
+  this->_geometry_bvtree.cullObjects(frustum, this->_visible_instances_by_type);
 
 }

@@ -60,7 +60,7 @@ void EntityComponentUI::drawComponent(GameObject *object, EntityComponents *comp
         std::vector<ScriptComponent> *script_components = components->getScriptComponents();
         
         int i = 0;
-        for (ScriptComponent script_component: *script_components)
+        for (ScriptComponent &script_component: *script_components)
         {
           ImGui::PushID(i);
           DrawECS::script(object, &script_component);

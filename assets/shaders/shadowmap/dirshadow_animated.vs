@@ -5,7 +5,7 @@ layout (location = 2) in vec2 aTexCoords;
 layout (location = 5) in vec4 jointWeights;
 layout (location = 6) in ivec4 jointIDs;
 
-uniform mat4 boneTransforms[10];
+uniform mat4 boneTransforms[64];
 
 
 uniform mat4 lightSpaceMatrix;
@@ -15,31 +15,29 @@ out vec2 TexCoords;
 
 void main()
 {
-
   vec4 position = vec4(0.0);
 
-  if (jointIDs[0] == -1)
+  bool done = false;
+
+  for (int i=0; i<4; i++)
   {
-    position = vec4(aPos, 1.0);
+    if (jointIDs[i] == -1)
+    {
+      continue;
+    }
+
+    position += jointWeights[i] * boneTransforms[jointIDs[i]] * vec4(aPos, 1.0);
+
+    done = true;
   }
 
-  else
+  if (!done)
   {
-    for (int i=0; i<4; i++)
-    {
-      if (jointIDs[i] == -1)
-      {
-        break;
-      }
-
-      position += jointWeights[i] * boneTransforms[jointIDs[i]] * vec4(aPos, 1.0);
-    }
+    position = vec4(aPos, 1.0);
   }
 
 
   TexCoords = aTexCoords;
   gl_Position = lightSpaceMatrix * model * vec4(position.xyz, 1.0);
 }  
-
-
 

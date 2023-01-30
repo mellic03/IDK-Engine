@@ -2,8 +2,9 @@
 #interactivity billboard
 
 #GameObjectType GAMEOBJECT_BILLBOARD
-#InstancingType INSTANCING_ON
 #BillboardType BILLBOARD_FOLLOW_CAMERA
+
+#GameObjectFlag INSTANCED
 
 #geometry grass.dae
 #meshlod 0 grass.dae

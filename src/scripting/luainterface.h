@@ -46,18 +46,6 @@ namespace LuaInterface {
     void gameobject(GameObject *object, int objectID);
     void keylog(KeyLog keylog, std::string name);
   };
-
-
-  namespace ToCPP {
-
-    template <typename T> void number(T value, std::string name)
-    {
-
-    }
-
-    void stdvec_vec3(std::vector<glm::vec3> *vec, std::string name);
-    void gameobject(GameObject *object, int objectID);
-  };
   //--------------------------------------------------
 
 };

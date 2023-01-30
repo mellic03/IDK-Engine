@@ -1,6 +1,15 @@
 #include "gameobjectutil.h"
 
 
+GameObjectFlag GameObjectUtil::objectFlag_fromString(std::string stringdata)
+{
+  if (stringdata == "INSTANCED")
+    return GameObjectFlag::INSTANCED;
+
+  return GameObjectFlag::NONE;
+}
+
+
 GameObjectType GameObjectUtil::objectType_fromString(std::string stringdata)
 {
   if (stringdata == "GAMEOBJECT_EMPTY")
@@ -40,15 +49,6 @@ LightSourceType GameObjectUtil::lightsourceType_fromString(std::string stringdat
     return LIGHTSOURCE_SPOT_LIGHT;
 
   return LIGHTSOURCE_NONE;
-}
-
-
-InstancingType GameObjectUtil::instancingType_fromString(std::string stringdata)
-{
-  if (stringdata == "INSTANCING_ON")
-    return INSTANCING_ON;
-
-  return INSTANCING_OFF;
 }
 
 

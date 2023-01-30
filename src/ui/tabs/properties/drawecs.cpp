@@ -2,8 +2,6 @@
 
 
 
-
-
 void DrawECS::pointlight(GameObject *object, PointLight *pointlight)
 {
   ImGui::PushID(object->getID());
@@ -36,7 +34,6 @@ void DrawECS::pointlight(GameObject *object, PointLight *pointlight)
 }
 
 
-
 void DrawECS::transform(GameObject *object, TransformComponent *transformComponent)
 {
   char buffer[64];
@@ -62,7 +59,6 @@ void DrawECS::transform(GameObject *object, TransformComponent *transformCompone
 }
 
 
-
 void DrawECS::script(GameObject *object, ScriptComponent *scriptComponent)
 {
   scriptComponent->script_changed = false;
@@ -84,23 +80,18 @@ void DrawECS::script(GameObject *object, ScriptComponent *scriptComponent)
       
       if (scriptComponent->script_changed)
       {
-
         fs::path filepath = fs::relative(scriptComponent->script_path, ".");
         scriptComponent->script_name = filepath.string();
         scriptComponent->script_name.erase(scriptComponent->script_name.size() - 4);
       
         scriptComponent->script_path = filepath;
-
-
-        printf("script_path: %s\n", filepath.c_str());
-
+        scriptComponent->script_changed = true;
       }
 
       ImGui::EndPopup();
     }
   }
 }
-
 
 
 static glm::vec3 calculate_barycentric(float x, float y, glm::vec2 v1, glm::vec2 v2, glm::vec2 v3)
@@ -113,7 +104,6 @@ static glm::vec3 calculate_barycentric(float x, float y, glm::vec2 v1, glm::vec2
   weights.z = 1 - weights.x - weights.y;
   return weights;
 }
-
 
 
 void DrawECS::terrain(GameObject *object, TerrainComponent *terrain_component)
@@ -208,7 +198,6 @@ void DrawECS::terrain(GameObject *object, TerrainComponent *terrain_component)
 }
 
 
-
 void DrawECS::lod(GameObject *object, LODComponent *lod_component)
 {
   std::string label = "";
@@ -228,7 +217,6 @@ void DrawECS::lod(GameObject *object, LODComponent *lod_component)
 }
 
 
-
 void DrawECS::sphere(GameObject *object, SphereColliderComponent *sphereColliderComponent)
 {
   std::string label = "";
@@ -241,7 +229,6 @@ void DrawECS::sphere(GameObject *object, SphereColliderComponent *sphereCollider
     ImGui::DragFloat("Radius", &sphereColliderComponent->sphere_collider->radius);
   }
 }
-
 
 
 void DrawECS::capsule(GameObject *object, CapsuleColliderComponent *capsuleColliderComponent)
@@ -259,6 +246,24 @@ void DrawECS::capsule(GameObject *object, CapsuleColliderComponent *capsuleColli
   }
 }
 
+
+static void drawArmature(Animation::Joint *node, Animation::Joint **selected)
+{
+  int flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow;
+
+  if (ImGui::TreeNodeEx(node->_name_str.c_str(), flags))
+  {
+    if (ImGui::IsItemClicked())
+      *selected = node;
+
+    for (auto &child: node->children)
+      drawArmature(child, selected);
+
+    ImGui::TreePop();
+  }
+}
+
+static Animation::Joint *selected_joint;
 
 
 void DrawECS::animation(GameObject *object)
@@ -287,8 +292,9 @@ void DrawECS::animation(GameObject *object)
     static std::string selected = animationController->getAnimation()->getName();
     ImGui::Dropdown("Animations", animation_names, &selected, &i0);
 
+    drawArmature(animationController->getAnimation()->getArmature()->root, &selected_joint);
   
-    
+
     AnimationData *aData = object->getAnimationData();
     ImGui::Checkbox("Blend", &aData->blend);
     if (aData->blend)
@@ -312,5 +318,4 @@ void DrawECS::animation(GameObject *object)
     animationController->setActiveAnimation(selected);
   }
 }
-
 

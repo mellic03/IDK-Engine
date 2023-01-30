@@ -173,7 +173,6 @@ class Renderer {
     void drawLightSource      (Model *model,  Transform *transform, glm::vec3 diffuse);
     void drawModel            (Model *model,  Transform *transform);
     void drawModelAnimated    (Model *model,  Transform *transform, Animation::AnimationController *animationController);
-   
     void drawModelAnimated_blend(Model *model, Transform *transform, Animation::Animation *anim1, Animation::Animation *anim2, float alpha);
 
     void drawModelInstanced   (Model *model,  InstanceData *instance_data);

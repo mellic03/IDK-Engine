@@ -9,9 +9,9 @@
     parentID: -1
   </HEADER>
   <TRANSFORM>
-    position: -14.7711 -13.05 -15.6459
-    velocity: -4.2039e-44 0 4.2039e-44
-    orientation: 0.076946 -0.0662154 -0.00511023 -0.994821
+    position: -11.8895 -13.05 -15.8631
+    velocity: 1.15268e-10 0 -1.8985e-10
+    orientation: -0.00157198 -0.407615 0.000714171 -0.913152
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
@@ -135,7 +135,7 @@
 <GAMEOBJECT>
   <HEADER>
     template name: empty
-    assigned name: empty
+    assigned name: trees
     objectID: 7
     parentID: 1
   </HEADER>
@@ -194,6 +194,74 @@
     position: -17.44 11.98 0
     velocity: 0 0 0
     orientation: 0 0 0 1
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+  </SCRIPTS>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: tree
+    assigned name: tree
+    objectID: 11
+    parentID: 7
+  </HEADER>
+  <TRANSFORM>
+    position: -21.64 -14.84 16.37
+    velocity: 0 0 0
+    orientation: 0 -0.987801 0 0.155724
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+  </SCRIPTS>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: tree
+    assigned name: tree
+    objectID: 12
+    parentID: 7
+  </HEADER>
+  <TRANSFORM>
+    position: -11.94 -16.09 19.38
+    velocity: 0 0 0
+    orientation: 0 -0.794038 0 0.607869
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+  </SCRIPTS>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: tree
+    assigned name: tree
+    objectID: 13
+    parentID: 7
+  </HEADER>
+  <TRANSFORM>
+    position: 7.6 -16.74 22.15
+    velocity: 0 0 0
+    orientation: 0 -0.92671 0 0.375776
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+  </SCRIPTS>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: tree
+    assigned name: tree
+    objectID: 14
+    parentID: 7
+  </HEADER>
+  <TRANSFORM>
+    position: -18.41 -6.52 5.6
+    velocity: 0 0 0
+    orientation: 0 -0.918372 0 0.395718
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>

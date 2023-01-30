@@ -1,9 +1,11 @@
 #gameobject wall
 #interactivity terrain
 #GameObjectType GAMEOBJECT_TERRAIN
-#geometry untitled.dae
+
 #meshlod 0 untitled.dae
 #meshlod 1 untitled_lod1.dae
+
 #collision collision.obj
 #physics PHYSICS_NONE
+
 #exit

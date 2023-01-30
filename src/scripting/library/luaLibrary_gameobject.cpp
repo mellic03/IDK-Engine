@@ -111,6 +111,20 @@ extern "C" int addRot(lua_State *LS)
 }
 
 
+extern "C" int setPath(lua_State *LS)
+{
+  int objectID = lua_tointeger(LS, 1) - 1;
+  float x = lua_tonumber(LS, 2);
+  float y = lua_tonumber(LS, 3);
+  float z = lua_tonumber(LS, 4);
+  
+  GameObject *object = Scene::scenegraph.objectPtr(objectID);
+  object->navData()->setPath(glm::vec3(x, y, z));
+
+  return 0;
+}
+
+
 
 
 void register_luaLibrary_gameobject()
@@ -121,5 +135,6 @@ void register_luaLibrary_gameobject()
   lua_register(LuaInterface::L, "CE_GameObject_GetVel", getVel);
   lua_register(LuaInterface::L, "CE_GameObject_SetVel", setVel);
   lua_register(LuaInterface::L, "CE_GameObject_AddRot", addRot);
+  lua_register(LuaInterface::L, "CE_GameObject_SetPath", setPath);
 }
 

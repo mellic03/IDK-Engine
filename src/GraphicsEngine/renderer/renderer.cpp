@@ -53,13 +53,23 @@ void Renderer::compileShaders(void)
 
   // Shadows
   //------------------------------------------------------
-  this->createShader("dirshadow",         SHADER_DIRSHADOW);
+  this->createShader("shadowmap/dirshadow",             SHADER_DIRSHADOW);
+  this->createShader("shadowmap/dirshadow_animated",    SHADER_DIRSHADOW_ANIMATED);
 
-  ShaderSource pointshadow_src = parse_shader("assets/shaders/pointshadow.vs", "assets/shaders/pointshadow.fs", "assets/shaders/pointshadow.gs");
+
+
+  ShaderSource pointshadow_src = parse_shader("assets/shaders/shadowmap/pointshadow.vs", "assets/shaders/shadowmap/pointshadow.fs", "assets/shaders/shadowmap/pointshadow.gs");
   Shader pointshadow;
   pointshadow.set(create_shader(pointshadow_src.vertex_source, pointshadow_src.fragment_source, pointshadow_src.geometry_source));
   pointshadow.mapUniformLocs();
   this->shaders[SHADER_POINTSHADOW] = pointshadow;
+
+
+  pointshadow_src = parse_shader("assets/shaders/shadowmap/pointshadow_animated.vs", "assets/shaders/shadowmap/pointshadow_animated.fs", "assets/shaders/shadowmap/pointshadow_animated.gs");
+  pointshadow;
+  pointshadow.set(create_shader(pointshadow_src.vertex_source, pointshadow_src.fragment_source, pointshadow_src.geometry_source));
+  pointshadow.mapUniformLocs();
+  this->shaders[SHADER_POINTSHADOW_ANIMATED] = pointshadow;
   //------------------------------------------------------
 
 }
@@ -692,14 +702,11 @@ void Renderer::drawModel(Model *model, Transform *transform)
 
 void Renderer::drawModelAnimated(Model *model, Transform *transform, Animation::AnimationController *animationController)
 {
-  this->useShader(SHADER_ACTOR_ANIMATED);
-
   for (int i=0; i<Animation::MAX_BONES; i++)
     this->active_shader->setMat4("boneTransforms[" + std::to_string(i) + "]", glm::mat4(1.0f));
 
   Animation::Animation *anim1 = animationController->getAnimation();
   Animation::Armature *armature1 = anim1->getArmature();
-  armature1->computePose(anim1->getTime());
 
   for (size_t i=0; i<armature1->joints.size(); i++)
   {
@@ -708,8 +715,6 @@ void Renderer::drawModelAnimated(Model *model, Transform *transform, Animation::
   }
   this->drawModel(model, transform);
 
-
-  anim1->advance(this->deltaTime);
 }
 
 
@@ -717,8 +722,6 @@ void Renderer::drawModelAnimated(Model *model, Transform *transform, Animation::
 
 void Renderer::drawModelAnimated_blend(Model *model, Transform *transform, Animation::Animation *anim1, Animation::Animation *anim2, float alpha)
 {
-  this->useShader(SHADER_ACTOR_ANIMATED);
-
   for (int i=0; i<Animation::MAX_BONES; i++)
     this->active_shader->setMat4("boneTransforms[" + std::to_string(i) + "]", glm::mat4(1.0f));
 

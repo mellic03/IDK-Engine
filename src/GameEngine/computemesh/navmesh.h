@@ -43,6 +43,7 @@ class NavMesh {
     std::vector<Node> nodes;
 
     NavMesh() { };
+    NavMesh(std::string filepath);
 
     /** Load a navmesh from an .obj file */
     void load(std::string filepath);

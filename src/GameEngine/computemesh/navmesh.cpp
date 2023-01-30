@@ -229,3 +229,10 @@ std::vector<glm::vec3> NavMesh::path(glm::vec3 from, glm::vec3 to)
 
   return navpath;
 }
+
+
+NavMesh::NavMesh(std::string filepath)
+{
+  this->load(filepath);
+}
+

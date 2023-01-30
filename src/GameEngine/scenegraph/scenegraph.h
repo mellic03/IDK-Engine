@@ -18,20 +18,22 @@ class SceneGraph {
 
   private:
 
-    BVTree _bvtree;
+    BVTree _geometry_bvtree;
+    BVTree _navmesh_bvtree;
 
     std::map<std::string, std::list<GameObject *>>  _object_instances_by_template_name;
 
     std::list<GameObject *>  _object_templates_by_type[GAMEOBJECT_NUM_TYPES];
-
-    std::list<GameObject *>  _object_instances_by_type[GAMEOBJECT_NUM_TYPES];
-    std::list<GameObject *>  _object_instances_by_type_animated[GAMEOBJECT_NUM_TYPES];
-    std::list<GameObject *>  _object_instances_by_type_instanced[GAMEOBJECT_NUM_TYPES];
-
+    std::list<GameObject *>  _object_instances[GAMEOBJECT_NUM_TYPES];
+    std::list<GameObject *>  _object_instances_animated[GAMEOBJECT_NUM_TYPES];
+    std::list<GameObject *>  _object_instances_instanced[GAMEOBJECT_NUM_TYPES];
     std::list<GameObject *>  _visible_instances_by_type[GAMEOBJECT_NUM_TYPES];
+
     std::map<std::string, InstanceData> _instance_data;
 
     std::list<ModelLOD> _modelLODs;
+
+    std::list<NavMesh> _navmeshes;
 
 
   public:
@@ -109,7 +111,7 @@ class SceneGraph {
     // Wee waa
     //----------------------------------------------------------------------------
     void cullObjects(Frustum *frustum);
-    BVTree *getBVTree()  { return &this->_bvtree; };
+    BVTree *getBVTree()  { return &this->_geometry_bvtree; };
     //----------------------------------------------------------------------------
 
 
@@ -121,10 +123,13 @@ class SceneGraph {
     std::list<GameObject *> *getInstancesByTemplateName(std::string template_name);
     std::list<GameObject *> *getTemplatesByType(GameObjectType object_type);
     
-    std::list<GameObject *> *getInstancesByType(GameObjectType object_type);
-    std::list<GameObject *> *getInstancesByType(GameObjectType object_type, InstancingType instancing);
+    
+    std::list<GameObject>   *getObjects();
+    std::list<GameObject *> *getObjects(GameObjectType object_type);
+    std::list<GameObject *> *getObjects(GameObjectType object_type, GameObjectFlag flags);
+
 
     std::list<GameObject *> *getVisibleInstancesByType(GameObjectType object_type);
-    std::list<GameObject *> *getVisibleInstancesByType(GameObjectType object_type, InstancingType instancing);
+    std::list<GameObject *> *getVisibleInstancesByType(GameObjectType object_type, GameObjectFlag flag);
 };
 
