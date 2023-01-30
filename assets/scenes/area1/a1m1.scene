@@ -9,9 +9,9 @@
     parentID: -1
   </HEADER>
   <TRANSFORM>
-    position: -18.7571 4.40905 8.2787
-    velocity: 3.39554e-16 0 1.13089e-13
-    orientation: -0.0902507 -0.680271 -0.0850031 0.722399
+    position: -14.7711 -13.05 -15.6459
+    velocity: -4.2039e-44 0 4.2039e-44
+    orientation: 0.076946 -0.0662154 -0.00511023 -0.994821
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
@@ -60,7 +60,7 @@
     parentID: 2
   </HEADER>
   <TRANSFORM>
-    position: -13.5 -13.073 -17.955
+    position: -13.5 -13.073 -11.095
     velocity: 0 0 0
     orientation: 0.0912529 0.192459 0.0245922 0.976741
     scale: 1 1 1
@@ -69,13 +69,13 @@
   </SCRIPTS>
   <POINTLIGHT>
     active: 1
-    shadowmapped: 0
+    shadowmapped: 1
     volumetrics: 0
-    radius: 8.5
-    diffuse: 0.792875 0.103845 0.996139
+    radius: 25
+    diffuse: 1 1 1
     ambient: 0 0 0
-    constant: 0
-    linear: 0.01
+    constant: 0.4
+    linear: 0.071
     quadratic: 0
     bias: 0.15
   </POINTLIGHT>
@@ -154,13 +154,13 @@
     template name: testanimation
     assigned name: testanimation
     objectID: 8
-    parentID: 1
+    parentID: -1
   </HEADER>
   <TRANSFORM>
-    position: -13.78 2.585 7.501
+    position: -15.125 -15.094 -18.486
     velocity: -1.4013e-44 0 1.4013e-44
-    orientation: -5.90403e-17 -1.35125e-08 4.36936e-09 -1.00001
-    scale: 1 1 1
+    orientation: 1.30937e-10 7.27177e-06 4.3656e-09 -1.00001
+    scale: 1.7 1.7 1.7
   </TRANSFORM>
   <SCRIPTS>
   </SCRIPTS>

@@ -1,5 +1,7 @@
 #include "armature.h"
 
+#include <algorithm>
+
 #include "../../transform/transformutil.h"
 
 
@@ -40,20 +42,13 @@ int Animation::Joint::indexOfKeyframeTime(float time)
 
 glm::mat4 Animation::Joint::getAnimationMatrix(float time)
 {
-  int i = this->indexOfKeyframeTime(time);
-  return (i == -1) ? this->transform : this->keyframe_matrices[i];
-}
-
-
-glm::mat4 Animation::Joint::getBoneTransformMatrix(float time)
-{
   int index1 = this->indexOfKeyframeTime(time);
-
   if (index1 == -1)
-    return this->finalTransform;
+  {
+    return this->transform;
+  }
 
-
-  int index2 = (index1 + 1) % this->keyframe_finalBoneTransforms.size();
+  int index2 = (index1 + 1) % this->keyframe_matrices.size();
 
   float start;
   float stop;
@@ -67,13 +62,49 @@ glm::mat4 Animation::Joint::getBoneTransformMatrix(float time)
   stop  = this->keyframe_times[index2];
   this->alpha = (time - start) / (stop - start);
 
-
-  glm::mat4 mat1 = this->keyframe_finalBoneTransforms[index1];
-  glm::mat4 mat2 = this->keyframe_finalBoneTransforms[index2];
+  glm::mat4 mat1 = this->keyframe_matrices[index1];
+  glm::mat4 mat2 = this->keyframe_matrices[index2];
 
   return TransformUtil::lerpMatrix(mat1, mat2, alpha);
 }
 
+
+glm::mat4 Animation::Joint::getAnimationMatrix_blended(float time, Animation::Joint *joint2, float blendFactor)
+{
+  int index1 = this->indexOfKeyframeTime(time);
+  if (index1 == -1)
+  {
+    return TransformUtil::lerpMatrix(this->transform, joint2->transform, blendFactor);
+  }
+
+  int index2 = (index1 + 1) % this->keyframe_matrices.size();
+
+  float start;
+  float stop;
+
+  if (index2 == 0)
+    start = 0;
+ 
+  else
+    start = this->keyframe_times[index1];
+ 
+  stop  = this->keyframe_times[index2];
+  this->alpha = (time - start) / (stop - start);
+
+  glm::mat4 mat1 = this->keyframe_matrices[index1];
+  glm::mat4 mat2 = this->keyframe_matrices[index2];
+
+
+  glm::mat4 thisMat = TransformUtil::lerpMatrix(mat1, mat2, alpha);
+
+  mat1 = joint2->keyframe_matrices[index1];
+  mat2 = joint2->keyframe_matrices[index2];
+
+  glm::mat4 thatMat = TransformUtil::lerpMatrix(mat1, mat2, alpha);
+
+
+  return TransformUtil::lerpMatrix(thisMat, thatMat, blendFactor);
+}
 
 
 
@@ -83,16 +114,8 @@ void Animation::Armature::_computeFinalTransforms(Animation::Joint *joint, glm::
   joint->localTransform = parent_localTransform * joint->getAnimationMatrix(keyframe_time);
   joint->finalTransform = this->globalInverseTransform * joint->localTransform * joint->inverseBindTransform;
 
-  int index = joint->indexOfKeyframeTime(keyframe_time);
-  if (index != -1)
-  {
-    joint->keyframe_finalBoneTransforms[index] = joint->finalTransform;
-  }
-  joint->finalTransform_previous = joint->finalTransform;
-
   for (Animation::Joint *child: joint->children)
     this->_computeFinalTransforms(child, joint->localTransform, keyframe_time);
-
 }
 
 
@@ -103,6 +126,29 @@ void Animation::Armature::computePose(float keyframe_time)
 }
 
 
+void Animation::Armature::computePose_blended(float keyframe_time, Animation::Armature *armature2, float alpha)
+{
+  this->globalInverseTransform = glm::inverse(this->root->transform);
+
+
+  this->root->localTransform = this->root->getAnimationMatrix_blended(keyframe_time, armature2->root, alpha);
+
+  for (size_t i=1; i<this->joints.size(); i++)
+  {
+    
+    Animation::Joint *joint2 = armature2->find(this->joints[i]->_name_str);
+
+    if (joint2 == nullptr)
+      continue;
+
+    this->joints[i]->localTransform =
+      this->joints[i]->parent->localTransform *
+      this->joints[i]->getAnimationMatrix_blended(keyframe_time, joint2, alpha);
+  
+    this->joints[i]->finalTransform = this->globalInverseTransform * this->joints[i]->localTransform * this->joints[i]->inverseBindTransform;
+  }
+
+}
 
 
 Animation::Joint *Animation::Armature::find(std::string name_str)
@@ -124,3 +170,22 @@ Animation::Joint *Animation::Armature::find(int id)
   return nullptr;
 }
 
+
+void Animation::Armature::balanceKeyframes()
+{
+  std::vector<float> keyframes;
+
+  for (auto &joint: this->joints)
+    for (auto &keyframe: joint->keyframe_times)
+      keyframes.push_back(keyframe);
+
+  std::sort(keyframes.begin(), keyframes.end());
+
+  for (auto &f: keyframes)
+  {
+    printf("%f ", f);
+  }
+  printf("\n");
+
+
+}

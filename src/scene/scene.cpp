@@ -511,7 +511,15 @@ void Scene::drawActors()
     if (model->isAnimated())
     {
       Shader *temp = Render::ren.active_shader;
-      Render::ren.drawModelAnimated(model, obj->getTransform(), obj->getAnimation());
+
+      AnimationData *aData = obj->getAnimationData();
+
+      // if (aData->blend == true)
+      //   Render::ren.drawModelAnimated_blend(model, obj->getTransform(), aData->blend1, aData->blend2, aData->alpha);
+
+      // else
+        Render::ren.drawModelAnimated(model, obj->getTransform(), obj->getAnimationController());
+  
       Render::ren.active_shader = temp;
     }
   

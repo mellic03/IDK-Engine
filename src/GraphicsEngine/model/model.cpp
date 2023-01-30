@@ -992,6 +992,8 @@ Animation::AnimationController *Model::getAnimController()
 
 void Model::loadAnimation(std::string name, Animation::AnimationController *animationController, std::string directory, std::string filename)
 {
+  this->_animated = true;
+
   std::ifstream fh;
   fh.open(directory + filename);
   if (fh.is_open() == false)
@@ -1037,16 +1039,6 @@ void Model::loadAnimation(std::string name, Animation::AnimationController *anim
   animation->setLength(largest);
 
 
-  
-
-  this->_animated = true;
-
-  printBVTree("", armature->root);
-
-
   for (Mesh &mesh: this->m_meshes)
-  {
     mesh.setBufferData();
-  }
-
 }

@@ -81,13 +81,12 @@ vec3 reinhard(vec3 x)
 
 void main() {
 
-  vec3 color = texture(screenTexture, TexCoords).rgb;
+  vec3 color = fxaa(screenTexture, textureSize(screenTexture, 0));
   vec3 bloom = texture(bloomTexture, TexCoords).rgb;
   
   vec3 result = color;
   result = result + bloomAmount*bloom;
 
-  result = fxaa(screenTexture, textureSize(screenTexture, 0));
 
   result = aces(result);
   result = pow(result, vec3(1.0 / 2.2));

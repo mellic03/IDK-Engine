@@ -47,6 +47,10 @@ EntityComponents *GameObject::getComponents()
 }
 
 
+AnimationData *GameObject::getAnimationData()
+{
+  return &this->_animation_data;
+}
 
 Animation::AnimationController *GameObject::getAnimationController()
 {

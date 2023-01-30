@@ -95,6 +95,16 @@ struct CullingData {
 };
 
 
+struct AnimationData {
+
+  bool blend = false;
+  float alpha = 0.0f;
+  Animation::Animation *blend1 = nullptr;
+  Animation::Animation *blend2 = nullptr;
+
+};
+
+
 struct LODData {
 
   int  level_of_detail = 0;
@@ -119,6 +129,7 @@ class GameObject {
 
     EntityComponents _entity_components;
 
+    AnimationData _animation_data;
     Animation::Animation _animation;
     Animation::AnimationController _animation_controller;
 
@@ -209,6 +220,8 @@ class GameObject {
 
     EntityComponents *getComponents();
     
+    
+    AnimationData *getAnimationData();
     Animation::AnimationController *getAnimationController();
     Animation::Animation *getAnimation();
     Animation::Animation *getAnimation(std::string animation_name);

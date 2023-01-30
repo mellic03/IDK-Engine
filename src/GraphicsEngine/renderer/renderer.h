@@ -172,7 +172,9 @@ class Renderer {
     void drawBillboard        (Model *model,  Transform *transform);
     void drawLightSource      (Model *model,  Transform *transform, glm::vec3 diffuse);
     void drawModel            (Model *model,  Transform *transform);
-    void drawModelAnimated    (Model *model,  Transform *transform, Animation::Animation *animation);
+    void drawModelAnimated    (Model *model,  Transform *transform, Animation::AnimationController *animationController);
+   
+    void drawModelAnimated_blend(Model *model, Transform *transform, Animation::Animation *anim1, Animation::Animation *anim2, float alpha);
 
     void drawModelInstanced   (Model *model,  InstanceData *instance_data);
 

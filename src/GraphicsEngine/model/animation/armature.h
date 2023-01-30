@@ -48,7 +48,7 @@ struct Animation::Joint {
   Joint(std::string id, std::string name, std::string type, glm::mat4 t);
 
   glm::mat4 getAnimationMatrix(float time);
-  glm::mat4 getBoneTransformMatrix(float time);
+  glm::mat4 getAnimationMatrix_blended(float time, Joint *joint2, float blendFactor);
 
   int indexOfKeyframeTime(float time);
 };
@@ -59,6 +59,7 @@ class Animation::Armature {
   private:
 
     void _computeFinalTransforms(Joint *joint, glm::mat4 parent_localTransform, float keyframe_time);
+    void _computeFinalTransforms_blended(Joint *joint, glm::mat4 parent_localTransform, float keyframe_time, float alpha);
     void _computePose(Joint *joint, glm::mat4 parent_finalBoneTransform, float keyframe_time);
 
 
@@ -78,6 +79,9 @@ class Animation::Armature {
     Joint *find(int id);
 
     void computePose(float keyframe_time);
+    void computePose_blended(float keyframe_time, Armature *armature2, float alpha);
+
+    void balanceKeyframes();
 
 };
 

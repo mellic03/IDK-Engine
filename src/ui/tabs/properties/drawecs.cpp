@@ -269,7 +269,6 @@ void DrawECS::animation(GameObject *object)
 
   if (ImGui::CollapsingHeader(label.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
   {
-
     std::vector<std::string> animation_names;
 
     Animation::AnimationController *animationController = object->getAnimationController();
@@ -283,23 +282,34 @@ void DrawECS::animation(GameObject *object)
     if (animation_names.size() == 0)
       return;
 
-    static int item_current_idx = 0;
-    const char* combo_preview_value = animation_names[item_current_idx].c_str();
-    if (ImGui::BeginCombo("combo 1", combo_preview_value, 0))
-    {
-      for (size_t n = 0; n < animation_names.size(); n++)
-      {
-        const bool is_selected = (item_current_idx == n);
-        if (ImGui::Selectable(animation_names[n].c_str(), is_selected))
-          item_current_idx = n;
 
-        if (is_selected)
-          ImGui::SetItemDefaultFocus();
-      }
-      ImGui::EndCombo();
-    }
+    static int i0 = 0;
+    static std::string selected = animationController->getAnimation()->getName();
+    ImGui::Dropdown("Animations", animation_names, &selected, &i0);
+
+  
     
-    animationController->setActiveAnimation(animation_names[item_current_idx]);
+    AnimationData *aData = object->getAnimationData();
+    ImGui::Checkbox("Blend", &aData->blend);
+    if (aData->blend)
+    {
+      static int i1, i2;
+      static std::string selected1 = animationController->getAnimation()->getName();
+      static std::string selected2 = animationController->getAnimation()->getName();
+      ImGui::Dropdown("Animation 1 ##1", animation_names, &selected1, &i1);
+      ImGui::SameLine();
+      ImGui::Dropdown("Animation 2 ##2", animation_names, &selected2, &i2);
+
+
+      aData->blend1 = animationController->getAnimation(selected1);
+      aData->blend2 = animationController->getAnimation(selected2);
+
+      ImGui::SliderFloat("Alpha", &aData->alpha, 0.0f, 1.0f, "%0.2f");
+    }
+
+
+
+    animationController->setActiveAnimation(selected);
   }
 }
 

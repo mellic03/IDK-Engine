@@ -690,26 +690,55 @@ void Renderer::drawModel(Model *model, Transform *transform)
 
 
 
-void Renderer::drawModelAnimated(Model *model, Transform *transform, Animation::Animation *animation)
+void Renderer::drawModelAnimated(Model *model, Transform *transform, Animation::AnimationController *animationController)
 {
   this->useShader(SHADER_ACTOR_ANIMATED);
 
   for (int i=0; i<Animation::MAX_BONES; i++)
     this->active_shader->setMat4("boneTransforms[" + std::to_string(i) + "]", glm::mat4(1.0f));
 
-  Animation::Armature *armature = animation->getArmature();
-  armature->computePose(animation->getTime());
+  Animation::Animation *anim1 = animationController->getAnimation();
+  Animation::Armature *armature1 = anim1->getArmature();
+  armature1->computePose(anim1->getTime());
 
-  for (size_t i=0; i<armature->joints.size(); i++)
+  for (size_t i=0; i<armature1->joints.size(); i++)
   {
-    glm::mat4 boneTransform = armature->joints[i]->getBoneTransformMatrix(animation->getTime());
+    glm::mat4 boneTransform = armature1->joints[i]->finalTransform;
     this->active_shader->setMat4("boneTransforms[" + std::to_string(i) + "]", boneTransform);
   }
   this->drawModel(model, transform);
 
 
-  animation->advance(this->deltaTime);
+  anim1->advance(this->deltaTime);
 }
+
+
+
+
+void Renderer::drawModelAnimated_blend(Model *model, Transform *transform, Animation::Animation *anim1, Animation::Animation *anim2, float alpha)
+{
+  this->useShader(SHADER_ACTOR_ANIMATED);
+
+  for (int i=0; i<Animation::MAX_BONES; i++)
+    this->active_shader->setMat4("boneTransforms[" + std::to_string(i) + "]", glm::mat4(1.0f));
+
+  Animation::Armature *armature = anim1->getArmature();
+  armature->computePose_blended(anim1->getTime(), anim2->getArmature(), alpha);
+
+
+  for (size_t i=0; i<armature->joints.size(); i++)
+  {
+    glm::mat4 boneTransform = armature->joints[i]->finalTransform;
+
+    this->active_shader->setMat4("boneTransforms[" + std::to_string(i) + "]", boneTransform);
+  }
+  this->drawModel(model, transform);
+
+
+  anim1->advance(this->deltaTime);
+  anim2->advance(this->deltaTime);
+}
+
 
 
 
