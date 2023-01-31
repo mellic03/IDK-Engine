@@ -7,12 +7,25 @@
 
 namespace GameObjectUtil
 {
-  GameObjectFlag objectFlag_fromString(std::string stringdata);
+  GameObjectFlag objectFlag_fromString(std::string str);
 
-  GameObjectType objectType_fromString(std::string stringdata);
-  LightSourceType lightsourceType_fromString(std::string stringdata);
+  GameObjectType objectType_fromString(std::string str);
+  LightSourceType lightsourceType_fromString(std::string str);
 
-  BillboardType  billboardType_fromString(std::string stringdata);
+  BillboardType  billboardType_fromString(std::string str);
+
+  Navigation::NavState navstate_fromString(std::string str);
+
+
+  namespace FromString {
+    PhysicsState physicsState(std::string str);
+  };
+
+
+  namespace ToString {
+    std::string physicsState(PhysicsState state);
+  };
+
 }
 
 

@@ -1,9 +1,12 @@
 #pragma once
 
-#include "../../GraphicsEngine/GraphicsEngine.h"
-#include "../state.h"
-#include "../physics.h"
-#include "../computemesh/computemesh.h"
+#include "../../../GraphicsEngine/GraphicsEngine.h"
+#include "../../state.h"
+#include "../../physics.h"
+#include "../../computemesh/computemesh.h"
+
+#include "navdata.h"
+#include "physicsdata.h"
 
 
 enum BillboardType {
@@ -48,18 +51,17 @@ struct GameObjectData {
 
   private:
     bool _animated = false;
+
     GameObjectFlag _object_flags = GameObjectFlag::NONE;
-    NavMesh _navmesh;
+    Navigation::NavData _navigation_data;
+    PhysicsData _physics_data;
+
 
   public:
-
 
     GameObjectType gameobject_type = GAMEOBJECT_UNDEFINED;
     LightSourceType lightsource_type = LIGHTSOURCE_NONE;
     BillboardType billboard_type = BILLBOARD_FIXED;
-    PhysicsState physics_state = PHYSICS_NONE;
-    NavigationState navigation_state = NAVIGATION_NONE;
-
     GameObjectType ui_icon_type = GAMEOBJECT_UNDEFINED;
 
     GameObjectFlag *getFlags();
@@ -68,14 +70,12 @@ struct GameObjectData {
 
     void setLightSourceType(LightSourceType type);
     void setBillboardType(BillboardType type);
-    void setPhysicsState(PhysicsState type);
-    void setNavigationState(NavigationState type);
 
     void setUiIconType(GameObjectType type);
     GameObjectType getUiIconType();
 
-    void navMesh(std::string filepath);
-    NavMesh *navMesh();
+    inline Navigation::NavData *navData();
+    inline PhysicsData *physData() { return &this->_physics_data; };
 
 };
 

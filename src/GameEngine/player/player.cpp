@@ -35,27 +35,28 @@ void Player::key_input(Renderer *ren)
   this->keylog.clear();
   this->keylog.log(state);
 
+  PhysicsState *pState = this->m_gameobject->getData()->physData()->state();
 
   if (this->fly && this->fly != this->fly_last)
-    this->m_gameobject->changePhysState(PHYSICS_NONE);
+    *pState = PhysicsState::NONE;
 
   else if (!this->fly && this->fly != this->fly_last)
-    this->m_gameobject->changePhysState(PHYSICS_FALLING);
+    *pState = PhysicsState::FALLING;
 
   this->fly_last = this->fly;
 
 
-  switch (this->m_gameobject->getPhysState())
+  switch (*pState)
   {
-    case (PHYSICS_GROUNDED):
+    case (PhysicsState::GROUNDED):
       if (state[SDL_SCANCODE_SPACE])
       {
-        this->m_gameobject->changePhysState(PHYSICS_FALLING);
+        *pState = PhysicsState::FALLING;
         this->m_gameobject->getVel()->y = 25 * this->jump_force;
       }
       break;
   
-    case (PHYSICS_FALLING):
+    case (PhysicsState::FALLING):
       break;
   }
 
@@ -118,7 +119,7 @@ void Player::key_input(Renderer *ren)
 
   static int frames_not_grounded = 0;
 
-  if (this->m_gameobject->getPhysState() != PHYSICS_GROUNDED)
+  if (*pState != PhysicsState::GROUNDED)
     frames_not_grounded += 1;
   else
     frames_not_grounded = 0;

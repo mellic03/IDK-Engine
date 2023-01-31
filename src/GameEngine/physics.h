@@ -2,6 +2,14 @@
 
 #include "../GraphicsEngine/GraphicsEngine.h"
 
+enum class PhysicsState {
+
+  NONE,
+  GROUNDED,
+  FALLING
+
+};
+
 
 namespace PhysicsEngine {
 

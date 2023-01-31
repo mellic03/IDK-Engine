@@ -68,7 +68,7 @@ Animation::Animation *GameObject::getAnimation(std::string animation_name)
 }
 
 
-NavigationData *GameObject::navData()
+Navigation::NavData *GameObject::navData()
 {
   return &this->_navigation_data;
 }

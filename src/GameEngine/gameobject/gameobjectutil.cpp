@@ -59,3 +59,36 @@ BillboardType GameObjectUtil::billboardType_fromString(std::string stringdata)
 
   return BILLBOARD_FIXED;
 }
+
+
+Navigation::NavState GameObjectUtil::navstate_fromString(std::string stringdata)
+{
+  if (stringdata == "SEEK")
+    return Navigation::NavState::SEEK;
+
+  return Navigation::NavState::NONE;
+}
+
+
+namespace GameObjectUtil {
+
+  namespace FromString {
+    PhysicsState physicsState(std::string str)
+    {
+      if (str == "GROUNDED")
+        return PhysicsState::GROUNDED;
+
+      if (str == "FALLING")
+        return PhysicsState::FALLING;
+
+      return PhysicsState::NONE;
+    };
+  };
+
+  namespace ToString {
+
+    
+
+  };
+
+};

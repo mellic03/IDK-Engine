@@ -140,7 +140,7 @@ void SceneGraph::loadObject(std::string directory)
 
 
     else if (sscanf(buffer, "#physics %s", stringdata))
-      object.changePhysState(std::string(stringdata));
+      *object.getData()->physData()->state() = GameObjectUtil::FromString::physicsState(stringdata);
 
 
     else if (sscanf(buffer, "#meshlod %d %s", &intdata, stringdata))

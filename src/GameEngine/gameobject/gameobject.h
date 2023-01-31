@@ -6,13 +6,10 @@
 #include "../computemesh/computemesh.h"
 #include "../physics.h"
 
-#include "gameobjectdata.h"
+#include "objectdata/objectdata.h"
 
 #include "entitycomponent.h"
 class EntityComponent;
-
-
-
 
 
 
@@ -52,17 +49,6 @@ struct AnimationData {
 
 
 
-// You stopped here,
-// You were thinking about how to
-// set an objects nav path from lua
-struct NavigationData {
-
-  std::vector<glm::vec3> path;
-  NavigationState state;
-
-  void setPath(glm::vec3 target);
-};
-
 
 struct LODData {
 
@@ -81,7 +67,7 @@ class GameObject {
     std::vector<GameObject *> m_children;
     Transform _transform;
 
-    NavigationData _navigation_data;
+    Navigation::NavData _navigation_data;
     CullingData _culling_data;
 
     LODData _lod_data;
@@ -95,8 +81,7 @@ class GameObject {
 
     // Physics
     //----------------------------------------------------
-    PhysicsState m_physics_state = PHYSICS_NONE;
-    NavigationState m_navigation_state = NAVIGATION_REST;
+    Navigation::NavState m_navigation_state = Navigation::NavState::REST;
     std::vector<CollisionMesh *> _collision_meshes;
     std::vector<Transform *> _collision_transforms;
     bool _has_collisionmesh = false;
@@ -181,7 +166,7 @@ class GameObject {
     Animation::Animation *getAnimation();
     Animation::Animation *getAnimation(std::string animation_name);
 
-    NavigationData *navData();
+    Navigation::NavData *navData();
     //---------------------------------------------------------------------------------------------
 
 
@@ -222,17 +207,6 @@ class GameObject {
 
     // Per-frame operations
     //---------------------------------------------------------------------------------------------
-    void changePhysState(PhysicsState state);
-    void changePhysState(std::string state);
-    void changeNavState(NavigationState state);
-
-    PhysicsState getPhysState(void);
-    NavigationState getNavState(void);
-
-    std::string physStateString(void);
-    std::string navStateString(void);
-    std::string getStateString(StateType state_type);
-
     CollisionMesh *getCollisionMesh(void)  { return &this->m_collision_mesh; };
     void collideWithObject(GameObject *object);
     void collideWithMeshes(void);

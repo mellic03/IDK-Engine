@@ -63,6 +63,7 @@ file(
   "src/GameEngine/*.cpp"
   "src/GameEngine/computemesh/*.cpp"
   "src/GameEngine/gameobject/*.cpp"
+  "src/GameEngine/gameobject/objectdata/*.cpp"
   "src/GameEngine/player/*.cpp"
   "src/GameEngine/scenegraph/*.cpp"
   "src/GameEngine/scenegraph/fileio/*.cpp"

@@ -29,22 +29,14 @@ void GameObjectData::setFlag(GameObjectFlag flag, bool value)
 
 void GameObjectData::setLightSourceType(LightSourceType type)   { this->lightsource_type = type; }
 void GameObjectData::setBillboardType(BillboardType type)       { this->billboard_type   = type; }
-void GameObjectData::setPhysicsState(PhysicsState type)         { this->physics_state    = type; }
-void GameObjectData::setNavigationState(NavigationState type)   { this->navigation_state = type; }
 
 void GameObjectData::setUiIconType(GameObjectType type)         { this->ui_icon_type = type; }
 GameObjectType GameObjectData::getUiIconType()                  { return this->ui_icon_type; }
 
 
-void GameObjectData::navMesh(std::string filepath)
-{
-  this->_navmesh.load(filepath);
-  this->setFlag(GameObjectFlag::NAVMESH, true);
-}
 
-
-NavMesh *GameObjectData::navMesh()
+inline Navigation::NavData *GameObjectData::navData()
 {
-  return &this->_navmesh;
+  return &this->_navigation_data;
 }
 

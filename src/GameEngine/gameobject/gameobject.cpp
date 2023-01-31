@@ -37,7 +37,9 @@ void GameObject::collideWithMeshes(void)
 {
   glm::vec3 ray_down  =   glm::vec4(0.0f, -1.0f,  0.0f,  0.0f);
 
-  this->changePhysState(PHYSICS_FALLING);
+  PhysicsState *pState = this->getData()->physData()->state();
+
+  *pState = PhysicsState::FALLING;
 
   for (size_t i=0; i<this->_collision_meshes.size(); i++)
   {
@@ -83,9 +85,9 @@ void GameObject::collideWithMeshes(void)
       }
       
       
-      if (this->getPhysState() == PHYSICS_FALLING)
+      if (*pState == PhysicsState::FALLING)
         if (this->_groundTest(ray_down, vert0.position, vert1.position, vert2.position, vert0.normal))
-          this->changePhysState(PHYSICS_GROUNDED);
+          *pState = PhysicsState::GROUNDED;
     }
   }
 
@@ -94,98 +96,7 @@ void GameObject::collideWithMeshes(void)
 }
 
 
-std::string GameObject::physStateString(void)
-{
-  switch (this->m_physics_state)
-  {
-    default:                  return "unknown";
-    case (PHYSICS_NONE):      return "PHYSICS_NONE";
-    case (PHYSICS_GROUNDED):  return "PHYSICS_GROUNDED";
-    case (PHYSICS_FALLING):   return "PHYSICS_FALLING";
-  }
-}
 
-std::string GameObject::navStateString(void)
-{
-  switch (this->m_navigation_state)
-  {
-    default:                  return "unknown";
-    case (NAVIGATION_REST):   return "NAVIGATION_REST";
-    case (NAVIGATION_SEEK):   return "NAVIGATION_SEEK";
-  }
-}
-
-PhysicsState GameObject::getPhysState(void)
-{
-  return this->m_physics_state;
-}
-
-NavigationState GameObject::getNavState(void)
-{
-  return this->m_navigation_state;
-}
-
-std::string GameObject::getStateString(StateType state_type)
-{
-  switch (state_type)
-  {
-    default:                  return "Unknown state";
-    case (STATE_PHYSICS):     return this->physStateString();
-    case (STATE_NAVIGATION):  return this->navStateString();
-  }
-}
-
-void GameObject::changePhysState(PhysicsState new_state)
-{
-  this->m_physics_state = new_state;
-
-  switch (new_state)
-  {
-    case (PHYSICS_GROUNDED):
-      this->getVel()->y = 0.0f;
-      break;
-
-    case (PHYSICS_FALLING): break;
-  }
-}
-void GameObject::changePhysState(std::string new_state)
-{
-  PhysicsState state = PHYSICS_NONE;
-
-  if (new_state == "PHYSICS_NONE")
-    state = PHYSICS_NONE;
-  else if (new_state == "PHYSICS_GROUNDED")
-    state = PHYSICS_GROUNDED;
-  else if (new_state == "PHYSICS_FALLING")
-    state = PHYSICS_FALLING;
-
-  this->m_physics_state = state;
-
-  switch (state)
-  {
-    case (PHYSICS_GROUNDED):
-      this->getVel()->y = 0.0f;
-      break;
-
-    case (PHYSICS_FALLING):
-      break;
-  }
-}
-
-void GameObject::changeNavState(NavigationState new_state)
-{
-  this->m_navigation_state = new_state;
-
-  switch (new_state)
-  {
-    case (NAVIGATION_REST):
-      break;
-    
-    
-    case (NAVIGATION_SEEK):
-      break;
-  }
-}
 
 
 std::string GameObject::getObjectTypeString(void)
@@ -212,65 +123,38 @@ void GameObject::perFrameUpdate(Renderer *ren)
   p = this->getTransform()->getModelMatrix_stale() * glm::vec4(p.x, p.y, p.z, 1.0f);
   this->getCullingData()->bounding_sphere_pos = p;
 
-  if (this->getPhysState() == PHYSICS_NONE)
-    return;
+  // if (this->getPhysState() == PHYSICS_NONE)
+  //   return;
 
-  // Per frame, add velocity to position, then check physics state
-  float damping;
+  // // Per frame, add velocity to position, then check physics state
+  // float damping;
 
-  this->getVel()->y *= 0.999f;
-  damping = 1 / (1 + (ren->deltaTime * 5.0f));
-  this->getVel()->x *= damping;
-  this->getVel()->z *= damping;
+  // this->getVel()->y *= 0.999f;
+  // damping = 1 / (1 + (ren->deltaTime * 5.0f));
+  // this->getVel()->x *= damping;
+  // this->getVel()->z *= damping;
   
 
-  glm::mat4 inv_model = glm::inverse(this->getTransform()->getModelMatrix_noLocalTransform());
-  glm::vec3 tempvel = inv_model * this->getTransform()->getVel_vec4();
-  *this->getPos() += tempvel * ren->deltaTime;
+  // glm::mat4 inv_model = glm::inverse(this->getTransform()->getModelMatrix_noLocalTransform());
+  // glm::vec3 tempvel = inv_model * this->getTransform()->getVel_vec4();
+  // *this->getPos() += tempvel * ren->deltaTime;
 
-  this->pos_worldspace = this->getTransform()->getPos_worldspace();
+  // this->pos_worldspace = this->getTransform()->getPos_worldspace();
 
-  this->collideWithMeshes();
+  // this->collideWithMeshes();
 
-  switch (this->getPhysState())
-  {
-    case (PHYSICS_GROUNDED):
-      break;
+  // switch (this->getData()->physData()->state)
+  // {
+  //   case (PHYSICS_GROUNDED):
+  //     break;
 
-    case (PHYSICS_FALLING):
-      this->getVel()->y -= PE::gravity * ren->deltaTime;
-      break;
-  }
+  //   case (PHYSICS_FALLING):
+  //     this->getVel()->y -= PE::gravity * ren->deltaTime;
+  //     break;
+  // }
 
+  // this->getData()->navData()->followPath(this->getPos());
 
-  switch (this->getNavState())
-  {
-    case (NAVIGATION_REST):
-
-      break;
-
-
-    case (NAVIGATION_SEEK):
-
-      if (this->m_path.size() == 0)
-      {
-        this->changeNavState(NAVIGATION_REST);
-        break;
-      }
-
-      if (glm::distance(this->_transform.position, this->m_path[this->m_path.size()-1] + glm::vec3(0.0f, 0.5f, 0.0f)) < 0.5f)
-      {
-        this->m_path.pop_back();
-      }
-
-      else
-      {
-        glm::vec3 move_towards_dir = 0.01f * glm::normalize(this->m_path[this->m_path.size()-1] - this->_transform.position);
-        this->_transform.position += move_towards_dir;
-      }
-  
-      break;
-  }
 }
 
 
@@ -365,7 +249,7 @@ void GameObject::collideWithObject(GameObject *object)
   if (this->getObjectType() == GAMEOBJECT_BILLBOARD)
     return;
 
-  if (this->getPhysState() == PHYSICS_NONE)
+  if (*this->getData()->physData()->state() == PhysicsState::NONE)
     return;
 
   glm::vec3 p0 = this->getTransform()->getPos_worldspace();

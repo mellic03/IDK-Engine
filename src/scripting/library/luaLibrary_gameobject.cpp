@@ -6,8 +6,10 @@
 extern "C" int setPhysicsState(lua_State *LS)
 {
   int objectID = lua_tointeger(LS, 1) - 1;
-  const char *physics_state = lua_tostring(LS, 1);
-  Scene::scenegraph.objectPtr(objectID)->changePhysState(physics_state);
+  const char *physStateStr = lua_tostring(LS, 1);
+  
+  PhysicsState physState = GameObjectUtil::FromString::physicsState(physStateStr);
+  *Scene::scenegraph.objectPtr(objectID)->getData()->physData()->state() = physState;
 
   return 0;
 }
