@@ -2,7 +2,7 @@
 local this = { };
 
   this.vectorLibrary = require("LuaScripting/engine/vector/vector");
-  -- this.ioLibrary = require(lpath .. "engine/io/io");
+  this.ioLibrary = require("LuaScripting/engine/io/io");
 
 
   this.tableLength = function(table)
@@ -29,7 +29,7 @@ local this = { };
           print(i..": ", vec.x, vec.y, vec.z);
         end;
         print("");
-      
+
         print("VELOCITIES");
         for i, vec in pairs(wData.velocities) do
           print(i..": ", vec.x, vec.y, vec.z);
@@ -39,14 +39,20 @@ local this = { };
 
     });
 
-    
-    -- this.ioLibrary.keyPressed = KeyPressed;
-    -- this.ioLibrary.initKeyPressed(this.ioLibrary.keyPressed);
 
     this.vectorLibrary.initVectorArray(worldData.positions,  this.tableLength(worldData.positions));
     this.vectorLibrary.initVectorArray(worldData.velocities, this.tableLength(worldData.velocities));
-    
+
   end;
+
+
+  this.ioLibInit = function(keyPressed)
+
+    this.ioLibrary.keyPressed = keyPressed;
+    this.ioLibrary.initKeyPressed(this.ioLibrary.keyPressed);
+
+  end
+
 
 
 return this;

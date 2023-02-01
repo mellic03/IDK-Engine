@@ -112,6 +112,7 @@ class SceneGraph {
     //----------------------------------------------------------------------------
     void cullObjects(Frustum *frustum);
     BVTree *getBVTree()  { return &this->_geometry_bvtree; };
+    std::list<NavMesh> *getNavMeshes() { return &this->_navmeshes; };
     //----------------------------------------------------------------------------
 
 

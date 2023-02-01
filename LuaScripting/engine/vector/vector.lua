@@ -80,17 +80,21 @@ local this = { };
     );
   end;
 
+  this.dot = function (v1, v2)
+    return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z;
+  end;
+
   this.mag = function(v1)
     return math.sqrt(v1.x*v1.x + v1.y*v1.y + v1.z*v1.z);
   end;
 
 
-  this.dist = function(v1, v2)
+  this.distance = function(v1, v2)
     return this.mag(this.newVector(v1.x-v2.x, v1.y-v2.y, v1.z-v2.z));
   end;
 
 
-  this.normalise = function(v1)
+  this.normalize = function(v1)
     local m = this.mag(v1);
     return this.newVector(v1.x/m, v1.y/m, v1.z/m);
   end;

@@ -1,11 +1,8 @@
 #gameobject testanimation
 #GameObjectType GAMEOBJECT_ACTOR
 
-#meshlod 0 humantard2.dae
+#meshlod 0 human.dae
 #animationlod 0 walk walk.dae
-#animationlod 0 run run.dae
-#animationlod 0 stance stance.dae
-#animationlod 0 attack punch.dae
 
 
 #exit

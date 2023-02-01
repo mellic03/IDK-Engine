@@ -7,14 +7,16 @@
     assigned name: Player
     objectID: 0
     parentID: -1
+    GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: -11.8895 -13.05 -15.8631
+    position: -7.38595 14.7146 38.7385
     velocity: 1.15268e-10 0 -1.8985e-10
-    orientation: -0.00157198 -0.407615 0.000714171 -0.913152
+    orientation: -0.0835448 -0.0800433 -0.00674361 0.993261
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
+    script: LuaScripting/scripts/player/keypress
   </SCRIPTS>
 </GAMEOBJECT>
 
@@ -24,9 +26,10 @@
     assigned name: wall
     objectID: 1
     parentID: -1
+    GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: 0 -12 0
+    position: 0 0 0
     velocity: 0 0 0
     orientation: 0 0 0 1
     scale: 1 1 1
@@ -41,9 +44,10 @@
     assigned name: bunker
     objectID: 2
     parentID: 1
+    GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: -13.72 -13.7 5.89
+    position: -13.72 -1.7 5.89
     velocity: 0 0 0
     orientation: 0 0 0 1
     scale: 1 1 1
@@ -58,9 +62,10 @@
     assigned name: pointlight
     objectID: 3
     parentID: 2
+    GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: -13.5 -13.073 -11.095
+    position: -13.5 -1.073 -11.095
     velocity: 0 0 0
     orientation: 0.0912529 0.192459 0.0245922 0.976741
     scale: 1 1 1
@@ -87,9 +92,10 @@
     assigned name: tree
     objectID: 4
     parentID: 7
+    GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: 16.42 -0.64 -0.27
+    position: 16.42 11.36 -0.27
     velocity: 0 0 0
     orientation: 0 -0.871586 0 -0.490243
     scale: 1 1 1
@@ -104,9 +110,10 @@
     assigned name: tree
     objectID: 5
     parentID: 7
+    GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: 6.5 -1.88 0
+    position: 6.5 10.12 0
     velocity: 0 0 0
     orientation: 0 -0.871586 0 -0.490243
     scale: 1 1 1
@@ -121,9 +128,10 @@
     assigned name: tree
     objectID: 6
     parentID: 7
+    GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: -5.13 -4.5 -4.76837e-07
+    position: -5.13 7.5 -4.76837e-07
     velocity: 0 0 0
     orientation: 0 -0.871586 0 -0.490243
     scale: 1 1 1
@@ -138,9 +146,10 @@
     assigned name: trees
     objectID: 7
     parentID: 1
+    GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: 6.5 -1.88 0
+    position: 6.5 10.12 0
     velocity: 0 0 0
     orientation: 0 0 0 1
     scale: 1 1 1
@@ -155,15 +164,19 @@
     assigned name: testanimation
     objectID: 8
     parentID: -1
+    GameObjectFlags: 6
   </HEADER>
   <TRANSFORM>
-    position: -15.125 -15.094 -18.486
-    velocity: -1.4013e-44 0 1.4013e-44
-    orientation: 1.30937e-10 7.27177e-06 4.3656e-09 -1.00001
+    position: -10.015 15.016 -18.486
+    velocity: -8.40779e-45 0 8.40779e-45
+    orientation: 3.33992e-09 0.00234592 7.85116e-12 -0.997967
     scale: 1.7 1.7 1.7
   </TRANSFORM>
   <SCRIPTS>
+    script: LuaScripting/scripts/ai/followplayer
   </SCRIPTS>
+  <PHYSICS>
+  </PHYSICS>
 </GAMEOBJECT>
 
 <GAMEOBJECT>
@@ -172,6 +185,7 @@
     assigned name: cube
     objectID: 9
     parentID: -1
+    GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
     position: -13.74 11.98 0
@@ -189,6 +203,7 @@
     assigned name: cube
     objectID: 10
     parentID: -1
+    GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
     position: -17.44 11.98 0
@@ -206,9 +221,10 @@
     assigned name: tree
     objectID: 11
     parentID: 7
+    GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: -21.64 -14.84 16.37
+    position: -21.64 -2.84 16.37
     velocity: 0 0 0
     orientation: 0 -0.987801 0 0.155724
     scale: 1 1 1
@@ -223,9 +239,10 @@
     assigned name: tree
     objectID: 12
     parentID: 7
+    GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: -11.94 -16.09 19.38
+    position: -11.94 -4.09 19.38
     velocity: 0 0 0
     orientation: 0 -0.794038 0 0.607869
     scale: 1 1 1
@@ -240,9 +257,10 @@
     assigned name: tree
     objectID: 13
     parentID: 7
+    GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: 7.6 -16.74 22.15
+    position: 7.6 -4.74 22.15
     velocity: 0 0 0
     orientation: 0 -0.92671 0 0.375776
     scale: 1 1 1
@@ -257,9 +275,10 @@
     assigned name: tree
     objectID: 14
     parentID: 7
+    GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: -18.41 -6.52 5.6
+    position: -18.41 5.48 5.6
     velocity: 0 0 0
     orientation: 0 -0.918372 0 0.395718
     scale: 1 1 1

@@ -144,12 +144,8 @@ Node *NavMesh::closestNode(glm::vec3 pos)
 
 std::vector<glm::vec3> NavMesh::path(glm::vec3 from, glm::vec3 to)
 {
-
   Node *starting_node = this->closestNode(from);
   Node *ending_node = this->closestNode(to);
-
-  printf("start: node %d, (%f, %f, %f)\n", starting_node->id, starting_node->position.x, starting_node->position.y, starting_node->position.z);
-  printf("end: node %d, (%f, %f, %f)\n",     ending_node->id,   ending_node->position.x,   ending_node->position.y,   ending_node->position.z);
 
 
   for (size_t i=0; i<this->nodes.size(); i++)
@@ -192,9 +188,7 @@ std::vector<glm::vec3> NavMesh::path(glm::vec3 from, glm::vec3 to)
 
     current_node->visited = true;
     nodes_visited += 1;
-    // printf("current node: %d\n", current_node->id);
 
-    // Find node with smallest tent_dist in ENTIRE graph
     float smallest_tent = INFINITY;
     int indexof_next_node = -1;
     for (size_t i=0; i<this->nodes.size(); i++)
@@ -212,20 +206,13 @@ std::vector<glm::vec3> NavMesh::path(glm::vec3 from, glm::vec3 to)
     current_node = &this->nodes[indexof_next_node];
   }
 
-  // printf("nodes visited: %d\n", nodes_visited);
-
-
   std::vector<glm::vec3> navpath;
 
   while (current_node->previous != -1)
   {
     navpath.push_back(current_node->position);
-    // printf("node: %d\n", current_node->id);
     current_node = &this->nodes[current_node->previous];
   }
-
-  // for (size_t i=0; i<this->nodes.size(); i++)
-  //   printf("node %d: %s\n", this->nodes[i].id, (this->nodes[i].visited) ? "visited" : "unvisited");
 
   return navpath;
 }

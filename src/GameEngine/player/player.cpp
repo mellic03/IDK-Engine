@@ -35,7 +35,7 @@ void Player::key_input(Renderer *ren)
   this->keylog.clear();
   this->keylog.log(state);
 
-  PhysicsState *pState = this->m_gameobject->getData()->physData()->state();
+  PhysicsState *pState = &this->m_gameobject->getData()->physData()->state;
 
   if (this->fly && this->fly != this->fly_last)
     *pState = PhysicsState::NONE;
@@ -85,8 +85,6 @@ void Player::key_input(Renderer *ren)
 
     if (state[SDL_SCANCODE_SPACE])
       this->getPos()->y += this->move_speed * ren->deltaTime;
-    
-
 
     return;
   }

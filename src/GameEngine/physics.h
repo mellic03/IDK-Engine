@@ -44,6 +44,5 @@ namespace PhysicsEngine {
   void sphere_triangle_response(SphereCollider *spherecollider, Vertex v0, Vertex v1, Vertex v2, float dist, bool edge_collision, glm::vec3 dir);
 
   bool capsule_triangle_detect(CapsuleCollider *capsule, Vertex v0, Vertex v1, Vertex v2, float *plane_dist, bool *edge_collision, glm::vec3 *dir);
-  void capsule_triangle_response(CapsuleCollider *capsule, Vertex v0, Vertex v1, Vertex v2, float dist, bool edge_collision, glm::vec3 dir);
 
 };

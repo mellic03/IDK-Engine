@@ -32,7 +32,8 @@ enum class GameObjectFlag: GLuint {
   NONE        = 0b00000000,
   INSTANCED   = 0b00000001,
   ANIMATED    = 0b00000010,
-  NAVMESH     = 0b00000100
+  PHYSICS     = 0b00000100,
+  HIDDEN      = 0b00001000
 };
 
 
@@ -56,6 +57,10 @@ struct GameObjectData {
     Navigation::NavData _navigation_data;
     PhysicsData _physics_data;
 
+    std::map<std::string, int>          _int_values;
+    std::map<std::string, float>        _float_values;
+    std::map<std::string, std::string>  _string_values;
+
 
   public:
 
@@ -74,8 +79,14 @@ struct GameObjectData {
     void setUiIconType(GameObjectType type);
     GameObjectType getUiIconType();
 
-    inline Navigation::NavData *navData();
-    inline PhysicsData *physData() { return &this->_physics_data; };
+    inline Navigation::NavData *navData() { return &this->_navigation_data; };
+    inline PhysicsData *physData()        { return &this->_physics_data;    };
 
+    
+    int intValue(std::string name) { return this->_int_values[name]; };
+    void intValue(std::string name, int value) { this->_int_values[name] = value; };
+
+    float floatValue(std::string name) { return this->_float_values[name]; };
+    void floatValue(std::string name, float value) { this->_float_values[name] = value; };
 };
 

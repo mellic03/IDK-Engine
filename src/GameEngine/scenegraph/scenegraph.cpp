@@ -140,7 +140,7 @@ void SceneGraph::loadObject(std::string directory)
 
 
     else if (sscanf(buffer, "#physics %s", stringdata))
-      *object.getData()->physData()->state() = GameObjectUtil::FromString::physicsState(stringdata);
+      object.getData()->physData()->state = GameObjectUtil::FromString::physicsState(stringdata);
 
 
     else if (sscanf(buffer, "#meshlod %d %s", &intdata, stringdata))
@@ -166,7 +166,7 @@ void SceneGraph::loadObject(std::string directory)
     else if (sscanf(buffer, "#navmesh %s", stringdata))
     {
       // object.getData()->navMesh(stringdata);
-      this->_navmeshes.push_back(NavMesh(stringdata));
+      this->_navmeshes.push_back(NavMesh(std::string(directory) + std::string(stringdata)));
     }
 
     else if (sscanf(buffer, "#collision %s", stringdata))

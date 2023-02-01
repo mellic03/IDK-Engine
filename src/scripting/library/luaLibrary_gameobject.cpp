@@ -9,7 +9,7 @@ extern "C" int setPhysicsState(lua_State *LS)
   const char *physStateStr = lua_tostring(LS, 1);
   
   PhysicsState physState = GameObjectUtil::FromString::physicsState(physStateStr);
-  *Scene::scenegraph.objectPtr(objectID)->getData()->physData()->state() = physState;
+  Scene::scenegraph.objectPtr(objectID)->getData()->physData()->state = physState;
 
   return 0;
 }
@@ -121,22 +121,83 @@ extern "C" int setPath(lua_State *LS)
   float z = lua_tonumber(LS, 4);
   
   GameObject *object = Scene::scenegraph.objectPtr(objectID);
-  object->navData()->setPath(glm::vec3(x, y, z));
+  Navigation::NavData *nData = object->getData()->navData();
+  nData->setPath(*object->getPos(), glm::vec3(x, y, z), Scene::scenegraph.getNavMeshes());
 
   return 0;
 }
 
 
+extern "C" int setInt(lua_State *LS)
+{
+  int objectID = lua_tointeger(LS, 1) - 1;
+  const char *name = lua_tostring(LS, 2);
+  int value = lua_tointeger(LS, 3);
+  
+  GameObject *object = Scene::scenegraph.objectPtr(objectID);
+  object->getData()->intValue(std::string(name), value);
+
+  return 0;
+}
+
+extern "C" int getInt(lua_State *LS)
+{
+  int objectID = lua_tointeger(LS, 1) - 1;
+  const char *name = lua_tostring(LS, 2);
+
+  GameObject *object = Scene::scenegraph.objectPtr(objectID);
+  int value = object->getData()->intValue(std::string(name));
+
+  lua_pushinteger(LS, value);
+
+  return 1;
+}
+
+
+extern "C" int setFloat(lua_State *LS)
+{
+  int objectID = lua_tointeger(LS, 1) - 1;
+  const char *name = lua_tostring(LS, 2);
+  float value = lua_tonumber(LS, 3);
+  
+  GameObject *object = Scene::scenegraph.objectPtr(objectID);
+  object->getData()->floatValue(std::string(name), value);
+
+  return 0;
+}
+
+extern "C" int getFloat(lua_State *LS)
+{
+  int objectID = lua_tointeger(LS, 1) - 1;
+  const char *name = lua_tostring(LS, 2);
+
+  GameObject *object = Scene::scenegraph.objectPtr(objectID);
+  int value = object->getData()->intValue(std::string(name));
+
+  lua_pushinteger(LS, value);
+
+  return 1;
+}
 
 
 void register_luaLibrary_gameobject()
 {
   lua_register(LuaInterface::L, "CE_GameObject_SetPhysicsState", setPhysicsState);
+  
   lua_register(LuaInterface::L, "CE_GameObject_GetPos", getPos);
   lua_register(LuaInterface::L, "CE_GameObject_SetPos", setPos);
+
   lua_register(LuaInterface::L, "CE_GameObject_GetVel", getVel);
   lua_register(LuaInterface::L, "CE_GameObject_SetVel", setVel);
+
   lua_register(LuaInterface::L, "CE_GameObject_AddRot", addRot);
+
   lua_register(LuaInterface::L, "CE_GameObject_SetPath", setPath);
+
+  lua_register(LuaInterface::L, "CE_GameObject_SetInt",  setInt);
+  lua_register(LuaInterface::L, "CE_GameObject_GetInt",  getInt);
+
+  lua_register(LuaInterface::L, "CE_GameObject_SetFloat",  setFloat);
+  lua_register(LuaInterface::L, "CE_GameObject_GetFloat",  getFloat);
 }
 

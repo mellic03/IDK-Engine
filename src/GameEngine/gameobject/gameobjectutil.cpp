@@ -1,5 +1,7 @@
 #include "gameobjectutil.h"
 
+#define StringLiteral(var) (#var)
+
 
 GameObjectFlag GameObjectUtil::objectFlag_fromString(std::string stringdata)
 {
@@ -72,7 +74,10 @@ Navigation::NavState GameObjectUtil::navstate_fromString(std::string stringdata)
 
 namespace GameObjectUtil {
 
+
   namespace FromString {
+
+
     PhysicsState physicsState(std::string str)
     {
       if (str == "GROUNDED")
@@ -83,12 +88,33 @@ namespace GameObjectUtil {
 
       return PhysicsState::NONE;
     };
+
+
   };
+
+
+
 
   namespace ToString {
 
-    
+
+    std::string gameObjectType(GameObjectType type)
+    {
+      switch (type)
+      {
+        default:
+        case (GAMEOBJECT_UNDEFINED):    return "GAMEOBJECT_UNDEFINED";
+        case (GAMEOBJECT_TERRAIN):      return "GAMEOBJECT_TERRAIN";
+        case (GAMEOBJECT_STATIC):       return "GAMEOBJECT_STATIC";
+        case (GAMEOBJECT_BILLBOARD):    return "GAMEOBJECT_BILLBOARD";
+        case (GAMEOBJECT_ACTOR):        return "GAMEOBJECT_ACTOR";
+        case (GAMEOBJECT_PLAYER):       return "GAMEOBJECT_PLAYER";
+        case (GAMEOBJECT_LIGHTSOURCE):  return "GAMEOBJECT_LIGHTSOURCE";
+      }
+    }
+
 
   };
+
 
 };

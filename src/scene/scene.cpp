@@ -308,6 +308,8 @@ void Scene::drawDirLightDepthmap()
 
 void Scene::drawPointLightDepthmaps()
 {
+  Render::ren.useShader(SHADER_POINTSHADOW);
+
   glViewport(0, 0, Render::ren.POINT_SHADOW_WIDTH, Render::ren.POINT_SHADOW_HEIGHT);
 
   float aspect = (float)Render::ren.POINT_SHADOW_WIDTH / (float)Render::ren.POINT_SHADOW_HEIGHT;
@@ -345,12 +347,10 @@ void Scene::drawPointLightDepthmaps()
     Render::ren.active_shader->setVec3("lightPos", lightPos);
     Render::ren.active_shader->setFloat("far_plane", pointlight->radius);
 
-    Render::ren.useShader(SHADER_POINTSHADOW);
     Scene::drawGeometry();
 
-    Render::ren.useShader(SHADER_POINTSHADOW_ANIMATED);
-    Scene::drawGeometry_animated();
-    
+    // Render::ren.useShader(SHADER_POINTSHADOW_ANIMATED);
+    // Scene::drawGeometry_animated();
   }
 
   glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
@@ -383,11 +383,17 @@ void Scene::animationTick()
 void Scene::physicsTick_actor_terrain()
 {
   std::list<GameObject *> *actor_list = Scene::scenegraph.getObjects(GAMEOBJECT_ACTOR);
+  std::list<GameObject *> *actorAnimated_list = Scene::scenegraph.getObjects(GAMEOBJECT_ACTOR, GameObjectFlag::ANIMATED);
   std::list<GameObject *> *terrain_list = Scene::scenegraph.getObjects(GAMEOBJECT_TERRAIN);
 
-  for (auto &actor: *actor_list)
-    for (auto &terrain: *terrain_list)
+  for (auto &terrain: *terrain_list)
+  {
+    for (auto &actor: *actor_list)
       actor->collideWithObject(terrain);
+
+    for (auto &actor: *actorAnimated_list)
+      actor->collideWithObject(terrain);
+  }
 }
 
 
@@ -516,31 +522,27 @@ void Scene::drawBillboardsInstanced()
 void Scene::drawActors()
 {
   Render::ren.useShader(SHADER_ACTOR);
-
   Render::ren.active_shader->setInt("material.diffuseMap", 0);
   Render::ren.active_shader->setInt("material.specularMap", 1);
   Render::ren.active_shader->setInt("material.normalMap", 2);
   Render::ren.active_shader->setInt("material.emissionMap", 3);
 
   for (auto &obj: *Scene::scenegraph.getObjects(GAMEOBJECT_ACTOR))
-  {
-    Render::ren.active_shader->setVec3("emission", obj->emission);
-    Render::ren.active_shader->setFloat("emission_scale", obj->emission_scale);
+    Render::ren.drawModel(obj->getModel(), obj->getTransform());
 
-    Model *model = obj->getModel();
+  Render::ren.active_shader->setVec3("emission", glm::vec3(0.0f));
+  Render::ren.active_shader->setFloat("emission_scale", 0.0f);
 
-    if (model->isAnimated())
-    {
-      Shader *temp = Render::ren.active_shader;
-      Render::ren.useShader(SHADER_ACTOR_ANIMATED);
-      AnimationData *aData = obj->getAnimationData();
-      Render::ren.drawModelAnimated(model, obj->getTransform(), obj->getAnimationController());
-      Render::ren.active_shader = temp;
-    }
-  
-    else
-      Render::ren.drawModel(model, obj->getTransform());
-  }
+
+
+  Render::ren.useShader(SHADER_ACTOR_ANIMATED);
+  Render::ren.active_shader->setInt("material.diffuseMap", 0);
+  Render::ren.active_shader->setInt("material.specularMap", 1);
+  Render::ren.active_shader->setInt("material.normalMap", 2);
+  Render::ren.active_shader->setInt("material.emissionMap", 3);
+
+  for (auto &obj: *Scene::scenegraph.getObjects(GAMEOBJECT_ACTOR, GameObjectFlag::ANIMATED))
+    Render::ren.drawModelAnimated(obj->getModel(), obj->getTransform(), obj->getAnimationController());
 
   Render::ren.active_shader->setVec3("emission", glm::vec3(0.0f));
   Render::ren.active_shader->setFloat("emission_scale", 0.0f);
@@ -551,7 +553,7 @@ void Scene::drawLightsources()
 {
   Render::ren.useShader(SHADER_LIGHTSOURCE);
 
-  for (GameObject *obj: *Scene::scenegraph.getVisibleInstancesByType(GAMEOBJECT_LIGHTSOURCE))
+  for (GameObject *obj: *Scene::scenegraph.getObjects(GAMEOBJECT_LIGHTSOURCE))
     Render::ren.drawLightSource(obj->getModel(), obj->getTransform(), glm::vec3(1.0f));
 }
 
@@ -619,7 +621,10 @@ void Scene::drawGeometry()
     Render::ren.drawModel(object->getModelLOD()->getShadowLOD_model(), object->getTransform());
 
   for (auto &object: *Scene::scenegraph.getObjects(GAMEOBJECT_ACTOR))
-    Render::ren.drawModel(object->getModelLOD()->getShadowLOD_model(), object->getTransform());
+  {
+    if (!object->getData()->getFlag(GameObjectFlag::ANIMATED))
+      Render::ren.drawModel(object->getModelLOD()->getShadowLOD_model(), object->getTransform());
+  }
 
   for (auto &object: *Scene::scenegraph.getObjects(GAMEOBJECT_BILLBOARD))
     Render::ren.drawModel(object->getModelLOD()->getShadowLOD_model(), object->getTransform());

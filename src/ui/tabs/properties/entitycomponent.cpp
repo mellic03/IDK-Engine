@@ -32,6 +32,10 @@ void EntityComponentUI::newComponent(GameObject *object)
     else if (ImGui::MenuItem(EngineUI::IconLabels::MESH_LABEL + id))
       components->giveComponent(MeshColliderComponent());
 
+    else if (ImGui::MenuItem(EngineUI::IconLabels::PHYSICS_LABEL + id))
+      components->giveComponent(COMPONENT_PHYSICS);
+
+
     ImGui::EndPopup();
   }
 }
@@ -93,6 +97,10 @@ void EntityComponentUI::drawComponent(GameObject *object, EntityComponents *comp
 
     case (COMPONENT_ANIMATION):
       DrawECS::animation(object);
+      break;
+
+    case (COMPONENT_PHYSICS):
+      DrawECS::physics(object);
       break;
   }
 }

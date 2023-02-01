@@ -37,13 +37,11 @@ class Model {
     std::vector<glm::vec2> _texcoords;
     std::vector<glm::vec4> _colors;
 
-    std::vector<std::vector<int>>   _jointIDs;
-    std::vector<std::vector<float>> _jointWeights;
+    std::vector<glm::ivec4>  _jointIDs;
+    std::vector<glm::vec4>   _jointWeights;
 
 
     bool _animated = false;
-    int _num_geometries = 0;
-    int _num_meshes = 0;
 
     std::string _directory;
 
@@ -75,12 +73,9 @@ class Model {
     void computeBoundingSphere(void);
     void loadBoundingSphere(std::ifstream &stream);
 
+    void _mergeMeshes();
 
   public:
-
-    Animation::AnimationController _animation_controller;
-    Animation::Armature _armatures[4];
-    Animation::Armature _armature;
 
     glm::vec3 bounding_sphere_pos  = glm::vec3(0.0f);
     float bounding_sphere_radius   = 0.0f;
@@ -101,9 +96,6 @@ class Model {
 
 
     bool isAnimated() { return this->_animated; };
-
-    Animation::Animation *getAnimation(std::string name);
-    Animation::AnimationController *getAnimController();
 };
 
 

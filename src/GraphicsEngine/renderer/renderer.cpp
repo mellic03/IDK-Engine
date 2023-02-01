@@ -628,8 +628,8 @@ void Renderer::resize(int x, int y)
 
 void unbindTextureUnit(GLenum texture_unit)
 {
-  glActiveTexture(texture_unit);
-  glBindTexture(GL_TEXTURE_2D, 0);
+  GLCALL( glActiveTexture(texture_unit) );
+  GLCALL( glBindTexture(GL_TEXTURE_2D, 0) );
 }
 
 
@@ -693,9 +693,9 @@ void Renderer::drawModel(Model *model, Transform *transform)
       unbindTextureUnit(GL_TEXTURE2);
       unbindTextureUnit(GL_TEXTURE3);
     }
- 
-    GLCALL( glBindVertexArray(0) );
   }
+
+  GLCALL( glBindVertexArray(0) );
 }
 
 
@@ -715,6 +715,7 @@ void Renderer::drawModelAnimated(Model *model, Transform *transform, Animation::
   }
   this->drawModel(model, transform);
 
+  GLCALL( glBindVertexArray(0) );
 }
 
 
@@ -768,6 +769,9 @@ void Renderer::drawLightSource(Model *model, Transform *transform, glm::vec3 dif
 
 void Renderer::drawTerrain(Model *model, Transform *transform, float threshold, float epsilon)
 {
+  // printf("model: %s\n", model->m_name.c_str());
+
+
   this->active_shader->setMat4("model", transform->getModelMatrix_stale());
 
   this->active_shader->setFloat("threshold", threshold);
@@ -775,18 +779,12 @@ void Renderer::drawTerrain(Model *model, Transform *transform, float threshold, 
 
   this->shaders[SHADER_TERRAIN].setInt("material.diffuseMap1", 0);
   this->shaders[SHADER_TERRAIN].setInt("material.diffuseMap2", 1);
-  this->shaders[SHADER_TERRAIN].setInt("material.diffuseMap3", 2);
-  this->shaders[SHADER_TERRAIN].setInt("material.diffuseMap4", 3);
 
-  this->shaders[SHADER_TERRAIN].setInt("material.specularMap1", 4);
-  this->shaders[SHADER_TERRAIN].setInt("material.specularMap2", 5);
-  this->shaders[SHADER_TERRAIN].setInt("material.specularMap3", 6);
-  this->shaders[SHADER_TERRAIN].setInt("material.specularMap4", 7);
+  this->shaders[SHADER_TERRAIN].setInt("material.specularMap1", 2);
+  this->shaders[SHADER_TERRAIN].setInt("material.specularMap2", 3);
 
-  this->shaders[SHADER_TERRAIN].setInt("material.normalMap1", 8);
-  this->shaders[SHADER_TERRAIN].setInt("material.normalMap2", 9);
-  this->shaders[SHADER_TERRAIN].setInt("material.normalMap3", 10);
-  this->shaders[SHADER_TERRAIN].setInt("material.normalMap4", 11);
+  this->shaders[SHADER_TERRAIN].setInt("material.normalMap1", 4);
+  this->shaders[SHADER_TERRAIN].setInt("material.normalMap2", 5);
 
 
   for (auto &mesh: model->m_meshes)
@@ -795,18 +793,12 @@ void Renderer::drawTerrain(Model *model, Transform *transform, float threshold, 
 
     model->materials[0].diffuseMap.bind(  GL_TEXTURE0 );
     model->materials[1].diffuseMap.bind(  GL_TEXTURE1 );
-    model->materials[2].diffuseMap.bind(  GL_TEXTURE2 );
-    model->materials[3].diffuseMap.bind(  GL_TEXTURE3 );
 
-    model->materials[0].specularMap.bind( GL_TEXTURE4 );
-    model->materials[1].specularMap.bind( GL_TEXTURE5 );
-    model->materials[2].specularMap.bind( GL_TEXTURE6 );
-    model->materials[3].specularMap.bind( GL_TEXTURE7 );
+    model->materials[0].specularMap.bind( GL_TEXTURE2 );
+    model->materials[1].specularMap.bind( GL_TEXTURE3 );
 
-    model->materials[0].normalMap.bind(   GL_TEXTURE8 );
-    model->materials[1].normalMap.bind(   GL_TEXTURE9 );
-    model->materials[2].normalMap.bind(   GL_TEXTURE10 );
-    model->materials[3].normalMap.bind(   GL_TEXTURE11 );
+    model->materials[0].normalMap.bind(   GL_TEXTURE4 );
+    model->materials[1].normalMap.bind(   GL_TEXTURE5 );
 
 
     for (size_t i=0; i<mesh.IBOS.size(); i++)
@@ -817,8 +809,9 @@ void Renderer::drawTerrain(Model *model, Transform *transform, float threshold, 
       GLCALL( glDrawElements(GL_TRIANGLES, mesh.indices[i].size(), GL_UNSIGNED_INT, (void *)0) );
     }
 
-    glBindVertexArray(0);
   }
+
+  glBindVertexArray(0);
 }
 
 

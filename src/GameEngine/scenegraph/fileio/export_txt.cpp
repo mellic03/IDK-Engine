@@ -9,27 +9,20 @@ static void objectToFile(std::ofstream &stream, GameObject *object)
   std::string indentation = "  ";
 
   FileUtil::ToText::objectheader(stream, object, indentation);
-  FileUtil::ToText::transform(stream, object->getTransform(), indentation);
-  FileUtil::ToText::scripts(stream, object, indentation);
-  
+
+
+  // Components
+  //-----------------------------------------------------------------------
   EntityComponents *components = object->getComponents();
 
-  if (components->hasComponent(COMPONENT_POINT_LIGHT))
-    FileUtil::ToText::pointlight(stream, components->getPointLightComponent(), indentation);
+  FileUtil::ToText::transform(stream, object->getTransform(), indentation);
+  FileUtil::ToText::scripts(stream, object, indentation);
+  FileUtil::ToText::pointlight(stream, components->getPointLightComponent(), indentation);
+  FileUtil::ToText::spherecollider(stream, object, indentation);
+  FileUtil::ToText::physics(stream, object, indentation);
+  //-----------------------------------------------------------------------
 
 
-  // for (size_t i=0; i<object->script_components.size(); i++)
-  // {
-  //   *stream << "#SCRIPT: ";
-  //   *stream << object->script_components[i].script_name << "\n";
-  // }
-
-  // if (object->getObjectType() == GAMEOBJECT_LIGHTSOURCE)
-  // {
-  //   *stream << "#LIGHTSOURCE BEGIN" << "\n";
-  //   object->lightsource_components[0].toFile(*stream);
-  //   *stream << "#LIGHTSOURCE END" << "\n";
-  // }
 
 
   stream << "</GAMEOBJECT>\n" << std::endl;

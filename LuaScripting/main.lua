@@ -4,10 +4,12 @@ DeltaTime = 0;
 IDs = {};
 Scripts = {};
 
-
 -- ----------------------------------------
 
 function Main()
+
+  engine.ioLibInit(KeyPressed);
+
 
   for i = 1, engine.tableLength(Scripts), 1 do
 

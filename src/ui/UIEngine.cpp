@@ -68,6 +68,10 @@ void EngineUI::bitFlagCheckbox(const char *label, unsigned char flag, unsigned c
 }
 
 
+// void EngineUI::bitFlagCheckbox(const char *label, GLuint flag, GLuint *bits)
+
+
+
 static constexpr char icons[8][4] = {
   ICON_FA_LIGHTBULB_O,
   ICON_FA_CUBE,

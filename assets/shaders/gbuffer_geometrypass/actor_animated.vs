@@ -14,6 +14,7 @@ layout (location = 6) in ivec4 jointIDs;
 
 out vec2 TexCoords;
 out vec3 FragPos;
+out mat3 TBN;
 out vec3 Normal;
 
 uniform mat4 projection;
@@ -28,6 +29,7 @@ void main()
 {
   vec4 position = vec4(0.0);
   vec3 normal = vec3(0.0);
+  vec3 tangent = vec3(0.0);
 
   bool done = false;
 
@@ -35,20 +37,24 @@ void main()
   {
     if (jointIDs[i] == -1)
     {
-      continue;
+      break;
     }
 
     position += jointWeights[i] * boneTransforms[jointIDs[i]] * vec4(aPos, 1.0);
-    normal += jointWeights[i] * mat3(boneTransforms[jointIDs[i]]) * aNormal;
+    normal  += jointWeights[i] * mat3(boneTransforms[jointIDs[i]]) * aNormal;
+    tangent += jointWeights[i] * mat3(boneTransforms[jointIDs[i]]) * aTangent;
 
     done = true;
   }
+
 
   if (!done)
   {
     position = vec4(aPos, 1.0);
     normal = aNormal;
+    tangent = aTangent;
   }
+
 
   vec4 worldPos = model * vec4(position.xyz, 1.0);
   FragPos = worldPos.xyz;
@@ -57,7 +63,13 @@ void main()
   gl_Position = projection * view * worldPos;
 
   // tangent-space to world-space transform
-  //------------------------------------------------------------------
-  Normal = normal;
+  // //------------------------------------------------------------------
+  // mat3 normalMatrix = mat3(model);
+  // vec3 T = normalize(normalMatrix * tangent);
+  // vec3 N = normalize(normalMatrix * normal);
+  // T = normalize(T - dot(T, N) * N);
+  // vec3 B = cross(N, T);
+  // TBN = mat3(T, B, N);
+  Normal = normalize(mat3(model) * normal);
   //------------------------------------------------------------------
 }

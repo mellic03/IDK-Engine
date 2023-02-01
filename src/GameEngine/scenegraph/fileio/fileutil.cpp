@@ -11,6 +11,7 @@ void FileUtil::ToText::objectheader(std::ofstream &stream, GameObject *object, s
   stream << indentation + "  " << "assigned name: " << object->getName() << "\n";
   stream << indentation + "  " << "objectID: " << object->getID() << "\n";
   stream << indentation + "  " << "parentID: " << object->parentID << "\n";
+  stream << indentation + "  " << "GameObjectFlags: " << static_cast<GLuint>(*object->getData()->getFlags()) << "\n";
 
   stream << indentation << "</HEADER>" << std::endl;
 }
@@ -52,6 +53,9 @@ void FileUtil::ToText::scripts(std::ofstream &stream, GameObject *object, std::s
 
 void FileUtil::ToText::pointlight(std::ofstream &stream, PointLight *pointlight, std::string indentation)
 {
+  if (pointlight == nullptr)
+    return;
+
   stream << indentation << "<POINTLIGHT>\n";
   
     stream << indentation + "  " << "active: " << pointlight->active << "\n";
@@ -69,6 +73,27 @@ void FileUtil::ToText::pointlight(std::ofstream &stream, PointLight *pointlight,
     stream << indentation + "  " << "bias: "      << pointlight->bias       << "\n";
 
   stream << indentation << "</POINTLIGHT>" << std::endl;
+}
+
+
+void FileUtil::ToText::physics(std::ofstream &stream, GameObject *object, std::string indentation)
+{
+  if (object->getData()->getFlag(GameObjectFlag::PHYSICS) == false)
+    return;
+
+  stream << indentation << "<PHYSICS>\n";
+  stream << indentation << "</PHYSICS>" << std::endl;;
+}
+
+
+void FileUtil::ToText::spherecollider(std::ofstream &stream, GameObject *object, std::string indentation)
+{
+  if (object->getComponents()->hasComponent(COMPONENT_SPHERE_COLLIDER) == false)
+    return;
+
+  stream << indentation << "<SPHERECOLLIDER>\n";
+  stream << indentation + "  " << "radius: " << object->spherecollider.radius << "\n";
+  stream << indentation << "</SPHERECOLLIDER>" << std::endl;
 }
 
 
@@ -92,46 +117,37 @@ glm::vec3 stringToVec3(std::string stringdata)
 }
 
 
+static void eraseUpTo(std::string &line, std::string stopat)
+{
+  size_t pos = line.find(stopat);
+  line.erase(0, pos + stopat.size());
+}
+
 
 GameObjectHeader FileUtil::FromText::objectheader(std::ifstream &stream, GameObject *object)
 {
   GameObjectHeader header;
-
-  size_t template_start, assigned_start, parent_start; 
-  size_t template_end = std::string("template name: ").size();
-  size_t assigned_end = std::string("assigned name: ").size();
-  size_t parent_end = std::string("parentID: ").size();
-
-
   std::string line;
-  while (getline(stream, line))
-  {
-    template_start = line.find("template name: ");
-    assigned_start = line.find("assigned name: ");
-    parent_start   = line.find("parentID: ");
+  
+  getline(stream, line);
+  eraseUpTo(line, "template name: ");
+  header.template_name = line;
 
+  getline(stream, line);
+  eraseUpTo(line, "assigned name: ");
+  header.assigned_name = line;
 
-    if (template_start != std::string::npos)
-    {
-      line.erase(0, template_start + template_end);
-      header.template_name = line;
-    }
+  getline(stream, line);
+  eraseUpTo(line, "objectID: ");
+  header.objectID = std::stoi(line);
 
-    else if (assigned_start != std::string::npos)
-    {
-      line.erase(0, assigned_start + assigned_end);
-      header.assigned_name = line;
-    }
+  getline(stream, line);
+  eraseUpTo(line, "parentID: ");
+  header.parentID = std::stoi(line);
 
-    else if (parent_start != std::string::npos)
-    {
-      line.erase(0, parent_start + parent_end);
-      header.parentID = std::stoi(line);
-    }
-
-    else if (line.find("</HEADER>") != std::string::npos)
-      return header;
-  }
+  getline(stream, line);
+  eraseUpTo(line, "GameObjectFlags: ");
+  header.flags = static_cast<GLuint>(std::stoi(line));
 
   return header;
 }
@@ -221,7 +237,6 @@ void FileUtil::FromText::pointlight(std::ifstream &stream, PointLight *pointligh
 {
   std::string line;
 
-
   getline(stream, line);
   line.erase(0, line.find("active: ") + std::string("active: ").size());
   pointlight->active = std::stoi(line);
@@ -265,6 +280,15 @@ void FileUtil::FromText::pointlight(std::ifstream &stream, PointLight *pointligh
 }
 
 
+void FileUtil::FromText::spherecollider(std::ifstream &stream, GameObject *object)
+{
+  std::string line;
+
+  getline(stream, line);
+  eraseUpTo(line, "radius: ");
+  object->spherecollider.radius = std::stof(line);
+
+}
 
 
 

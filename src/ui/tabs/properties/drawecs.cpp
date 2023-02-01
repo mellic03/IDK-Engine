@@ -247,23 +247,13 @@ void DrawECS::capsule(GameObject *object, CapsuleColliderComponent *capsuleColli
 }
 
 
-static void drawArmature(Animation::Joint *node, Animation::Joint **selected)
+void DrawECS::physics(GameObject *object)
 {
-  int flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow;
-
-  if (ImGui::TreeNodeEx(node->_name_str.c_str(), flags))
+  if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    if (ImGui::IsItemClicked())
-      *selected = node;
-
-    for (auto &child: node->children)
-      drawArmature(child, selected);
-
-    ImGui::TreePop();
+    EngineUI::bitFlagCheckbox("Enabled", GameObjectFlag::PHYSICS, object->getData()->getFlags());
   }
 }
-
-static Animation::Joint *selected_joint;
 
 
 void DrawECS::animation(GameObject *object)
@@ -291,28 +281,6 @@ void DrawECS::animation(GameObject *object)
     static int i0 = 0;
     static std::string selected = animationController->getAnimation()->getName();
     ImGui::Dropdown("Animations", animation_names, &selected, &i0);
-
-    drawArmature(animationController->getAnimation()->getArmature()->root, &selected_joint);
-  
-
-    AnimationData *aData = object->getAnimationData();
-    ImGui::Checkbox("Blend", &aData->blend);
-    if (aData->blend)
-    {
-      static int i1, i2;
-      static std::string selected1 = animationController->getAnimation()->getName();
-      static std::string selected2 = animationController->getAnimation()->getName();
-      ImGui::Dropdown("Animation 1 ##1", animation_names, &selected1, &i1);
-      ImGui::SameLine();
-      ImGui::Dropdown("Animation 2 ##2", animation_names, &selected2, &i2);
-
-
-      aData->blend1 = animationController->getAnimation(selected1);
-      aData->blend2 = animationController->getAnimation(selected2);
-
-      ImGui::SliderFloat("Alpha", &aData->alpha, 0.0f, 1.0f, "%0.2f");
-    }
-
 
 
     animationController->setActiveAnimation(selected);

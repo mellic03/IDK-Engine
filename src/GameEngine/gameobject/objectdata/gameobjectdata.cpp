@@ -35,8 +35,3 @@ GameObjectType GameObjectData::getUiIconType()                  { return this->u
 
 
 
-inline Navigation::NavData *GameObjectData::navData()
-{
-  return &this->_navigation_data;
-}
-

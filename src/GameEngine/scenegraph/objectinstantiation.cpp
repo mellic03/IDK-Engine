@@ -107,13 +107,15 @@ void SceneGraph::newObjectInstance(std::string object_name, Transform *transform
   GameObject *objectptr = this->rearObjectPtr();
   GameObjectType object_type = objectptr->getObjectType();
 
-
-  this->_object_instances[object_type].push_back(objectptr);
-  this->_object_instances_by_template_name[objectptr->getTemplateName()].push_back(objectptr);
-  this->m_selectable_instances.push_back(objectptr);
   
   if (objectptr->getData()->getFlag(GameObjectFlag::ANIMATED))
     this->_object_instances_animated[objectptr->getData()->gameobject_type].push_back(objectptr);
+
+  else
+    this->_object_instances[object_type].push_back(objectptr);
+
+  this->_object_instances_by_template_name[objectptr->getTemplateName()].push_back(objectptr);
+  this->m_selectable_instances.push_back(objectptr);
 
   objectptr->getComponents()->giveComponent(TransformComponent());
 

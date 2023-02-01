@@ -15,5 +15,6 @@ namespace DrawECS {
   void sphere(GameObject *object, SphereColliderComponent *sphereColliderComponent);
   void capsule(GameObject *object, CapsuleColliderComponent *capsuleColliderComponent);
   void animation(GameObject *object);
+  void physics(GameObject *object);
 
 };

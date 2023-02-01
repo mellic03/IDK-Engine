@@ -12,9 +12,9 @@ in vec3 SurfaceNormal;
 in mat3 TBN;
 
 struct TerrainMaterial {
-  sampler2D   diffuseMap1,   diffuseMap2,   diffuseMap3,   diffuseMap4;
-  sampler2D   specularMap1,  specularMap2,  specularMap3,  specularMap4;
-  sampler2D   normalMap1,    normalMap2,    normalMap3,    normalMap4;
+  sampler2D   diffuseMap1,   diffuseMap2;
+  sampler2D   specularMap1,  specularMap2;
+  sampler2D   normalMap1,    normalMap2;
   float spec_exponent;
 };
 uniform TerrainMaterial material;
@@ -68,8 +68,6 @@ void main()
 
   vec4 normal4 = mix( textureNoTile(material.normalMap1, TexCoords),
                       textureNoTile(material.normalMap2, TexCoords), alpha );
-                //  Color.b * texture(material.normalMap3, TexCoords);
-                //  Color.a * texture(material.normalMap4, TexCoords);
   vec3 normal = normal4.xyz;
 
   normal = normal * 2.0 - 1.0; 
@@ -81,12 +79,9 @@ void main()
 
   gAlbedoSpec.rgb = mix(  textureNoTile(material.diffuseMap1, TexCoords).rgb,
                           textureNoTile(material.diffuseMap2, TexCoords).rgb, alpha );
-                    // Color.b * texture(material.diffuseMap3, TexCoords).rgb;
-                    // Color.a * texture(material.diffuseMap4, TexCoords).rgb;
 
   gAlbedoSpec.a = mix(  textureNoTile(material.diffuseMap1, TexCoords).rgb,
                         textureNoTile(material.diffuseMap2, TexCoords).rgb, alpha ).r;
-  // gAlbedoSpec.a = 1.0;
 
   gEmission = vec3(0.0);
 

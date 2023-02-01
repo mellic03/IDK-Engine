@@ -18,17 +18,17 @@ namespace Navigation {
   struct NavData {
 
     private:
-
-      NavState _state = NavState::NONE;
-      std::vector<glm::vec3> _path;
       glm::vec3 _target;
+
+      NavMesh *_navmesh;
 
 
     public:
 
-      inline NavState *state();
-      
-      void setPath(glm::vec3 target);
+      NavState state = NavState::NONE;
+      std::vector<glm::vec3> path;
+
+      void setPath(glm::vec3 current_pos, glm::vec3 target, std::list<NavMesh> *navmeshes);
       void followPath(glm::vec3 *objectPos);
 
   };

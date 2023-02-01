@@ -277,7 +277,25 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
         int col_offset  = this->_geometry_color_offsets[geometry_number];
 
 
-        if (this->_colors.size() == 0)
+        if (this->_animated)
+        {
+          for (size_t i=0; i<indices.size()/3; i+=1)
+          {
+            mesh->vertices.push_back(Vertex());
+            Vertex *vertex = &mesh->vertices[mesh->vertices.size() - 1];
+
+            vertex->position  = this->_positions [pos_offset + indices[3*i + 0]];
+            vertex->normal    = this->_normals   [norm_offset + indices[3*i + 1]];
+            vertex->texcoords = this->_texcoords [tex_offset + indices[3*i + 2]];
+
+            vertex->joint_ids = this->_jointIDs     [pos_offset + indices[3*i + 0]];
+            vertex->weights   = this->_jointWeights [pos_offset + indices[3*i + 0]];
+
+            mesh->indices[mesh->indices.size()-1].push_back(mesh->vertices.size() - 1);
+          }
+        }
+
+        else if (this->_colors.size() == 0)
         {
           for (size_t i=0; i<indices.size()/3; i+=1)
           {
@@ -353,9 +371,6 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
 
 void Model::applyMeshTransforms(rapidxml::xml_document<> *doc)
 {
-  if (this->_animated)
-    return;
-
   rapidxml::xml_node<> *node = doc->first_node();
   node = node->first_node("library_visual_scenes")->first_node("visual_scene");
   node = node->first_node("node");
@@ -524,11 +539,9 @@ void Model::loadVertices(rapidxml::xml_document<> *doc)
       this->_geometry_color_offsets.push_back(colors.size());
 
 
-      this->_num_meshes += 1;
       meshNode = meshNode->next_sibling("mesh");
     }
 
-    this->_num_geometries += 1;
     geometryNode = geometryNode->next_sibling("geometry");
   }
   //--------------------------------------------------------------------
@@ -749,6 +762,30 @@ static void printBVTree(const std::string &prefix, const Animation::Joint *node)
 }
 
 
+static void bubblesort2(std::vector<int> &jids, std::vector<float> &jweights)
+{
+  for (size_t i=0; i<jids.size(); i++)
+  {
+    for (size_t j=0; j<i; j++)
+    {
+      if (i != j)
+      {
+        if (jweights[i] > jweights[j])
+        {
+          int tempint = jids[i];
+          jids[i] = jids[j];
+          jids[j] = tempint;
+
+          float tempfloat = jweights[i];
+          jweights[i] = jweights[j];
+          jweights[j] = tempfloat;
+        }
+      }
+    }
+  }
+}
+
+
 void Model::loadArmatureWeights(rapidxml::xml_document<> *doc, Animation::Armature *armature)
 {
   if (this->_animated == false)
@@ -756,8 +793,7 @@ void Model::loadArmatureWeights(rapidxml::xml_document<> *doc, Animation::Armatu
 
   rapidxml::xml_node<> *node = doc->first_node();
 
-  // Load joint-weight information
-  //--------------------------------------------------------------------------
+
   node = node->first_node("library_controllers");
   node = node->first_node("controller")->first_node("skin");
 
@@ -788,95 +824,45 @@ void Model::loadArmatureWeights(rapidxml::xml_document<> *doc, Animation::Armatu
   std::vector<int> v      = stringToIntArray(vertexWeightsNode->first_node("v")->value());
 
 
-  for (size_t i=0; i<vcount.size(); i++)
-  {
-    this->_jointIDs.push_back(std::vector<int>());
-    this->_jointWeights.push_back(std::vector<float>());
-  }
-
   size_t cursor = 0;
   for (size_t i=0; i<vcount.size(); i++)
   {
     size_t v_end = 2*vcount[i];
 
+    std::vector<int>   jids;
+    std::vector<float> jweights;
+
     for (size_t j=cursor; j<cursor+v_end; j+=2)
     {
-      this->_jointIDs[i].push_back(armature->find(jointnames[v[j + 0]])->_id);
-      this->_jointWeights[i].push_back(weights[v[j + 1]]);
+      Animation::Joint *joint = armature->find(jointnames[v[j + 0]]);
+
+      jids.push_back(joint->_id);
+      jweights.push_back(weights[v[j + 1]]);
     }
 
-    for (Mesh &mesh: this->m_meshes)
+    bubblesort2(jids, jweights);
+
+    glm::ivec4 newJointIDs    = glm::ivec4(-1);
+    glm::vec4 newJointWeights = glm::vec4(0.0f);
+    
+    size_t jidssize = jids.size();
+
+    for (size_t j=0; j<jidssize && j<4; j++)
     {
-      for (Vertex &vertex: mesh.vertices)
+
+      if (jids[j] > 26)
       {
-        if (vertex.position == this->_positions[i])
-        {
-          std::vector<int>   jids;
-          std::vector<float> jweights;
-
-          for (size_t j=cursor, k=0; j<cursor+v_end; j+=2, k+=1)
-          {
-            jids.push_back(armature->find(jointnames[v[j + 0]])->_id);         
-            jweights.push_back(weights[v[j + 1]]);
-          }
-
-
-          if (jids.size() > 4)
-          {
-            // Sort weights
-            for (size_t k=0; k<jids.size(); k++)
-            {
-              for (size_t m=0; m<k; m++)
-              {
-                if (k != m)
-                {
-                  if (jweights[k] > jweights[m])
-                  {
-                    int tempint = jids[k];
-                    jids[k] = jids[m];
-                    jids[m] = tempint;
-
-                    float tempfloat = jweights[k];
-                    jweights[k] = jweights[m];
-                    jweights[m] = tempfloat;
-                  }
-                }
-              }
-            }
-
-            for (size_t j=0; j<4; j++)
-            {
-              vertex.joint_ids[j] = jids[j];
-              vertex.weights[j]   = jweights[j];
-            }
-          }
-
-          else
-          {
-            for (size_t j=0; j<jids.size(); j++)
-            {
-              vertex.joint_ids[j] = jids[j];
-              vertex.weights[j]   = jweights[j];
-            }
-          }
-        }
+        printf("jids[%d] > 26\n", j);
       }
+
+      newJointIDs[j] = jids[j];
+      newJointWeights[j] = jweights[j];
     }
+
+    this->_jointIDs.push_back(newJointIDs);
+    this->_jointWeights.push_back(newJointWeights);
 
     cursor += v_end;
-  }
-
-  //--------------------------------------------------------------------------
-
-
-  // Normalize weights
-  for (Mesh &mesh: this->m_meshes)
-  {
-    for (Vertex &vertex: mesh.vertices)
-    {
-      float sum = vertex.weights[0] + vertex.weights[1] + vertex.weights[2] + vertex.weights[3];
-      vertex.weights /= sum;
-    }
   }
 
 }
@@ -968,23 +954,10 @@ void Model::loadDae(std::string directory, std::string filename, bool is_terrain
   istream.close();
 
 
-  for (auto &mesh: this->m_meshes)
+  for (Mesh &mesh: this->m_meshes)
     mesh.setBufferData();
 
-}
-
-
-
-
-Animation::Animation *Model::getAnimation(std::string name)
-{
-  return this->_animation_controller.getAnimation(name);
-}
-
-
-Animation::AnimationController *Model::getAnimController()
-{
-  return &this->_animation_controller;
+  this->_mergeMeshes();
 }
 
 
@@ -992,6 +965,21 @@ Animation::AnimationController *Model::getAnimController()
 
 void Model::loadAnimation(std::string name, Animation::AnimationController *animationController, std::string directory, std::string filename)
 {
+  for (Mesh &mesh: this->m_meshes)
+    mesh.vertices.clear();
+
+  this->m_meshes.clear();
+
+  // this->_positions.clear();
+  this->_normals.clear();
+  // this->_texcoords.clear();
+  // this->_colors.clear();
+
+  // this->_geometry_color_offsets.clear();
+  this->_geometry_normal_offsets.clear();
+  // this->_geometry_position_offsets.clear();
+  // this->_geometry_texcoord_offsets.clear();
+
   this->_animated = true;
 
   std::ifstream fh;
@@ -1019,9 +1007,15 @@ void Model::loadAnimation(std::string name, Animation::AnimationController *anim
   Animation::Armature *armature = animation->getArmature();
 
   this->loadArmature(&doc, armature);
+  printBVTree("", armature->root);
+
   this->loadArmatureWeights(&doc, armature);
   this->loadAnimations(&doc, armature);
 
+  this->loadVertices(&doc);
+
+  this->constructMeshes(&doc);
+  this->applyMeshTransforms(&doc);
 
 
   float largest = 0.0f;
@@ -1040,5 +1034,59 @@ void Model::loadAnimation(std::string name, Animation::AnimationController *anim
 
 
   for (Mesh &mesh: this->m_meshes)
+  {
+    for (Vertex &vertex: mesh.vertices)
+      vertex.weights /= glm::dot(vertex.weights, glm::vec4(1.0f));
+
+    // for (size_t i=0; i<mesh.vertices.size(); i+=200)
+    // {
+    //   printf("ids: %d %d %d %d, weights: %f %f %f %f\n", 
+    //     mesh.vertices[i].joint_ids[0],
+    //     mesh.vertices[i].joint_ids[1],
+    //     mesh.vertices[i].joint_ids[2],
+    //     mesh.vertices[i].joint_ids[3],
+    //     mesh.vertices[i].weights[0],
+    //     mesh.vertices[i].weights[1],
+    //     mesh.vertices[i].weights[2],
+    //     mesh.vertices[i].weights[3]
+    //   );
+    // }
+
     mesh.setBufferData();
+  }
+
+  this->_mergeMeshes();
+
 }
+
+
+
+void Model::_mergeMeshes()
+{
+  Mesh outputMesh;
+
+  GLuint offset = 0;
+
+  for (size_t i=0; i<this->m_meshes.size(); i++)
+  {
+    Mesh mesh = this->m_meshes[i];
+
+    for (auto &indices: mesh.indices)
+      for (auto &index: indices)
+        index += offset;
+
+    outputMesh.vertices.insert(outputMesh.vertices.end(), mesh.vertices.begin(), mesh.vertices.end());
+    outputMesh.IBOS.insert(outputMesh.IBOS.end(), mesh.IBOS.begin(), mesh.IBOS.end());
+    outputMesh.indices.insert(outputMesh.indices.end(), mesh.indices.begin(), mesh.indices.end());
+    outputMesh.materials.insert(outputMesh.materials.end(), mesh.materials.begin(), mesh.materials.end());
+
+    for (auto &indices: mesh.indices)
+      offset += indices.size();
+  }
+
+  outputMesh.setBufferData();
+
+  this->m_meshes.clear();
+  this->m_meshes.push_back(outputMesh);
+}
+

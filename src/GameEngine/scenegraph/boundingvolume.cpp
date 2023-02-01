@@ -31,13 +31,19 @@ static void swapNodes( BVNode *a , BVNode *b)
 // }
 
 
-
 static void recursiveInsert(BVNode *node, GameObject *obj)
 {
-  glm::vec3 nodePos = node->objectptr->getCullingData()->bounding_sphere_pos;
+  glm::vec3 p = node->objectptr->getCullingData()->getLocalBoundingSpherePos();
+  p = node->objectptr->getTransform()->getModelMatrix() * glm::vec4(p.x, p.y, p.z, 1.0f);
+
+  glm::vec3 nodePos = p;
   float nodeRadiusSQ  = node->objectptr->getCullingData()->bounding_sphere_radiusSQ;
 
-  glm::vec3 objectptrPos = obj->getCullingData()->bounding_sphere_pos;
+
+  p = obj->getCullingData()->getLocalBoundingSpherePos();
+  p = obj->getTransform()->getModelMatrix() * glm::vec4(p.x, p.y, p.z, 1.0f);
+
+  glm::vec3 objectptrPos = p;
   float objectptrRadiusSQ  = obj->getCullingData()->bounding_sphere_radiusSQ;
 
 
@@ -46,7 +52,18 @@ static void recursiveInsert(BVNode *node, GameObject *obj)
   // nodes sphere is inside the objects sphere.
   float distSQ = glm::distance2(objectptrPos, nodePos);
 
-  if (objectptrRadiusSQ >= nodeRadiusSQ)
+  if (objectptrRadiusSQ == nodeRadiusSQ)
+  {
+    if (node->right == nullptr)
+      node->right = new BVNode(obj);
+    else
+      recursiveInsert(node->right, obj);
+    
+    return;
+  }
+
+
+  if (objectptrRadiusSQ > nodeRadiusSQ)
   {
     if (distSQ < objectptrRadiusSQ - nodeRadiusSQ)
     {
@@ -56,11 +73,10 @@ static void recursiveInsert(BVNode *node, GameObject *obj)
       BVNode *temp = new BVNode();
       temp->objectptr = node->objectptr;
       temp->left = node->left;
-      temp->right = node->right;
+      temp->right = nullptr;
 
       node->objectptr = obj;
       node->left = temp;
-      node->right = nullptr;
     }
 
     else
@@ -86,6 +102,7 @@ static void recursiveInsert(BVNode *node, GameObject *obj)
 
     return;
   }
+
   else
   {
     if (node->right == nullptr)

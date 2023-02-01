@@ -110,30 +110,30 @@ void Shader::mapUniformLocs(void)
 
 void Shader::setVec3(std::string uniform_name, glm::vec3 vec)
 {
-  GLCALL( this->uniforms[uniform_name] = glGetUniformLocation(this->programID, uniform_name.c_str()) );
-  GLCALL( glUniform3fv(this->uniforms[uniform_name], 1, glm::value_ptr(vec)) );
+  GLuint loc = glGetUniformLocation(this->programID, uniform_name.c_str());
+  GLCALL( glUniform3fv(loc, 1, glm::value_ptr(vec)) );
 }
 
 void Shader::setMat4(std::string uniform_name, glm::mat4 mat)
 {
-  GLCALL( this->uniforms[uniform_name] = glGetUniformLocation(this->programID, uniform_name.c_str()) );
-  GLCALL( glUniformMatrix4fv(this->uniforms[uniform_name], 1, GL_FALSE, glm::value_ptr(mat)) );
+  GLuint loc = glGetUniformLocation(this->programID, uniform_name.c_str());
+  GLCALL( glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(mat)) );
 }
 
 void Shader::setInt(std::string uniform_name, GLuint value)
 {
-  GLCALL( this->uniforms[uniform_name] = glGetUniformLocation(this->programID, uniform_name.c_str()) );
-  GLCALL(glUniform1i(this->uniforms[uniform_name], value));
+  GLuint loc = glGetUniformLocation(this->programID, uniform_name.c_str());
+  GLCALL(glUniform1i(loc, value));
 }
 
 void Shader::setFloat(std::string uniform_name, float value)
 {
-  GLCALL( this->uniforms[uniform_name] = glGetUniformLocation(this->programID, uniform_name.c_str()) );
-  GLCALL(glUniform1f(this->uniforms[uniform_name], value));
+  GLuint loc = glGetUniformLocation(this->programID, uniform_name.c_str());
+  GLCALL(glUniform1f(loc, value));
 }
 
 void Shader::setFloatVector(std::string uniform_name, int size, float *ptr)
 {
-  GLCALL( this->uniforms[uniform_name] = glGetUniformLocation(this->programID, uniform_name.c_str()) );
-  GLCALL(glUniform1fv(this->uniforms[uniform_name], size, ptr));
+  GLuint loc = glGetUniformLocation(this->programID, uniform_name.c_str());
+  GLCALL(glUniform1fv(loc, size, ptr));
 }

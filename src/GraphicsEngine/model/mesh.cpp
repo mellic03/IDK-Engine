@@ -68,6 +68,7 @@ void Mesh::setBufferData(void)
   // Indexing
   for (size_t i=0; i<this->IBOS.size(); i++)
   {
+    GLCALL( glDeleteBuffers(1, &this->IBOS[i]) );
     GLCALL( glGenBuffers(1, &this->IBOS[i]) );
     GLCALL( glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->IBOS[i]) );
     GLCALL( glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices[i].size() * sizeof(GLuint), &this->indices[i][0], GL_STATIC_DRAW) );

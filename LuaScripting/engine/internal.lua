@@ -14,6 +14,14 @@ function CE_GameObject_GetVel(objectID) return vectorinit(); end;
 function CE_GameObject_SetVel(objectID, x, y, z) end;
 function CE_GameObject_AddRot(objectID, x, y, z) end;
 function CE_GameObject_SetPath(objectID, x, y, z) end;
+
+function CE_GameObject_SetInt   ( objectID,  name,  value ) end;
+function CE_GameObject_SetFloat ( objectID,  name,  value ) end;
+function CE_GameObject_SetString( objectID,  name,  value ) end;
+
+function CE_GameObject_GetInt   ( objectID,  name ) end;
+function CE_GameObject_GetFloat ( objectID,  name ) end;
+function CE_GameObject_GetString( objectID,  name ) end;
 -----------------------------------------------
 
 
@@ -36,6 +44,7 @@ function CE_Physics_SetGravity(force) end;
 function CE_Player_SetJumpForce(force) end;
 function CE_Player_SetMoveForce(force) end;
 function CE_Player_SetFly(bool) end;
+function CE_Player_GetDir() return vectorinit(); end;
 -----------------------------------------------
 
 

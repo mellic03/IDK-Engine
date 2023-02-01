@@ -10,8 +10,8 @@ return function(objectID, engine)
   CE_Physics_SetGravity(0.0);
 
   CE_Lighting_SetBloomMinResolution(64);
-  CE_Lighting_SetBloomThreshold(0.150);
-  CE_Lighting_SetBloomStrength(0.02);
+  CE_Lighting_SetBloomThreshold(2.0);
+  CE_Lighting_SetBloomStrength(0.05);
 
   CE_Scene_ClearColor(55.0, 120.0, 120.0);
   CE_Scene_LoadScene("area1/a1m1.scene");

@@ -29,6 +29,7 @@ namespace EngineUI {
     extern std::string SPHERE_LABEL;
     extern std::string CAPSULE_LABEL;
     extern std::string MESH_LABEL;
+    extern std::string PHYSICS_LABEL;
   };
 
 
@@ -45,6 +46,25 @@ namespace EngineUI {
   void dragVec3(std::string name, glm::vec3 *data, float min, float max, float speed, const char *format, float default_value);
 
   void bitFlagCheckbox(const char *label, unsigned char flag, unsigned char *bits);
+
+  template <typename T>
+  void bitFlagCheckbox(const char *label, T flag, T *bits)
+  {
+    GLuint flag_casted = (GLuint)flag;
+    GLuint bits_casted = (GLuint)(*bits);
+
+    bool active = flag_casted & bits_casted;
+
+    ImGui::Checkbox(label, &active);
+
+    if (active)
+      bits_casted = (flag_casted | bits_casted);
+    else
+      bits_casted = (~flag_casted & bits_casted);
+
+    *bits = (T)bits_casted;
+  }
+
 
   void sceneHierarchy(Renderer *ren);
   void instanceProperties();

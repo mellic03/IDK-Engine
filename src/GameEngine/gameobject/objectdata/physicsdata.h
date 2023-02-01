@@ -8,10 +8,9 @@
 struct PhysicsData {
 
   private:
-    PhysicsState _state;
 
   public:
-    inline PhysicsState *state() { return &this->_state; };
+    PhysicsState state;
 
 };
 

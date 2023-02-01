@@ -18,8 +18,11 @@ void EngineUI::details()
 
     ImGui::Text("Info");
     ImGui::Separator();
-    ImGui::Text("GameObjectType:      %s", object->getObjectTypeString().c_str());
-    ImGui::Text("Animated:            %s", data->getFlag(GameObjectFlag::ANIMATED) ? "true" : "false");
+    ImGui::Text("GameObjectType:      %s", GameObjectUtil::ToString::gameObjectType(object->getObjectType()).c_str());
+    ImGui::Text("Animated:            %d", data->getFlag(GameObjectFlag::ANIMATED));
+    ImGui::Text("Physics:             %d", data->getFlag(GameObjectFlag::PHYSICS));
+    ImGui::Text("sphere:              %d", object->getComponents()->hasComponent(COMPONENT_SPHERE_COLLIDER));
+
     // ImGui::Text("physics_state:       %s", GameObjectUtil::ToString::physicsState(data->physData()).c_str());
     // ImGui::Text("navigation_state:    %s", object->navStateString().c_str());
     // ImGui::Text("has collision mesh:  %s", object->hasCollisionMesh() ? "true": "false");

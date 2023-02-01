@@ -21,9 +21,9 @@ bool GameObject::_groundTest(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec
   if (intersects)
   {
     float dist = glm::distance(*this->getPos(), intersect_point);
-    if (dist >= 0 && dist < (this->capsulecollider.bottom + 0.05f))
+    if (dist >= 0 && dist < (this->spherecollider.radius + 0.05f))
     {
-      float overlap = (this->capsulecollider.bottom + 0.05f) - dist;
+      float overlap = (this->spherecollider.radius + 0.05f) - dist;
       this->getPos()->y += overlap / 2.0f;
       return true;
     }
@@ -33,13 +33,110 @@ bool GameObject::_groundTest(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec
 }
 
 
+void GameObject::_followPath()
+{
+  using namespace Navigation;
+
+  NavData *nData = this->getData()->navData();
+  NavState *nState = &nData->state;
+
+
+  switch (*nState)
+  {
+    case (NavState::NONE):
+      break;
+
+
+    case (NavState::REST):
+      break;
+
+
+    case (NavState::SEEK):
+
+      if (nData->path.size() == 0)
+      {
+        *nState = NavState::REST;
+        break;
+      }
+
+      glm::vec3 objectPos = glm::vec3(this->getPos()->x, 0.0f, this->getPos()->z);
+      glm::vec3 nodePos = nData->path[nData->path.size()-1];
+      nodePos.y = 0.0f;
+
+      if (glm::distance(objectPos, nodePos) < 0.5f)
+      {
+        nData->path.pop_back();
+      }
+
+      else
+      {
+        glm::vec3 dir = 0.05f * glm::normalize(nodePos - objectPos);
+        *this->getVel() += dir;
+      }
+  
+      break;
+  }
+}
+
+
+void GameObject::_perFrameUpdate_navigation()
+{
+  this->_followPath();
+
+
+  glm::vec3 vel2D = glm::vec3(this->getVel()->x, 0.0f, this->getVel()->z);
+
+  if (glm::length2(vel2D) > 0.2f)
+    this->getTransform()->orientation = glm::quatLookAt(glm::normalize(-vel2D), glm::vec3(0.0f, 1.0f, 0.0f));
+
+}
+
+
+void GameObject::_perFrameUpdate_physics(Renderer *ren)
+{
+
+  // Add velocity to position
+  //--------------------------------------------
+  float damping;
+
+  this->getVel()->y *= 0.999f;
+  damping = 1 / (1 + (ren->deltaTime * 5.0f));
+  this->getVel()->x *= damping;
+  this->getVel()->z *= damping;
+
+  glm::mat4 inv_model = glm::inverse(this->getTransform()->getModelMatrix_noLocalTransform());
+  glm::vec3 tempvel = inv_model * this->getTransform()->getVel_vec4();
+  *this->getPos() += tempvel * ren->deltaTime;
+  //--------------------------------------------
+
+
+
+  this->collideWithMeshes();
+
+
+
+  PhysicsData *pData = this->getData()->physData();
+
+  switch (pData->state)
+  {
+    case (PhysicsState::GROUNDED):
+      break;
+
+    case (PhysicsState::FALLING):
+      this->getVel()->y -= PE::gravity * ren->deltaTime;
+      break;
+  }
+}
+
+
 void GameObject::collideWithMeshes(void)
 {
   glm::vec3 ray_down  =   glm::vec4(0.0f, -1.0f,  0.0f,  0.0f);
 
-  PhysicsState *pState = this->getData()->physData()->state();
+  PhysicsState *pState = &this->getData()->physData()->state;
 
   *pState = PhysicsState::FALLING;
+
 
   for (size_t i=0; i<this->_collision_meshes.size(); i++)
   {
@@ -61,28 +158,29 @@ void GameObject::collideWithMeshes(void)
       bool edge_collision = false;
       float dist = INFINITY;
 
-      // if (this->getComponents()->hasComponent(COMPONENT_SPHERE_COLLIDER))
-      // {
-      //   this->spherecollider.pos = *this->getPos();
-      //   this->spherecollider.vel = *this->getVel();
 
-      //   if (PE::sphere_triangle_detect(&this->spherecollider, vert0, vert1, vert2, &dist, &edge_collision, &dir))
-      //     PE::sphere_triangle_response(&this->spherecollider, vert0, vert1, vert2, dist, edge_collision, dir);
+      if (this->getComponents()->hasComponent(COMPONENT_SPHERE_COLLIDER))
+      {
+        this->spherecollider.pos = *this->getPos();
+        this->spherecollider.vel = *this->getVel();
 
-      //   *this->getPos() = (this->spherecollider.pos);
-      //   *this->getVel() = (this->spherecollider.vel);
-      // }
+        if (PE::sphere_triangle_detect(&this->spherecollider, vert0, vert1, vert2, &dist, &edge_collision, &dir))
+          PE::sphere_triangle_response(&this->spherecollider, vert0, vert1, vert2, dist, edge_collision, dir);
+
+        *this->getPos() = this->spherecollider.pos;
+        *this->getVel() = this->spherecollider.vel;
+      }
 
       // if (this->getComponents()->hasComponent(COMPONENT_CAPSULE_COLLIDER))
-      {
-        this->capsulecollider.pos = *this->getPos();
-        this->capsulecollider.vel = *this->getVel();
+      // {
+      //   this->capsulecollider.pos = *this->getPos();
+      //   this->capsulecollider.vel = *this->getVel();
 
-        PE::capsule_triangle_detect(&this->capsulecollider, vert0, vert1, vert2, &dist, &edge_collision, &dir);
+      //   PE::capsule_triangle_detect(&this->capsulecollider, vert0, vert1, vert2, &dist, &edge_collision, &dir);
 
-        *this->getPos() = (this->capsulecollider.pos);
-        *this->getVel() = (this->capsulecollider.vel);
-      }
+      //   *this->getPos() = (this->capsulecollider.pos);
+      //   *this->getVel() = (this->capsulecollider.vel);
+      // }
       
       
       if (*pState == PhysicsState::FALLING)
@@ -99,21 +197,6 @@ void GameObject::collideWithMeshes(void)
 
 
 
-std::string GameObject::getObjectTypeString(void)
-{
-  switch (this->getObjectType())
-  {
-    default:
-    case (GAMEOBJECT_UNDEFINED):    return "GAMEOBJECT_UNDEFINED";
-    case (GAMEOBJECT_TERRAIN):      return "GAMEOBJECT_TERRAIN";
-    case (GAMEOBJECT_STATIC):       return "GAMEOBJECT_STATIC";
-    case (GAMEOBJECT_BILLBOARD):    return "GAMEOBJECT_BILLBOARD";
-    case (GAMEOBJECT_ACTOR):        return "GAMEOBJECT_ACTOR";
-    case (GAMEOBJECT_PLAYER):       return "GAMEOBJECT_PLAYER";
-    case (GAMEOBJECT_LIGHTSOURCE):  return "GAMEOBJECT_LIGHTSOURCE";
-  }
-}
-
 
 void GameObject::perFrameUpdate(Renderer *ren)
 {
@@ -123,38 +206,17 @@ void GameObject::perFrameUpdate(Renderer *ren)
   p = this->getTransform()->getModelMatrix_stale() * glm::vec4(p.x, p.y, p.z, 1.0f);
   this->getCullingData()->bounding_sphere_pos = p;
 
-  // if (this->getPhysState() == PHYSICS_NONE)
-  //   return;
 
-  // // Per frame, add velocity to position, then check physics state
-  // float damping;
+  if (this->getData()->getFlag(GameObjectFlag::PHYSICS) == false)
+    return;
 
-  // this->getVel()->y *= 0.999f;
-  // damping = 1 / (1 + (ren->deltaTime * 5.0f));
-  // this->getVel()->x *= damping;
-  // this->getVel()->z *= damping;
-  
 
-  // glm::mat4 inv_model = glm::inverse(this->getTransform()->getModelMatrix_noLocalTransform());
-  // glm::vec3 tempvel = inv_model * this->getTransform()->getVel_vec4();
-  // *this->getPos() += tempvel * ren->deltaTime;
+  this->pos_worldspace = this->getTransform()->getPos_worldspace();
 
-  // this->pos_worldspace = this->getTransform()->getPos_worldspace();
 
-  // this->collideWithMeshes();
 
-  // switch (this->getData()->physData()->state)
-  // {
-  //   case (PHYSICS_GROUNDED):
-  //     break;
-
-  //   case (PHYSICS_FALLING):
-  //     this->getVel()->y -= PE::gravity * ren->deltaTime;
-  //     break;
-  // }
-
-  // this->getData()->navData()->followPath(this->getPos());
-
+  this->_perFrameUpdate_navigation();
+  this->_perFrameUpdate_physics(ren);
 }
 
 
@@ -177,7 +239,7 @@ void GameObject::clearParent(void)
   this->_transform.parent = nullptr;
 }
 
-void GameObject::giveChild(GameObject *child, bool keepGlobalPos)
+void GameObject::giveChild(GameObject *child)
 {
   // return if child is actually parent
   if (child->isChild(this))
@@ -186,7 +248,7 @@ void GameObject::giveChild(GameObject *child, bool keepGlobalPos)
   this->m_children.push_back(child);
   child->clearParent();
 
-  child->setParent(this, keepGlobalPos);
+  child->setParent(this);
 }
 
 void GameObject::removeChild(GameObject *child)
@@ -217,15 +279,12 @@ bool GameObject::isChild(GameObject *object)
   return is_child;
 }
 
-void GameObject::setParent(GameObject *parent, bool keepGlobalPos)
+void GameObject::setParent(GameObject *parent)
 {
   *this->getPos() = parent->getTransform()->worldToLocal(this->getTransform()->getPos_vec4());
 
-  if (keepGlobalPos)
-  {
-    Transform *thisTransform = this->getTransform();
-    thisTransform->orientation = glm::inverse(parent->getTransform()->orientation) * thisTransform->orientation;
-  }
+  Transform *thisTransform = this->getTransform();
+  thisTransform->orientation = glm::inverse(parent->getTransform()->orientation) * thisTransform->orientation;
 
   this->m_parent = parent;
   this->parentID = parent->getID();
@@ -238,18 +297,13 @@ void GameObject::setParent(GameObject *parent, bool keepGlobalPos)
  */
 void GameObject::collideWithObject(GameObject *object)
 {
-  bool c1 = this->getComponents()->hasComponent(COMPONENT_SPHERE_COLLIDER);
-  bool c2 = this->getComponents()->hasComponent(COMPONENT_CAPSULE_COLLIDER);
-  if (c2 == false)
-    return;
-
   if (this->getID() == object->getID())
     return;
 
   if (this->getObjectType() == GAMEOBJECT_BILLBOARD)
     return;
 
-  if (*this->getData()->physData()->state() == PhysicsState::NONE)
+  if (this->getData()->getFlag(GameObjectFlag::PHYSICS) == false)
     return;
 
   glm::vec3 p0 = this->getTransform()->getPos_worldspace();

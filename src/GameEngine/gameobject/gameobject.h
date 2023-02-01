@@ -19,6 +19,7 @@ struct GameObjectHeader {
   std::string assigned_name = "default";
   int objectID = 0;
   int parentID = -1;
+  GLuint flags = 0;
 };
 
 
@@ -67,7 +68,6 @@ class GameObject {
     std::vector<GameObject *> m_children;
     Transform _transform;
 
-    Navigation::NavData _navigation_data;
     CullingData _culling_data;
 
     LODData _lod_data;
@@ -81,7 +81,6 @@ class GameObject {
 
     // Physics
     //----------------------------------------------------
-    Navigation::NavState m_navigation_state = Navigation::NavState::REST;
     std::vector<CollisionMesh *> _collision_meshes;
     std::vector<Transform *> _collision_transforms;
     bool _has_collisionmesh = false;
@@ -99,6 +98,13 @@ class GameObject {
     //----------------------------------------------------
 
     bool _groundTest(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal);
+    
+
+    void _followPath();
+    void _perFrameUpdate_navigation();
+
+    void _perFrameUpdate_physics(Renderer *ren);
+
 
 
   public:
@@ -165,8 +171,6 @@ class GameObject {
     Animation::AnimationController *getAnimationController();
     Animation::Animation *getAnimation();
     Animation::Animation *getAnimation(std::string animation_name);
-
-    Navigation::NavData *navData();
     //---------------------------------------------------------------------------------------------
 
 
@@ -197,9 +201,9 @@ class GameObject {
     bool hasParent(void)                                { return this->m_parent != nullptr; };
     bool hasChildren(void)                              { return this->m_children.size() > 0; };
     std::vector<GameObject *> getChildren(void)         { return this->m_children; };
-    void setParent(GameObject *parent, bool keepGlobalPos = true);
+    void setParent(GameObject *parent);
     void clearParent(void);
-    void giveChild(GameObject *child, bool keepGlobalPos = true);
+    void giveChild(GameObject *child);
     void removeChild(GameObject *child);
     void clearChildren(void);
     bool isChild(GameObject *object);

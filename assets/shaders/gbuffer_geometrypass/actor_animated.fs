@@ -8,8 +8,8 @@ layout (location = 3) out vec4 gEmission;
 
 in vec2 TexCoords;
 in vec3 FragPos;
+in mat3 TBN;
 in vec3 Normal;
-
 
 struct Material {
   sampler2D diffuseMap, specularMap, emissionMap, normalMap;

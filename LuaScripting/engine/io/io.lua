@@ -68,11 +68,9 @@ this.scancodes = {
 this.initKeyPressed = function(keyPressedTable)
 
   setmetatable(keyPressedTable, {
-      
     __index = function(table, key)
       return table[this.scancodes[key] + 1];
-    end ;
-
+    end;
   });
 
 end;

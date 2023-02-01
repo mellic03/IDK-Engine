@@ -31,7 +31,7 @@ void luaMain(Renderer *ren, Player *player, std::list<GameObject> *gameobjects)
   }
 
   LuaInterface::ToLua::number(ren->deltaTime, "DeltaTime");
-  // LuaInterface::ToLua::keylog(player->keylog, "KeyPressed");
+  LuaInterface::ToLua::keylog(player->keylog, "KeyPressed");
   
   LuaInterface::ToLua::stdvec_int(IDs, "IDs");
   LuaInterface::ToLua::stdvec_stdstring(scripts, "Scripts");
