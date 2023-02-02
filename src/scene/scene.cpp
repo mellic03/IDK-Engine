@@ -633,10 +633,7 @@ void Scene::drawGeometry()
 
 void Scene::drawGeometry_animated()
 {
-  for (auto &object: *Scene::scenegraph.getObjects(GAMEOBJECT_ACTOR))
-  {
-    if (object->getData()->getFlag(GameObjectFlag::ANIMATED))
-      Render::ren.drawModelAnimated(object->getModelLOD()->getShadowLOD_model(), object->getTransform(), object->getAnimationController());
-  }
+  for (auto &object: *Scene::scenegraph.getObjects(GAMEOBJECT_ACTOR, GameObjectFlag::ANIMATED))
+    Render::ren.drawModelAnimated(object->getModelLOD()->getShadowLOD_model(), object->getTransform(), object->getAnimationController());
 }
 

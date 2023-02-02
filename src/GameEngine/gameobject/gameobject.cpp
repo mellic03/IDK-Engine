@@ -59,7 +59,8 @@ void GameObject::_followPath()
         break;
       }
 
-      glm::vec3 objectPos = glm::vec3(this->getPos()->x, 0.0f, this->getPos()->z);
+      glm::vec3 objectPos = *this->getPos();
+      objectPos.y = 0.0f;
       glm::vec3 nodePos = nData->path[nData->path.size()-1];
       nodePos.y = 0.0f;
 
@@ -70,7 +71,7 @@ void GameObject::_followPath()
 
       else
       {
-        glm::vec3 dir = 0.05f * glm::normalize(nodePos - objectPos);
+        glm::vec3 dir = nData->speed * glm::normalize(nodePos - objectPos);
         *this->getVel() += dir;
       }
   

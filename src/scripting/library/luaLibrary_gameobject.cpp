@@ -15,6 +15,20 @@ extern "C" int setPhysicsState(lua_State *LS)
 }
 
 
+
+extern "C" int setPos(lua_State *LS)
+{
+  int objectID = lua_tointeger(LS, 1) - 1;
+  float x = lua_tonumber(LS, 2);
+  float y = lua_tonumber(LS, 3);
+  float z = lua_tonumber(LS, 4);
+
+  GameObject *object = Scene::scenegraph.objectPtr(objectID);
+  *object->getPos() = glm::vec3(x, y, z);
+
+  return 0;
+}
+
 extern "C" int getPos(lua_State *LS)
 {
   int objectID = lua_tointeger(LS, 1) - 1;
@@ -36,7 +50,7 @@ extern "C" int getPos(lua_State *LS)
 }
 
 
-extern "C" int setPos(lua_State *LS)
+extern "C" int setVel(lua_State *LS)
 {
   int objectID = lua_tointeger(LS, 1) - 1;
   float x = lua_tonumber(LS, 2);
@@ -44,11 +58,10 @@ extern "C" int setPos(lua_State *LS)
   float z = lua_tonumber(LS, 4);
 
   GameObject *object = Scene::scenegraph.objectPtr(objectID);
-  *object->getPos() = glm::vec3(x, y, z);
+  *object->getVel() = glm::vec3(x, y, z);
 
   return 0;
 }
-
 
 extern "C" int getVel(lua_State *LS)
 {
@@ -69,21 +82,6 @@ extern "C" int getVel(lua_State *LS)
 
   return 1;
 }
-
-
-extern "C" int setVel(lua_State *LS)
-{
-  int objectID = lua_tointeger(LS, 1) - 1;
-  float x = lua_tonumber(LS, 2);
-  float y = lua_tonumber(LS, 3);
-  float z = lua_tonumber(LS, 4);
-
-  GameObject *object = Scene::scenegraph.objectPtr(objectID);
-  *object->getVel() = glm::vec3(x, y, z);
-
-  return 0;
-}
-
 
 extern "C" int addToVel(lua_State *LS)
 {
@@ -180,15 +178,54 @@ extern "C" int getFloat(lua_State *LS)
 }
 
 
+extern "C" int setAnimation(lua_State *LS)
+{
+  int objectID = lua_tointeger(LS, 1) - 1;
+  const char *animation_name = lua_tostring(LS, 2);
+
+  GameObject *object = Scene::scenegraph.objectPtr(objectID);
+  object->getAnimationController()->setActiveAnimation(std::string(animation_name));
+
+  return 0;
+}
+
+
+extern "C" int getAnimation(lua_State *LS)
+{
+  int objectID = lua_tointeger(LS, 1) - 1;
+
+  GameObject *object = Scene::scenegraph.objectPtr(objectID);
+  const char *animation_name = object->getAnimationController()->getAnimation()->getName().c_str();
+
+  lua_pushstring(LS, animation_name);
+
+  return 1;
+}
+
+
+extern "C" int getNavState(lua_State *LS)
+{
+  int objectID = lua_tointeger(LS, 1) - 1;
+
+  GameObject *object = Scene::scenegraph.objectPtr(objectID);
+  std::string navState = GameObjectUtil::ToString::navState(object->getData()->navData()->state);
+
+  lua_pushstring(LS, navState.c_str());
+
+  return 1;
+}
+
+
+
 void register_luaLibrary_gameobject()
 {
   lua_register(LuaInterface::L, "CE_GameObject_SetPhysicsState", setPhysicsState);
   
-  lua_register(LuaInterface::L, "CE_GameObject_GetPos", getPos);
   lua_register(LuaInterface::L, "CE_GameObject_SetPos", setPos);
+  lua_register(LuaInterface::L, "CE_GameObject_GetPos", getPos);
 
-  lua_register(LuaInterface::L, "CE_GameObject_GetVel", getVel);
   lua_register(LuaInterface::L, "CE_GameObject_SetVel", setVel);
+  lua_register(LuaInterface::L, "CE_GameObject_GetVel", getVel);
 
   lua_register(LuaInterface::L, "CE_GameObject_AddRot", addRot);
 
@@ -199,5 +236,11 @@ void register_luaLibrary_gameobject()
 
   lua_register(LuaInterface::L, "CE_GameObject_SetFloat",  setFloat);
   lua_register(LuaInterface::L, "CE_GameObject_GetFloat",  getFloat);
+
+  lua_register(LuaInterface::L, "CE_GameObject_SetAnimation",  setAnimation);
+  lua_register(LuaInterface::L, "CE_GameObject_GetAnimation",  getAnimation);
+
+
+  lua_register(LuaInterface::L, "CE_GameObject_GetNavState",  getNavState);
 }
 

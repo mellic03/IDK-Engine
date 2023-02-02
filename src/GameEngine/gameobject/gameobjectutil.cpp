@@ -114,6 +114,18 @@ namespace GameObjectUtil {
     }
 
 
+    std::string navState(Navigation::NavState state)
+    {
+      switch (state)
+      {
+        default:
+        case Navigation::NavState::NONE: return "NONE";
+        case Navigation::NavState::REST: return "REST";
+        case Navigation::NavState::SEEK: return "SEEK";
+      }
+    }
+
+
   };
 
 

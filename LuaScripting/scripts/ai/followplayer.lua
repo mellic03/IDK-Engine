@@ -27,9 +27,13 @@ return function(objectID, engine)
   local ePressed = iolib.keyPressed.E;
 
 
-
   if ( ePressed ) then
     CE_GameObject_SetPath(objectID, pPos.x, pPos.y, pPos.z);
+    CE_GameObject_SetAnimation(objectID, "walk");
+
+  elseif ( CE_GameObject_GetNavState(objectID) ~= "SEEK" ) then
+    CE_GameObject_SetAnimation(objectID, "stand");
+
   end;
 
 

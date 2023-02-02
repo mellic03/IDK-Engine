@@ -30,6 +30,7 @@ namespace EngineUI {
     extern std::string CAPSULE_LABEL;
     extern std::string MESH_LABEL;
     extern std::string PHYSICS_LABEL;
+    extern std::string NAVIGATION_LABEL;
   };
 
 

@@ -256,6 +256,15 @@ void DrawECS::physics(GameObject *object)
 }
 
 
+void DrawECS::navigation(GameObject *object)
+{
+  if (ImGui::CollapsingHeader("Navigation", ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    ImGui::DragFloat("speed", &object->getData()->navData()->speed, 0.001f, 0.0f, 0.1f, "%0.3f");
+  }
+}
+
+
 void DrawECS::animation(GameObject *object)
 {
   std::string label = "";
@@ -264,26 +273,26 @@ void DrawECS::animation(GameObject *object)
 
   if (ImGui::CollapsingHeader(label.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
   {
-    std::vector<std::string> animation_names;
+    // std::vector<std::string> animation_names;
 
-    Animation::AnimationController *animationController = object->getAnimationController();
-    std::map<std::string, Animation::Animation> *animations = animationController->getAnimations();
-    for (auto it = animations->begin(); it != animations->end(); it++)
-    {
-      Animation::Animation *animation = &(it->second);
-      animation_names.push_back(animation->getName());
-    }
+    // Animation::AnimationController *animationController = object->getAnimationController();
+    // std::map<std::string, Animation::Animation> *animations = animationController->getAnimations();
+    // for (auto it = animations->begin(); it != animations->end(); it++)
+    // {
+    //   Animation::Animation *animation = &(it->second);
+    //   animation_names.push_back(animation->getName());
+    // }
 
-    if (animation_names.size() == 0)
-      return;
-
-
-    static int i0 = 0;
-    static std::string selected = animationController->getAnimation()->getName();
-    ImGui::Dropdown("Animations", animation_names, &selected, &i0);
+    // if (animation_names.size() == 0)
+    //   return;
 
 
-    animationController->setActiveAnimation(selected);
+    // static int i0 = 0;
+    // static std::string selected = animationController->getAnimation()->getName();
+    // ImGui::Dropdown("Animations", animation_names, &selected, &i0);
+
+
+    // animationController->setActiveAnimation(selected);
   }
 }
 

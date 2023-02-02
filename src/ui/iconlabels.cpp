@@ -13,6 +13,7 @@ namespace EngineUI {
     std::string CAPSULE_LABEL     =   std::string(  ICON_FA_ARROW_CIRCLE_UP   "  Capsule Collider"  );
     std::string MESH_LABEL        =   std::string(  ICON_FA_ARROW_CIRCLE_UP   "  Mesh Collider"     );
     std::string PHYSICS_LABEL     =   std::string(  ICON_FA_BALANCE_SCALE     "  Physics"           );
+    std::string NAVIGATION_LABEL  =   std::string(  ICON_FA_BALANCE_SCALE     "  Navigation"        );
   };
 
 };

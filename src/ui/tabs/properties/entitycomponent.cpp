@@ -34,6 +34,9 @@ void EntityComponentUI::newComponent(GameObject *object)
 
     else if (ImGui::MenuItem(EngineUI::IconLabels::PHYSICS_LABEL + id))
       components->giveComponent(COMPONENT_PHYSICS);
+  
+    else if (ImGui::MenuItem(EngineUI::IconLabels::NAVIGATION_LABEL + id))
+      components->giveComponent(COMPONENT_NAVIGATION);
 
 
     ImGui::EndPopup();
@@ -98,9 +101,15 @@ void EntityComponentUI::drawComponent(GameObject *object, EntityComponents *comp
     case (COMPONENT_ANIMATION):
       DrawECS::animation(object);
       break;
+      
 
     case (COMPONENT_PHYSICS):
       DrawECS::physics(object);
+      break;
+  
+
+    case (COMPONENT_NAVIGATION):
+      DrawECS::navigation(object);
       break;
   }
 }

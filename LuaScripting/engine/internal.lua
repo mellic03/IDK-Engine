@@ -8,20 +8,28 @@ PlayerID = 1;
 
 -- luaLibrary_gameobject
 -----------------------------------------------
-function CE_GameObject_GetPos(objectID) return vectorinit(); end;
 function CE_GameObject_SetPos(objectID, x, y, z) end;
-function CE_GameObject_GetVel(objectID) return vectorinit(); end;
+function CE_GameObject_GetPos(objectID) return vectorinit(); end;
 function CE_GameObject_SetVel(objectID, x, y, z) end;
+function CE_GameObject_GetVel(objectID) return vectorinit(); end;
 function CE_GameObject_AddRot(objectID, x, y, z) end;
 function CE_GameObject_SetPath(objectID, x, y, z) end;
 
-function CE_GameObject_SetInt   ( objectID,  name,  value ) end;
-function CE_GameObject_SetFloat ( objectID,  name,  value ) end;
-function CE_GameObject_SetString( objectID,  name,  value ) end;
 
+function CE_GameObject_SetInt   ( objectID,  name,  value ) end;
 function CE_GameObject_GetInt   ( objectID,  name ) end;
+
+function CE_GameObject_SetFloat ( objectID,  name,  value ) end;
 function CE_GameObject_GetFloat ( objectID,  name ) end;
+
+function CE_GameObject_SetString( objectID,  name,  value ) end;
 function CE_GameObject_GetString( objectID,  name ) end;
+
+
+function CE_GameObject_SetAnimation( objectID, animationName ) end;
+function CE_GameObject_GetAnimation( objectID ) return ""; end;
+
+function CE_GameObject_GetNavState( objectID ) return ""; end;
 -----------------------------------------------
 
 

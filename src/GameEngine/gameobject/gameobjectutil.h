@@ -25,6 +25,7 @@ namespace GameObjectUtil
   namespace ToString {
     std::string gameObjectType(GameObjectType type);
     std::string physicsState(PhysicsState state);
+    std::string navState(Navigation::NavState state);
   };
 
 }

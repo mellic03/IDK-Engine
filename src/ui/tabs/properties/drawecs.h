@@ -16,5 +16,6 @@ namespace DrawECS {
   void capsule(GameObject *object, CapsuleColliderComponent *capsuleColliderComponent);
   void animation(GameObject *object);
   void physics(GameObject *object);
+  void navigation(GameObject *object);
 
 };

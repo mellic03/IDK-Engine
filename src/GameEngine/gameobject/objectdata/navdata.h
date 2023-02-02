@@ -25,6 +25,8 @@ namespace Navigation {
 
     public:
 
+      float speed = 0.05f;
+
       NavState state = NavState::NONE;
       std::vector<glm::vec3> path;
 
