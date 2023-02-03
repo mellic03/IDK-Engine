@@ -26,35 +26,32 @@ void InstanceData::setVertexAttribs()
   this->genVBO();
   GLCALL( glBindBuffer(GL_ARRAY_BUFFER, this->VBO) );
 
-  for (auto &mesh: this->model->m_meshes)
-  {
-    GLCALL( glBindVertexArray(mesh.VAO) );
+  GLCALL( glBindVertexArray(this->model->mesh.VAO) );
 
-    int pos = 5;
-    int pos1 = pos + 0;
-    int pos2 = pos + 1;
-    int pos3 = pos + 2;
-    int pos4 = pos + 3;
+  int pos = 5;
+  int pos1 = pos + 0;
+  int pos2 = pos + 1;
+  int pos3 = pos + 2;
+  int pos4 = pos + 3;
 
-    GLCALL( glVertexAttribPointer(pos1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(0)) );
-    GLCALL( glEnableVertexAttribArray(pos1) );
+  GLCALL( glVertexAttribPointer(pos1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(0)) );
+  GLCALL( glEnableVertexAttribArray(pos1) );
 
-    GLCALL( glVertexAttribPointer(pos2, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(1*sizeof(glm::vec4))) );
-    GLCALL( glEnableVertexAttribArray(pos2) );
+  GLCALL( glVertexAttribPointer(pos2, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(1*sizeof(glm::vec4))) );
+  GLCALL( glEnableVertexAttribArray(pos2) );
 
-    GLCALL( glVertexAttribPointer(pos3, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(2*sizeof(glm::vec4))) );
-    GLCALL( glEnableVertexAttribArray(pos3) );
+  GLCALL( glVertexAttribPointer(pos3, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(2*sizeof(glm::vec4))) );
+  GLCALL( glEnableVertexAttribArray(pos3) );
 
-    GLCALL( glVertexAttribPointer(pos4, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(3*sizeof(glm::vec4))) );
-    GLCALL( glEnableVertexAttribArray(pos4) );
+  GLCALL( glVertexAttribPointer(pos4, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(3*sizeof(glm::vec4))) );
+  GLCALL( glEnableVertexAttribArray(pos4) );
 
-    GLCALL( glVertexAttribDivisor(pos1, 1) );
-    GLCALL( glVertexAttribDivisor(pos2, 1) );
-    GLCALL( glVertexAttribDivisor(pos3, 1) );
-    GLCALL( glVertexAttribDivisor(pos4, 1) );
+  GLCALL( glVertexAttribDivisor(pos1, 1) );
+  GLCALL( glVertexAttribDivisor(pos2, 1) );
+  GLCALL( glVertexAttribDivisor(pos3, 1) );
+  GLCALL( glVertexAttribDivisor(pos4, 1) );
 
-    GLCALL( glBindVertexArray(0) );
-  }
+  GLCALL( glBindVertexArray(0) );
   
   GLCALL( glBindBuffer(GL_ARRAY_BUFFER, 0) );
 }

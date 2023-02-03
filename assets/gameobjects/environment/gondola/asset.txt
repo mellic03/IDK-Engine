@@ -1,0 +1,8 @@
+#gameobject gondola
+#GameObjectType GAMEOBJECT_STATIC
+
+#meshlod 0 gondola.dae
+
+#collision col.obj
+
+#exit

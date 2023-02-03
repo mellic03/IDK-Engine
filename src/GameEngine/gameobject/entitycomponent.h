@@ -30,6 +30,7 @@ enum EntityComponentType {
   COMPONENT_ANIMATION,
   COMPONENT_PHYSICS,
   COMPONENT_NAVIGATION,
+  COMPONENT_BOUNDING_BOX,
   COMPONENT_NUM_COMPONENTS
 };
 
@@ -90,6 +91,12 @@ struct MeshColliderComponent {
 };
 
 
+struct BoundingBoxComponent {
+
+
+};
+
+
 
 class EntityComponents {
 
@@ -106,6 +113,7 @@ class EntityComponents {
     SphereColliderComponent       _spherecollider_component;
     CapsuleColliderComponent      _capsulecollider_component;
     MeshColliderComponent         _meshcollider_component;
+    BoundingBoxComponent          _boundingbox_component;
 
 
 

@@ -11,7 +11,7 @@ void FileUtil::ToText::objectheader(std::ofstream &stream, GameObject *object, s
   stream << indentation + "  " << "assigned name: " << object->getName() << "\n";
   stream << indentation + "  " << "objectID: " << object->getID() << "\n";
   stream << indentation + "  " << "parentID: " << object->parentID << "\n";
-  stream << indentation + "  " << "GameObjectFlags: " << static_cast<GLuint>(*object->getData()->getFlags()) << "\n";
+  stream << indentation + "  " << "GameObjectFlags: " << static_cast<GLuint>(*object->getData()->flags()->bits()) << "\n";
 
   stream << indentation << "</HEADER>" << std::endl;
 }
@@ -78,7 +78,7 @@ void FileUtil::ToText::pointlight(std::ofstream &stream, PointLight *pointlight,
 
 void FileUtil::ToText::physics(std::ofstream &stream, GameObject *object, std::string indentation)
 {
-  if (object->getData()->getFlag(GameObjectFlag::PHYSICS) == false)
+  if (object->getData()->flags()->get(GameObjectFlag::PHYSICS) == false)
     return;
 
   stream << indentation << "<PHYSICS>\n";
@@ -93,10 +93,21 @@ void FileUtil::ToText::spherecollider(std::ofstream &stream, GameObject *object,
 
   stream << indentation << "<SPHERECOLLIDER>\n";
   stream << indentation + "  " << "radius: " << object->spherecollider.radius << "\n";
+  stream << indentation + "  " << "height offset: " << object->spherecollider.height_offset << "\n";
   stream << indentation << "</SPHERECOLLIDER>" << std::endl;
 }
 
 
+void FileUtil::ToText::navigation(std::ofstream &stream, GameObject *object, std::string indentation)
+{
+  if (object->getComponents()->hasComponent(COMPONENT_NAVIGATION) == false)
+    return;
+  
+  stream << indentation << "<NAVIGATION>\n";
+  stream << indentation << "  " << "flags: " << *object->getData()->navData()->flags()->bits() << "\n";
+  stream << indentation << "  " << "speed: " << object->getData()->navData()->speed << "\n";
+  stream << indentation << "</NAVIGATION>\n";
+}
 
 
 
@@ -288,7 +299,24 @@ void FileUtil::FromText::spherecollider(std::ifstream &stream, GameObject *objec
   eraseUpTo(line, "radius: ");
   object->spherecollider.radius = std::stof(line);
 
+  getline(stream, line);
+  eraseUpTo(line, "height offset: ");
+  object->spherecollider.height_offset = std::stof(line);
 }
 
 
+void FileUtil::FromText::navigation(std::ifstream &stream, GameObject *object)
+{
+  std::string line;
 
+  object->getComponents()->giveComponent(COMPONENT_NAVIGATION);
+
+  getline(stream, line);
+  eraseUpTo(line, "flags: ");
+  *object->getData()->navData()->flags()->bits() = std::stol(line);
+
+  getline(stream, line);
+  eraseUpTo(line, "speed: ");
+  object->getData()->navData()->speed = std::stof(line);
+
+}

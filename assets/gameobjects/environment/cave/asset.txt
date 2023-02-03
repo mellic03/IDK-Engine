@@ -1,7 +1,7 @@
 #gameobject cave
-#interactivity environmental
-#geometry cave.dae
-#meshlod cave.dae
-#collision collision.obj
-#physics PHYSICS_NONE
+#GameObjectType GAMEOBJECT_STATIC
+
+#meshlod 0 cave2.dae
+
+
 #exit

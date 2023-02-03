@@ -7,17 +7,23 @@
     assigned name: Player
     objectID: 0
     parentID: -1
-    GameObjectFlags: 0
+    GameObjectFlags: 4
   </HEADER>
   <TRANSFORM>
-    position: -7.38595 14.7146 38.7385
-    velocity: 1.15268e-10 0 -1.8985e-10
-    orientation: -0.0835448 -0.0800433 -0.00674361 0.993261
+    position: -16.1574 -1.48084 3.16042
+    velocity: 2.16336e-15 -0.976377 5.60943e-15
+    orientation: -0.0142561 -0.565674 -0.00979493 0.824448
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
     script: LuaScripting/scripts/player/keypress
   </SCRIPTS>
+  <SPHERECOLLIDER>
+    radius: 1.13
+    height offset: -1.46
+  </SPHERECOLLIDER>
+  <PHYSICS>
+  </PHYSICS>
 </GAMEOBJECT>
 
 <GAMEOBJECT>
@@ -29,7 +35,7 @@
     GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: 0 0 0
+    position: 0 -97.62 0
     velocity: 0 0 0
     orientation: 0 0 0 1
     scale: 1 1 1
@@ -47,7 +53,7 @@
     GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: -13.72 -1.7 5.89
+    position: -13.72 -99.32 5.89
     velocity: 0 0 0
     orientation: 0 0 0 1
     scale: 1 1 1
@@ -65,7 +71,7 @@
     GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: -13.5 -1.073 -11.095
+    position: -13.5 -98.693 -11.095
     velocity: 0 0 0
     orientation: 0.0912529 0.192459 0.0245922 0.976741
     scale: 1 1 1
@@ -95,7 +101,7 @@
     GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: 16.42 11.36 -0.27
+    position: 16.42 -86.26 -0.27
     velocity: 0 0 0
     orientation: 0 -0.871586 0 -0.490243
     scale: 1 1 1
@@ -113,7 +119,7 @@
     GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: 6.5 10.12 0
+    position: 6.5 -87.5 0
     velocity: 0 0 0
     orientation: 0 -0.871586 0 -0.490243
     scale: 1 1 1
@@ -131,7 +137,7 @@
     GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: -5.13 7.5 -4.76837e-07
+    position: -5.13 -90.12 -4.76837e-07
     velocity: 0 0 0
     orientation: 0 -0.871586 0 -0.490243
     scale: 1 1 1
@@ -149,7 +155,7 @@
     GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: 6.5 10.12 0
+    position: 6.5 -87.5 0
     velocity: 0 0 0
     orientation: 0 0 0 1
     scale: 1 1 1
@@ -167,16 +173,24 @@
     GameObjectFlags: 6
   </HEADER>
   <TRANSFORM>
-    position: -10.015 15.016 -18.486
-    velocity: -8.40779e-45 0 8.40779e-45
-    orientation: 3.33992e-09 0.00234592 7.85116e-12 -0.997967
+    position: -14.2853 -4.00885 -11.3677
+    velocity: 4.90454e-44 -9.33503e-41 -4.90454e-44
+    orientation: 0 0.998906 0 0.0467641
     scale: 1.7 1.7 1.7
   </TRANSFORM>
   <SCRIPTS>
     script: LuaScripting/scripts/ai/followplayer
   </SCRIPTS>
+  <SPHERECOLLIDER>
+    radius: 1.69
+    height offset: 1.63
+  </SPHERECOLLIDER>
   <PHYSICS>
   </PHYSICS>
+  <NAVIGATION>
+    flags: 0
+    speed: 0.05
+  </NAVIGATION>
 </GAMEOBJECT>
 
 <GAMEOBJECT>
@@ -224,7 +238,7 @@
     GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: -21.64 -2.84 16.37
+    position: -21.64 -100.46 16.37
     velocity: 0 0 0
     orientation: 0 -0.987801 0 0.155724
     scale: 1 1 1
@@ -242,7 +256,7 @@
     GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: -11.94 -4.09 19.38
+    position: -11.94 -101.71 19.38
     velocity: 0 0 0
     orientation: 0 -0.794038 0 0.607869
     scale: 1 1 1
@@ -260,7 +274,7 @@
     GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: 7.6 -4.74 22.15
+    position: 7.6 -102.36 22.15
     velocity: 0 0 0
     orientation: 0 -0.92671 0 0.375776
     scale: 1 1 1
@@ -278,9 +292,64 @@
     GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: -18.41 5.48 5.6
+    position: -18.41 -92.14 5.6
     velocity: 0 0 0
     orientation: 0 -0.918372 0 0.395718
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+  </SCRIPTS>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: area
+    assigned name: area
+    objectID: 15
+    parentID: -1
+    GameObjectFlags: 0
+  </HEADER>
+  <TRANSFORM>
+    position: 0 0 0
+    velocity: 0 0 0
+    orientation: 0 0 0 1
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+  </SCRIPTS>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: empty
+    assigned name: activation bounding box
+    objectID: 16
+    parentID: 17
+    GameObjectFlags: 0
+  </HEADER>
+  <TRANSFORM>
+    position: -0.74 1.26 4.97
+    velocity: 0 0 0
+    orientation: 0 0 0 1
+    scale: 3.71 5.04 17.8
+  </TRANSFORM>
+  <SCRIPTS>
+    script: LuaScripting/scripts/gondola/activation
+  </SCRIPTS>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: gondola
+    assigned name: gondola
+    objectID: 17
+    parentID: -1
+    GameObjectFlags: 0
+  </HEADER>
+  <TRANSFORM>
+    position: 0 0 0
+    velocity: 0 0 0
+    orientation: 0 0 0 1
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>

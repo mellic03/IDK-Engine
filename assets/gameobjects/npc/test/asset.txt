@@ -2,8 +2,9 @@
 #GameObjectType GAMEOBJECT_ACTOR
 
 #meshlod 0 human.dae
+#animationlod 0 idle idle.dae
 #animationlod 0 walk walk.dae
-#animationlod 0 stand human.dae
+
 
 
 #exit

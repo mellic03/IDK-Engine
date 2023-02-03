@@ -33,7 +33,7 @@ bool Texture::load(std::string filepath, bool useSRGB)
       temp_filepath.erase(0, pos);
       filepath = "src/GraphicsEngine/model/defaultimages/default" + temp_filepath;
       // printf("New filepath: %s\n", filepath.c_str());
-      data = stbi_load("src/GraphicsEngine/model/defaultimages/default-specular.png", &width, &height, &bpp, STBI_rgb_alpha);
+      data = stbi_load(filepath.c_str(), &width, &height, &bpp, STBI_rgb_alpha);
     }
   }
   //------------------------------------------------------------

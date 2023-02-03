@@ -20,6 +20,7 @@ static void objectToFile(std::ofstream &stream, GameObject *object)
   FileUtil::ToText::pointlight(stream, components->getPointLightComponent(), indentation);
   FileUtil::ToText::spherecollider(stream, object, indentation);
   FileUtil::ToText::physics(stream, object, indentation);
+  FileUtil::ToText::navigation(stream, object, indentation);
   //-----------------------------------------------------------------------
 
 

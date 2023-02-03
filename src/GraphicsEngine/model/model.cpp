@@ -174,7 +174,7 @@ std::vector<glm::mat4> stringToMat4Array(std::string str)
 
 Mesh *Model::meshPtr(std::string dae_id)
 {
-  for (auto &mesh: this->m_meshes)
+  for (auto &mesh: this->_tempMeshes)
     if (mesh.m_dae_id == dae_id)
       return &mesh;
 
@@ -238,8 +238,8 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
     rapidxml::xml_node<> *meshNode = node->first_node("mesh");
     while (meshNode != nullptr)
     {
-      this->m_meshes.push_back(Mesh());
-      Mesh *mesh = &this->m_meshes[this->m_meshes.size() - 1];
+      this->_tempMeshes.push_back(Mesh());
+      Mesh *mesh = &this->_tempMeshes[this->_tempMeshes.size() - 1];
       mesh->m_dae_id = "#" + std::string(node->first_attribute("id")->value());
 
 
@@ -561,19 +561,16 @@ void Model::computeBoundingSphere(void)
   glm::vec3 max_dist_v1 = glm::vec3(0.0f);
   glm::vec3 max_dist_v2 = glm::vec3(0.0f);
 
-  for (Mesh mesh: this->m_meshes)
+  for (auto &v1: this->mesh.vertices)
   {
-    for (auto &v1: mesh.vertices)
+    for (auto &v2: this->mesh.vertices)
     {
-      for (auto &v2: mesh.vertices)
+      float distSQ = glm::distance2(v1.position, v2.position);
+      if (distSQ > max_dist_sq)
       {
-        float distSQ = glm::distance2(v1.position, v2.position);
-        if (distSQ > max_dist_sq)
-        {
-          max_dist_sq = distSQ;
-          max_dist_v1 = v1.position;
-          max_dist_v2 = v2.position;
-        }
+        max_dist_sq = distSQ;
+        max_dist_v1 = v1.position;
+        max_dist_v2 = v2.position;
       }
     }
   }
@@ -585,7 +582,7 @@ void Model::computeBoundingSphere(void)
 
   // Loop over vertices again, if any are outside the sphere,
   // increase the sphere size by the amount the vertex is outside
-  for (Mesh mesh: this->m_meshes)
+  for (Mesh mesh: this->_tempMeshes)
   {
     for (auto &v: mesh.vertices)
     {
@@ -938,11 +935,15 @@ void Model::loadDae(std::string directory, std::string filename, bool is_terrain
   this->constructMeshes(&doc);
   this->applyMeshTransforms(&doc);
 
-  std::ifstream istream(directory + "boundingsphere.txt");
-  if (istream.good())
-    this->loadBoundingSphere(istream);
 
-  else
+  this->_mergeMeshes();
+
+
+  // std::ifstream istream(directory + "boundingsphere.txt");
+  // if (istream.good())
+  //   this->loadBoundingSphere(istream);
+
+  // else
   {
     this->computeBoundingSphere();
     std::ofstream ostream(directory + "boundingsphere.txt");
@@ -951,13 +952,8 @@ void Model::loadDae(std::string directory, std::string filename, bool is_terrain
     ostream.close();
   }
 
-  istream.close();
+  // istream.close();
 
-
-  for (Mesh &mesh: this->m_meshes)
-    mesh.setBufferData();
-
-  this->_mergeMeshes();
 }
 
 
@@ -965,10 +961,7 @@ void Model::loadDae(std::string directory, std::string filename, bool is_terrain
 
 void Model::loadAnimation(std::string name, Animation::AnimationController *animationController, std::string directory, std::string filename)
 {
-  for (Mesh &mesh: this->m_meshes)
-    mesh.vertices.clear();
-
-  this->m_meshes.clear();
+  this->_tempMeshes.clear();
 
   // this->_positions.clear();
   this->_normals.clear();
@@ -979,6 +972,9 @@ void Model::loadAnimation(std::string name, Animation::AnimationController *anim
   this->_geometry_normal_offsets.clear();
   // this->_geometry_position_offsets.clear();
   // this->_geometry_texcoord_offsets.clear();
+
+  this->_jointIDs.clear();
+  this->_jointWeights.clear();
 
   this->_animated = true;
 
@@ -1007,15 +1003,17 @@ void Model::loadAnimation(std::string name, Animation::AnimationController *anim
   Animation::Armature *armature = animation->getArmature();
 
   this->loadArmature(&doc, armature);
-  printBVTree("", armature->root);
 
   this->loadArmatureWeights(&doc, armature);
   this->loadAnimations(&doc, armature);
 
-  this->loadVertices(&doc);
+  if (this->_armature_loaded == false)
+  {
+    this->loadVertices(&doc);
 
-  this->constructMeshes(&doc);
-  this->applyMeshTransforms(&doc);
+    this->constructMeshes(&doc);
+    this->applyMeshTransforms(&doc);
+  }
 
 
   float largest = 0.0f;
@@ -1032,31 +1030,15 @@ void Model::loadAnimation(std::string name, Animation::AnimationController *anim
   }
   animation->setLength(largest);
 
-
-  for (Mesh &mesh: this->m_meshes)
+  if (this->_armature_loaded == false)
   {
-    for (Vertex &vertex: mesh.vertices)
-      vertex.weights /= glm::dot(vertex.weights, glm::vec4(1.0f));
+    for (Mesh &mesh: this->_tempMeshes)
+      for (Vertex &vertex: mesh.vertices)
+        vertex.weights /= glm::dot(vertex.weights, glm::vec4(1.0f));
 
-    // for (size_t i=0; i<mesh.vertices.size(); i+=200)
-    // {
-    //   printf("ids: %d %d %d %d, weights: %f %f %f %f\n", 
-    //     mesh.vertices[i].joint_ids[0],
-    //     mesh.vertices[i].joint_ids[1],
-    //     mesh.vertices[i].joint_ids[2],
-    //     mesh.vertices[i].joint_ids[3],
-    //     mesh.vertices[i].weights[0],
-    //     mesh.vertices[i].weights[1],
-    //     mesh.vertices[i].weights[2],
-    //     mesh.vertices[i].weights[3]
-    //   );
-    // }
-
-    mesh.setBufferData();
+    this->_mergeMeshes();
   }
-
-  this->_mergeMeshes();
-
+  this->_armature_loaded = true;
 }
 
 
@@ -1066,10 +1048,9 @@ void Model::_mergeMeshes()
   Mesh outputMesh;
 
   GLuint offset = 0;
-
-  for (size_t i=0; i<this->m_meshes.size(); i++)
+  for (size_t i=0; i<this->_tempMeshes.size(); i++)
   {
-    Mesh mesh = this->m_meshes[i];
+    Mesh mesh = this->_tempMeshes[i];
 
     for (auto &indices: mesh.indices)
       for (auto &index: indices)
@@ -1083,10 +1064,10 @@ void Model::_mergeMeshes()
     for (auto &indices: mesh.indices)
       offset += indices.size();
   }
+  this->_tempMeshes.clear();
 
-  outputMesh.setBufferData();
 
-  this->m_meshes.clear();
-  this->m_meshes.push_back(outputMesh);
+  this->mesh = outputMesh;
+  this->mesh.setBufferData();
 }
 

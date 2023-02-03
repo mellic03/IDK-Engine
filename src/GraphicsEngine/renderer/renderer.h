@@ -167,6 +167,7 @@ class Renderer {
 
 
     void drawPrimitive(PrimitiveType type, glm::vec3 pos, float radius, Transform *transform);
+    void drawPrimitive_box(Transform *transform);
     
     void drawTerrain          (Model *model,  Transform *transform, float threshold, float epsilon);
     void drawBillboard        (Model *model,  Transform *transform);

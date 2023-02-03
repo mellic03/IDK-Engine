@@ -385,6 +385,7 @@ void Scene::physicsTick_actor_terrain()
   std::list<GameObject *> *actor_list = Scene::scenegraph.getObjects(GAMEOBJECT_ACTOR);
   std::list<GameObject *> *actorAnimated_list = Scene::scenegraph.getObjects(GAMEOBJECT_ACTOR, GameObjectFlag::ANIMATED);
   std::list<GameObject *> *terrain_list = Scene::scenegraph.getObjects(GAMEOBJECT_TERRAIN);
+  std::list<GameObject *> *static_list = Scene::scenegraph.getObjects(GAMEOBJECT_STATIC);
 
   for (auto &terrain: *terrain_list)
   {
@@ -393,6 +394,16 @@ void Scene::physicsTick_actor_terrain()
 
     for (auto &actor: *actorAnimated_list)
       actor->collideWithObject(terrain);
+  }
+
+
+  for (auto &staticobj: *static_list)
+  {
+    for (auto &actor: *actor_list)
+      actor->collideWithObject(staticobj);
+
+    for (auto &actor: *actorAnimated_list)
+      actor->collideWithObject(staticobj);
   }
 }
 
@@ -571,11 +582,10 @@ void Scene::drawGeometry_batched()
   Scene::drawBillboardsInstanced();
   GLCALL( glEnable(GL_CULL_FACE) );
 
+    Render::ren.useShader(SHADER_WIREFRAME);
 
   if (Render::ren.getDebugData()->getDebugFlag(RenderDebugFlag::DrawBoundingSpheres))
   {
-    Render::ren.useShader(SHADER_WIREFRAME);
-
     Render::ren.active_shader->setMat4("projection", Render::ren.cam.projection);
     Render::ren.active_shader->setMat4("view", Render::ren.cam.view);
 
@@ -594,21 +604,25 @@ void Scene::drawGeometry_batched()
   
   if (Render::ren.getDebugData()->getDebugFlag(RenderDebugFlag::DrawColliders))
   {
-    Render::ren.useShader(SHADER_WIREFRAME);
-
     Render::ren.active_shader->setMat4("projection", Render::ren.cam.projection);
     Render::ren.active_shader->setMat4("view", Render::ren.cam.view);
 
-    for (GameObject *obj: *Scene::scenegraph.getVisibleInstancesByType(GAMEOBJECT_ACTOR))
+    for (GameObject *obj: *Scene::scenegraph.getObjects(GAMEOBJECT_ACTOR, GameObjectFlag::ANIMATED))
     {
       if (obj->getComponents()->hasComponent(COMPONENT_SPHERE_COLLIDER))
       {
         glm::vec3 pos = obj->getTransform()->getPos_worldspace();
-        float radius = obj->getComponents()->getSphereColliderComponent()->sphere_collider->radius;
+        pos.y += obj->spherecollider.height_offset;
+        float radius = obj->spherecollider.radius;
         Render::ren.drawPrimitive(PRIMITIVE_SPHERE, pos, radius, obj->getTransform());
       }
     }
   }
+
+
+  for (GameObject *obj: *Scene::scenegraph.getObjects(GAMEOBJECT_EMPTY))
+    Render::ren.drawPrimitive_box(obj->getTransform());
+
 }
 
 
@@ -622,12 +636,13 @@ void Scene::drawGeometry()
 
   for (auto &object: *Scene::scenegraph.getObjects(GAMEOBJECT_ACTOR))
   {
-    if (!object->getData()->getFlag(GameObjectFlag::ANIMATED))
+    if (!object->getData()->flags()->get(GameObjectFlag::ANIMATED))
       Render::ren.drawModel(object->getModelLOD()->getShadowLOD_model(), object->getTransform());
   }
 
   for (auto &object: *Scene::scenegraph.getObjects(GAMEOBJECT_BILLBOARD))
     Render::ren.drawModel(object->getModelLOD()->getShadowLOD_model(), object->getTransform());
+
 }
 
 

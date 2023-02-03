@@ -48,8 +48,8 @@ namespace EngineUI {
 
   void bitFlagCheckbox(const char *label, unsigned char flag, unsigned char *bits);
 
-  template <typename T>
-  void bitFlagCheckbox(const char *label, T flag, T *bits)
+  template <typename BitType, typename EnumType>
+  void bitFlagCheckbox(const char *label, EnumType flag, BitType *bits)
   {
     GLuint flag_casted = (GLuint)flag;
     GLuint bits_casted = (GLuint)(*bits);
@@ -63,7 +63,7 @@ namespace EngineUI {
     else
       bits_casted = (~flag_casted & bits_casted);
 
-    *bits = (T)bits_casted;
+    *bits = (BitType)bits_casted;
   }
 
 

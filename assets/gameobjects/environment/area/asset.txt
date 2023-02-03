@@ -1,0 +1,9 @@
+#gameobject area
+#GameObjectType GAMEOBJECT_STATIC
+
+#meshlod 0 area.dae
+
+#collision col.obj
+#navmesh nav.obj
+
+#exit

@@ -49,6 +49,26 @@ extern "C" int getPos(lua_State *LS)
   return 1;
 }
 
+extern "C" int getPos_worldspace(lua_State *LS)
+{
+  int objectID = lua_tointeger(LS, 1) - 1;
+  GameObject *object = Scene::scenegraph.objectPtr(objectID);
+  glm::vec3 pos = object->getTransform()->getPos_worldspace();
+
+  lua_newtable(LS);
+
+  lua_pushnumber(LS, pos.x);
+  lua_setfield(LS, -2, "x");
+
+  lua_pushnumber(LS, pos.y);
+  lua_setfield(LS, -2, "y");
+
+  lua_pushnumber(LS, pos.z);
+  lua_setfield(LS, -2, "z");
+
+  return 1;
+}
+
 
 extern "C" int setVel(lua_State *LS)
 {
@@ -216,6 +236,86 @@ extern "C" int getNavState(lua_State *LS)
 }
 
 
+extern "C" int setParent(lua_State *LS)
+{
+  int objectID_child = lua_tointeger(LS, 1) - 1;
+  int objectID_parent = lua_tointeger(LS, 2) - 1;
+
+  GameObject *child = Scene::scenegraph.objectPtr(objectID_child);
+  GameObject *parent = Scene::scenegraph.objectPtr(objectID_parent);
+
+  parent->giveChild(child);
+
+  return 0;
+}
+
+
+extern "C" int clearParent(lua_State *LS)
+{
+  int objectID = lua_tointeger(LS, 1) - 1;
+
+  GameObject *object = Scene::scenegraph.objectPtr(objectID);
+  object->clearParent();
+
+  return 0;
+}
+
+
+extern "C" int getParentID(lua_State *LS)
+{
+  int objectID = lua_tointeger(LS, 1) - 1;
+  GameObject *object = Scene::scenegraph.objectPtr(objectID);
+
+  int parentID = -1;
+
+  if (object->getParent() != nullptr)
+    parentID = object->getParent()->getID() + 1;
+
+  lua_pushinteger(LS, parentID);
+
+  return 1;
+}
+
+
+
+extern "C" int inBoundingBox(lua_State *LS)
+{
+  int objectID = lua_tointeger(LS, 1) - 1;
+  float x = lua_tonumber(LS, 2);
+  float y = lua_tonumber(LS, 3);
+  float z = lua_tonumber(LS, 4);
+
+  GameObject *object = Scene::scenegraph.objectPtr(objectID);
+  glm::vec3 pos = glm::vec3(x, y, z);
+
+
+  // Perform test
+  //----------------------------------------------------------------------------
+  glm::mat4 model = object->getTransform()->getModelMatrix();
+
+  glm::vec3 center = model * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+  glm::vec3 dx = glm::normalize(model * glm::vec4(1.0f, 0.0f, 0.0f, 0.0f));
+  glm::vec3 dy = glm::normalize(model * glm::vec4(0.0f, 1.0f, 0.0f, 0.0f));
+  glm::vec3 dz = glm::normalize(model * glm::vec4(0.0f, 0.0f, 1.0f, 0.0f));
+ 
+  glm::vec3 half = glm::vec3(
+    glm::distance(model * glm::vec4( -1.0f,  0.0f,  0.0f, 1.0f), model * glm::vec4( +1.0f,  0.0f,  0.0f, 1.0f)) / 2.0f,
+    glm::distance(model * glm::vec4(  0.0f, -1.0f,  0.0f, 1.0f), model * glm::vec4(  0.0f, +1.0f,  0.0f, 1.0f)) / 2.0f,
+    glm::distance(model * glm::vec4(  0.0f,  0.0f, -1.0f, 1.0f), model * glm::vec4(  0.0f,  0.0f, +1.0f, 1.0f)) / 2.0f
+  );
+
+  glm::vec3 d = pos - center;
+  bool result = abs(glm::dot(d, dx)) <= half.x &&
+                abs(glm::dot(d, dy)) <= half.y &&
+                abs(glm::dot(d, dz)) <= half.z;
+  //----------------------------------------------------------------------------
+
+
+  lua_pushboolean(LS, result);
+
+  return 1;
+}
+
 
 void register_luaLibrary_gameobject()
 {
@@ -223,13 +323,16 @@ void register_luaLibrary_gameobject()
   
   lua_register(LuaInterface::L, "CE_GameObject_SetPos", setPos);
   lua_register(LuaInterface::L, "CE_GameObject_GetPos", getPos);
+  lua_register(LuaInterface::L, "CE_GameObject_GetPos_worldspace", getPos_worldspace);
 
   lua_register(LuaInterface::L, "CE_GameObject_SetVel", setVel);
   lua_register(LuaInterface::L, "CE_GameObject_GetVel", getVel);
 
   lua_register(LuaInterface::L, "CE_GameObject_AddRot", addRot);
 
+
   lua_register(LuaInterface::L, "CE_GameObject_SetPath", setPath);
+
 
   lua_register(LuaInterface::L, "CE_GameObject_SetInt",  setInt);
   lua_register(LuaInterface::L, "CE_GameObject_GetInt",  getInt);
@@ -241,6 +344,15 @@ void register_luaLibrary_gameobject()
   lua_register(LuaInterface::L, "CE_GameObject_GetAnimation",  getAnimation);
 
 
+
   lua_register(LuaInterface::L, "CE_GameObject_GetNavState",  getNavState);
+  
+  
+  lua_register(LuaInterface::L, "CE_GameObject_SetParent",  setParent);
+  lua_register(LuaInterface::L, "CE_GameObject_ClearParent",  clearParent);
+  lua_register(LuaInterface::L, "CE_GameObject_GetParentID",  getParentID);
+
+
+  lua_register(LuaInterface::L, "CE_GameObject_InBoundingBox",  inBoundingBox);
 }
 

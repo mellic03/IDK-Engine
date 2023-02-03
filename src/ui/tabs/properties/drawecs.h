@@ -17,5 +17,6 @@ namespace DrawECS {
   void animation(GameObject *object);
   void physics(GameObject *object);
   void navigation(GameObject *object);
+  void boundingbox(GameObject *object);
 
 };

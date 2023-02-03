@@ -9,12 +9,63 @@
 #include "../glcall.h"
 
 
-Mesh::Mesh(void)  { }
 
-
-
-void Mesh::setBufferData(void)
+static int indexOfVertex(Vertex &vertex, std::vector<Vertex> &vertices)
 {
+  for (size_t i=0; i<vertices.size(); i++)
+  {
+    if (vertex == vertices[i])
+      return i;
+  }
+
+  return -1;
+}
+
+
+void Mesh::_createIndexBuffer()
+{
+  std::vector<Vertex> newVertices;
+  std::vector<std::vector<GLuint>> newIndicesVec;
+
+  size_t offset = 0;
+
+  for (std::vector<GLuint> &vec: this->indices)
+  {
+    std::vector<GLuint> newIndices;
+
+
+    for (size_t i=offset; i<offset+vec.size(); i++)
+    {
+      int index = indexOfVertex(this->vertices[i], newVertices);
+    
+      if (index == -1)  // Vertex doesnt exist in newVertices
+      {
+        newVertices.push_back(this->vertices[i]);
+        newIndices.push_back(newVertices.size()-1);
+      }
+
+      else  // Vertex exists in newVertices
+      {
+        newIndices.push_back(index);
+      }
+    }
+    
+    offset += vec.size();
+
+    newIndicesVec.push_back(newIndices);
+  }
+
+  this->indices = newIndicesVec;
+  this->vertices = newVertices;
+}
+
+
+
+
+void Mesh::setBufferData()
+{
+  this->_createIndexBuffer();
+
   glDeleteVertexArrays(1, &this->VAO);
   glDeleteBuffers(1, &this->VBO);
 

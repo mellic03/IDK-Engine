@@ -2,10 +2,18 @@
 
 #include "../../computemesh/computemesh.h"
 #include "../../../GraphicsEngine/GraphicsEngine.h"
+#include "../../util.h"
 #include <vector>
 
 
 namespace Navigation {
+
+
+  enum class NavFlag {
+    NONE      = 0b00000000,
+    NOROTATE  = 0b00000001
+  };
+
 
   enum class NavState {
 
@@ -15,11 +23,12 @@ namespace Navigation {
 
   };
 
+
   struct NavData {
 
     private:
+      BitFlag<GLuint, NavFlag> _flags;
       glm::vec3 _target;
-
       NavMesh *_navmesh;
 
 
@@ -33,6 +42,7 @@ namespace Navigation {
       void setPath(glm::vec3 current_pos, glm::vec3 target, std::list<NavMesh> *navmeshes);
       void followPath(glm::vec3 *objectPos);
 
+      BitFlag<GLuint, NavFlag> *flags()  { return &this->_flags; };
   };
 };
 

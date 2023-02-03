@@ -10,6 +10,7 @@ PlayerID = 1;
 -----------------------------------------------
 function CE_GameObject_SetPos(objectID, x, y, z) end;
 function CE_GameObject_GetPos(objectID) return vectorinit(); end;
+function CE_GameObject_GetPos_worldspace(objectID) return vectorinit(); end;
 function CE_GameObject_SetVel(objectID, x, y, z) end;
 function CE_GameObject_GetVel(objectID) return vectorinit(); end;
 function CE_GameObject_AddRot(objectID, x, y, z) end;
@@ -30,6 +31,13 @@ function CE_GameObject_SetAnimation( objectID, animationName ) end;
 function CE_GameObject_GetAnimation( objectID ) return ""; end;
 
 function CE_GameObject_GetNavState( objectID ) return ""; end;
+
+
+function CE_GameObject_SetParent( childID, parentID ) end;
+function CE_GameObject_ClearParent( childID ) end;
+function CE_GameObject_GetParentID( childID ) end;
+
+function CE_GameObject_InBoundingBox( objectID, x, y, z ) end;
 -----------------------------------------------
 
 
@@ -53,6 +61,7 @@ function CE_Player_SetJumpForce(force) end;
 function CE_Player_SetMoveForce(force) end;
 function CE_Player_SetFly(bool) end;
 function CE_Player_GetDir() return vectorinit(); end;
+function CE_Player_GetID() end;
 -----------------------------------------------
 
 

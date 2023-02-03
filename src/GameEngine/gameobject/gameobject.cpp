@@ -21,9 +21,9 @@ bool GameObject::_groundTest(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec
   if (intersects)
   {
     float dist = glm::distance(*this->getPos(), intersect_point);
-    if (dist >= 0 && dist < (this->spherecollider.radius + 0.05f))
+    if (dist >= 0 && dist < (this->spherecollider.radius - this->spherecollider.height_offset + 0.05f))
     {
-      float overlap = (this->spherecollider.radius + 0.05f) - dist;
+      float overlap = (this->spherecollider.radius - this->spherecollider.height_offset + 0.05f) - dist;
       this->getPos()->y += overlap / 2.0f;
       return true;
     }
@@ -82,8 +82,10 @@ void GameObject::_followPath()
 
 void GameObject::_perFrameUpdate_navigation()
 {
-  this->_followPath();
+  if (this->getComponents()->hasComponent(COMPONENT_NAVIGATION) == false)
+    return;
 
+  this->_followPath();
 
   glm::vec3 vel2D = glm::vec3(this->getVel()->x, 0.0f, this->getVel()->z);
 
@@ -163,11 +165,13 @@ void GameObject::collideWithMeshes(void)
       if (this->getComponents()->hasComponent(COMPONENT_SPHERE_COLLIDER))
       {
         this->spherecollider.pos = *this->getPos();
+        this->spherecollider.pos.y += this->spherecollider.height_offset;
         this->spherecollider.vel = *this->getVel();
 
         if (PE::sphere_triangle_detect(&this->spherecollider, vert0, vert1, vert2, &dist, &edge_collision, &dir))
           PE::sphere_triangle_response(&this->spherecollider, vert0, vert1, vert2, dist, edge_collision, dir);
 
+        this->spherecollider.pos.y -= this->spherecollider.height_offset;
         *this->getPos() = this->spherecollider.pos;
         *this->getVel() = this->spherecollider.vel;
       }
@@ -208,7 +212,7 @@ void GameObject::perFrameUpdate(Renderer *ren)
   this->getCullingData()->bounding_sphere_pos = p;
 
 
-  if (this->getData()->getFlag(GameObjectFlag::PHYSICS) == false)
+  if (this->getData()->flags()->get(GameObjectFlag::PHYSICS) == false)
     return;
 
 
@@ -304,7 +308,7 @@ void GameObject::collideWithObject(GameObject *object)
   if (this->getObjectType() == GAMEOBJECT_BILLBOARD)
     return;
 
-  if (this->getData()->getFlag(GameObjectFlag::PHYSICS) == false)
+  if (this->getData()->flags()->get(GameObjectFlag::PHYSICS) == false)
     return;
 
   glm::vec3 p0 = this->getTransform()->getPos_worldspace();

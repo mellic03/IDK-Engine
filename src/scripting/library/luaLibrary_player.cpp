@@ -49,10 +49,18 @@ extern "C" int getDir(lua_State *LS)
 }
 
 
+extern "C" int getID(lua_State *LS)
+{
+  lua_pushinteger(LS, 1);
+  return 1;
+}
+
+
 void register_luaLibrary_player()
 {
   lua_register(LuaInterface::L, "CE_Player_SetMoveForce", setMoveForce);
   lua_register(LuaInterface::L, "CE_Player_SetJumpForce", setJumpForce);
   lua_register(LuaInterface::L, "CE_Player_SetFly",       setFly);
   lua_register(LuaInterface::L, "CE_Player_GetDir",       getDir);
+  lua_register(LuaInterface::L, "CE_Player_GetID",        getID);
 }

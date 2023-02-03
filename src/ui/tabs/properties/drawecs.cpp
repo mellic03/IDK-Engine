@@ -54,7 +54,7 @@ void DrawECS::transform(GameObject *object, TransformComponent *transformCompone
     EngineUI::dragVec3("Rotation", &drot1, 0.0f, 0.0f, 0.1f, "%0.1f", 0.0f);
     object->getTransform()->addRot(glm::radians(drot1 - drot2));
 
-    EngineUI::dragVec3("Scale", object->getTransform()->getScale(), 0.01f, 10.0f, 0.01f, "%0.3f", 1.0f);
+    EngineUI::dragVec3("Scale", object->getTransform()->getScale(), 0.01f, 0.0f, 0.01f, "%0.3f", 1.0f);
   }
 }
 
@@ -131,11 +131,11 @@ void DrawECS::terrain(GameObject *object, TerrainComponent *terrain_component)
 
         glm::mat4 model_mat = object->getTransform()->getModelMatrix();
 
-        for (size_t i=0; i<object->getModel()->m_meshes[0].vertices.size(); i+=3)
+        for (size_t i=0; i<object->getModel()->mesh.indices[0].size(); i+=3)
         {
-          Vertex v1 = object->getModel()->m_meshes[0].vertices[i+0];
-          Vertex v2 = object->getModel()->m_meshes[0].vertices[i+1];
-          Vertex v3 = object->getModel()->m_meshes[0].vertices[i+2];
+          Vertex v1 = object->getModel()->mesh.vertices[object->getModel()->mesh.indices[0][i+0]];
+          Vertex v2 = object->getModel()->mesh.vertices[object->getModel()->mesh.indices[0][i+1]];
+          Vertex v3 = object->getModel()->mesh.vertices[object->getModel()->mesh.indices[0][i+2]];
 
           if (glm::normalize(v1.normal).y < 0.7f)
             continue;
@@ -226,7 +226,8 @@ void DrawECS::sphere(GameObject *object, SphereColliderComponent *sphereCollider
   if (ImGui::CollapsingHeader(label.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
   {
     ImGui::Checkbox("Visualise", &sphereColliderComponent->visualise);
-    ImGui::DragFloat("Radius", &sphereColliderComponent->sphere_collider->radius);
+    ImGui::DragFloat("Radius", &object->spherecollider.radius, 0.01f, 0.0f, 0.0f, "%0.3f");
+    ImGui::DragFloat("Height offset", &object->spherecollider.height_offset, 0.01f, 0.0f, 0.0f, "%0.3f");
   }
 }
 
@@ -251,7 +252,7 @@ void DrawECS::physics(GameObject *object)
 {
   if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    EngineUI::bitFlagCheckbox("Enabled", GameObjectFlag::PHYSICS, object->getData()->getFlags());
+    EngineUI::bitFlagCheckbox("Enabled", GameObjectFlag::PHYSICS, object->getData()->flags()->bits());
   }
 }
 
@@ -261,6 +262,15 @@ void DrawECS::navigation(GameObject *object)
   if (ImGui::CollapsingHeader("Navigation", ImGuiTreeNodeFlags_DefaultOpen))
   {
     ImGui::DragFloat("speed", &object->getData()->navData()->speed, 0.001f, 0.0f, 0.1f, "%0.3f");
+  }
+}
+
+
+void DrawECS::boundingbox(GameObject *object)
+{
+  if (ImGui::CollapsingHeader("Bounding Box", ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    
   }
 }
 

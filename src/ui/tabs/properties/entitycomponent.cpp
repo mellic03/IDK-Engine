@@ -38,6 +38,8 @@ void EntityComponentUI::newComponent(GameObject *object)
     else if (ImGui::MenuItem(EngineUI::IconLabels::NAVIGATION_LABEL + id))
       components->giveComponent(COMPONENT_NAVIGATION);
 
+    else if (ImGui::MenuItem("bounding box" + id))
+      components->giveComponent(COMPONENT_BOUNDING_BOX);
 
     ImGui::EndPopup();
   }
@@ -110,6 +112,11 @@ void EntityComponentUI::drawComponent(GameObject *object, EntityComponents *comp
 
     case (COMPONENT_NAVIGATION):
       DrawECS::navigation(object);
+      break;
+
+
+    case (COMPONENT_BOUNDING_BOX):
+      DrawECS::boundingbox(object);
       break;
   }
 }

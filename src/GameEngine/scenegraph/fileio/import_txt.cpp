@@ -15,7 +15,7 @@ void SceneGraph::objectFromFile(std::ifstream &stream, std::string &line, Player
       object = this->rearObjectPtr();
       object->parentID = header.parentID;
       object->m_given_name = header.assigned_name;
-      *object->getData()->getFlags() = static_cast<GameObjectFlag>(header.flags);
+      *object->getData()->flags()->bits() = header.flags;
 
       if (object->getObjectType() == GAMEOBJECT_PLAYER)
       {
@@ -39,15 +39,20 @@ void SceneGraph::objectFromFile(std::ifstream &stream, std::string &line, Player
     else if (line.find("<SPHERECOLLIDER>") != std::string::npos)
     { 
       FileUtil::FromText::spherecollider(stream, object);
+      object->getComponents()->giveComponent(COMPONENT_SPHERE_COLLIDER);
     }
 
     else if (line.find("<PHYSICS>") != std::string::npos)
     { 
-      object->getData()->setFlag(GameObjectFlag::PHYSICS, true);
+      object->getData()->flags()->set(GameObjectFlag::PHYSICS, true);
       object->getComponents()->giveComponent(COMPONENT_PHYSICS);
     }
 
 
+    else if (line.find("<NAVIGATION>") != std::string::npos)
+    { 
+      FileUtil::FromText::navigation(stream, object);
+    }
     // else if (line == "#LIGHTSOURCE BEGIN")
     //   object->lightsource_components[0].fromFile(stream);
 

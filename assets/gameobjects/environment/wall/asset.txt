@@ -8,6 +8,5 @@
 #collision collision.obj
 #physics PHYSICS_NONE
 
-#navmesh nav.obj
 
 #exit

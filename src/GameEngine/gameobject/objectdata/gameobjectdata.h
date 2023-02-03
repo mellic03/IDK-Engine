@@ -2,6 +2,7 @@
 
 #include "../../../GraphicsEngine/GraphicsEngine.h"
 #include "../../state.h"
+#include "../../util.h"
 #include "../../physics.h"
 #include "../../computemesh/computemesh.h"
 
@@ -51,9 +52,9 @@ inline GameObjectFlag operator & (GameObjectFlag A, GameObjectFlag B)
 struct GameObjectData {
 
   private:
-    bool _animated = false;
 
-    GameObjectFlag _object_flags = GameObjectFlag::NONE;
+    BitFlag<GLuint, GameObjectFlag> _flags;
+
     Navigation::NavData _navigation_data;
     PhysicsData _physics_data;
 
@@ -69,9 +70,7 @@ struct GameObjectData {
     BillboardType billboard_type = BILLBOARD_FIXED;
     GameObjectType ui_icon_type = GAMEOBJECT_UNDEFINED;
 
-    GameObjectFlag *getFlags();
-    bool getFlag(GameObjectFlag flag);
-    void setFlag(GameObjectFlag flag, bool value);
+    BitFlag<GLuint, GameObjectFlag> *flags() { return &this->_flags; };
 
     void setLightSourceType(LightSourceType type);
     void setBillboardType(BillboardType type);

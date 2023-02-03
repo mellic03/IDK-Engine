@@ -23,7 +23,7 @@ void SceneGraph::newObjectInstance_static(GameObject *objectptr)
 
 void SceneGraph::newObjectInstance_billboard(GameObject *objectptr)
 {
-  if (objectptr->getData()->getFlag(GameObjectFlag::INSTANCED))
+  if (objectptr->getData()->flags()->get(GameObjectFlag::INSTANCED))
   {
     this->addInstanceData(objectptr->getTemplateName(), objectptr->getModel(), objectptr->getTransform());
   }
@@ -89,7 +89,7 @@ void SceneGraph::newObjectInstance(std::string object_name, Transform *transform
   }
 
 
-  if (templateptr->getData()->getFlag(GameObjectFlag::INSTANCED))
+  if (templateptr->getData()->flags()->get(GameObjectFlag::INSTANCED))
   {
     this->addInstanceData(templateptr->getTemplateName(), templateptr->getModel(), transform);
     return;
@@ -108,7 +108,7 @@ void SceneGraph::newObjectInstance(std::string object_name, Transform *transform
   GameObjectType object_type = objectptr->getObjectType();
 
   
-  if (objectptr->getData()->getFlag(GameObjectFlag::ANIMATED))
+  if (objectptr->getData()->flags()->get(GameObjectFlag::ANIMATED))
     this->_object_instances_animated[objectptr->getData()->gameobject_type].push_back(objectptr);
 
   else

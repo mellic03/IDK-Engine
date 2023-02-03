@@ -27,6 +27,9 @@ enum ModelType {
 class Model {
 
   private:
+
+    std::vector<Mesh> _tempMeshes;
+
     std::vector<int> _geometry_position_offsets;
     std::vector<int> _geometry_normal_offsets;
     std::vector<int> _geometry_texcoord_offsets;
@@ -42,6 +45,7 @@ class Model {
 
 
     bool _animated = false;
+    bool _armature_loaded = false;
 
     std::string _directory;
 
@@ -75,6 +79,7 @@ class Model {
 
     void _mergeMeshes();
 
+
   public:
 
     glm::vec3 bounding_sphere_pos  = glm::vec3(0.0f);
@@ -87,7 +92,7 @@ class Model {
 
     bool is_terrain = false;
 
-    std::vector<Mesh> m_meshes;
+    Mesh mesh;
     std::vector<Material> materials;
 
 

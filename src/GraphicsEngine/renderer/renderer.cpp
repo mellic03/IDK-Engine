@@ -81,7 +81,7 @@ void Renderer::init(void)
   // Load primitive models
   //------------------------------------------------------
   this->_primitives.sphere_primitive.model.loadDae("src/GraphicsEngine/renderer/primitives/", "sphere.dae", false);
-
+  this->_primitives.box_primitive.model.loadDae("src/GraphicsEngine/renderer/primitives/", "cube.dae", false);
   //------------------------------------------------------
 
 
@@ -105,7 +105,6 @@ void Renderer::init(void)
   this->genColorBuffer(2560, 2560);
   this->genVolLightBuffer(2560, 2560);
   this->genScreenQuadBuffer(2560, 2560);
-
   //------------------------------------------------------
 
 
@@ -196,13 +195,13 @@ void Renderer::setupDirLightDepthmap(glm::vec3 dirlightpos, glm::vec3 dirlightdi
   glm::vec3 v = glm::inverse(this->cam.view) * glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
   v.y = 0.0f;
 
-  // glm::mat4 lightView = glm::lookAt( this->cam.m_transform->getPos_worldspace() - 15.0f*v + dirlightpos, 
-  //                                    this->cam.m_transform->getPos_worldspace() - 15.0f*v,
-  //                                    glm::vec3( 0.0f, 1.0f,  0.0f));
-
-  glm::mat4 lightView = glm::lookAt( dirlightpos, 
-                                     glm::vec3(0.0f),
+  glm::mat4 lightView = glm::lookAt( this->cam.m_transform->getPos_worldspace() - 15.0f*v + dirlightpos, 
+                                     this->cam.m_transform->getPos_worldspace() - 15.0f*v,
                                      glm::vec3( 0.0f, 1.0f,  0.0f));
+
+  // glm::mat4 lightView = glm::lookAt( dirlightpos, 
+  //                                    glm::vec3(0.0f),
+  //                                    glm::vec3( 0.0f, 1.0f,  0.0f));
 
 
   this->lightSpaceMatrix = lightProjection * lightView;
@@ -644,7 +643,7 @@ void Renderer::drawPrimitive(PrimitiveType type, glm::vec3 pos, float radius, Tr
 
   this->active_shader->setMat4("model", localtransform.getModelMatrix());
 
-  Mesh *mesh = &this->_primitives.sphere_primitive.model.m_meshes[0];
+  Mesh *mesh = &this->_primitives.sphere_primitive.model.mesh;
 
   glBindVertexArray(mesh->VAO);
   for (size_t i=0; i<mesh->IBOS.size(); i++)
@@ -668,31 +667,60 @@ void Renderer::drawPrimitive(PrimitiveType type, glm::vec3 pos, float radius, Tr
 }
 
 
+void Renderer::drawPrimitive_box(Transform *transform)
+{
+  GLCALL( glDisable(GL_CULL_FACE) );
+
+  this->active_shader->setMat4("model", transform->getModelMatrix());
+
+  Mesh *mesh = &this->_primitives.box_primitive.model.mesh;
+
+  glBindVertexArray(mesh->VAO);
+  for (size_t i=0; i<mesh->IBOS.size(); i++)
+  {
+    mesh->materials[i].diffuseMap.bind(  GL_TEXTURE0 );
+    mesh->materials[i].specularMap.bind( GL_TEXTURE1 );
+    mesh->materials[i].normalMap.bind(   GL_TEXTURE2 );
+    mesh->materials[i].emissionMap.bind( GL_TEXTURE3 );
+
+    this->active_shader->setFloat("material.spec_exponent", mesh->materials[i].spec_exponent);
+
+    GLCALL( glPolygonMode(GL_FRONT_AND_BACK, GL_LINE) );
+    GLCALL( glDrawElements(GL_TRIANGLES, mesh->indices[i].size(), GL_UNSIGNED_INT, (void *)0) );
+    GLCALL( glPolygonMode(GL_FRONT_AND_BACK, GL_FILL) );
+
+  }
+  glBindVertexArray(0);
+
+  GLCALL( glEnable(GL_CULL_FACE) );
+}
+
+
+
 void Renderer::drawModel(Model *model, Transform *transform)
 {
   this->active_shader->setMat4("model", transform->getModelMatrix_stale());
 
-  for (Mesh &mesh: model->m_meshes)
+  Mesh &mesh = model->mesh;
+
+  GLCALL( glBindVertexArray(mesh.VAO) );
+
+  for (size_t i=0; i<mesh.IBOS.size(); i++)
   {
-    GLCALL( glBindVertexArray(mesh.VAO) );
+    mesh.materials[i].diffuseMap.bind(  GL_TEXTURE0 );
+    mesh.materials[i].specularMap.bind( GL_TEXTURE1 );
+    mesh.materials[i].normalMap.bind(   GL_TEXTURE2 );
+    mesh.materials[i].emissionMap.bind( GL_TEXTURE3 );
 
-    for (size_t i=0; i<mesh.IBOS.size(); i++)
-    {
-      mesh.materials[i].diffuseMap.bind(  GL_TEXTURE0 );
-      mesh.materials[i].specularMap.bind( GL_TEXTURE1 );
-      mesh.materials[i].normalMap.bind(   GL_TEXTURE2 );
-      mesh.materials[i].emissionMap.bind( GL_TEXTURE3 );
+    this->active_shader->setFloat("material.spec_exponent", mesh.materials[i].spec_exponent);
 
-      this->active_shader->setFloat("material.spec_exponent", mesh.materials[i].spec_exponent);
+    GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBOS[i]));
+    GLCALL(glDrawElements(GL_TRIANGLES, mesh.indices[i].size(), GL_UNSIGNED_INT, (void *)0));
 
-      GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBOS[i]));
-      GLCALL(glDrawElements(GL_TRIANGLES, mesh.indices[i].size(), GL_UNSIGNED_INT, (void *)0));
-
-      unbindTextureUnit(GL_TEXTURE0);
-      unbindTextureUnit(GL_TEXTURE1);
-      unbindTextureUnit(GL_TEXTURE2);
-      unbindTextureUnit(GL_TEXTURE3);
-    }
+    unbindTextureUnit(GL_TEXTURE0);
+    unbindTextureUnit(GL_TEXTURE1);
+    unbindTextureUnit(GL_TEXTURE2);
+    unbindTextureUnit(GL_TEXTURE3);
   }
 
   GLCALL( glBindVertexArray(0) );
@@ -750,28 +778,24 @@ void Renderer::drawLightSource(Model *model, Transform *transform, glm::vec3 dif
 {
   this->active_shader->setMat4("model", transform->getModelMatrix_stale());
 
-  for (auto &mesh: model->m_meshes)
+  Mesh &mesh = model->mesh;
+
+  glBindVertexArray(mesh.VAO);
+
+  for (size_t i=0; i<mesh.IBOS.size(); i++)
   {
-    glBindVertexArray(mesh.VAO);
+    this->active_shader->setVec3("diffuseColor", diffuse);
 
-    for (size_t i=0; i<mesh.IBOS.size(); i++)
-    {
-      this->active_shader->setVec3("diffuseColor", diffuse);
-
-      GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBOS[i]));
-      GLCALL(glDrawElements(GL_TRIANGLES, mesh.indices[i].size(), GL_UNSIGNED_INT, (void *)0));
-    }
-
-    glBindVertexArray(0);
+    GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBOS[i]));
+    GLCALL(glDrawElements(GL_TRIANGLES, mesh.indices[i].size(), GL_UNSIGNED_INT, (void *)0));
   }
+
+  glBindVertexArray(0);
 }
 
 
 void Renderer::drawTerrain(Model *model, Transform *transform, float threshold, float epsilon)
 {
-  // printf("model: %s\n", model->m_name.c_str());
-
-
   this->active_shader->setMat4("model", transform->getModelMatrix_stale());
 
   this->active_shader->setFloat("threshold", threshold);
@@ -787,28 +811,27 @@ void Renderer::drawTerrain(Model *model, Transform *transform, float threshold, 
   this->shaders[SHADER_TERRAIN].setInt("material.normalMap2", 5);
 
 
-  for (auto &mesh: model->m_meshes)
+
+  Mesh &mesh = model->mesh;
+
+  GLCALL(glBindVertexArray(mesh.VAO));
+
+  model->materials[0].diffuseMap.bind(  GL_TEXTURE0 );
+  model->materials[1].diffuseMap.bind(  GL_TEXTURE1 );
+
+  model->materials[0].specularMap.bind( GL_TEXTURE2 );
+  model->materials[1].specularMap.bind( GL_TEXTURE3 );
+
+  model->materials[0].normalMap.bind(   GL_TEXTURE4 );
+  model->materials[1].normalMap.bind(   GL_TEXTURE5 );
+
+
+  for (size_t i=0; i<mesh.IBOS.size(); i++)
   {
-    GLCALL(glBindVertexArray(mesh.VAO));
+    this->active_shader->setFloat("material.spec_exponent", mesh.materials[i].spec_exponent);
 
-    model->materials[0].diffuseMap.bind(  GL_TEXTURE0 );
-    model->materials[1].diffuseMap.bind(  GL_TEXTURE1 );
-
-    model->materials[0].specularMap.bind( GL_TEXTURE2 );
-    model->materials[1].specularMap.bind( GL_TEXTURE3 );
-
-    model->materials[0].normalMap.bind(   GL_TEXTURE4 );
-    model->materials[1].normalMap.bind(   GL_TEXTURE5 );
-
-
-    for (size_t i=0; i<mesh.IBOS.size(); i++)
-    {
-      this->active_shader->setFloat("material.spec_exponent", mesh.materials[i].spec_exponent);
-
-      GLCALL( glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBOS[i]) );
-      GLCALL( glDrawElements(GL_TRIANGLES, mesh.indices[i].size(), GL_UNSIGNED_INT, (void *)0) );
-    }
-
+    GLCALL( glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBOS[i]) );
+    GLCALL( glDrawElements(GL_TRIANGLES, mesh.indices[i].size(), GL_UNSIGNED_INT, (void *)0) );
   }
 
   glBindVertexArray(0);
@@ -822,17 +845,15 @@ void Renderer::drawBillboard(Model *model, Transform *transform)
   GLCALL( glActiveTexture(GL_TEXTURE0) );
   this->active_shader->setInt("diffuseMap", 0);
 
-  for (auto &mesh: model->m_meshes)
+  Mesh &mesh = model->mesh;
+  GLCALL(glBindVertexArray(mesh.VAO));
+
+  for (size_t i=0; i<mesh.IBOS.size(); i++)
   {
-    GLCALL(glBindVertexArray(mesh.VAO));
+    GLCALL( glBindTexture(GL_TEXTURE_2D, mesh.materials[i].diffuseMap.m_texture_obj) );
 
-    for (size_t i=0; i<mesh.IBOS.size(); i++)
-    {
-      GLCALL( glBindTexture(GL_TEXTURE_2D, mesh.materials[i].diffuseMap.m_texture_obj) );
-
-      GLCALL( glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBOS[i]) );
-      GLCALL( glDrawElements(GL_TRIANGLES, mesh.indices[i].size(), GL_UNSIGNED_INT, (void *)0) );
-    }
+    GLCALL( glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBOS[i]) );
+    GLCALL( glDrawElements(GL_TRIANGLES, mesh.indices[i].size(), GL_UNSIGNED_INT, (void *)0) );
   }
  
 }
@@ -843,17 +864,15 @@ void Renderer::drawModelInstanced(Model *model, InstanceData *instance_data)
   GLCALL( glBindBuffer(GL_ARRAY_BUFFER, instance_data->VBO) );
   GLCALL( glActiveTexture(GL_TEXTURE0) );
   
-  for (auto &mesh: model->m_meshes)
+  Mesh &mesh = model->mesh;
+  glBindVertexArray(mesh.VAO);
+
+  for (size_t i=0; i<mesh.indices.size(); i++)
   {
-    glBindVertexArray(mesh.VAO);
+    GLCALL( glBindTexture(GL_TEXTURE_2D, mesh.materials[i].diffuseMap.m_texture_obj) );
 
-    for (size_t i=0; i<mesh.indices.size(); i++)
-    {
-      GLCALL( glBindTexture(GL_TEXTURE_2D, mesh.materials[i].diffuseMap.m_texture_obj) );
-
-      GLCALL( glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBOS[i]) );
-      glDrawElementsInstanced(GL_TRIANGLES, mesh.indices[i].size(), GL_UNSIGNED_INT, 0, instance_data->model_transforms.size());
-    }
+    GLCALL( glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBOS[i]) );
+    glDrawElementsInstanced(GL_TRIANGLES, mesh.indices[i].size(), GL_UNSIGNED_INT, 0, instance_data->model_transforms.size());
   }
 }
 

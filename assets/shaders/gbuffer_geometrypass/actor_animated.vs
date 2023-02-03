@@ -15,7 +15,6 @@ layout (location = 6) in ivec4 jointIDs;
 out vec2 TexCoords;
 out vec3 FragPos;
 out mat3 TBN;
-out vec3 Normal;
 
 uniform mat4 projection;
 uniform mat4 view;
@@ -63,13 +62,12 @@ void main()
   gl_Position = projection * view * worldPos;
 
   // tangent-space to world-space transform
-  // //------------------------------------------------------------------
-  // mat3 normalMatrix = mat3(model);
-  // vec3 T = normalize(normalMatrix * tangent);
-  // vec3 N = normalize(normalMatrix * normal);
-  // T = normalize(T - dot(T, N) * N);
-  // vec3 B = cross(N, T);
-  // TBN = mat3(T, B, N);
-  Normal = normalize(mat3(model) * normal);
+  //------------------------------------------------------------------
+  mat3 normalMatrix = mat3(model);
+  vec3 T = normalize(normalMatrix * aTangent);
+  vec3 N = normalize(normalMatrix * normal.xyz);
+  T = normalize(T - dot(T, N) * N);
+  vec3 B = cross(N, T);
+  TBN = mat3(T, B, N);
   //------------------------------------------------------------------
 }

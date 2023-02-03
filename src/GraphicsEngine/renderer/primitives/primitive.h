@@ -11,11 +11,14 @@ struct SpherePrimitive {
   float radius;
 };
 
+struct BoxPrimitive {
+  Model model;
+};
 
 struct Primitives {
   
   SpherePrimitive sphere_primitive;
-
+  BoxPrimitive box_primitive;
 };
 
 

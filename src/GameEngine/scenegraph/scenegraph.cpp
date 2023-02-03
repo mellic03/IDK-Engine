@@ -135,7 +135,7 @@ void SceneGraph::loadObject(std::string directory)
     else if (sscanf(buffer, "#GameObjectFlag %s", stringdata))
     {
       GameObjectFlag flag = GameObjectUtil::objectFlag_fromString(stringdata);
-      objectData->setFlag(flag, true);
+      objectData->flags()->set(flag, true);
     }
 
 
@@ -184,7 +184,7 @@ void SceneGraph::loadObject(std::string directory)
   {
     Model *model = object.getModelLOD()->getDefaultLOD_model();
     
-    object.getData()->setFlag(GameObjectFlag::ANIMATED, model->isAnimated());
+    object.getData()->flags()->set(GameObjectFlag::ANIMATED, model->isAnimated());
 
     object.getCullingData()->setLocalBoundingSpherePos(model->bounding_sphere_pos);
     object.getCullingData()->bounding_sphere_radius = model->bounding_sphere_radius;
@@ -225,6 +225,29 @@ void SceneGraph::clearScene(void)
 {
   this->m_object_instances.clear();
   this->m_selectable_instances.clear();
+
+  this->_geometry_bvtree.clearTree();
+  this->_navmesh_bvtree.clearTree();
+
+  this->_object_instances_by_template_name.clear();
+
+  for (int i=0; i<GAMEOBJECT_NUM_TYPES; i++)
+  {
+    this->_object_instances[i].clear();
+    this->_object_instances_animated[i].clear();
+    this->_object_instances_instanced[i].clear();
+    this->_visible_instances_by_type[i].clear();
+  }
+
+  this->_instance_data.clear();
+
+  this->m_object_instances.clear();
+  this->m_dirlight_instances.clear(); 
+  this->m_spotlight_instances.clear();
+  this->m_pointlight_instances.clear();
+  this->m_selectable_instances.clear();
+
+
 
   for (int i=0; i<GAMEOBJECT_NUM_TYPES; i++)
     this->_object_instances[i].clear();

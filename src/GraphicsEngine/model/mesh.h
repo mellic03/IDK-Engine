@@ -25,10 +25,27 @@ struct Vertex {
   glm::ivec4 joint_ids = glm::ivec4(-1);
 };
 
+// inline bool &glm::vec3::operator == (const glm::vec3 &v1, const glm::vec3 &v2)
+// {
+//   bool result = (v1.x == v2.x) && (v1.y == v2.y) && (v1.z == v2.z);
+//   return result;
+// }
+
+inline bool operator == (const Vertex &v1, const Vertex &v2)
+{
+  return (
+    (v1.position == v2.position)    &&
+    (v1.normal == v2.normal)        &&
+    (v1.texcoords == v2.texcoords)
+  );
+}
+
 
 class Mesh {
 
   private:
+
+    void _createIndexBuffer();
 
 
   public:
@@ -43,11 +60,10 @@ class Mesh {
     std::vector<Vertex> vertices;
 
 
-    Mesh(void);
+    Mesh() { };
 
     void transformByMatrix(glm::mat4 matrix);
-
-    void setBufferData(void);
+    void setBufferData();
 
 };
 
