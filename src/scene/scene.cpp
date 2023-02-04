@@ -288,6 +288,18 @@ void Scene::importScene(std::string filepath)
 
 void Scene::drawDirLightDepthmap()
 {
+  //-----------------------------------------------
+  Render::ren.useShader(SHADER_DIRSHADOW);
+  const std::vector<float> shadowCascadeLevels{ 500.0f / 50.0f, 500.0f / 25.0f, 500.0f / 10.0f, 500.0f / 2.0f };
+
+  for (size_t i = 0; i < shadowCascadeLevels.size(); ++i)
+  {
+    Render::ren.active_shader->setFloat("cascadePlaneDistances[" + std::to_string(i) + "]", shadowCascadeLevels[i]);
+  }
+
+  //-----------------------------------------------
+
+
   GLCALL(glViewport(0, 0, Render::ren.DIR_SHADOW_WIDTH, Render::ren.DIR_SHADOW_HEIGHT));
   GLCALL(glBindFramebuffer(GL_FRAMEBUFFER, Render::ren.dirlight_depthmapFBO));
   GLCALL(glBindTexture(GL_TEXTURE_2D, Render::ren.dirlight_depthmap));
@@ -600,6 +612,9 @@ void Scene::drawGeometry_batched()
   
     for (GameObject *obj: *Scene::scenegraph.getVisibleInstancesByType(GAMEOBJECT_BILLBOARD))
       Render::ren.drawPrimitive(PRIMITIVE_SPHERE, obj->getCullingData()->bounding_sphere_pos, obj->getCullingData()->bounding_sphere_radius, obj->getTransform());
+  
+    for (GameObject *obj: *Scene::scenegraph.getObjects(GAMEOBJECT_EMPTY))
+      Render::ren.drawPrimitive_box(obj->getTransform());
   }
   
   if (Render::ren.getDebugData()->getDebugFlag(RenderDebugFlag::DrawColliders))
@@ -620,8 +635,7 @@ void Scene::drawGeometry_batched()
   }
 
 
-  for (GameObject *obj: *Scene::scenegraph.getObjects(GAMEOBJECT_EMPTY))
-    Render::ren.drawPrimitive_box(obj->getTransform());
+
 
 }
 

@@ -223,11 +223,8 @@ GameObject *SceneGraph::frontObjectPtr(void)
 
 void SceneGraph::clearScene(void)
 {
-  this->m_object_instances.clear();
-  this->m_selectable_instances.clear();
-
-  this->_geometry_bvtree.clearTree();
-  this->_navmesh_bvtree.clearTree();
+  this->_geometry_bvtree.clear();
+  this->_navmesh_bvtree.clear();
 
   this->_object_instances_by_template_name.clear();
 
@@ -248,10 +245,6 @@ void SceneGraph::clearScene(void)
   this->m_selectable_instances.clear();
 
 
-
-  for (int i=0; i<GAMEOBJECT_NUM_TYPES; i++)
-    this->_object_instances[i].clear();
-    
   for (int i=0; i<NUM_POINTLIGHTS; i++)
   {
     this->pointlights[i].active = false;
@@ -387,7 +380,7 @@ std::list<GameObject *> *SceneGraph::getVisibleInstancesByType(GameObjectType ob
 
 void SceneGraph::cullObjects(Frustum *frustum)
 {
-  this->_geometry_bvtree.clearTree();
+  this->_geometry_bvtree.clear();
 
 
   for (GameObject *object: *this->getObjects(GAMEOBJECT_TERRAIN))

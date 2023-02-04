@@ -10,9 +10,9 @@
     GameObjectFlags: 4
   </HEADER>
   <TRANSFORM>
-    position: -16.1574 -1.48084 3.16042
-    velocity: 2.16336e-15 -0.976377 5.60943e-15
-    orientation: -0.0142561 -0.565674 -0.00979493 0.824448
+    position: -16.007 -1.48102 -0.893489
+    velocity: 1.21261e-07 -0.980879 -1.72094e-07
+    orientation: 0.0123952 -0.534004 0.00781653 0.845355
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
@@ -67,13 +67,13 @@
     template name: pointlight
     assigned name: pointlight
     objectID: 3
-    parentID: 2
+    parentID: 17
     GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: -13.5 -98.693 -11.095
+    position: -3.356 0.55 -20.9648
     velocity: 0 0 0
-    orientation: 0.0912529 0.192459 0.0245922 0.976741
+    orientation: 0.317534 0.489293 -0.0442592 0.811049
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
@@ -174,7 +174,7 @@
   </HEADER>
   <TRANSFORM>
     position: -14.2853 -4.00885 -11.3677
-    velocity: 4.90454e-44 -9.33503e-41 -4.90454e-44
+    velocity: 3.08286e-44 -7.00649e-43 -3.08286e-44
     orientation: 0 0.998906 0 0.0467641
     scale: 1.7 1.7 1.7
   </TRANSFORM>
@@ -328,10 +328,10 @@
     GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: -0.74 1.26 4.97
+    position: 0 0.73 -6.86
     velocity: 0 0 0
     orientation: 0 0 0 1
-    scale: 3.71 5.04 17.8
+    scale: 5.3 5.04 20.31
   </TRANSFORM>
   <SCRIPTS>
     script: LuaScripting/scripts/gondola/activation

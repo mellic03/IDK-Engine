@@ -11,5 +11,16 @@ return function(objectID, engine)
     CE_GameObject_ClearParent(playerID);
   end;
 
+
+  if (engine.ioLibrary.keyPressed.R) then
+    local pos = CE_GameObject_GetPos(parentID);
+    CE_GameObject_SetPos(parentID, pos.x, pos.y, pos.z - 0.04);
+  end
+  if (engine.ioLibrary.keyPressed.F) then
+    local pos = CE_GameObject_GetPos(parentID);
+    CE_GameObject_SetPos(parentID, pos.x, pos.y, pos.z + 0.04);
+  end
+
+
 end;
 

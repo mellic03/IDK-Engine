@@ -123,7 +123,8 @@ class Renderer {
 
     glm::mat4 lightSpaceMatrix;
 
-    GLuint dirlight_depthmapFBO, dirlight_depthmap;
+    GLuint dirlight_depthmapFBO, dirlight_depthmap, dirlight_depthmapArray;
+    
 
     GLuint depthCubeMapFBOS[2], depthCubeMaps[2];
     GLuint pointlight_depthmapFBO, pointlight_depthCubemap;

@@ -150,23 +150,23 @@ void BVTree::insert(GameObject *obj)
 }
 
 
-static void clear(BVNode *node)
+static void _clear(BVNode *node)
 {
   if (node == nullptr)
     return;
   
-  clear(node->left);
+  _clear(node->left);
   delete node->left;
 
-  clear(node->right);
+  _clear(node->right);
   delete node->right;
 }
 
 
 
-void BVTree::clearTree()
+void BVTree::clear()
 {
-  clear(this->root);
+  _clear(this->root);
   this->root = nullptr;
 }
 

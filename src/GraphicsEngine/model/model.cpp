@@ -846,12 +846,6 @@ void Model::loadArmatureWeights(rapidxml::xml_document<> *doc, Animation::Armatu
 
     for (size_t j=0; j<jidssize && j<4; j++)
     {
-
-      if (jids[j] > 26)
-      {
-        printf("jids[%d] > 26\n", j);
-      }
-
       newJointIDs[j] = jids[j];
       newJointWeights[j] = jweights[j];
     }

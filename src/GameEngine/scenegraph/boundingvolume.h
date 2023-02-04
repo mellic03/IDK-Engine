@@ -37,7 +37,7 @@ class BVTree {
 
     BVNode *getRootNode() { return this->root; };
 
-    void clearTree();
+    void clear();
     void insert(GameObject *objectptr);
     void cullObjects(Frustum *frustum, std::list<GameObject *> visible_objects[]);
     
