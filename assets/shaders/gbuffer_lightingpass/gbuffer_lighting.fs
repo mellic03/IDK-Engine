@@ -1,7 +1,9 @@
-#version 330 core
+#version 440 core
 
 #define NUM_POINTLIGHTS 10
 #define NUM_SPOTLIGHTS 1
+
+#define NUM_SHADOW_CASCADES 6
 
 struct Material {
   sampler2D diffuseMap, specularMap, emissionMap, normalMap;
@@ -46,10 +48,16 @@ uniform ShadowPointLight shadow_pointlights[NUM_POINTLIGHTS];
 uniform int num_shadow_pointlights;
 
 
+uniform float shadow_cascades[NUM_SHADOW_CASCADES];
+uniform mat4  dir_lightSpaceMatrices[NUM_SHADOW_CASCADES];
+uniform sampler2D dir_depthmaps[NUM_SHADOW_CASCADES];
+
 
 out vec4 FragColor;
 
 in vec2 TexCoords;
+in float clipspacePosZ;
+
 
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
@@ -95,9 +103,22 @@ float calculate_shadow_pointlight(ShadowPointLight light, vec3 viewPos, vec3 fra
 }
 
 
-float calculate_shadow_dirlight(vec3 lightPos, vec3 fragPos, vec3 normal, vec3 lightDir, float bias)
+uniform mat4 view;
+
+float calculate_shadow_dirlight(vec3 lightPos, vec3 fragPos, vec3 normal, vec3 lightDir, float lightbias)
 {
-  vec4 lspacepos = dir_lightSpaceMatrix * vec4(fragPos, 1.0);
+  vec4 fragPosViewSpace = view * vec4(fragPos.xyz, 1.0);
+  float depthValue = abs(fragPosViewSpace.z);
+
+  int cascade = 0;
+
+  for (cascade=0; cascade<NUM_SHADOW_CASCADES; cascade++)
+  {
+    if (depthValue <= shadow_cascades[cascade])
+      break;
+  }
+
+  vec4 lspacepos = dir_lightSpaceMatrices[cascade] * vec4(fragPos, 1.0);
 
   vec3 projCoords = lspacepos.xyz / lspacepos.w;
   projCoords = projCoords * 0.5 + 0.5;
@@ -105,24 +126,36 @@ float calculate_shadow_dirlight(vec3 lightPos, vec3 fragPos, vec3 normal, vec3 l
   if (projCoords.z > 1.0)
     return 0.0;
 
-  float closestDepth = texture(depthmap_dirlight, projCoords.xy).r; 
+  float closestDepth = texture(dir_depthmaps[cascade], projCoords.xy).r; 
   float currentDepth = projCoords.z;
   
   float diffuseFactor = dot(normal, -lightDir);
-  float bb = 0.01;
+
+  float bias = lightbias;// max(0.05 * (1.0 - dot(normal, lightDir)), lightbias);
+  if (cascade == NUM_SHADOW_CASCADES - 1)
+  {
+    bias *= 1 / (shadow_cascades[NUM_SHADOW_CASCADES - 1] * 0.5f);
+  }
+  else
+  {
+    bias *= 1 / (shadow_cascades[cascade] * 0.5f);
+  }
+
 
   float shadow = 0.0;
-  vec2 texelSize = 2.0 / textureSize(depthmap_dirlight, 1);
-  const int halfkernelWidth = 2;
-  for(int x = -halfkernelWidth; x <= halfkernelWidth; ++x)
+  vec2 texelSize = 1.0 / vec2(textureSize(dir_depthmaps[cascade], 0));
+  const int halfKernelWidth = 1;
+
+  for(int x = -halfKernelWidth; x <= halfKernelWidth; ++x)
   {
-    for(int y = -halfkernelWidth; y <= halfkernelWidth; ++y)
+    for(int y = -halfKernelWidth; y <= halfKernelWidth; ++y)
     {
-      float pcfDepth = texture(depthmap_dirlight, projCoords.xy + vec2(x, y) * texelSize).r;
-      shadow += currentDepth - bb > pcfDepth ? 1.0 : 0.0;
-    }
+      float pcfDepth = texture(dir_depthmaps[cascade], texelSize*vec2(x, y) + projCoords.xy, cascade).r; 
+      shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;        
+    }    
   }
-  shadow /= ((halfkernelWidth*2+1)*(halfkernelWidth*2+1));
+  shadow /= ((halfKernelWidth*2+1)*(halfKernelWidth*2+1));
+
 
   return shadow;
 }
@@ -181,7 +214,7 @@ vec3 calculate_pointlight(PointLight light, vec3 albedo, vec3 fragPos, vec3 norm
 
 vec3 calculate_dirlight(DirLight light, vec3 albedo, vec3 fragPos, vec3 normal, float spec_strength)
 {
-  vec3 lightDir = normalize(light.position);  
+  vec3 lightDir = normalize(light.position);
   float diff = max(dot(normal, lightDir), 0.0);
 
   vec3 halfwayDir = normalize(lightDir + normalize(viewPos - fragPos));  
@@ -196,6 +229,7 @@ vec3 calculate_dirlight(DirLight light, vec3 albedo, vec3 fragPos, vec3 normal, 
   return (ambient + (1.0 - shadow) * (diffuse + specular));
 }
 
+uniform mat4 projection;
 
 void main()
 {

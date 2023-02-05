@@ -9,12 +9,15 @@ bool Texture::load(std::string filepath, bool useSRGB)
   unsigned char *data;
 
   // If file exists, load it.
-  // Otherwise, read the -xxxx.png and load the default version
+  // Otherwise, load the default -xxxx.png
   //------------------------------------------------------------
   std::ifstream stream(filepath);
 
   if (stream.good())
+  {
+    // std::cout << "successfully loaded file: " << filepath << "\n";
     data = stbi_load(filepath.c_str(), &width, &height, &bpp, STBI_rgb_alpha);
+  }
 
   else
   {
@@ -30,6 +33,7 @@ bool Texture::load(std::string filepath, bool useSRGB)
     // -specular, -normal or -emission map missing
     else
     {
+      // std::cout << "could not find file: " << filepath << "\n";
       temp_filepath.erase(0, pos);
       filepath = "src/GraphicsEngine/model/defaultimages/default" + temp_filepath;
       // printf("New filepath: %s\n", filepath.c_str());
@@ -70,11 +74,13 @@ bool Texture::load(std::string filepath, bool useSRGB)
   return true;
 }
 
+
 void Texture::bind(GLenum texture_unit)
 {
   GLCALL( glActiveTexture(texture_unit) );
   GLCALL( glBindTexture(GL_TEXTURE_2D, this->m_texture_obj) );
 }
+
 
 void Texture::unbind(GLenum texture_unit)
 {

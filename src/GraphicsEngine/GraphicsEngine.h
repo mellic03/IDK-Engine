@@ -5,5 +5,6 @@
 #include "transform/transformutil.h"
 #include "renderer/instancedata.h"
 #include "renderer/renderer.h"
+#include "renderer/renderutil.h"
 #include "model/model.h"
 #include "camera.h"

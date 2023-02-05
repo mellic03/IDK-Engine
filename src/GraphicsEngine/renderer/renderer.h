@@ -23,6 +23,8 @@
 #include "primitives/primitive.h"
 #include "instancedata.h"
 #include "../frustum.h"
+#include "renderutil.h"
+
 
 #define DEFAULT_SCREEN_WIDTH 1500
 #define DEFAULT_SCREEN_HEIGHT 900
@@ -30,9 +32,10 @@
 #define MAX_BLUR_FBOS 16
 
 #define NUM_DIRLIGHTS 1
+#define NUM_SHADOW_CASCADES 6
+
 #define NUM_POINTLIGHTS 5
 #define NUM_SPOTLIGHTS 2
-
 
 
 
@@ -55,6 +58,8 @@ class Renderer {
     };
 
     void createShader(std::string filename, ShaderType type);
+
+
 
   public:
 
@@ -122,9 +127,12 @@ class Renderer {
     int POINT_SHADOW_HEIGHT = 512;
 
     glm::mat4 lightSpaceMatrix;
+    std::vector<glm::mat4> lightSpaceMatrices;
 
-    GLuint dirlight_depthmapFBO, dirlight_depthmap, dirlight_depthmapArray;
-    
+    GLuint dirlight_depthmapFBO, dirlight_depthmap;
+    GLuint dirlight_depthmapFBO_cascade, dirlight_depthmapArray[NUM_SHADOW_CASCADES];
+    std::vector<float> shadow_cascades = { 8.0f, 16.0f, 32.0f, 64.0f, 128.0f, 256.0f, 512.0f, 1024.0f };
+
 
     GLuint depthCubeMapFBOS[2], depthCubeMaps[2];
     GLuint pointlight_depthmapFBO, pointlight_depthCubemap;

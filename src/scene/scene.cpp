@@ -288,33 +288,19 @@ void Scene::importScene(std::string filepath)
 
 void Scene::drawDirLightDepthmap()
 {
-  //-----------------------------------------------
   Render::ren.useShader(SHADER_DIRSHADOW);
-  const std::vector<float> shadowCascadeLevels{ 500.0f / 50.0f, 500.0f / 25.0f, 500.0f / 10.0f, 500.0f / 2.0f };
 
-  for (size_t i = 0; i < shadowCascadeLevels.size(); ++i)
+  Render::ren.setupDirLightDepthmap(Scene::scenegraph.dirlight.position, Scene::scenegraph.dirlight.direction);
+
+  for (size_t i=0; i<NUM_SHADOW_CASCADES; i++)
   {
-    Render::ren.active_shader->setFloat("cascadePlaneDistances[" + std::to_string(i) + "]", shadowCascadeLevels[i]);
-  }
-
-  //-----------------------------------------------
-
-
-  GLCALL(glViewport(0, 0, Render::ren.DIR_SHADOW_WIDTH, Render::ren.DIR_SHADOW_HEIGHT));
-  GLCALL(glBindFramebuffer(GL_FRAMEBUFFER, Render::ren.dirlight_depthmapFBO));
-  GLCALL(glBindTexture(GL_TEXTURE_2D, Render::ren.dirlight_depthmap));
-  glClear(GL_DEPTH_BUFFER_BIT);
-    
-    Render::ren.useShader(SHADER_DIRSHADOW);
-    Render::ren.setupDirLightDepthmap(Scene::scenegraph.dirlight.position, Scene::scenegraph.dirlight.direction);
+    RenderUtil::bindWrite_cascade(Render::ren.dirlight_depthmapFBO, Render::ren.dirlight_depthmapArray, i);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    Render::ren.active_shader->setMat4("lightSpaceMatrix", Render::ren.lightSpaceMatrices[i]);
     Scene::drawGeometry();
-
-    Render::ren.useShader(SHADER_DIRSHADOW_ANIMATED);
-    Render::ren.setupDirLightDepthmap(Scene::scenegraph.dirlight.position, Scene::scenegraph.dirlight.direction);
-    Scene::drawGeometry_animated();
-  
-  glBindTexture(GL_TEXTURE_2D, 0);
+  }
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 }
 
 

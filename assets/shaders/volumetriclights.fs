@@ -1,7 +1,9 @@
-#version 330 core
+#version 440 core
 
 #define NUM_POINTLIGHTS 10
 #define NUM_SPOTLIGHTS 1
+
+#define NUM_SHADOW_CASCADES 6
 
 layout (location = 0) out vec4 FragColor;
 
@@ -68,6 +70,15 @@ uniform mat4 dir_lightSpaceMatrix;
 uniform sampler2D depthmap_dirlight;
 
 
+uniform float shadow_cascades[NUM_SHADOW_CASCADES];
+uniform mat4  dir_lightSpaceMatrices[NUM_SHADOW_CASCADES];
+uniform sampler2D dir_depthmaps[NUM_SHADOW_CASCADES];
+
+
+in vec2 TexCoords;
+uniform vec3 viewPos;
+
+
 vec3 gridSamplingDisk[20] = vec3[]
 (
   vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1), 
@@ -94,12 +105,19 @@ float rand(vec2 co)
 
 bool in_shadow_ortho(vec3 fragPos)
 {
-  vec4 lspacepos = dir_lightSpaceMatrix * vec4(fragPos, 1.0);
+  int cascade = 0;
+  for (cascade=0; cascade<NUM_SHADOW_CASCADES; cascade++)
+  {
+    if (distance(fragPos, viewPos) <= shadow_cascades[cascade])
+      break;
+  }
+
+  vec4 lspacepos = dir_lightSpaceMatrices[cascade] * vec4(fragPos, 1.0);
 
   vec3 projCoords = lspacepos.xyz / lspacepos.w;
   projCoords = projCoords * 0.5 + 0.5;
   
-  float closestDepth = texture(depthmap_dirlight, projCoords.xy).r; 
+  float closestDepth = texture(dir_depthmaps[cascade], projCoords.xy).r; 
   float currentDepth = projCoords.z;
   float bias = -0.0015;
 
@@ -107,8 +125,7 @@ bool in_shadow_ortho(vec3 fragPos)
 }
 
 
-in vec2 TexCoords;
-uniform vec3 viewPos;
+
 
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;

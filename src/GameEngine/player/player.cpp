@@ -66,7 +66,8 @@ void Player::key_input(Renderer *ren)
 
   this->cam->input();
 
-  if (this->fly)
+
+  if (this->m_gameobject->getData()->flags()->get(GameObjectFlag::PHYSICS) == false)
   {
     if (state[SDL_SCANCODE_W])
       *this->getPos() += this->move_speed * ren->deltaTime * temp_front;
@@ -88,7 +89,9 @@ void Player::key_input(Renderer *ren)
 
     return;
   }
-  
+
+
+
   bool headbob = false;
 
   if (state[SDL_SCANCODE_W])

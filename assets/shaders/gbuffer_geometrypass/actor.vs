@@ -5,16 +5,11 @@ layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoords;
 layout (location = 3) in vec3 aTangent;
 
-layout (location = 4) in vec4 aColor;
-
-layout (location = 5) in vec4 jointWeights;
-layout (location = 6) in ivec4 jointIDs;
-
 
 out vec2 TexCoords;
 out vec3 FragPos;
 out mat3 TBN;
-
+out vec3 Normal;
 
 uniform mat4 projection;
 uniform mat4 view;
@@ -33,9 +28,12 @@ void main()
   //------------------------------------------------------------------
   mat3 normalMatrix = mat3(model);
   vec3 T = normalize(normalMatrix * aTangent);
-  vec3 N = normalize(normalMatrix * aNormal.xyz);
+  vec3 N = normalize(normalMatrix * aNormal);
   T = normalize(T - dot(T, N) * N);
   vec3 B = cross(N, T);
   TBN = mat3(T, B, N);
+
+  Normal = normalize(aNormal);
   //------------------------------------------------------------------
 }
+

@@ -1,6 +1,6 @@
 #version 330 core
 
-#define BIAS 0.01
+#define BIAS 0
 
 in vec2 TexCoords;
 uniform sampler2D diffuseMap;

@@ -1,6 +1,6 @@
 #include <fstream>
 #include <sstream>
-
+#include <iomanip>
 #include "model.h"
 
 #define doit for (int i=0; i<
@@ -350,12 +350,17 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
             f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z)
           };
 
+          if (f == -INFINITY || f == INFINITY)
+            tangent = glm::vec3(1.0f);
+
+          tangent = glm::normalize(tangent);
+
           v1->tangent = tangent;
           v2->tangent = tangent;
           v3->tangent = tangent;
         }
         //----------------------------------------------------
-         triangleNode = triangleNode->next_sibling("triangles");
+        triangleNode = triangleNode->next_sibling("triangles");
       }
 
       geometry_number += 1;
@@ -578,19 +583,17 @@ void Model::computeBoundingSphere(void)
   
   this->bounding_sphere_pos = (max_dist_v1 + max_dist_v2) / 2.0f;
   this->bounding_sphere_radiusSQ = (sqrt(max_dist_sq) / 2.0f) * (sqrt(max_dist_sq) / 2.0f);
+  printf("size: %d\n", this->mesh.vertices.size());
 
 
   // Loop over vertices again, if any are outside the sphere,
   // increase the sphere size by the amount the vertex is outside
-  for (Mesh mesh: this->_tempMeshes)
+  for (auto &v: this->mesh.vertices)
   {
-    for (auto &v: mesh.vertices)
-    {
-      float dist = glm::distance2(v.position, this->bounding_sphere_pos);
-      
-      if (dist > this->bounding_sphere_radiusSQ)
-        this->bounding_sphere_radiusSQ += (dist - bounding_sphere_radiusSQ);
-    }
+    float dist = glm::distance2(v.position, this->bounding_sphere_pos);
+    
+    if (dist > this->bounding_sphere_radiusSQ)
+      this->bounding_sphere_radiusSQ += (dist - bounding_sphere_radiusSQ);
   }
 
   this->bounding_sphere_radius = sqrt(this->bounding_sphere_radiusSQ);
@@ -860,11 +863,227 @@ void Model::loadArmatureWeights(rapidxml::xml_document<> *doc, Animation::Armatu
 
 
 
+void Model::_toFile(std::string filepath)
+{
+  std::ofstream stream(filepath + ".penis");
+
+  Mesh &mesh = this->mesh;
+
+  /*
+    No. vertices
+    No. materials
+    vertices
+    material [name 1]: indices 1
+    material [name 2]: indices 2
+    .
+    .
+    .
+    material [name n]: indices n
+  */
+
+  stream << mesh.vertices.size() << "\n";
+  stream << mesh.materials.size() << "\n";
+  
+  // Vertices
+  //-----------------------------------------------------------------------------
+  for (size_t i=0; i<mesh.vertices.size(); i++)
+  {
+    Vertex &v = mesh.vertices[i];
+
+    stream << v.position;
+    stream << v.normal;
+    stream << v.texcoords;
+    stream << v.tangent;
+    stream << v.color;
+    stream << v.weights;
+    stream << v.joint_ids;
+
+    std::cout << v.position << "    " << v.normal << "    " << v.texcoords << "    " << v.tangent << "\n";
+  }
+  stream << "\n";
+  //-----------------------------------------------------------------------------
+
+
+  // Indices
+  //-----------------------------------------------------------------------------
+  for (size_t i=0; i<mesh.indices.size(); i++)
+  {
+    std::vector<GLuint> &indexVector = mesh.indices[i];
+
+    // Material used for this set of indices;
+    stream << "material [" + mesh.materials[i].diffuseMap.m_filepath + "]: ";
+
+    for (size_t j=0; j<indexVector.size(); j++)
+    {
+      stream << indexVector[j] << " ";
+    }
+    stream << "\n";
+  }
+  //-----------------------------------------------------------------------------
+
+
+  stream.close();
+}
+
+
+
+void Model::_fromFile(std::ifstream &stream)
+{
+  std::string line;
+
+  getline(stream, line);
+  int num_vertices = std::stoi(line);
+
+  getline(stream, line);
+  int num_materials = std::stoi(line);
+
+
+  getline(stream, line);
+
+  std::istringstream input(line);
+  Vertex vertex;
+
+
+  float f;
+  int count = 0;
+  for (int j=0; j<num_vertices; j++)
+  {
+    doit 3 times
+      input >> vertex.position[i];
+
+    doit 3 times
+      input >> vertex.normal[i];
+
+    doit 2 times
+      input >> vertex.texcoords[i];
+
+    doit 3 times
+      input >> vertex.tangent[i];
+    
+    doit 4 times
+      input >> vertex.color[i];
+
+    doit 4 times
+      input >> vertex.weights[i];
+
+    doit 4 times
+      input >> vertex.joint_ids[i];
+
+    // std::cout << vertex.position << "    " << vertex.normal << "    " << vertex.texcoords << "    " << vertex.tangent << "\n";
+
+    this->mesh.vertices.push_back(vertex);
+    // count += 1;
+
+
+    // if (count == 3)
+    // {
+    //   count = 0;
+
+    //   Vertex *v1 = &this->mesh.vertices[this->mesh.vertices.size()-1];
+    //   Vertex *v2 = &this->mesh.vertices[this->mesh.vertices.size()-2];
+    //   Vertex *v3 = &this->mesh.vertices[this->mesh.vertices.size()-3];
+
+    //   glm::vec3 p1 = v1->position,  p2 = v2->position,  p3 = v3->position;
+    //   glm::vec2 t1 = v1->texcoords, t2 = v2->texcoords, t3 = v3->texcoords;
+
+    //   glm::vec3 edge1 = p2 - p1;
+    //   glm::vec3 edge2 = p3 - p1;
+    //   glm::vec2 deltaUV1 = t2 - t1;
+    //   glm::vec2 deltaUV2 = t3 - t1;
+
+    //   float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+    //   glm::vec3 tangent = {
+    //     f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x),
+    //     f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y),
+    //     f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z)
+    //   };
+
+    //   if (f == -INFINITY || f == INFINITY)
+    //     tangent = glm::vec3(1.0f);
+
+    //   tangent = glm::normalize(tangent);
+
+    //   v1->tangent = tangent;
+    //   v2->tangent = tangent;
+    //   v3->tangent = tangent;
+    // }
+  }
+
+  
+  for (int i=0; i<num_materials; i++)
+  {
+    getline(stream, line);
+    
+    size_t pos = line.find("material [");
+    line.erase(0, pos + std::string("material [").size());
+
+    pos = line.find("]: ");
+
+    std::string filepath = line.substr(0, pos);
+    line.erase(0, pos + std::string("]: ").size());
+
+
+    Material material;
+    material.diffuseMap.load(filepath, true);
+
+    int insert_point = filepath.size() - 4;
+    std::string temp_path = filepath;
+
+    temp_path.insert(insert_point, "-specular");
+    material.specularMap.load(temp_path, true);
+
+    temp_path = filepath; temp_path.insert(insert_point, "-emission");
+    material.emissionMap.load(temp_path, true);
+
+    temp_path = filepath; temp_path.insert(insert_point, "-normal");
+    material.normalMap.load(temp_path, true);
+
+    this->mesh.materials.push_back(material);
+    this->materials.push_back(material);
+
+
+    this->mesh.IBOS.push_back(0);
+    this->mesh.indices.push_back(std::vector<GLuint>());
+
+    input = std::istringstream(line);
+
+    int index;
+    while (input >> index)
+    {
+      this->mesh.indices[this->mesh.indices.size() - 1].push_back(index);
+    }
+  }
+
+  this->mesh.setBufferData();
+}
+
 
 
 void Model::loadDae(std::string directory, std::string filename, bool is_terrain)
 {
   std::ifstream fh;
+
+  std::ifstream istream(directory + "boundingsphere.txt");
+  if (istream.good())
+    this->loadBoundingSphere(istream);
+  istream.close();
+
+  if (directory == "assets/gameobjects/props/cube/")
+  {
+    printf("From .penis\n");
+    fh.open(directory + filename + ".penis");
+    if (fh.good())
+    {
+      this->_fromFile(fh);
+      // this->computeBoundingSphere();
+      fh.close();
+      return;
+    }
+    fh.close();
+    printf("\n\n");
+  }
+
+
   fh.open(directory + filename);
 
   if (fh.is_open() == false)
@@ -938,16 +1157,30 @@ void Model::loadDae(std::string directory, std::string filename, bool is_terrain
   //   this->loadBoundingSphere(istream);
 
   // else
+  // {
+  //   this->computeBoundingSphere();
+  //   std::ofstream ostream(directory + "boundingsphere.txt");
+  //   ostream << this->bounding_sphere_pos.x << " " << this->bounding_sphere_pos.y << " " << this->bounding_sphere_pos.z << "\n";
+  //   ostream << this->bounding_sphere_radius << std::endl;
+  //   ostream.close();
+  // }
+
+  istream.close();
+
+  if (directory == "assets/gameobjects/props/cube/")
   {
-    this->computeBoundingSphere();
-    std::ofstream ostream(directory + "boundingsphere.txt");
-    ostream << this->bounding_sphere_pos.x << " " << this->bounding_sphere_pos.y << " " << this->bounding_sphere_pos.z << "\n";
-    ostream << this->bounding_sphere_radius << std::endl;
-    ostream.close();
+
+    printf("From .dae\n");
+    for (auto &v: this->mesh.vertices)
+    {
+      std::cout << v.position << "    " << v.normal << "    " << v.texcoords << "    " << v.tangent << "\n";
+    }
+
+    // this->_toFile(directory + filename);
+    printf("\n");
   }
 
-  // istream.close();
-
+  this->mesh.setBufferData();
 }
 
 

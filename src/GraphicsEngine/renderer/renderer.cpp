@@ -74,6 +74,7 @@ void Renderer::compileShaders(void)
 
 }
 
+
 void Renderer::init(void)
 {
   this->compileShaders();
@@ -111,36 +112,22 @@ void Renderer::init(void)
   // Directional light depthmap
   //------------------------------------------------------
   glGenFramebuffers(1, &this->dirlight_depthmapFBO); 
-  std::vector<float> shadowCascadeLevels{ 500.0f / 50.0f, 500.0f / 25.0f, 500.0f / 10.0f, 500.0f / 2.0f };
-  glGenTextures(1, &this->dirlight_depthmapArray);
-  glBindTexture(GL_TEXTURE_2D_ARRAY, this->dirlight_depthmapArray);
-  glTexImage3D(
-    GL_TEXTURE_2D_ARRAY,
-    0,
-    GL_DEPTH_COMPONENT32F,
-    DIR_SHADOW_WIDTH,
-    DIR_SHADOW_HEIGHT,
-    shadowCascadeLevels.size() + 1,
-    0,
-    GL_DEPTH_COMPONENT,
-    GL_FLOAT,
-    nullptr
-  );
-      
-  glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-  glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-      
-  constexpr float bordercolor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-  glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, bordercolor);
-      
+  glGenTextures(1, &this->dirlight_depthmap);
+  glBindTexture(GL_TEXTURE_2D, this->dirlight_depthmap);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, DIR_SHADOW_WIDTH, DIR_SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER); 
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
   glBindFramebuffer(GL_FRAMEBUFFER, this->dirlight_depthmapFBO);
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, this->dirlight_depthmapArray, 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this->dirlight_depthmap, 0);
   glDrawBuffer(GL_NONE);
   glReadBuffer(GL_NONE);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
   //------------------------------------------------------
 
+
+  this->resize(this->viewport_width, this->viewport_height);
 }
 
 
@@ -199,95 +186,34 @@ void Renderer::postProcess(void)
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 
-static std::vector<glm::vec4> getFrustumCornersWorldSpace(const glm::mat4& proj, const glm::mat4& view)
-{
-  const auto inv = glm::inverse(proj * view);
-  
-  std::vector<glm::vec4> frustumCorners;
-  for (unsigned int x = 0; x < 2; ++x)
-  {
-    for (unsigned int y = 0; y < 2; ++y)
-    {
-      for (unsigned int z = 0; z < 2; ++z)
-      {
-        const glm::vec4 pt = 
-          inv * glm::vec4(
-            2.0f * x - 1.0f,
-            2.0f * y - 1.0f,
-            2.0f * z - 1.0f,
-            1.0f);
-        frustumCorners.push_back(pt / pt.w);
-      }
-    }
-  }
-  
-  return frustumCorners;
-}
-
-
-
-static glm::mat4 calculateLightView(Renderer *ren, glm::vec3 lightdir)
-{
-  std::vector<glm::vec4> corners = getFrustumCornersWorldSpace(ren->cam.projection, ren->cam.view);
-
-  glm::vec3 center = glm::vec3(0, 0, 0);
-  for (const auto& v : corners)
-  {
-      center += glm::vec3(v);
-  }
-  center /= corners.size();
-
-
-  const glm::mat4 lightView = glm::lookAt(
-    center + lightdir,
-    center,
-    glm::vec3(0.0f, 1.0f, 0.0f)
-  );
-
-
-  float minX = std::numeric_limits<float>::max();
-  float maxX = std::numeric_limits<float>::lowest();
-  float minY = std::numeric_limits<float>::max();
-  float maxY = std::numeric_limits<float>::lowest();
-  float minZ = std::numeric_limits<float>::max();
-  float maxZ = std::numeric_limits<float>::lowest();
-  for (const auto& v : corners)
-  {
-    const auto trf = lightView * v;
-    minX = std::min(minX, trf.x);
-    maxX = std::max(maxX, trf.x);
-    minY = std::min(minY, trf.y);
-    maxY = std::max(maxY, trf.y);
-    minZ = std::min(minZ, trf.z);
-    maxZ = std::max(maxZ, trf.z);
-  }
-}
-
-
 void Renderer::setupDirLightDepthmap(glm::vec3 dirlightpos, glm::vec3 dirlightdir)
 {
+  this->lightSpaceMatrices.clear();
 
-  glm::mat4 lightViewC = calculateLightView(this, dirlightdir);
-
-
-  float near = 1.0f;
-  float far = 100.0f;
-  glm::mat4 lightProjection = glm::ortho(-35.0f, 35.0f, -35.0f, 35.0f, near, far);
-  
-  glm::vec3 v = glm::inverse(this->cam.view) * glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
-  v.y = 0.0f;
-
-  glm::mat4 lightView = glm::lookAt( this->cam.m_transform->getPos_worldspace() - 15.0f*v + dirlightpos, 
-                                     this->cam.m_transform->getPos_worldspace() - 15.0f*v,
-                                     glm::vec3( 0.0f, 1.0f,  0.0f));
-
-  // glm::mat4 lightView = glm::lookAt( dirlightpos, 
-  //                                    glm::vec3(0.0f),
-  //                                    glm::vec3( 0.0f, 1.0f,  0.0f));
+  glm::mat4 proj = glm::perspective(
+    this->cam.fov,
+    (float)this->viewport_width / (float)this->viewport_height,
+    this->cam.near,
+    this->shadow_cascades[0] + 5.0f
+  );
+  this->lightSpaceMatrices.push_back(RenderUtil::getLightSpaceMatrix_cascade(proj, this->cam.view, glm::normalize(dirlightpos)));
 
 
-  this->lightSpaceMatrix = lightProjection * lightView;
+  for (size_t i=1; i<NUM_SHADOW_CASCADES; i++)
+  {
+    proj = glm::perspective(
+      this->cam.fov,
+      (float)this->viewport_width / (float)this->viewport_height,
+      this->shadow_cascades[i-1] - 5.0f,
+      this->shadow_cascades[i] + 5.0f
+    );
+   
+    this->lightSpaceMatrices.push_back(RenderUtil::getLightSpaceMatrix_cascade(proj, this->cam.view, glm::normalize(dirlightpos)));
+  }
+
+  this->lightSpaceMatrix = this->lightSpaceMatrices[0];
   this->active_shader->setMat4("lightSpaceMatrix", this->lightSpaceMatrix);
+
 }
 
 
@@ -699,6 +625,7 @@ void Renderer::resize(int x, int y)
   this->genPingPongBuffer(x, y);
   this->genScreenQuadBuffer(x, y);
 
+  RenderUtil::genShadowMap_cascade(&this->dirlight_depthmapFBO_cascade, this->dirlight_depthmapArray, NUM_SHADOW_CASCADES, x, y);
 
   this->viewport_width = x;
   this->viewport_height = y;
@@ -855,7 +782,6 @@ void Renderer::drawModelAnimated_blend(Model *model, Transform *transform, Anima
 
 
 
-
 void Renderer::drawLightSource(Model *model, Transform *transform, glm::vec3 diffuse)
 {
   this->active_shader->setMat4("model", transform->getModelMatrix_stale());
@@ -899,13 +825,13 @@ void Renderer::drawTerrain(Model *model, Transform *transform, float threshold, 
   GLCALL(glBindVertexArray(mesh.VAO));
 
   model->materials[0].diffuseMap.bind(  GL_TEXTURE0 );
-  model->materials[1].diffuseMap.bind(  GL_TEXTURE1 );
+  // model->materials[1].diffuseMap.bind(  GL_TEXTURE1 );
 
   model->materials[0].specularMap.bind( GL_TEXTURE2 );
-  model->materials[1].specularMap.bind( GL_TEXTURE3 );
+  // model->materials[1].specularMap.bind( GL_TEXTURE3 );
 
   model->materials[0].normalMap.bind(   GL_TEXTURE4 );
-  model->materials[1].normalMap.bind(   GL_TEXTURE5 );
+  // model->materials[1].normalMap.bind(   GL_TEXTURE5 );
 
 
   for (size_t i=0; i<mesh.IBOS.size(); i++)

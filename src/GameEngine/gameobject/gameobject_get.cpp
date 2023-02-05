@@ -29,6 +29,9 @@ ModelLOD *GameObject::getModelLOD()
 
 Model *GameObject::getModel(void)
 {
+  if (this->getLODData() == nullptr)
+    return nullptr;
+
   if (this->getLODData()->override_global_lod)
     return this->_modelLOD->getLOD_model_override(this->getLODData()->level_of_detail);
   else

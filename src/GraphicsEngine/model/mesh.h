@@ -16,13 +16,13 @@
 
 
 struct Vertex {
-  glm::vec3 position = glm::vec3(0.0f);
-  glm::vec3 normal = glm::vec3(0.0f);
-  glm::vec2 texcoords = glm::vec2(0.0f);
-  glm::vec3 tangent = glm::vec3(0.0f);
-  glm::vec4 color = glm::vec4(0.0f);
-  glm::vec4 weights = glm::vec4(0.0f);
-  glm::ivec4 joint_ids = glm::ivec4(-1);
+  glm::vec3 position    = glm::vec3(0.0f);
+  glm::vec3 normal      = glm::vec3(0.0f);
+  glm::vec2 texcoords   = glm::vec2(0.0f);
+  glm::vec3 tangent     = glm::vec3(0.0f);
+  glm::vec4 color       = glm::vec4(0.0f);
+  glm::vec4 weights     = glm::vec4(0.0f);
+  glm::ivec4 joint_ids  = glm::ivec4(-1);
 };
 
 // inline bool &glm::vec3::operator == (const glm::vec3 &v1, const glm::vec3 &v2)

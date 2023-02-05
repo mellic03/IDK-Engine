@@ -73,7 +73,8 @@ namespace EngineUI {
   void scriptEditor();
   void details();
   void debug(Renderer *ren);
-
+  void physics();
+  void render(Renderer *ren);
 
   void gameobjects();
   void globalProperties();

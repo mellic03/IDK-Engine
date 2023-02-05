@@ -78,6 +78,8 @@ class Model {
     void loadBoundingSphere(std::ifstream &stream);
 
     void _mergeMeshes();
+    void _toFile(std::string filepath);
+    void _fromFile(std::ifstream &stream);
 
 
   public:

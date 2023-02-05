@@ -192,6 +192,20 @@ int ENTRY(int argc, const char **argv)
     ren->useShader(SHADER_GBUFFER_LIGHTING);
     Scene::sendLightsToShader();
 
+
+    ren->active_shader->setMat4("projection", ren->cam.projection);
+    ren->active_shader->setMat4("view", ren->cam.view);
+    for (int i=0; i<NUM_SHADOW_CASCADES; i++)
+    {
+      ren->active_shader->setFloat("shadow_cascades[" + std::to_string(i) + "]", ren->shadow_cascades[i]);
+      ren->active_shader->setMat4("dir_lightSpaceMatrices[" + std::to_string(i) + "]", ren->lightSpaceMatrices[i]);
+
+      glActiveTexture(GL_TEXTURE5 + i);
+      glBindTexture(GL_TEXTURE_2D, ren->dirlight_depthmapArray[i]);
+      ren->active_shader->setInt("dir_depthmaps[" + std::to_string(i) + "]", 5 + i);
+    }
+
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, ren->gbuffer_position);
     ren->active_shader->setInt("gPosition", 0);
@@ -229,6 +243,19 @@ int ENTRY(int argc, const char **argv)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     ren->useShader(SHADER_VOLUMETRIC_LIGHT);
+
+    ren->active_shader->setMat4("projection", ren->cam.projection);
+    ren->active_shader->setMat4("view", ren->cam.view);
+    for (int i=0; i<NUM_SHADOW_CASCADES; i++)
+    {
+      ren->active_shader->setFloat("shadow_cascades[" + std::to_string(i) + "]", ren->shadow_cascades[i]);
+      ren->active_shader->setMat4("dir_lightSpaceMatrices[" + std::to_string(i) + "]", ren->lightSpaceMatrices[i]);
+
+      glActiveTexture(GL_TEXTURE5 + i);
+      glBindTexture(GL_TEXTURE_2D, ren->dirlight_depthmapArray[i]);
+      ren->active_shader->setInt("dir_depthmaps[" + std::to_string(i) + "]", 5 + i);
+    }
+
     Scene::sendLightsToShader();
     Scene::sendVolumetricData();
     ren->active_shader->setVec3("viewDir", ren->cam.front);

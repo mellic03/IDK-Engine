@@ -9,8 +9,10 @@
 #include <stdio.h>
 #include <iostream>
 
+std::ostream& operator<<(std::ostream& os, const glm::vec2& vec);
 std::ostream& operator<<(std::ostream& os, const glm::vec3& vec);
-
+std::ostream& operator<<(std::ostream& os, const glm::vec4& vec);
+std::ostream& operator<<(std::ostream& os, const glm::ivec4& vec);
 
 
 

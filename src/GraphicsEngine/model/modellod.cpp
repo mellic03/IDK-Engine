@@ -22,6 +22,9 @@ std::vector<float> *ModelLOD::getLODDistances() { return &this->_lod_distances; 
 
 Model *ModelLOD::getLOD_model(int lod)
 {
+  if (this->_models.size() == 0)
+    return nullptr;
+
   if (lod >= this->_max_lod)
     return &this->_models[lod];
   else 

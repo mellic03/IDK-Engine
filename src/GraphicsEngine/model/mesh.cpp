@@ -13,10 +13,8 @@
 static int indexOfVertex(Vertex &vertex, std::vector<Vertex> &vertices)
 {
   for (size_t i=0; i<vertices.size(); i++)
-  {
     if (vertex == vertices[i])
       return i;
-  }
 
   return -1;
 }
@@ -32,7 +30,6 @@ void Mesh::_createIndexBuffer()
   for (std::vector<GLuint> &vec: this->indices)
   {
     std::vector<GLuint> newIndices;
-
 
     for (size_t i=offset; i<offset+vec.size(); i++)
     {
@@ -64,7 +61,7 @@ void Mesh::_createIndexBuffer()
 
 void Mesh::setBufferData()
 {
-  this->_createIndexBuffer();
+  // this->_createIndexBuffer();
 
   glDeleteVertexArrays(1, &this->VAO);
   glDeleteBuffers(1, &this->VBO);
