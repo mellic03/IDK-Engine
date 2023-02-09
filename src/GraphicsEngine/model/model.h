@@ -28,7 +28,6 @@ class Model {
 
   private:
 
-    std::vector<Mesh> _tempMeshes;
 
     std::vector<int> _geometry_position_offsets;
     std::vector<int> _geometry_normal_offsets;
@@ -79,10 +78,11 @@ class Model {
 
     void _mergeMeshes();
     void _toFile(std::string filepath);
-    void _fromFile(std::ifstream &stream);
+    void _fromFile(std::string filepath);
 
 
   public:
+    std::vector<Mesh> _tempMeshes;
 
     glm::vec3 bounding_sphere_pos  = glm::vec3(0.0f);
     float bounding_sphere_radius   = 0.0f;

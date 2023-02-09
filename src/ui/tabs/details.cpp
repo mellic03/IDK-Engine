@@ -19,14 +19,16 @@ void EngineUI::details()
     ImGui::Text("Info");
     ImGui::Separator();
     ImGui::Text("GameObjectType:      %s", GameObjectUtil::ToString::gameObjectType(object->getObjectType()).c_str());
+    ImGui::Text("GameObjectFlags:     %u", *data->flags()->bits());
+    if (ImGui::Button("thing"))
+    {
+      data->flags()->set(GameObjectFlag::GEOMETRY, true);
+    }
     ImGui::Text("Animated:            %d", data->flags()->get(GameObjectFlag::ANIMATED));
     ImGui::Text("Physics:             %d", data->flags()->get(GameObjectFlag::PHYSICS));
     ImGui::Text("sphere:              %d", object->getComponents()->hasComponent(COMPONENT_SPHERE_COLLIDER));
-
-    // ImGui::Text("physics_state:       %s", GameObjectUtil::ToString::physicsState(data->physData()).c_str());
-    // ImGui::Text("navigation_state:    %s", object->navStateString().c_str());
-    // ImGui::Text("has collision mesh:  %s", object->hasCollisionMesh() ? "true": "false");
     ImGui::Dummy(ImVec2(0.0f, 20.0f));
+
 
     ImGui::Text("Scripting Access");
     ImGui::Separator();
@@ -43,7 +45,7 @@ void EngineUI::details()
       ImGui::Text("No. Materials:   %d", object->getModel()->mesh.materials.size());
     }
 
-    
+
 
     ImGui::End();
   }

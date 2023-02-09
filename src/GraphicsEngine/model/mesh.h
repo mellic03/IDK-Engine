@@ -40,19 +40,19 @@ inline bool operator == (const Vertex &v1, const Vertex &v2)
   );
 }
 
-
 class Mesh {
 
   private:
 
     void _createIndexBuffer();
+    void _createShadowVAO();
 
 
   public:
 
     std::string m_dae_id;
 
-    GLuint VAO, VBO;
+    GLuint VAO, VBO, shadowVAO, shadowVBO;
     std::vector<GLuint> IBOS;
     std::vector<std::vector<GLuint>> indices;
 

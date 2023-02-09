@@ -1,0 +1,6 @@
+#gameobject wall1
+#GameObjectType GAMEOBJECT_STATIC
+
+#meshlod 0 wall1.dae
+
+#exit

@@ -30,11 +30,12 @@ enum GameObjectType {
 
 
 enum class GameObjectFlag: GLuint {
-  NONE        = 0b00000000,
-  INSTANCED   = 0b00000001,
-  ANIMATED    = 0b00000010,
-  PHYSICS     = 0b00000100,
-  HIDDEN      = 0b00001000
+  NONE        = 0,
+  INSTANCED   = 1 << 0,
+  ANIMATED    = 1 << 1,
+  PHYSICS     = 1 << 2,
+  HIDDEN      = 1 << 3,
+  GEOMETRY    = 1 << 4
 };
 
 

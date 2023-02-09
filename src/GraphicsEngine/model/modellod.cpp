@@ -15,6 +15,8 @@ void ModelLOD::loadLOD(int lod, std::string directory, std::string filename, boo
   
   this->_models[lod].loadDae(directory, filename, is_terrain);
   this->_first_loaded = true;
+
+  this->_shadow_lod = (lod > this->_shadow_lod) ? lod : this->_shadow_lod;
 }; 
 
 

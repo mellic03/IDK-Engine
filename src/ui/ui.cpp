@@ -145,6 +145,7 @@ void draw_framebuffers(Renderer *ren)
                          {ren->dirlight_depthmapArray[4],  ren->dirlight_depthmapArray[5], ren->dirlight_depthmapArray[6], ren->dirlight_depthmapArray[7]}
                       );
 
+
     for (int i=0; i<ren->num_blur_FBOs; i+=2)
     {
       ImGui::BeginGroup();

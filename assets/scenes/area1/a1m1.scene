@@ -7,12 +7,12 @@
     assigned name: Player
     objectID: 0
     parentID: -1
-    GameObjectFlags: 4
+    GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: -16.007 -1.48102 -0.893489
-    velocity: 1.21261e-07 -0.980879 -1.72094e-07
-    orientation: 0.0123952 -0.534004 0.00781653 0.845355
+    position: 0.0515389 86.3469 -16.1727
+    velocity: -2.43719e-21 5 -2.94684e-20
+    orientation: -5.47905e-05 -0.999941 -0.00613117 0.00897105
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
@@ -22,8 +22,6 @@
     radius: 1.13
     height offset: -1.46
   </SPHERECOLLIDER>
-  <PHYSICS>
-  </PHYSICS>
 </GAMEOBJECT>
 
 <GAMEOBJECT>
@@ -32,7 +30,7 @@
     assigned name: wall
     objectID: 1
     parentID: -1
-    GameObjectFlags: 0
+    GameObjectFlags: 16
   </HEADER>
   <TRANSFORM>
     position: 0 -97.62 0
@@ -50,7 +48,7 @@
     assigned name: bunker
     objectID: 2
     parentID: 1
-    GameObjectFlags: 0
+    GameObjectFlags: 16
   </HEADER>
   <TRANSFORM>
     position: -13.72 -99.32 5.89
@@ -67,13 +65,13 @@
     template name: pointlight
     assigned name: pointlight
     objectID: 3
-    parentID: 17
+    parentID: 19
     GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: -3.356 0.55 -20.9648
+    position: 3.47 83.3 24.503
     velocity: 0 0 0
-    orientation: 0.317534 0.489293 -0.0442592 0.811049
+    orientation: 0.340341 0.472932 -0.0865546 0.808088
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
@@ -82,13 +80,13 @@
     active: 1
     shadowmapped: 1
     volumetrics: 0
-    radius: 25
-    diffuse: 1 1 1
+    radius: 39.4
+    diffuse: 1 0 0
     ambient: 0 0 0
-    constant: 0.4
-    linear: 0.071
-    quadratic: 0
-    bias: 0.15
+    constant: 0
+    linear: 0
+    quadratic: 0.003
+    bias: -0.04
   </POINTLIGHT>
 </GAMEOBJECT>
 
@@ -98,7 +96,7 @@
     assigned name: tree
     objectID: 4
     parentID: 7
-    GameObjectFlags: 0
+    GameObjectFlags: 16
   </HEADER>
   <TRANSFORM>
     position: 16.42 -86.26 -0.27
@@ -116,7 +114,7 @@
     assigned name: tree
     objectID: 5
     parentID: 7
-    GameObjectFlags: 0
+    GameObjectFlags: 16
   </HEADER>
   <TRANSFORM>
     position: 6.5 -87.5 0
@@ -134,7 +132,7 @@
     assigned name: tree
     objectID: 6
     parentID: 7
-    GameObjectFlags: 0
+    GameObjectFlags: 16
   </HEADER>
   <TRANSFORM>
     position: -5.13 -90.12 -4.76837e-07
@@ -173,9 +171,9 @@
     GameObjectFlags: 6
   </HEADER>
   <TRANSFORM>
-    position: -14.2853 -4.00885 -11.3677
-    velocity: 3.08286e-44 -7.00649e-43 -3.08286e-44
-    orientation: 0 0.998906 0 0.0467641
+    position: -0.0868198 -4.00885 43.809
+    velocity: 1.4013e-45 -7.00649e-43 1.4013e-45
+    orientation: 0 0.704773 0 0.709433
     scale: 1.7 1.7 1.7
   </TRANSFORM>
   <SCRIPTS>
@@ -199,7 +197,7 @@
     assigned name: cube
     objectID: 9
     parentID: -1
-    GameObjectFlags: 0
+    GameObjectFlags: 16
   </HEADER>
   <TRANSFORM>
     position: -13.74 11.98 0
@@ -217,7 +215,7 @@
     assigned name: cube
     objectID: 10
     parentID: -1
-    GameObjectFlags: 0
+    GameObjectFlags: 16
   </HEADER>
   <TRANSFORM>
     position: -17.44 11.98 0
@@ -235,7 +233,7 @@
     assigned name: tree
     objectID: 11
     parentID: 7
-    GameObjectFlags: 0
+    GameObjectFlags: 16
   </HEADER>
   <TRANSFORM>
     position: -21.64 -100.46 16.37
@@ -253,7 +251,7 @@
     assigned name: tree
     objectID: 12
     parentID: 7
-    GameObjectFlags: 0
+    GameObjectFlags: 16
   </HEADER>
   <TRANSFORM>
     position: -11.94 -101.71 19.38
@@ -271,7 +269,7 @@
     assigned name: tree
     objectID: 13
     parentID: 7
-    GameObjectFlags: 0
+    GameObjectFlags: 16
   </HEADER>
   <TRANSFORM>
     position: 7.6 -102.36 22.15
@@ -289,7 +287,7 @@
     assigned name: tree
     objectID: 14
     parentID: 7
-    GameObjectFlags: 0
+    GameObjectFlags: 16
   </HEADER>
   <TRANSFORM>
     position: -18.41 -92.14 5.6
@@ -307,7 +305,7 @@
     assigned name: area
     objectID: 15
     parentID: -1
-    GameObjectFlags: 0
+    GameObjectFlags: 16
   </HEADER>
   <TRANSFORM>
     position: 0 0 0
@@ -344,7 +342,7 @@
     assigned name: gondola
     objectID: 17
     parentID: -1
-    GameObjectFlags: 0
+    GameObjectFlags: 16
   </HEADER>
   <TRANSFORM>
     position: 0 0 0
@@ -354,5 +352,102 @@
   </TRANSFORM>
   <SCRIPTS>
   </SCRIPTS>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: rob
+    assigned name: rob
+    objectID: 18
+    parentID: -1
+    GameObjectFlags: 2
+  </HEADER>
+  <TRANSFORM>
+    position: -13.79 15.57 0
+    velocity: 0 0 0
+    orientation: 0 0 0 1
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+    script: LuaScripting/scripts/ai/followplayer
+  </SCRIPTS>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: hall
+    assigned name: hall
+    objectID: 19
+    parentID: -1
+    GameObjectFlags: 16
+  </HEADER>
+  <TRANSFORM>
+    position: 0 90 0
+    velocity: 0 0 0
+    orientation: 0 0 0 1
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+  </SCRIPTS>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: pointlight
+    assigned name: pointlight
+    objectID: 20
+    parentID: 19
+    GameObjectFlags: 16
+  </HEADER>
+  <TRANSFORM>
+    position: -2.77396 86.0606 0.265077
+    velocity: 0 0 0
+    orientation: 0 0 1.86265e-09 1
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+  </SCRIPTS>
+  <POINTLIGHT>
+    active: 1
+    shadowmapped: 1
+    volumetrics: 0
+    radius: 50
+    diffuse: 0 0.131274 1
+    ambient: 0 0 0
+    constant: 0
+    linear: 0
+    quadratic: 0.003
+    bias: 0.15
+  </POINTLIGHT>
+</GAMEOBJECT>
+
+<GAMEOBJECT>
+  <HEADER>
+    template name: pointlight
+    assigned name: pointlight
+    objectID: 21
+    parentID: 19
+    GameObjectFlags: 16
+  </HEADER>
+  <TRANSFORM>
+    position: -17.705 89.09 30.912
+    velocity: 0 0 0
+    orientation: -7.45058e-09 0 1.86265e-09 1
+    scale: 1 1 1
+  </TRANSFORM>
+  <SCRIPTS>
+  </SCRIPTS>
+  <POINTLIGHT>
+    active: 1
+    shadowmapped: 1
+    volumetrics: 0
+    radius: 50
+    diffuse: 0.0540541 1 0
+    ambient: 0 0 0
+    constant: 0
+    linear: 0
+    quadratic: 0.012
+    bias: 0.15
+  </POINTLIGHT>
 </GAMEOBJECT>
 

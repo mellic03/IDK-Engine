@@ -226,29 +226,27 @@ ColladaEffect *Model::colladaEffectPtr_materialID(std::string dae_id)
 
 void Model::constructMeshes(rapidxml::xml_document<> *doc)
 {
-  rapidxml::xml_node<> *node = doc->first_node()->first_node("library_geometries");
-  node = node->first_node("geometry");
+  rapidxml::xml_node<> *geometryNode = doc->first_node()->first_node("library_geometries");
+  geometryNode = geometryNode->first_node("geometry");
+
 
   // For each "geometry"
-  int geometry_number = 0;
-  while (node != nullptr)
+  int mesh_number = 0;
+  while (geometryNode != nullptr)
   {
-
     // For each <mesh>
-    rapidxml::xml_node<> *meshNode = node->first_node("mesh");
+    rapidxml::xml_node<> *meshNode = geometryNode->first_node("mesh");
     while (meshNode != nullptr)
     {
       this->_tempMeshes.push_back(Mesh());
       Mesh *mesh = &this->_tempMeshes[this->_tempMeshes.size() - 1];
-      mesh->m_dae_id = "#" + std::string(node->first_attribute("id")->value());
+      mesh->m_dae_id = "#" + std::string(geometryNode->first_attribute("id")->value());
 
 
       // For each <triangles>
       rapidxml::xml_node<> *triangleNode = meshNode->first_node("triangles");
       while (triangleNode != nullptr)
       {
-        int num_triangles = std::stoi(triangleNode->first_attribute("count")->value());
-
         rapidxml::xml_node<> *n = triangleNode->first_node("p");
 
         mesh->IBOS.push_back(0);
@@ -271,10 +269,10 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
           indices.push_back(i);
 
 
-        int pos_offset  = this->_geometry_position_offsets[geometry_number];
-        int norm_offset = this->_geometry_normal_offsets[geometry_number];
-        int tex_offset  = this->_geometry_texcoord_offsets[geometry_number];
-        int col_offset  = this->_geometry_color_offsets[geometry_number];
+        int pos_offset  = this->_geometry_position_offsets[mesh_number];
+        int norm_offset = this->_geometry_normal_offsets[mesh_number];
+        int tex_offset  = this->_geometry_texcoord_offsets[mesh_number];
+        int col_offset  = this->_geometry_color_offsets[mesh_number];
 
 
         if (this->_animated)
@@ -300,11 +298,11 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
           for (size_t i=0; i<indices.size()/3; i+=1)
           {
             mesh->vertices.push_back(Vertex());
-            Vertex *vertex = &mesh->vertices[mesh->vertices.size() - 1];
+            Vertex &vertex = mesh->vertices[mesh->vertices.size() - 1];
 
-            vertex->position  = this->_positions [pos_offset + indices[3*i + 0]];
-            vertex->normal    = this->_normals   [norm_offset + indices[3*i + 1]];
-            vertex->texcoords = this->_texcoords [tex_offset + indices[3*i + 2]];
+            vertex.position  = this->_positions [pos_offset + indices[3*i + 0]];
+            vertex.normal    = this->_normals   [norm_offset + indices[3*i + 1]];
+            vertex.texcoords = this->_texcoords [tex_offset + indices[3*i + 2]];
 
             mesh->indices[mesh->indices.size()-1].push_back(mesh->vertices.size() - 1);
           }
@@ -363,12 +361,11 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
         triangleNode = triangleNode->next_sibling("triangles");
       }
 
-      geometry_number += 1;
-      meshNode = meshNode->next_sibling();
+      mesh_number += 1;
+      meshNode = meshNode->next_sibling("mesh");
     }
 
-
-    node = node->next_sibling("geometry");
+    geometryNode = geometryNode->next_sibling("geometry");
   }
 
 }
@@ -500,9 +497,6 @@ void Model::loadVertices(rapidxml::xml_document<> *doc)
   this->_geometry_color_offsets.push_back(0);
 
 
-  // Load vertices
-  //--------------------------------------------------------------------
-
   node = doc->first_node();
   geometryNode = node->first_node("library_geometries")->first_node("geometry");
 
@@ -527,21 +521,24 @@ void Model::loadVertices(rapidxml::xml_document<> *doc)
           colors = parseArray_vec4(colorsNode->first_node("float_array")->value());
 
 
-      for (size_t i=0; i<positions.size(); i+=1)
-        this->_positions.push_back(positions[i]);
-      this->_geometry_position_offsets.push_back(positions.size());
+      this->_positions.insert(this->_positions.end(), positions.begin(), positions.end());
+      this->_normals.insert(this->_normals.end(), normals.begin(), normals.end());
+      this->_texcoords.insert(this->_texcoords.end(), texCoords.begin(), texCoords.end());
+      this->_colors.insert(this->_colors.end(), colors.begin(), colors.end());
 
-      for (size_t i=0; i<normals.size(); i+=1)
-        this->_normals.push_back(normals[i]);
-      this->_geometry_normal_offsets.push_back(normals.size());
 
-      for (size_t i=0; i<texCoords.size(); i+=1)
-        this->_texcoords.push_back(texCoords[i]);
-      this->_geometry_texcoord_offsets.push_back(texCoords.size());
+      auto pushoffset = [](auto &offsets, auto &vec)
+      {
+        if (offsets.size() == 0)
+          offsets.push_back(vec.size());
+        else
+          offsets.push_back(vec.size() + offsets[offsets.size()-1]);
+      };
 
-      for (size_t i=0; i<colors.size(); i+=1)
-        this->_colors.push_back(colors[i]);
-      this->_geometry_color_offsets.push_back(colors.size());
+      pushoffset(this->_geometry_position_offsets, positions);
+      pushoffset(this->_geometry_normal_offsets, normals);
+      pushoffset(this->_geometry_texcoord_offsets, texCoords);
+      pushoffset(this->_geometry_color_offsets, colors);
 
 
       meshNode = meshNode->next_sibling("mesh");
@@ -549,8 +546,6 @@ void Model::loadVertices(rapidxml::xml_document<> *doc)
 
     geometryNode = geometryNode->next_sibling("geometry");
   }
-  //--------------------------------------------------------------------
-
 }
 
 
@@ -721,9 +716,6 @@ void Model::loadArmature(rapidxml::xml_document<> *doc, Animation::Armature *arm
   node = node->first_node("visual_scene")->first_node("node");
   
   armature->name = node->first_attribute("id")->value();
-  printf("armature name: %s\n", armature->name.c_str());
-
-  // node = node->first_node("node");
 
 
   std::string id   = node->first_attribute("id")->value();
@@ -869,10 +861,16 @@ void Model::_toFile(std::string filepath)
 
   Mesh &mesh = this->mesh;
 
-  /*
+  /* .dat
+
+    vertices
+
+  */
+
+  /* .penis
+
     No. vertices
     No. materials
-    vertices
     material [name 1]: indices 1
     material [name 2]: indices 2
     .
@@ -884,25 +882,6 @@ void Model::_toFile(std::string filepath)
   stream << mesh.vertices.size() << "\n";
   stream << mesh.materials.size() << "\n";
   
-  // Vertices
-  //-----------------------------------------------------------------------------
-  for (size_t i=0; i<mesh.vertices.size(); i++)
-  {
-    Vertex &v = mesh.vertices[i];
-
-    stream << v.position;
-    stream << v.normal;
-    stream << v.texcoords;
-    stream << v.tangent;
-    stream << v.color;
-    stream << v.weights;
-    stream << v.joint_ids;
-
-    std::cout << v.position << "    " << v.normal << "    " << v.texcoords << "    " << v.tangent << "\n";
-  }
-  stream << "\n";
-  //-----------------------------------------------------------------------------
-
 
   // Indices
   //-----------------------------------------------------------------------------
@@ -920,96 +899,41 @@ void Model::_toFile(std::string filepath)
     stream << "\n";
   }
   //-----------------------------------------------------------------------------
-
-
   stream.close();
+
+  stream.open(filepath + ".header");
+  stream << this->mesh.vertices.size();
+  stream.close();
+
+  std::ofstream outstream(filepath + ".dat");
+  outstream.write(reinterpret_cast<const char *>(&this->mesh.vertices[0]), sizeof(Vertex) * this->mesh.vertices.size());
+  outstream.close();
 }
 
 
 
-void Model::_fromFile(std::ifstream &stream)
+void Model::_fromFile(std::string filepath)
 {
+  std::ifstream stream(filepath + ".penis");
+
+  this->mesh = Mesh();
+
   std::string line;
 
   getline(stream, line);
   int num_vertices = std::stoi(line);
+  this->mesh.vertices.resize(num_vertices);
+
+  std::ifstream instream(filepath + ".dat", std::ios::binary);
+  instream.read(reinterpret_cast<char *>(&this->mesh.vertices[0]), sizeof(Vertex) * this->mesh.vertices.size());
+  instream.close();
 
   getline(stream, line);
   int num_materials = std::stoi(line);
 
 
-  getline(stream, line);
-
   std::istringstream input(line);
-  Vertex vertex;
 
-
-  float f;
-  int count = 0;
-  for (int j=0; j<num_vertices; j++)
-  {
-    doit 3 times
-      input >> vertex.position[i];
-
-    doit 3 times
-      input >> vertex.normal[i];
-
-    doit 2 times
-      input >> vertex.texcoords[i];
-
-    doit 3 times
-      input >> vertex.tangent[i];
-    
-    doit 4 times
-      input >> vertex.color[i];
-
-    doit 4 times
-      input >> vertex.weights[i];
-
-    doit 4 times
-      input >> vertex.joint_ids[i];
-
-    // std::cout << vertex.position << "    " << vertex.normal << "    " << vertex.texcoords << "    " << vertex.tangent << "\n";
-
-    this->mesh.vertices.push_back(vertex);
-    // count += 1;
-
-
-    // if (count == 3)
-    // {
-    //   count = 0;
-
-    //   Vertex *v1 = &this->mesh.vertices[this->mesh.vertices.size()-1];
-    //   Vertex *v2 = &this->mesh.vertices[this->mesh.vertices.size()-2];
-    //   Vertex *v3 = &this->mesh.vertices[this->mesh.vertices.size()-3];
-
-    //   glm::vec3 p1 = v1->position,  p2 = v2->position,  p3 = v3->position;
-    //   glm::vec2 t1 = v1->texcoords, t2 = v2->texcoords, t3 = v3->texcoords;
-
-    //   glm::vec3 edge1 = p2 - p1;
-    //   glm::vec3 edge2 = p3 - p1;
-    //   glm::vec2 deltaUV1 = t2 - t1;
-    //   glm::vec2 deltaUV2 = t3 - t1;
-
-    //   float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-    //   glm::vec3 tangent = {
-    //     f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x),
-    //     f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y),
-    //     f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z)
-    //   };
-
-    //   if (f == -INFINITY || f == INFINITY)
-    //     tangent = glm::vec3(1.0f);
-
-    //   tangent = glm::normalize(tangent);
-
-    //   v1->tangent = tangent;
-    //   v2->tangent = tangent;
-    //   v3->tangent = tangent;
-    // }
-  }
-
-  
   for (int i=0; i<num_materials; i++)
   {
     getline(stream, line);
@@ -1019,24 +943,24 @@ void Model::_fromFile(std::ifstream &stream)
 
     pos = line.find("]: ");
 
-    std::string filepath = line.substr(0, pos);
+    std::string matfilepath = line.substr(0, pos);
     line.erase(0, pos + std::string("]: ").size());
 
 
     Material material;
-    material.diffuseMap.load(filepath, true);
+    material.diffuseMap.load(matfilepath, true);
 
-    int insert_point = filepath.size() - 4;
-    std::string temp_path = filepath;
+    int insert_point = matfilepath.size() - 4;
+    std::string temp_path = matfilepath;
 
     temp_path.insert(insert_point, "-specular");
-    material.specularMap.load(temp_path, true);
+    material.specularMap.load(temp_path, false);
 
-    temp_path = filepath; temp_path.insert(insert_point, "-emission");
-    material.emissionMap.load(temp_path, true);
+    temp_path = matfilepath; temp_path.insert(insert_point, "-emission");
+    material.emissionMap.load(temp_path, false);
 
-    temp_path = filepath; temp_path.insert(insert_point, "-normal");
-    material.normalMap.load(temp_path, true);
+    temp_path = matfilepath; temp_path.insert(insert_point, "-normal");
+    material.normalMap.load(temp_path, false);
 
     this->mesh.materials.push_back(material);
     this->materials.push_back(material);
@@ -1063,25 +987,18 @@ void Model::loadDae(std::string directory, std::string filename, bool is_terrain
 {
   std::ifstream fh;
 
-  std::ifstream istream(directory + "boundingsphere.txt");
-  if (istream.good())
-    this->loadBoundingSphere(istream);
-  istream.close();
 
-  if (directory == "assets/gameobjects/props/cube/")
-  {
-    printf("From .penis\n");
-    fh.open(directory + filename + ".penis");
-    if (fh.good())
-    {
-      this->_fromFile(fh);
-      // this->computeBoundingSphere();
-      fh.close();
-      return;
-    }
-    fh.close();
-    printf("\n\n");
-  }
+  // if (directory != "assets/gameobjects/npc/test/")
+  // {
+  //   fh.open(directory + filename + ".penis");
+  //   if (fh.good())
+  //   {
+  //     this->_fromFile(directory + filename);
+  //     fh.close();
+  //     return;
+  //   }
+  //   fh.close();
+  // }
 
 
   fh.open(directory + filename);
@@ -1118,6 +1035,7 @@ void Model::loadDae(std::string directory, std::string filename, bool is_terrain
 
   this->loadVertices(&doc);
 
+
   if (this->is_terrain)
   {
     node = doc.first_node();
@@ -1152,37 +1070,27 @@ void Model::loadDae(std::string directory, std::string filename, bool is_terrain
   this->_mergeMeshes();
 
 
-  // std::ifstream istream(directory + "boundingsphere.txt");
-  // if (istream.good())
-  //   this->loadBoundingSphere(istream);
-
-  // else
-  // {
-  //   this->computeBoundingSphere();
-  //   std::ofstream ostream(directory + "boundingsphere.txt");
-  //   ostream << this->bounding_sphere_pos.x << " " << this->bounding_sphere_pos.y << " " << this->bounding_sphere_pos.z << "\n";
-  //   ostream << this->bounding_sphere_radius << std::endl;
-  //   ostream.close();
-  // }
-
-  istream.close();
-
-  if (directory == "assets/gameobjects/props/cube/")
+  if (directory != "assets/gameobjects/npc/test/")
   {
-
-    printf("From .dae\n");
-    for (auto &v: this->mesh.vertices)
-    {
-      std::cout << v.position << "    " << v.normal << "    " << v.texcoords << "    " << v.tangent << "\n";
-    }
-
-    // this->_toFile(directory + filename);
-    printf("\n");
+    this->_toFile(directory + filename);
   }
 
   this->mesh.setBufferData();
-}
 
+
+  std::ifstream istream(directory + "boundingsphere.txt");
+  if (istream.good())
+    this->loadBoundingSphere(istream);
+  else
+  {
+    this->computeBoundingSphere();
+    std::ofstream ostream(directory + "boundingsphere.txt");
+    ostream << this->bounding_sphere_pos << "\n" << this->bounding_sphere_radius;
+    ostream.close();
+  }
+  istream.close();
+
+}
 
 
 
@@ -1266,6 +1174,11 @@ void Model::loadAnimation(std::string name, Animation::AnimationController *anim
     this->_mergeMeshes();
   }
   this->_armature_loaded = true;
+
+  // printf("\n\n");
+  // printBVTree("", armature->root);
+  // printf("\n\n");
+  
 }
 
 
@@ -1277,7 +1190,8 @@ void Model::_mergeMeshes()
   GLuint offset = 0;
   for (size_t i=0; i<this->_tempMeshes.size(); i++)
   {
-    Mesh mesh = this->_tempMeshes[i];
+    Mesh &mesh = this->_tempMeshes[i];
+    mesh.setBufferData();
 
     for (auto &indices: mesh.indices)
       for (auto &index: indices)

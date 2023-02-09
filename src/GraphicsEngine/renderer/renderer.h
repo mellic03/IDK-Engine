@@ -121,13 +121,14 @@ class Renderer {
 
     // Shadows
     //---------------------------------------------------------------------
-    int DIR_SHADOW_WIDTH = 2048;
-    int DIR_SHADOW_HEIGHT = 2048;
-    int POINT_SHADOW_WIDTH = 512;
-    int POINT_SHADOW_HEIGHT = 512;
+    int DIR_SHADOW_WIDTH = 12;
+    int DIR_SHADOW_HEIGHT = 12;
+    const int POINT_SHADOW_WIDTH = 512;
+    const int POINT_SHADOW_HEIGHT = 512;
 
     glm::mat4 lightSpaceMatrix;
     std::vector<glm::mat4> lightSpaceMatrices;
+    std::vector<glm::mat4> lightSpaceMatrices_lastFrame;
 
     GLuint dirlight_depthmapFBO, dirlight_depthmap;
     GLuint dirlight_depthmapFBO_cascade, dirlight_depthmapArray[NUM_SHADOW_CASCADES];
@@ -182,6 +183,7 @@ class Renderer {
     void drawBillboard        (Model *model,  Transform *transform);
     void drawLightSource      (Model *model,  Transform *transform, glm::vec3 diffuse);
     void drawModel            (Model *model,  Transform *transform);
+    void drawModel_shadowtest            (Model *model,  Transform *transform);
     void drawModelAnimated    (Model *model,  Transform *transform, Animation::AnimationController *animationController);
     void drawModelAnimated_blend(Model *model, Transform *transform, Animation::Animation *anim1, Animation::Animation *anim2, float alpha);
 

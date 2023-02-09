@@ -75,7 +75,7 @@ namespace EngineUI {
   void debug(Renderer *ren);
   void physics();
   void render(Renderer *ren);
-
+  void materials(GameObject *object);
   void gameobjects();
   void globalProperties();
 

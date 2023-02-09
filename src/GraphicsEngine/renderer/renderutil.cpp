@@ -13,9 +13,9 @@ void RenderUtil::genShadowMap_cascade(GLuint *FBO, GLuint depthMaps[], size_t nu
   for (size_t i=0; i<num_cascades; i++)
   {
     glBindTexture(GL_TEXTURE_2D, depthMaps[i]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, w, h, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, w, h, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -68,7 +68,7 @@ std::vector<glm::vec4> RenderUtil::getFrustumCornersWorldSpace(const glm::mat4& 
 }
 
 
-glm::mat4 RenderUtil::getLightSpaceMatrix_cascade(glm::mat4 proj, glm::mat4 view, glm::vec3 lightdir)
+glm::mat4 RenderUtil::getLightSpaceMatrix_cascade(glm::mat4 proj, glm::mat4 view, glm::mat4 lastProj, glm::vec3 lightdir)
 {
   std::vector<glm::vec4> corners = RenderUtil::getFrustumCornersWorldSpace(proj, view);
 
@@ -85,12 +85,12 @@ glm::mat4 RenderUtil::getLightSpaceMatrix_cascade(glm::mat4 proj, glm::mat4 view
   );
 
 
-  float minX = corners[0].x;
-  float maxX = corners[0].x;
-  float minY = corners[0].y;
-  float maxY = corners[0].y;
-  float minZ = corners[0].z;
-  float maxZ = corners[0].z;
+  float minX = (lightView * corners[0]).x;
+  float maxX = (lightView * corners[0]).x;
+  float minY = (lightView * corners[0]).y;
+  float maxY = (lightView * corners[0]).y;
+  float minZ = (lightView * corners[0]).z;
+  float maxZ = (lightView * corners[0]).z;
 
   for (const auto& v : corners)
   {
@@ -116,7 +116,20 @@ glm::mat4 RenderUtil::getLightSpaceMatrix_cascade(glm::mat4 proj, glm::mat4 view
     maxZ *= zMult;
 
 
-  const glm::mat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
+  const glm::vec2 bounds = glm::vec2((maxX - minX), (maxY - minY)) / (2048.0f);
+
+  glm::vec2 xx = glm::vec2(minX, maxX);
+  glm::vec2 yy = glm::vec2(minY, maxY);
+
+  xx /= bounds.x;
+  xx = glm::floor(xx);
+  xx *= bounds.x;
+
+  yy /= bounds.y;
+  yy = glm::floor(yy);
+  yy *= bounds.y;
+
+  const glm::mat4 lightProjection = glm::ortho(xx[0], xx[1], yy[0], yy[1], minZ, maxZ);
 
   return lightProjection * lightView;
 }

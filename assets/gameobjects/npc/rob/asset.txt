@@ -1,0 +1,10 @@
+#gameobject rob
+#GameObjectType GAMEOBJECT_ACTOR
+
+#meshlod 0 rob.dae
+#animationlod 0 idle idle.dae
+#animationlod 0 walk walk.dae
+
+
+
+#exit

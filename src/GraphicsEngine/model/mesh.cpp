@@ -57,11 +57,39 @@ void Mesh::_createIndexBuffer()
 }
 
 
+void Mesh::_createShadowVAO()
+{
+  glDeleteVertexArrays(1, &this->shadowVAO);
+  glDeleteBuffers(1, &this->shadowVBO);
+
+  glGenVertexArrays(1, &this->shadowVAO);
+  glGenBuffers(1, &this->shadowVBO);
+
+  glBindVertexArray(this->shadowVAO);
+  glBindBuffer(GL_ARRAY_BUFFER, this->shadowVBO); 
+  glBufferData(GL_ARRAY_BUFFER, this->vertices.size() * sizeof(Vertex), &this->vertices[0], GL_STATIC_DRAW);
+ 
+
+
+  unsigned long offset = 0;
+
+  // Position
+  GLCALL( glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)0) );
+  offset += 3 * sizeof(float);
+  GLCALL( glEnableVertexAttribArray(0) );
+
+  // UV
+  GLCALL( glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offset) );
+  offset += 2 * sizeof(float);
+  GLCALL( glEnableVertexAttribArray(2) );
+
+}
 
 
 void Mesh::setBufferData()
 {
   // this->_createIndexBuffer();
+  this->_createShadowVAO();
 
   glDeleteVertexArrays(1, &this->VAO);
   glDeleteBuffers(1, &this->VBO);
@@ -74,6 +102,7 @@ void Mesh::setBufferData()
   
   glBindBuffer(GL_ARRAY_BUFFER, this->VBO); 
   glBufferData(GL_ARRAY_BUFFER, this->vertices.size() * sizeof(Vertex), &this->vertices[0], GL_STATIC_DRAW);
+
 
   unsigned long offset = 0;
 

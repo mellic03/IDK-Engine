@@ -24,7 +24,11 @@ class SceneGraph {
     std::map<std::string, std::list<GameObject *>>  _object_instances_by_template_name;
 
     std::list<GameObject *>  _object_templates_by_type[GAMEOBJECT_NUM_TYPES];
+    
     std::list<GameObject *>  _object_instances[GAMEOBJECT_NUM_TYPES];
+    std::list<GameObject *>  _object_instances_geometry;
+
+    std::list<GameObject *>  _object_instances_by_type_geometry[GAMEOBJECT_NUM_TYPES];
     std::list<GameObject *>  _object_instances_animated[GAMEOBJECT_NUM_TYPES];
     std::list<GameObject *>  _object_instances_instanced[GAMEOBJECT_NUM_TYPES];
     std::list<GameObject *>  _visible_instances_by_type[GAMEOBJECT_NUM_TYPES];
@@ -124,10 +128,11 @@ class SceneGraph {
     std::list<GameObject *> *getInstancesByTemplateName(std::string template_name);
     std::list<GameObject *> *getTemplatesByType(GameObjectType object_type);
     
-    
+
     std::list<GameObject>   *getObjects();
     std::list<GameObject *> *getObjects(GameObjectType object_type);
     std::list<GameObject *> *getObjects(GameObjectType object_type, GameObjectFlag flags);
+    std::list<GameObject *> getObjects(GameObjectFlag query_flags);
 
 
     std::list<GameObject *> *getVisibleInstancesByType(GameObjectType object_type);

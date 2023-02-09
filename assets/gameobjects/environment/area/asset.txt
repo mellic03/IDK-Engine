@@ -2,6 +2,7 @@
 #GameObjectType GAMEOBJECT_STATIC
 
 #meshlod 0 area.dae
+#meshlod 1 areashadow.dae
 
 #collision col.obj
 #navmesh nav.obj

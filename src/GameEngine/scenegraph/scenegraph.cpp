@@ -140,7 +140,7 @@ void SceneGraph::loadObject(std::string directory)
 
 
     else if (sscanf(buffer, "#physics %s", stringdata))
-      object.getData()->physData()->state = GameObjectUtil::FromString::physicsState(stringdata);
+      objectData->physData()->state = GameObjectUtil::FromString::physicsState(stringdata);
 
 
     else if (sscanf(buffer, "#meshlod %d %s", &intdata, stringdata))
@@ -148,7 +148,9 @@ void SceneGraph::loadObject(std::string directory)
       new_modelLod.loadLOD(intdata, directory, std::string(stringdata), object.getObjectType() == GAMEOBJECT_TERRAIN);
       this->_modelLODs.push_back(new_modelLod);
       object.setModelLOD(&*std::prev(this->_modelLODs.end()));
+      objectData->flags()->set(GameObjectFlag::GEOMETRY, true);
     }
+
 
     else if (sscanf(buffer, "#animationlod %d %s %s", &intdata, &stringdata, stringdata2))
     {
@@ -163,11 +165,12 @@ void SceneGraph::loadObject(std::string directory)
       object.getComponents()->giveComponent(COMPONENT_ANIMATION);
     }
 
+
     else if (sscanf(buffer, "#navmesh %s", stringdata))
     {
-      // object.getData()->navMesh(stringdata);
       this->_navmeshes.push_back(NavMesh(std::string(directory) + std::string(stringdata)));
     }
+
 
     else if (sscanf(buffer, "#collision %s", stringdata))
     {
@@ -180,6 +183,7 @@ void SceneGraph::loadObject(std::string directory)
       break;
   }
 
+
   if (object.getModelLOD() != nullptr)
   {
     Model *model = object.getModelLOD()->getDefaultLOD_model();
@@ -190,6 +194,7 @@ void SceneGraph::loadObject(std::string directory)
     object.getCullingData()->bounding_sphere_radius = model->bounding_sphere_radius;
     object.getCullingData()->bounding_sphere_radiusSQ = model->bounding_sphere_radiusSQ;
   }
+
 
   this->m_object_templates.push_back(object);
 
@@ -364,7 +369,20 @@ std::list<GameObject *> *SceneGraph::getObjects(GameObjectType object_type, Game
   return &this->_object_instances[object_type];
 }
 
+std::list<GameObject *> SceneGraph::getObjects(GameObjectFlag query_flags)
+{
+  std::list<GameObject *> objects;
 
+  for (auto &object: this->m_object_instances)
+  {
+    GLuint object_flags = *object.getData()->flags()->bits();
+
+    if (static_cast<GLuint>(query_flags) & object_flags)
+      objects.push_back(&object);
+  }
+
+  return objects;
+}
 
 
 

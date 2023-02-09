@@ -37,7 +37,7 @@ struct DirLight {
   glm::vec3 direction = glm::vec3(0.0, -1.0, 0.0);
   glm::vec3 diffuse = glm::vec3(1.0f);
   glm::vec3 ambient = glm::vec3(16.0/255.0);
-  float bias = 0.15f;
+  float bias = 0.0f;
   float fog_intensity = 0.001f;
 };
 

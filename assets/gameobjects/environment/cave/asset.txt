@@ -1,7 +1,6 @@
 #gameobject cave
 #GameObjectType GAMEOBJECT_STATIC
 
-#meshlod 0 cave2.dae
-
+#meshlod 0 cave.dae
 
 #exit

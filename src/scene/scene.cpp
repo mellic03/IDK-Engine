@@ -282,16 +282,15 @@ void Scene::defaultScene()
 void Scene::importScene(std::string filepath)
 {
   Scene::scenegraph.importScene(filepath, &Scene::player);
-
 }
 
 
 void Scene::drawDirLightDepthmap()
 {
   Render::ren.useShader(SHADER_DIRSHADOW);
+  glViewport(0, 0, 2048, 2048);
 
   Render::ren.setupDirLightDepthmap(Scene::scenegraph.dirlight.position, Scene::scenegraph.dirlight.direction);
-
   for (size_t i=0; i<NUM_SHADOW_CASCADES; i++)
   {
     RenderUtil::bindWrite_cascade(Render::ren.dirlight_depthmapFBO, Render::ren.dirlight_depthmapArray, i);
@@ -300,6 +299,7 @@ void Scene::drawDirLightDepthmap()
     Scene::drawGeometry();
   }
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glViewport(0, 0, Render::ren.viewport_width, Render::ren.viewport_height);
 
 }
 
@@ -318,14 +318,16 @@ void Scene::drawPointLightDepthmaps()
     if (Scene::scenegraph.pointlights[i].shadowmapped == false)
       continue;
 
-    glBindFramebuffer(GL_FRAMEBUFFER, Scene::scenegraph.pointlights[i].FBO);
-    glClear(GL_DEPTH_BUFFER_BIT);
+    GLCALL( glBindFramebuffer(GL_FRAMEBUFFER, Scene::scenegraph.pointlights[i].FBO) );
+    GLCALL( glClear(GL_DEPTH_BUFFER_BIT) );
+
 
     std::vector<glm::mat4> shadowTransforms;
     PointLight *pointlight = &Scene::scenegraph.pointlights[i];
     glm::vec3 lightPos = pointlight->m_transform->getPos_worldspace();
 
     glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, near, pointlight->radius);
+
 
     shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 1.0,  0.0,  0.0), glm::vec3(0.0, -1.0,  0.0)));
     shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0,  0.0,  0.0), glm::vec3(0.0, -1.0,  0.0)));
@@ -336,34 +338,30 @@ void Scene::drawPointLightDepthmaps()
 
 
     char buffer[64];
-    for (int i=0; i<6; i++)
+    for (int j=0; j<6; j++)
     {
-      sprintf(buffer, "shadowMatrices[%d]", i);
-      Render::ren.active_shader->setMat4(buffer, shadowTransforms[i]);
+      sprintf(buffer, "shadowMatrices[%d]", j);
+      Render::ren.active_shader->setMat4(buffer, shadowTransforms[j]);
     }
 
     Render::ren.active_shader->setVec3("lightPos", lightPos);
     Render::ren.active_shader->setFloat("far_plane", pointlight->radius);
 
     Scene::drawGeometry();
-
-    // Render::ren.useShader(SHADER_POINTSHADOW_ANIMATED);
-    // Scene::drawGeometry_animated();
   }
 
-  glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 
 void Scene::drawDepthmaps()
 {
-  glDisable(GL_CULL_FACE);
+  glCullFace(GL_FRONT);
 
   Scene::drawDirLightDepthmap();
   Scene::drawPointLightDepthmaps();
 
-  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
 }
 
 
@@ -543,7 +541,6 @@ void Scene::drawActors()
   Render::ren.active_shader->setFloat("emission_scale", 0.0f);
 
 
-
   Render::ren.useShader(SHADER_ACTOR_ANIMATED);
   Render::ren.active_shader->setInt("material.diffuseMap", 0);
   Render::ren.active_shader->setInt("material.specularMap", 1);
@@ -563,7 +560,7 @@ void Scene::drawLightsources()
   Render::ren.useShader(SHADER_LIGHTSOURCE);
 
   for (GameObject *obj: *Scene::scenegraph.getObjects(GAMEOBJECT_LIGHTSOURCE))
-    Render::ren.drawLightSource(obj->getModel(), obj->getTransform(), glm::vec3(1.0f));
+    Render::ren.drawLightSource(obj->getModel(), obj->getTransform(), obj->getComponents()->getPointLightComponent()->diffuse);
 }
 
 
@@ -619,30 +616,15 @@ void Scene::drawGeometry_batched()
       }
     }
   }
-
-
-
-
 }
 
 
 void Scene::drawGeometry()
 {
-  for (auto &object: *Scene::scenegraph.getObjects(GAMEOBJECT_TERRAIN))
-    Render::ren.drawModel(object->getModelLOD()->getShadowLOD_model(), object->getTransform());
-   
-  for (auto &object: *Scene::scenegraph.getObjects(GAMEOBJECT_STATIC))
-    Render::ren.drawModel(object->getModelLOD()->getShadowLOD_model(), object->getTransform());
-
-  for (auto &object: *Scene::scenegraph.getObjects(GAMEOBJECT_ACTOR))
+  for (GameObject *object: Scene::scenegraph.getObjects(GameObjectFlag::GEOMETRY))
   {
-    if (!object->getData()->flags()->get(GameObjectFlag::ANIMATED))
-      Render::ren.drawModel(object->getModelLOD()->getShadowLOD_model(), object->getTransform());
-  }
-
-  for (auto &object: *Scene::scenegraph.getObjects(GAMEOBJECT_BILLBOARD))
     Render::ren.drawModel(object->getModelLOD()->getShadowLOD_model(), object->getTransform());
-
+  }
 }
 
 

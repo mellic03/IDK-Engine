@@ -28,7 +28,12 @@ void EngineUI::render(Renderer *ren)
   ImGui::Dummy(ImVec2(0.0f, 20.0f));
   ImGui::Text("Shadow Cascades");
   ImGui::Separator();
+  
   ImGui::DragFloat("Cascade 0", &ren->shadow_cascades[0], 1.0f);
+  float f = 0.0f;
+  ImGui::DragFloat("Bias #0", &f);
+  ImGui::Dummy(ImVec2(0.0f, 5.0f));
+
   ImGui::DragFloat("Cascade 1", &ren->shadow_cascades[1], 1.0f);
   ImGui::DragFloat("Cascade 2", &ren->shadow_cascades[2], 1.0f);
   ImGui::DragFloat("Cascade 3", &ren->shadow_cascades[3], 1.0f);

@@ -9,7 +9,6 @@ layout (location = 3) in vec3 aTangent;
 out vec2 TexCoords;
 out vec3 FragPos;
 out mat3 TBN;
-out vec3 Normal;
 
 uniform mat4 projection;
 uniform mat4 view;
@@ -32,8 +31,6 @@ void main()
   T = normalize(T - dot(T, N) * N);
   vec3 B = cross(N, T);
   TBN = mat3(T, B, N);
-
-  Normal = normalize(aNormal);
   //------------------------------------------------------------------
 }
 

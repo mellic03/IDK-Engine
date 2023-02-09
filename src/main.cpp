@@ -66,7 +66,7 @@ int ENTRY(int argc, const char **argv)
 
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
-
+  GLCALL( glEnable(GL_DEPTH_CLAMP) );
 
   SDL_Event event;
 
@@ -107,6 +107,7 @@ int ENTRY(int argc, const char **argv)
     ImGui::StyleColorsLight();
   #endif
   //----------------------------------------
+
 
 
   // RENDER LOOP
@@ -163,9 +164,7 @@ int ENTRY(int argc, const char **argv)
 
     // Render depthmaps
     //---------------------------------
-    GLCALL(glEnable(GL_DEPTH_CLAMP));
     Scene::drawDepthmaps();
-    GLCALL(glDisable(GL_DEPTH_CLAMP));
     //---------------------------------
 
 

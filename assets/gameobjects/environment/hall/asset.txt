@@ -1,0 +1,5 @@
+#gameobject hall
+#GameObjectType GAMEOBJECT_STATIC
+#meshlod 0 hall.dae
+#collision hall.obj
+#exit

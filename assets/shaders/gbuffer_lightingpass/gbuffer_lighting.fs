@@ -95,8 +95,6 @@ float calculate_shadow_pointlight(ShadowPointLight light, vec3 viewPos, vec3 fra
     if(currentDepth - light.bias > closestDepth)
       shadow += 1.0;
   }
-
-
   shadow /= float(samples);
 
   return shadow;
@@ -141,21 +139,19 @@ float calculate_shadow_dirlight(vec3 lightPos, vec3 fragPos, vec3 normal, vec3 l
     bias *= 1 / (shadow_cascades[cascade] * 0.5f);
   }
 
-
   float shadow = 0.0;
   vec2 texelSize = 1.0 / vec2(textureSize(dir_depthmaps[cascade], 0));
-  const int halfKernelWidth = 1;
+  const int halfKernelWidth = 2;
 
   for(int x = -halfKernelWidth; x <= halfKernelWidth; ++x)
   {
     for(int y = -halfKernelWidth; y <= halfKernelWidth; ++y)
     {
       float pcfDepth = texture(dir_depthmaps[cascade], texelSize*vec2(x, y) + projCoords.xy, cascade).r; 
-      shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;        
+      shadow += (currentDepth - lightbias) > pcfDepth ? 1.0 : 0.0;        
     }    
   }
   shadow /= ((halfKernelWidth*2+1)*(halfKernelWidth*2+1));
-
 
   return shadow;
 }
@@ -173,16 +169,18 @@ vec3 calculate_shadowmapped_pointlight(ShadowPointLight light, vec3 albedo, vec3
   float diff = max(dot(normal, lightDir), 0.0);
 
   vec3 halfwayDir = normalize(lightDir + viewDir);  
-  float spec = pow(max(dot(normal, halfwayDir), 0.0), 32);
+  float spec = pow(max(dot(normal, halfwayDir), 0.0), 64);
   
   float attenuation = 1.0 / (light.constant + d*light.linear + d*d*light.quadratic);
   attenuation *= 1.0 - clamp(d/light.radius, 0.0, 1.0);
 
   vec3 diffuse  = attenuation * albedo * diff * light.diffuse;
   vec3 ambient  = attenuation * albedo * light.ambient;
-  vec3 specular = attenuation * albedo * spec * light.diffuse * spec_strength;
+  vec3 specular = attenuation * albedo * spec * light.diffuse * 1;
 
   float shadow = calculate_shadow_pointlight(light, viewPos, fragPos);
+
+
   return  (ambient + (1.0 - shadow) * (diffuse + specular));
 }
 
@@ -199,14 +197,14 @@ vec3 calculate_pointlight(PointLight light, vec3 albedo, vec3 fragPos, vec3 norm
   float diff = max(dot(normal, lightDir), 0.0);
 
   vec3 halfwayDir = normalize(lightDir + viewDir);  
-  float spec = pow(max(dot(normal, halfwayDir), 0.0), 16);
+  float spec = pow(max(dot(normal, halfwayDir), 0.0), 64);
   
   float attenuation = 1.0 / (light.constant + d*light.linear + d*d*light.quadratic);
   attenuation *= 1.0 - d/light.radius;
 
   vec3 diffuse  = attenuation * albedo * diff * light.diffuse;
   vec3 ambient  = attenuation * albedo * light.ambient;
-  vec3 specular = attenuation * albedo * spec * light.diffuse * spec_strength;
+  vec3 specular = attenuation * albedo * spec * light.diffuse * 1;
 
   return  (ambient + diffuse + specular);
 }
@@ -243,19 +241,13 @@ void main()
 
   result += emission;
 
-  for (int i=0; i<NUM_POINTLIGHTS; i++)
+  for (int i=0; i<num_shadow_pointlights; i++)
   {
-    if (i >= num_shadow_pointlights)
-      break;
-
     result += calculate_shadowmapped_pointlight(shadow_pointlights[i], albedo, fragPos, normal, specular_map);
   }
 
   for (int i=0; i<num_active_pointlights; i++)
   {
-    if (i >= num_active_pointlights)
-      break;
-
     result += calculate_pointlight(pointlights[i], albedo, fragPos, normal, specular_map);
   }
 

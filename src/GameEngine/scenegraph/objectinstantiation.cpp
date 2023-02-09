@@ -43,7 +43,7 @@ void SceneGraph::newObjectInstance_lightsource(GameObject *objectptr)
   switch (lightsource_type)
   {
     case (LIGHTSOURCE_NONE):
-      printf("wtf?\n");
+      printf("[SceneGraph::newObjectInstance_lightsource()] wtf?\n");
       break;
 
     case (LIGHTSOURCE_DIRECTIONAL_LIGHT):
@@ -54,7 +54,6 @@ void SceneGraph::newObjectInstance_lightsource(GameObject *objectptr)
       this->pointlights[this->_num_pointlights].m_transform = objectptr->getTransform();
 
       Render::ren.genDepthCubemap(&this->pointlights[this->_num_pointlights].FBO, &this->pointlights[this->_num_pointlights].depthCubemap);
-
       this->_num_pointlights += 1;
       break;
 
@@ -78,15 +77,15 @@ void SceneGraph::newObjectInstance(std::string object_name, Transform *transform
     exit(1);
   }
 
-  {
-    LightSourceType lightsource_type = templateptr->getData()->lightsource_type;
 
-    if (lightsource_type == LIGHTSOURCE_POINT_LIGHT && this->_num_pointlights >= MAX_POINTLIGHTS)
-      return;
+  LightSourceType lightsource_type = templateptr->getData()->lightsource_type;
 
-    else if (lightsource_type == LIGHTSOURCE_SPOT_LIGHT && this->_num_spotlights >= MAX_SPOTLIGHTS)
-      return;
-  }
+  if (lightsource_type == LIGHTSOURCE_POINT_LIGHT && this->_num_pointlights >= MAX_POINTLIGHTS)
+    return;
+
+  else if (lightsource_type == LIGHTSOURCE_SPOT_LIGHT && this->_num_spotlights >= MAX_SPOTLIGHTS)
+    return;
+
 
 
   if (templateptr->getData()->flags()->get(GameObjectFlag::INSTANCED))

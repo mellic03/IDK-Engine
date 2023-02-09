@@ -108,6 +108,7 @@ void draw_main_menu_bar()
 
   if (ImGui::BeginMainMenuBar())
   {
+
     if (ImGui::BeginMenu("File"))
     {
       if (ImGui::MenuItem("New", "CTRL+N"))
@@ -136,6 +137,16 @@ void draw_main_menu_bar()
       if (ImGui::MenuItem("Paste", "CTRL+V")) {}
       ImGui::EndMenu();
     }
+
+    if (ImGui::BeginMenu("Engine"))
+    {
+      if (ImGui::MenuItem("Clear Model Cache", "CTRL+M", false, false))
+      {
+        
+      }
+      ImGui::EndMenu();
+    }
+
 
     ImGui::EndMainMenuBar();
   }
