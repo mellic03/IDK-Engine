@@ -10,9 +10,9 @@
     GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: 0.0515389 86.3469 -16.1727
+    position: -4.83578 92.3766 29.993
     velocity: -2.43719e-21 5 -2.94684e-20
-    orientation: -5.47905e-05 -0.999941 -0.00613117 0.00897105
+    orientation: 0.228649 0.141676 0.0336537 -0.962556
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
@@ -69,7 +69,7 @@
     GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: 3.47 83.3 24.503
+    position: 2.17 86 19.863
     velocity: 0 0 0
     orientation: 0.340341 0.472932 -0.0865546 0.808088
     scale: 1 1 1
@@ -81,7 +81,7 @@
     shadowmapped: 1
     volumetrics: 0
     radius: 39.4
-    diffuse: 1 0 0
+    diffuse: 1 0.11583 0.11583
     ambient: 0 0 0
     constant: 0
     linear: 0
@@ -171,9 +171,9 @@
     GameObjectFlags: 6
   </HEADER>
   <TRANSFORM>
-    position: -0.0868198 -4.00885 43.809
-    velocity: 1.4013e-45 -7.00649e-43 1.4013e-45
-    orientation: 0 0.704773 0 0.709433
+    position: -14.332 -4.00885 11.36
+    velocity: -1.96182e-44 -7.00649e-43 -1.96182e-44
+    orientation: 0 1 0 -1.00107e-06
     scale: 1.7 1.7 1.7
   </TRANSFORM>
   <SCRIPTS>
@@ -214,13 +214,13 @@
     template name: cube
     assigned name: cube
     objectID: 10
-    parentID: -1
+    parentID: 19
     GameObjectFlags: 16
   </HEADER>
   <TRANSFORM>
-    position: -17.44 11.98 0
+    position: 5.14 86.11 15.36
     velocity: 0 0 0
-    orientation: 0 0 0 1
+    orientation: 0 0.80146 0 0.598064
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
@@ -359,13 +359,13 @@
     template name: rob
     assigned name: rob
     objectID: 18
-    parentID: -1
+    parentID: 19
     GameObjectFlags: 2
   </HEADER>
   <TRANSFORM>
-    position: -13.79 15.57 0
+    position: 0 86.97 10.84
     velocity: 0 0 0
-    orientation: 0 0 0 1
+    orientation: -5.1087e-07 -0.0828071 -5.78885e-06 -0.996579
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
@@ -400,7 +400,7 @@
     GameObjectFlags: 16
   </HEADER>
   <TRANSFORM>
-    position: -2.77396 86.0606 0.265077
+    position: 0 86 16.315
     velocity: 0 0 0
     orientation: 0 0 1.86265e-09 1
     scale: 1 1 1
@@ -412,12 +412,12 @@
     shadowmapped: 1
     volumetrics: 0
     radius: 50
-    diffuse: 0 0.131274 1
+    diffuse: 0.117647 0.117647 1
     ambient: 0 0 0
     constant: 0
     linear: 0
     quadratic: 0.003
-    bias: 0.15
+    bias: -0.04
   </POINTLIGHT>
 </GAMEOBJECT>
 
@@ -430,7 +430,7 @@
     GameObjectFlags: 16
   </HEADER>
   <TRANSFORM>
-    position: -17.705 89.09 30.912
+    position: -2.405 86 19.862
     velocity: 0 0 0
     orientation: -7.45058e-09 0 1.86265e-09 1
     scale: 1 1 1
@@ -442,12 +442,12 @@
     shadowmapped: 1
     volumetrics: 0
     radius: 50
-    diffuse: 0.0540541 1 0
+    diffuse: 0.117647 1 0.117647
     ambient: 0 0 0
     constant: 0
     linear: 0
     quadratic: 0.012
-    bias: 0.15
+    bias: -0.04
   </POINTLIGHT>
 </GAMEOBJECT>
 

@@ -111,24 +111,24 @@ void Renderer::init(void)
 
   // Directional light depthmap
   //------------------------------------------------------
-  
-  RenderUtil::genShadowMap_cascade(&this->dirlight_depthmapFBO_cascade, this->dirlight_depthmapArray, NUM_SHADOW_CASCADES, 2048, 2048);
 
+  this->cascaded_rsm.genBuffers();
 
+  // RenderUtil::genShadowMap_cascade(&this->dirlight_depthmapFBO_cascade, this->dirlight_depthmapArray, NUM_SHADOW_CASCADES, 2048, 2048);
 
-  glGenFramebuffers(1, &this->dirlight_depthmapFBO); 
-  glGenTextures(1, &this->dirlight_depthmap);
-  glBindTexture(GL_TEXTURE_2D, this->dirlight_depthmap);
-  GLCALL( glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, 2048, 2048, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL) );
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER); 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-  glBindFramebuffer(GL_FRAMEBUFFER, this->dirlight_depthmapFBO);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this->dirlight_depthmap, 0);
-  glDrawBuffer(GL_NONE);
-  glReadBuffer(GL_NONE);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  // glGenFramebuffers(1, &this->dirlight_depthmapFBO); 
+  // glGenTextures(1, &this->dirlight_depthmap);
+  // glBindTexture(GL_TEXTURE_2D, this->dirlight_depthmap);
+  // GLCALL( glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, 2048, 2048, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL) );
+  // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER); 
+  // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+  // glBindFramebuffer(GL_FRAMEBUFFER, this->dirlight_depthmapFBO);
+  // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this->dirlight_depthmap, 0);
+  // glDrawBuffer(GL_NONE);
+  // glReadBuffer(GL_NONE);
+  // glBindFramebuffer(GL_FRAMEBUFFER, 0);
   //------------------------------------------------------
 
 
@@ -193,22 +193,15 @@ void Renderer::postProcess(void)
 
 void Renderer::setupDirLightDepthmap(glm::vec3 dirlightpos, glm::vec3 dirlightdir)
 {
-  this->lightSpaceMatrices_lastFrame = this->lightSpaceMatrices;
-  if (this->lightSpaceMatrices_lastFrame.size() == 0)
-  {
-    for (int i=0; i<NUM_SHADOW_CASCADES; i++)
-      this->lightSpaceMatrices_lastFrame.push_back(glm::mat4(1.0f));
-  }
-
-  this->lightSpaceMatrices.clear();
+  this->cascaded_rsm.lightSpaceMatrices.clear();
 
   glm::mat4 proj = glm::perspective(
     this->cam.fov,
     (float)this->viewport_width / (float)this->viewport_height,
     this->cam.near,
-    this->shadow_cascades[0] + 5.0f
+    this->cascaded_rsm.cascade_distances[0] + 5.0f
   );
-  this->lightSpaceMatrices.push_back(RenderUtil::getLightSpaceMatrix_cascade(proj, this->cam.view, this->lightSpaceMatrices_lastFrame[0], glm::normalize(dirlightpos)));
+  this->cascaded_rsm.lightSpaceMatrices.push_back(RenderUtil::getLightSpaceMatrix_cascade(proj, this->cam.view, glm::normalize(dirlightpos)));
 
 
   for (size_t i=1; i<NUM_SHADOW_CASCADES; i++)
@@ -216,18 +209,12 @@ void Renderer::setupDirLightDepthmap(glm::vec3 dirlightpos, glm::vec3 dirlightdi
     proj = glm::perspective(
       this->cam.fov,
       (float)this->viewport_width / (float)this->viewport_height,
-      this->shadow_cascades[i-1] - 5.0f,
-      this->shadow_cascades[i] + 5.0f
+      this->cascaded_rsm.cascade_distances[i-1] - 5.0f,
+      this->cascaded_rsm.cascade_distances[i] + 5.0f
     );
    
-    this->lightSpaceMatrices.push_back(RenderUtil::getLightSpaceMatrix_cascade(proj, this->cam.view, this->lightSpaceMatrices_lastFrame[i], glm::normalize(dirlightpos)));
+    this->cascaded_rsm.lightSpaceMatrices.push_back(RenderUtil::getLightSpaceMatrix_cascade(proj, this->cam.view, glm::normalize(dirlightpos)));
   }
-
-  this->lightSpaceMatrix = this->lightSpaceMatrices[0];
-  this->active_shader->setMat4("lightSpaceMatrix", this->lightSpaceMatrix);
-
-
-  this->lightSpaceMatrices_lastFrame.clear();
 }
 
 
@@ -419,38 +406,6 @@ void Renderer::genGBuffer(int x, int y)
   genBufferLambda(&this->gbuffer_albedospec, x, y, 2);
   genBufferLambda(&this->gbuffer_emission, x, y, 3);
 
-  // // - position color buffer
-  // glGenTextures(1, &this->gbuffer_position);
-  // glBindTexture(GL_TEXTURE_2D, this->gbuffer_position);
-  // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_FLOAT, NULL);
-  // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->gbuffer_position, 0);
-    
-  // // - normal color buffer
-  // glGenTextures(1, &this->gbuffer_normal);
-  // glBindTexture(GL_TEXTURE_2D, this->gbuffer_normal);
-  // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_FLOAT, NULL);
-  // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, this->gbuffer_normal, 0);
-
-  // // - color + specular color buffer
-  // glGenTextures(1, &this->gbuffer_albedospec);
-  // glBindTexture(GL_TEXTURE_2D, this->gbuffer_albedospec);
-  // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-  // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, this->gbuffer_albedospec, 0);
-
-  // // - emission color buffer
-  // glGenTextures(1, &this->gbuffer_emission);
-  // glBindTexture(GL_TEXTURE_2D, this->gbuffer_emission);
-  // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-  // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, this->gbuffer_emission, 0);
-    
 
   GLuint attachments[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
   glDrawBuffers(4, attachments);
@@ -653,8 +608,6 @@ void Renderer::resize(int x, int y)
   this->genVolLightBuffer(x/this->volumetrics.resolution_divisor, y/this->volumetrics.resolution_divisor);
   this->genPingPongBuffer(x, y);
   this->genScreenQuadBuffer(x, y);
-
-  // RenderUtil::genShadowMap_cascade(&this->dirlight_depthmapFBO_cascade, this->dirlight_depthmapArray, NUM_SHADOW_CASCADES, x/2, y/2);
 
   this->viewport_width = x;
   this->viewport_height = y;

@@ -1,7 +1,10 @@
 #pragma once
 
+#include <vector>
+
 #include "glcall.h"
 #include "transform/transform.h"
+
 
 struct VolumetricData {
   int num_samples = 128;
@@ -55,7 +58,7 @@ struct PointLight {
   float constant = 1.0f;
   float linear = 0.09f;
   float quadratic = 0.032f;
-  float bias = 0.15f;
+  float bias = -0.04f;
   float fog_constant = 1.0f;
   float fog_linear = 0.0f;
   float fog_quadratic = 1.0f;
@@ -80,4 +83,24 @@ struct SpotLight {
     float intensity = 1.0f;
     float fov = 60.0f;
     bool follow = true;
+};
+
+
+
+#define NUM_SHADOW_CASCADES 6
+
+class ReflectiveShadowMapCascaded {
+
+  public:
+    GLuint FBO;
+    GLuint depthArray[NUM_SHADOW_CASCADES];
+    GLuint positionArray[NUM_SHADOW_CASCADES];
+    GLuint normalArray[NUM_SHADOW_CASCADES];
+    GLuint fluxArray[NUM_SHADOW_CASCADES];
+    std::vector<glm::mat4> lightSpaceMatrices;
+
+    std::vector<float> cascade_distances = { 8.0f, 16.0f, 32.0f, 64.0f, 128.0f, 256.0f, 512.0f, 1024.0f };
+
+    void genBuffers();
+
 };

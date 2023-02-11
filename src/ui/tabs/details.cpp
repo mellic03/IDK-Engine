@@ -36,17 +36,6 @@ void EngineUI::details()
     ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
 
-
-    ImGui::Text("Mesh Info");
-    ImGui::Separator();
-    if (object->getModelLOD() != nullptr)
-    {
-      ImGui::Text("No. IBOs:        %d", object->getModel()->mesh.IBOS.size());
-      ImGui::Text("No. Materials:   %d", object->getModel()->mesh.materials.size());
-    }
-
-
-
     ImGui::End();
   }
 }

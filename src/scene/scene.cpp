@@ -27,11 +27,6 @@ void Scene::sendLightsToShader()
 
 
   // Shadow mapped dirlight
-  glActiveTexture(GL_TEXTURE10);
-  glBindTexture(GL_TEXTURE_2D, Render::ren.dirlight_depthmap);
-  Render::ren.active_shader->setInt(   "depthmap_dirlight", 10    );
-  Render::ren.active_shader->setMat4(  "dir_lightSpaceMatrix", Render::ren.lightSpaceMatrix);
-
   Render::ren.active_shader->setVec3(  "shadowmapped_dirlight.ambient", Scene::scenegraph.dirlight.ambient);
   Render::ren.active_shader->setVec3(  "shadowmapped_dirlight.diffuse", Scene::scenegraph.dirlight.diffuse);
   Render::ren.active_shader->setVec3(  "shadowmapped_dirlight.position", Scene::scenegraph.dirlight.position);
@@ -293,9 +288,9 @@ void Scene::drawDirLightDepthmap()
   Render::ren.setupDirLightDepthmap(Scene::scenegraph.dirlight.position, Scene::scenegraph.dirlight.direction);
   for (size_t i=0; i<NUM_SHADOW_CASCADES; i++)
   {
-    RenderUtil::bindWrite_cascade(Render::ren.dirlight_depthmapFBO, Render::ren.dirlight_depthmapArray, i);
+    RenderUtil::bindWrite_cascade(Render::ren.cascaded_rsm.FBO, Render::ren.cascaded_rsm.depthArray, i);
     glClear(GL_DEPTH_BUFFER_BIT);
-    Render::ren.active_shader->setMat4("lightSpaceMatrix", Render::ren.lightSpaceMatrices[i]);
+    Render::ren.active_shader->setMat4("lightSpaceMatrix", Render::ren.cascaded_rsm.lightSpaceMatrices[i]);
     Scene::drawGeometry();
   }
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -315,15 +310,15 @@ void Scene::drawPointLightDepthmaps()
 
   for (int i=0; i<MAX_POINTLIGHTS; i++)
   {
-    if (Scene::scenegraph.pointlights[i].shadowmapped == false)
+    PointLight *pointlight = &Scene::scenegraph.pointlights[i];
+
+    if (pointlight->shadowmapped == false)
       continue;
 
-    GLCALL( glBindFramebuffer(GL_FRAMEBUFFER, Scene::scenegraph.pointlights[i].FBO) );
+    GLCALL( glBindFramebuffer(GL_FRAMEBUFFER, pointlight->FBO) );
     GLCALL( glClear(GL_DEPTH_BUFFER_BIT) );
 
-
     std::vector<glm::mat4> shadowTransforms;
-    PointLight *pointlight = &Scene::scenegraph.pointlights[i];
     glm::vec3 lightPos = pointlight->m_transform->getPos_worldspace();
 
     glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, near, pointlight->radius);
@@ -337,12 +332,9 @@ void Scene::drawPointLightDepthmaps()
     shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0,  0.0, -1.0), glm::vec3(0.0, -1.0,  0.0)));
 
 
-    char buffer[64];
     for (int j=0; j<6; j++)
-    {
-      sprintf(buffer, "shadowMatrices[%d]", j);
-      Render::ren.active_shader->setMat4(buffer, shadowTransforms[j]);
-    }
+      Render::ren.active_shader->setMat4("shadowMatrices[" + std::to_string(j) + "]", shadowTransforms[j]);
+
 
     Render::ren.active_shader->setVec3("lightPos", lightPos);
     Render::ren.active_shader->setFloat("far_plane", pointlight->radius);
@@ -359,7 +351,10 @@ void Scene::drawDepthmaps()
   glCullFace(GL_FRONT);
 
   Scene::drawDirLightDepthmap();
+  
+  GLCALL( glDisable(GL_DEPTH_CLAMP) );
   Scene::drawPointLightDepthmaps();
+  GLCALL( glEnable(GL_DEPTH_CLAMP) );
 
   glCullFace(GL_BACK);
 }

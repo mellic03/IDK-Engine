@@ -8,6 +8,7 @@
 
 #include "navdata.h"
 #include "physicsdata.h"
+#include "event/event.h"
 
 
 enum BillboardType {
@@ -65,6 +66,7 @@ struct GameObjectData {
 
 
   public:
+    std::vector<Event> _events;
 
     GameObjectType gameobject_type = GAMEOBJECT_UNDEFINED;
     LightSourceType lightsource_type = LIGHTSOURCE_NONE;

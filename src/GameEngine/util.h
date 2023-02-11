@@ -2,7 +2,6 @@
 
 
 
-
 template <typename BitType, typename EnumType>
 class BitFlag {
 
@@ -35,17 +34,3 @@ class BitFlag {
     };
 
 };
-
-
-// template <typename BitType, typename EnumType>
-// bool operator&(EnumType &A, const EnumType &B)
-// {
-//   return static_cast<bool>(static_cast<BitType>(A) & static_cast<BitType>(B));
-// };
-
-
-// template <typename BitType, typename EnumType>
-// EnumType operator|(EnumType &A, const EnumType &B)
-// {
-//   return static_cast<EnumType>(static_cast<BitType>(A) & static_cast<BitType>(B));
-// };

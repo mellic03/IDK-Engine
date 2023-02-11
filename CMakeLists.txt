@@ -64,6 +64,7 @@ file(
   "src/GameEngine/computemesh/*.cpp"
   "src/GameEngine/gameobject/*.cpp"
   "src/GameEngine/gameobject/objectdata/*.cpp"
+  "src/GameEngine/gameobject/objectdata/event/*.cpp"
   "src/GameEngine/player/*.cpp"
   "src/GameEngine/scenegraph/*.cpp"
   "src/GameEngine/scenegraph/fileio/*.cpp"

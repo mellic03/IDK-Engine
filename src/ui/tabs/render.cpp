@@ -29,18 +29,14 @@ void EngineUI::render(Renderer *ren)
   ImGui::Text("Shadow Cascades");
   ImGui::Separator();
   
-  ImGui::DragFloat("Cascade 0", &ren->shadow_cascades[0], 1.0f);
-  float f = 0.0f;
-  ImGui::DragFloat("Bias #0", &f);
-  ImGui::Dummy(ImVec2(0.0f, 5.0f));
-
-  ImGui::DragFloat("Cascade 1", &ren->shadow_cascades[1], 1.0f);
-  ImGui::DragFloat("Cascade 2", &ren->shadow_cascades[2], 1.0f);
-  ImGui::DragFloat("Cascade 3", &ren->shadow_cascades[3], 1.0f);
-  ImGui::DragFloat("Cascade 4", &ren->shadow_cascades[4], 1.0f);
-  ImGui::DragFloat("Cascade 5", &ren->shadow_cascades[5], 1.0f);
-  ImGui::DragFloat("Cascade 6", &ren->shadow_cascades[6], 1.0f);
-  ImGui::DragFloat("Cascade 7", &ren->shadow_cascades[7], 1.0f);
+  ImGui::DragFloat("Cascade 0", &ren->cascaded_rsm.cascade_distances[0], 1.0f);
+  ImGui::DragFloat("Cascade 1", &ren->cascaded_rsm.cascade_distances[1], 1.0f);
+  ImGui::DragFloat("Cascade 2", &ren->cascaded_rsm.cascade_distances[2], 1.0f);
+  ImGui::DragFloat("Cascade 3", &ren->cascaded_rsm.cascade_distances[3], 1.0f);
+  ImGui::DragFloat("Cascade 4", &ren->cascaded_rsm.cascade_distances[4], 1.0f);
+  ImGui::DragFloat("Cascade 5", &ren->cascaded_rsm.cascade_distances[5], 1.0f);
+  ImGui::DragFloat("Cascade 6", &ren->cascaded_rsm.cascade_distances[6], 1.0f);
+  ImGui::DragFloat("Cascade 7", &ren->cascaded_rsm.cascade_distances[7], 1.0f);
 
 
   ImGui::Dummy(ImVec2(0.0f, 20.0f));

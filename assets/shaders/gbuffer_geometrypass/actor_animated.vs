@@ -27,8 +27,6 @@ uniform mat4 boneTransforms[64];
 void main()
 {
   vec4 position = vec4(0.0);
-  vec3 normal = vec3(0.0);
-  vec3 tangent = vec3(0.0);
 
   bool done = false;
 
@@ -40,8 +38,6 @@ void main()
     }
 
     position += jointWeights[i] * boneTransforms[jointIDs[i]] * vec4(aPos, 1.0);
-    normal  += jointWeights[i] * mat3(boneTransforms[jointIDs[i]]) * aNormal;
-    tangent += jointWeights[i] * mat3(boneTransforms[jointIDs[i]]) * aTangent;
 
     done = true;
   }
@@ -50,8 +46,6 @@ void main()
   if (!done)
   {
     position = vec4(aPos, 1.0);
-    normal = aNormal;
-    tangent = aTangent;
   }
 
 
@@ -65,7 +59,7 @@ void main()
   //------------------------------------------------------------------
   mat3 normalMatrix = mat3(model);
   vec3 T = normalize(normalMatrix * aTangent);
-  vec3 N = normalize(normalMatrix * normal.xyz);
+  vec3 N = normalize(normalMatrix * aNormal);
   T = normalize(T - dot(T, N) * N);
   vec3 B = cross(N, T);
   TBN = mat3(T, B, N);

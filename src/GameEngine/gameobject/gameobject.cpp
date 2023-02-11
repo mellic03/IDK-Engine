@@ -199,10 +199,6 @@ void GameObject::collideWithMeshes(void)
 }
 
 
-
-
-
-
 void GameObject::perFrameUpdate(Renderer *ren)
 {
   this->getTransform()->getModelMatrix();
@@ -215,9 +211,7 @@ void GameObject::perFrameUpdate(Renderer *ren)
   if (this->getData()->flags()->get(GameObjectFlag::PHYSICS) == false)
     return;
 
-
   this->pos_worldspace = this->getTransform()->getPos_worldspace();
-
 
 
   this->_perFrameUpdate_navigation();
@@ -231,12 +225,10 @@ void GameObject::clearParent(void)
     return;
 
   *this->getPos() = this->m_parent->getTransform()->localToWorld(this->getTransform()->getPos_vec4());
-  // if (this->getID() != 0)
-  // {
-    Transform *thisTransform = this->getTransform();
-    thisTransform->orientation = this->m_parent->getTransform()->orientation * thisTransform->orientation;
-  // }
-
+ 
+  Transform *thisTransform = this->getTransform();
+  thisTransform->orientation = this->m_parent->getTransform()->orientation * thisTransform->orientation;
+  
   this->m_parent->removeChild(this);
 
   this->m_parent = nullptr;
@@ -246,7 +238,6 @@ void GameObject::clearParent(void)
 
 void GameObject::giveChild(GameObject *child)
 {
-  // return if child is actually parent
   if (child->isChild(this))
     return;
 

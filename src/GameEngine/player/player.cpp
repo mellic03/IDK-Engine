@@ -187,8 +187,3 @@ void Player::mouse_input(Renderer *ren, SDL_Event *event)
   }
 }
 
-
-// void Player::draw(Renderer *ren)
-// {
-//   this->getWeapon()->draw(ren);
-// }

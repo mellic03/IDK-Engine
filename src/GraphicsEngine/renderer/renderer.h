@@ -32,11 +32,9 @@
 #define MAX_BLUR_FBOS 16
 
 #define NUM_DIRLIGHTS 1
-#define NUM_SHADOW_CASCADES 6
 
 #define NUM_POINTLIGHTS 5
 #define NUM_SPOTLIGHTS 2
-
 
 
 
@@ -127,12 +125,7 @@ class Renderer {
     const int POINT_SHADOW_HEIGHT = 512;
 
     glm::mat4 lightSpaceMatrix;
-    std::vector<glm::mat4> lightSpaceMatrices;
-    std::vector<glm::mat4> lightSpaceMatrices_lastFrame;
-
-    GLuint dirlight_depthmapFBO, dirlight_depthmap;
-    GLuint dirlight_depthmapFBO_cascade, dirlight_depthmapArray[NUM_SHADOW_CASCADES];
-    std::vector<float> shadow_cascades = { 8.0f, 16.0f, 32.0f, 64.0f, 128.0f, 256.0f, 512.0f, 1024.0f };
+    ReflectiveShadowMapCascaded cascaded_rsm;
 
 
     GLuint depthCubeMapFBOS[2], depthCubeMaps[2];

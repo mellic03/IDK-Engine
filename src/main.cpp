@@ -66,7 +66,7 @@ int ENTRY(int argc, const char **argv)
 
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
-  GLCALL( glEnable(GL_DEPTH_CLAMP) );
+  // GLCALL( glEnable(GL_DEPTH_CLAMP) );
 
   SDL_Event event;
 
@@ -196,11 +196,11 @@ int ENTRY(int argc, const char **argv)
     ren->active_shader->setMat4("view", ren->cam.view);
     for (int i=0; i<NUM_SHADOW_CASCADES; i++)
     {
-      ren->active_shader->setFloat("shadow_cascades[" + std::to_string(i) + "]", ren->shadow_cascades[i]);
-      ren->active_shader->setMat4("dir_lightSpaceMatrices[" + std::to_string(i) + "]", ren->lightSpaceMatrices[i]);
+      ren->active_shader->setFloat("shadow_cascades[" + std::to_string(i) + "]", ren->cascaded_rsm.cascade_distances[i]);
+      ren->active_shader->setMat4("dir_lightSpaceMatrices[" + std::to_string(i) + "]", ren->cascaded_rsm.lightSpaceMatrices[i]);
 
       glActiveTexture(GL_TEXTURE5 + i);
-      glBindTexture(GL_TEXTURE_2D, ren->dirlight_depthmapArray[i]);
+      glBindTexture(GL_TEXTURE_2D, ren->cascaded_rsm.depthArray[i]);
       ren->active_shader->setInt("dir_depthmaps[" + std::to_string(i) + "]", 5 + i);
     }
 
@@ -247,11 +247,11 @@ int ENTRY(int argc, const char **argv)
     ren->active_shader->setMat4("view", ren->cam.view);
     for (int i=0; i<NUM_SHADOW_CASCADES; i++)
     {
-      ren->active_shader->setFloat("shadow_cascades[" + std::to_string(i) + "]", ren->shadow_cascades[i]);
-      ren->active_shader->setMat4("dir_lightSpaceMatrices[" + std::to_string(i) + "]", ren->lightSpaceMatrices[i]);
+      ren->active_shader->setFloat("shadow_cascades[" + std::to_string(i) + "]", ren->cascaded_rsm.cascade_distances[i]);
+      ren->active_shader->setMat4("dir_lightSpaceMatrices[" + std::to_string(i) + "]", ren->cascaded_rsm.lightSpaceMatrices[i]);
 
       glActiveTexture(GL_TEXTURE5 + i);
-      glBindTexture(GL_TEXTURE_2D, ren->dirlight_depthmapArray[i]);
+      glBindTexture(GL_TEXTURE_2D, ren->cascaded_rsm.depthArray[i]);
       ren->active_shader->setInt("dir_depthmaps[" + std::to_string(i) + "]", 5 + i);
     }
 

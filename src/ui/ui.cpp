@@ -137,12 +137,12 @@ void draw_framebuffers(Renderer *ren)
 
     draw_framebuffers_n( ren, viewportsize, 4,
                          {"0",     "1",     "2",     "3"},
-                         {ren->dirlight_depthmapArray[0],  ren->dirlight_depthmapArray[1], ren->dirlight_depthmapArray[2], ren->dirlight_depthmapArray[3]}
+                         {ren->cascaded_rsm.depthArray[0],  ren->cascaded_rsm.depthArray[1], ren->cascaded_rsm.depthArray[2], ren->cascaded_rsm.depthArray[3]}
                       );
 
     draw_framebuffers_n( ren, viewportsize, 4,
                          {"4",     "5",     "6",     "7"},
-                         {ren->dirlight_depthmapArray[4],  ren->dirlight_depthmapArray[5], ren->dirlight_depthmapArray[6], ren->dirlight_depthmapArray[7]}
+                         {ren->cascaded_rsm.depthArray[4],  ren->cascaded_rsm.depthArray[5], ren->cascaded_rsm.depthArray[6], ren->cascaded_rsm.depthArray[7]}
                       );
 
 

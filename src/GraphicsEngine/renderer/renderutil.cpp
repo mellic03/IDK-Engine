@@ -68,7 +68,7 @@ std::vector<glm::vec4> RenderUtil::getFrustumCornersWorldSpace(const glm::mat4& 
 }
 
 
-glm::mat4 RenderUtil::getLightSpaceMatrix_cascade(glm::mat4 proj, glm::mat4 view, glm::mat4 lastProj, glm::vec3 lightdir)
+glm::mat4 RenderUtil::getLightSpaceMatrix_cascade(glm::mat4 proj, glm::mat4 view, glm::vec3 lightdir)
 {
   std::vector<glm::vec4> corners = RenderUtil::getFrustumCornersWorldSpace(proj, view);
 
