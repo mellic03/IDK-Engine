@@ -283,19 +283,18 @@ void Scene::importScene(std::string filepath)
 void Scene::drawDirLightDepthmap()
 {
   Render::ren.useShader(SHADER_DIRSHADOW);
-  glViewport(0, 0, 2048, 2048);
+  glViewport(0, 0, DIRLIGHT_RES, DIRLIGHT_RES);
 
   Render::ren.setupDirLightDepthmap(Scene::scenegraph.dirlight.position, Scene::scenegraph.dirlight.direction);
   for (size_t i=0; i<NUM_SHADOW_CASCADES; i++)
   {
-    RenderUtil::bindWrite_cascade(Render::ren.cascaded_rsm.FBO, Render::ren.cascaded_rsm.depthArray, i);
+    RenderUtil::bindWrite_cascade(&Render::ren.cascaded_rsm, i);
     glClear(GL_DEPTH_BUFFER_BIT);
     Render::ren.active_shader->setMat4("lightSpaceMatrix", Render::ren.cascaded_rsm.lightSpaceMatrices[i]);
     Scene::drawGeometry();
   }
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glViewport(0, 0, Render::ren.viewport_width, Render::ren.viewport_height);
-
 }
 
 

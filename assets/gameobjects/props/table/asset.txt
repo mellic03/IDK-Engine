@@ -1,6 +1,6 @@
 
 #gameobject table
-#interactivity environmental
+#GameObjectType GAMEOBJECT_STATIC
 #PhysicsState PHYSICS_NONE 
 #geometry table.dae
 #meshlod 0 table.dae

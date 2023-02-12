@@ -1,5 +1,5 @@
 #include "renderutil.h"
-
+#include "../lightsource.h"
 
 void RenderUtil::genShadowMap_cascade(GLuint *FBO, GLuint depthMaps[], size_t num_cascades, int w, int h)
 {
@@ -39,10 +39,16 @@ void RenderUtil::genShadowMap_cascade(GLuint *FBO, GLuint depthMaps[], size_t nu
 
 
 
-void RenderUtil::bindWrite_cascade(GLuint FBO, GLuint depthMaps[], int index)
+void RenderUtil::bindWrite_cascade(ReflectiveShadowMapCascaded *rsm, int index)
 {
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, FBO);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMaps[index], 0);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, rsm->FBO);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rsm->depthArray[index], 0);
+  // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rsm->positionArray[index], 0);
+  // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, rsm->normalArray[index], 0);
+  // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, rsm->fluxArray[index], 0);
+
+  // GLuint attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+  // glDrawBuffers(3, attachments);
 }
 
 
@@ -116,7 +122,7 @@ glm::mat4 RenderUtil::getLightSpaceMatrix_cascade(glm::mat4 proj, glm::mat4 view
     maxZ *= zMult;
 
 
-  const glm::vec2 bounds = glm::vec2((maxX - minX), (maxY - minY)) / (2048.0f);
+  const glm::vec2 bounds = glm::vec2((maxX - minX), (maxY - minY)) / ((float)DIRLIGHT_RES);
 
   glm::vec2 xx = glm::vec2(minX, maxX);
   glm::vec2 yy = glm::vec2(minY, maxY);

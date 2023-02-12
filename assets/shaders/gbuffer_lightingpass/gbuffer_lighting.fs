@@ -56,8 +56,6 @@ uniform sampler2D dir_depthmaps[NUM_SHADOW_CASCADES];
 out vec4 FragColor;
 
 in vec2 TexCoords;
-in float clipspacePosZ;
-
 
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
@@ -103,19 +101,8 @@ float calculate_shadow_pointlight(ShadowPointLight light, vec3 viewPos, vec3 fra
 
 uniform mat4 view;
 
-float calculate_shadow_dirlight(vec3 lightPos, vec3 fragPos, vec3 normal, vec3 lightDir, float lightbias)
+float calculate_shadow_dirlight(vec3 lightPos, vec3 fragPos, vec3 normal, vec3 lightDir, float lightbias, int cascade)
 {
-  vec4 fragPosViewSpace = view * vec4(fragPos.xyz, 1.0);
-  float depthValue = abs(fragPosViewSpace.z);
-
-  int cascade = 0;
-
-  for (cascade=0; cascade<NUM_SHADOW_CASCADES; cascade++)
-  {
-    if (depthValue <= shadow_cascades[cascade])
-      break;
-  }
-
   vec4 lspacepos = dir_lightSpaceMatrices[cascade] * vec4(fragPos, 1.0);
 
   vec3 projCoords = lspacepos.xyz / lspacepos.w;
@@ -215,19 +202,34 @@ vec3 calculate_dirlight(DirLight light, vec3 albedo, vec3 fragPos, vec3 normal, 
   vec3 lightDir = normalize(light.position);
   float diff = max(dot(normal, lightDir), 0.0);
 
-  vec3 halfwayDir = normalize(lightDir + normalize(viewPos - fragPos));  
-  float spec = pow(max(dot(normal, halfwayDir), 0.0), material.spec_exponent);
-  
+  vec3 viewDir = normalize(viewPos - fragPos);
+  vec3 halfwayDir = normalize(lightDir + viewDir);  
+  float spec = pow(max(dot(normal, halfwayDir), 0.0), 64);
+
+
+
   vec3 ambient  = albedo * light.ambient;
   vec3 diffuse  = albedo * diff * light.diffuse;
-  vec3 specular = albedo * spec * light.diffuse * 0;
+  vec3 specular = albedo * spec * light.diffuse * spec_strength;
 
-  float shadow = calculate_shadow_dirlight(light.position, fragPos, normal, normalize(-light.position), light.bias);
+
+  vec4 fragPosViewSpace = view * vec4(fragPos.xyz, 1.0);
+  float depthValue = abs(fragPosViewSpace.z);
+  int cascade = 0;
+  for (cascade=0; cascade<NUM_SHADOW_CASCADES; cascade++)
+  {
+    if (depthValue <= shadow_cascades[cascade])
+      break;
+  }
+
+  float shadow = calculate_shadow_dirlight(light.position, fragPos, normal, normalize(-light.position), light.bias, cascade);
+
 
   return (ambient + (1.0 - shadow) * (diffuse + specular));
 }
 
-uniform mat4 projection;
+
+
 
 void main()
 {

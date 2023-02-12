@@ -1,0 +1,5 @@
+#gameobject rsmtest
+#GameObjectType GAMEOBJECT_STATIC
+#meshlod 0 rsmtest.dae
+#physics PHYSICS_NONE
+#exit

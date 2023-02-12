@@ -87,7 +87,8 @@ struct SpotLight {
 
 
 
-#define NUM_SHADOW_CASCADES 6
+#define NUM_SHADOW_CASCADES 4
+#define DIRLIGHT_RES 2048
 
 class ReflectiveShadowMapCascaded {
 
@@ -99,7 +100,7 @@ class ReflectiveShadowMapCascaded {
     GLuint fluxArray[NUM_SHADOW_CASCADES];
     std::vector<glm::mat4> lightSpaceMatrices;
 
-    std::vector<float> cascade_distances = { 8.0f, 16.0f, 32.0f, 64.0f, 128.0f, 256.0f, 512.0f, 1024.0f };
+    std::vector<float> cascade_distances = { 16.0f, 64.0f, 128.0f, 256.0f, 512.0f, 1024.0f, 2048.0f, 4096.0f };
 
     void genBuffers();
 

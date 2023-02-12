@@ -53,5 +53,6 @@ void main()
 
   gEmission.rgb += result;
   gAlbedoSpec.rgb += result;
+  gAlbedoSpec.a = 0.0;
 
 }

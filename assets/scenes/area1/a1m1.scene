@@ -10,9 +10,9 @@
     GameObjectFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: -4.83578 92.3766 29.993
+    position: 0.440806 91.9224 41.8379
     velocity: -2.43719e-21 5 -2.94684e-20
-    orientation: 0.228649 0.141676 0.0336537 -0.962556
+    orientation: 0.111316 -0.0173827 -0.00194881 -0.993631
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
@@ -171,8 +171,8 @@
     GameObjectFlags: 6
   </HEADER>
   <TRANSFORM>
-    position: -14.332 -4.00885 11.36
-    velocity: -1.96182e-44 -7.00649e-43 -1.96182e-44
+    position: -14.332 -2.58393 11.36
+    velocity: 0 0 0
     orientation: 0 1 0 -1.00107e-06
     scale: 1.7 1.7 1.7
   </TRANSFORM>

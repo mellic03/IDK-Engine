@@ -51,8 +51,8 @@ int ENTRY(int argc, const char **argv)
     SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED
   );
 
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 4);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
 
@@ -170,10 +170,10 @@ int ENTRY(int argc, const char **argv)
 
     // G-Buffer geometry pass
     //---------------------------------
-    GLCALL(glViewport(0, 0, w, h));
-    GLCALL(glBindFramebuffer(GL_FRAMEBUFFER, ren->gbufferFBO));
-    GLCALL(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
-    GLCALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+    GLCALL( glViewport(0, 0, w, h) );
+    GLCALL( glBindFramebuffer(GL_FRAMEBUFFER, ren->gbufferFBO) );
+    GLCALL( glClearColor(0.0f, 0.0f, 0.0f, 1.0f) );
+    GLCALL( glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) );
     Scene::drawBackground();
     Scene::drawGeometry_batched();
     //---------------------------------
@@ -191,18 +191,21 @@ int ENTRY(int argc, const char **argv)
     ren->useShader(SHADER_GBUFFER_LIGHTING);
     Scene::sendLightsToShader();
 
-
-    ren->active_shader->setMat4("projection", ren->cam.projection);
     ren->active_shader->setMat4("view", ren->cam.view);
+    ren->active_shader->setMat4("projection", ren->cam.projection);
+
     for (int i=0; i<NUM_SHADOW_CASCADES; i++)
     {
-      ren->active_shader->setFloat("shadow_cascades[" + std::to_string(i) + "]", ren->cascaded_rsm.cascade_distances[i]);
-      ren->active_shader->setMat4("dir_lightSpaceMatrices[" + std::to_string(i) + "]", ren->cascaded_rsm.lightSpaceMatrices[i]);
+      std::string stringi = std::to_string(i);
+
+      ren->active_shader->setFloat("shadow_cascades[" + stringi + "]", ren->cascaded_rsm.cascade_distances[i]);
+      ren->active_shader->setMat4("dir_lightSpaceMatrices[" + stringi + "]", ren->cascaded_rsm.lightSpaceMatrices[i]);
 
       glActiveTexture(GL_TEXTURE5 + i);
       glBindTexture(GL_TEXTURE_2D, ren->cascaded_rsm.depthArray[i]);
-      ren->active_shader->setInt("dir_depthmaps[" + std::to_string(i) + "]", 5 + i);
+      ren->active_shader->setInt("dir_depthmaps[" + stringi + "]", 5 + i);
     }
+
 
 
     glActiveTexture(GL_TEXTURE0);
@@ -254,6 +257,17 @@ int ENTRY(int argc, const char **argv)
       glBindTexture(GL_TEXTURE_2D, ren->cascaded_rsm.depthArray[i]);
       ren->active_shader->setInt("dir_depthmaps[" + std::to_string(i) + "]", 5 + i);
     }
+
+    glActiveTexture(GL_TEXTURE12);
+    glBindTexture(GL_TEXTURE_2D, ren->cascaded_rsm.positionArray[2]);
+    ren->active_shader->setInt("dir_positionArraytest", 12);
+
+    glActiveTexture(GL_TEXTURE13);
+    glBindTexture(GL_TEXTURE_2D, ren->cascaded_rsm.normalArray[2]);
+    ren->active_shader->setInt("dir_normalArraytest", 13);
+
+
+
 
     Scene::sendLightsToShader();
     Scene::sendVolumetricData();

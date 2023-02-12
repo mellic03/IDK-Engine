@@ -137,12 +137,12 @@ void draw_framebuffers(Renderer *ren)
 
     draw_framebuffers_n( ren, viewportsize, 4,
                          {"0",     "1",     "2",     "3"},
-                         {ren->cascaded_rsm.depthArray[0],  ren->cascaded_rsm.depthArray[1], ren->cascaded_rsm.depthArray[2], ren->cascaded_rsm.depthArray[3]}
+                         {ren->cascaded_rsm.depthArray[0],  ren->cascaded_rsm.positionArray[0], ren->cascaded_rsm.normalArray[0], ren->cascaded_rsm.fluxArray[0]}
                       );
 
     draw_framebuffers_n( ren, viewportsize, 4,
                          {"4",     "5",     "6",     "7"},
-                         {ren->cascaded_rsm.depthArray[4],  ren->cascaded_rsm.depthArray[5], ren->cascaded_rsm.depthArray[6], ren->cascaded_rsm.depthArray[7]}
+                         {ren->cascaded_rsm.positionArray[4],  ren->cascaded_rsm.positionArray[5], ren->cascaded_rsm.positionArray[6], ren->cascaded_rsm.depthArray[7]}
                       );
 
 
