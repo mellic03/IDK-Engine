@@ -254,11 +254,15 @@ void Model::constructMeshes(rapidxml::xml_document<> *doc)
 
 
         ColladaEffect *effectptr = this->colladaEffectPtr_materialID(triangleNode->first_attribute("material")->value());
-        mesh->materials.push_back(Material());
-        mesh->materials[mesh->materials.size() - 1].diffuseMap  = *this->texturePtr(effectptr->m_image_dae_id);
-        mesh->materials[mesh->materials.size() - 1].specularMap = *this->texturePtr(effectptr->m_image_dae_id + "-specular");
-        mesh->materials[mesh->materials.size() - 1].emissionMap = *this->texturePtr(effectptr->m_image_dae_id + "-emission");
-        mesh->materials[mesh->materials.size() - 1].normalMap   = *this->texturePtr(effectptr->m_image_dae_id + "-normal");
+
+        Material material;
+        material.spec_exponent = effectptr->m_specular_exponent;
+
+        material.diffuseMap  = *this->texturePtr(effectptr->m_image_dae_id);
+        material.specularMap = *this->texturePtr(effectptr->m_image_dae_id + "-specular");
+        material.emissionMap = *this->texturePtr(effectptr->m_image_dae_id + "-emission");
+        material.normalMap   = *this->texturePtr(effectptr->m_image_dae_id + "-normal");
+        mesh->materials.push_back(material);
 
         std::string string_array = n->value();
         std::vector<int> indices;
@@ -1053,11 +1057,13 @@ void Model::loadDae(std::string directory, std::string filename, bool is_terrain
 
       ColladaEffect *effectptr = this->colladaEffectPtr_materialID(name);
 
+      Material material;
+      material.spec_exponent = effectptr->m_specular_exponent;
+      material.diffuseMap  = *this->texturePtr(effectptr->m_image_dae_id);
+      material.specularMap = *this->texturePtr(effectptr->m_image_dae_id + "-specular");
+      material.emissionMap = *this->texturePtr(effectptr->m_image_dae_id + "-emission");
+      material.normalMap   = *this->texturePtr(effectptr->m_image_dae_id + "-normal");
       this->materials.push_back(Material());
-      this->materials[this->materials.size() - 1].diffuseMap  = *this->texturePtr(effectptr->m_image_dae_id);
-      this->materials[this->materials.size() - 1].specularMap = *this->texturePtr(effectptr->m_image_dae_id + "-specular");
-      this->materials[this->materials.size() - 1].emissionMap = *this->texturePtr(effectptr->m_image_dae_id + "-emission");
-      this->materials[this->materials.size() - 1].normalMap   = *this->texturePtr(effectptr->m_image_dae_id + "-normal");
 
       node = node->next_sibling();
     }

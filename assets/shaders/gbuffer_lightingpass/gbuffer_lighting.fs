@@ -144,7 +144,7 @@ float calculate_shadow_dirlight(vec3 lightPos, vec3 fragPos, vec3 normal, vec3 l
 }
 
 
-vec3 calculate_shadowmapped_pointlight(ShadowPointLight light, vec3 albedo, vec3 fragPos, vec3 normal, float spec_strength)
+vec3 calculate_shadowmapped_pointlight(ShadowPointLight light, vec3 albedo, vec3 fragPos, vec3 normal, float spec_strength, float spec_exponent)
 {
   float d = length(light.position - fragPos);
   if (d > light.radius)
@@ -156,7 +156,7 @@ vec3 calculate_shadowmapped_pointlight(ShadowPointLight light, vec3 albedo, vec3
   float diff = max(dot(normal, lightDir), 0.0);
 
   vec3 halfwayDir = normalize(lightDir + viewDir);  
-  float spec = pow(max(dot(normal, halfwayDir), 0.0), 64);
+  float spec = pow(max(dot(normal, halfwayDir), 0.0), spec_exponent);
   
   float attenuation = 1.0 / (light.constant + d*light.linear + d*d*light.quadratic);
   attenuation *= 1.0 - clamp(d/light.radius, 0.0, 1.0);
@@ -172,7 +172,7 @@ vec3 calculate_shadowmapped_pointlight(ShadowPointLight light, vec3 albedo, vec3
 }
 
 
-vec3 calculate_pointlight(PointLight light, vec3 albedo, vec3 fragPos, vec3 normal, float spec_strength)
+vec3 calculate_pointlight(PointLight light, vec3 albedo, vec3 fragPos, vec3 normal, float spec_strength, float spec_exponent)
 {
   float d = length(light.position - fragPos);
   if (d > light.radius)
@@ -184,7 +184,7 @@ vec3 calculate_pointlight(PointLight light, vec3 albedo, vec3 fragPos, vec3 norm
   float diff = max(dot(normal, lightDir), 0.0);
 
   vec3 halfwayDir = normalize(lightDir + viewDir);  
-  float spec = pow(max(dot(normal, halfwayDir), 0.0), 64);
+  float spec = pow(max(dot(normal, halfwayDir), 0.0), spec_exponent);
   
   float attenuation = 1.0 / (light.constant + d*light.linear + d*d*light.quadratic);
   attenuation *= 1.0 - d/light.radius;
@@ -197,15 +197,14 @@ vec3 calculate_pointlight(PointLight light, vec3 albedo, vec3 fragPos, vec3 norm
 }
 
 
-vec3 calculate_dirlight(DirLight light, vec3 albedo, vec3 fragPos, vec3 normal, float spec_strength)
+vec3 calculate_dirlight(DirLight light, vec3 albedo, vec3 fragPos, vec3 normal, float spec_strength, float spec_exponent)
 {
   vec3 lightDir = normalize(light.position);
   float diff = max(dot(normal, lightDir), 0.0);
 
   vec3 viewDir = normalize(viewPos - fragPos);
   vec3 halfwayDir = normalize(lightDir + viewDir);  
-  float spec = pow(max(dot(normal, halfwayDir), 0.0), 64);
-
+  float spec = pow(max(dot(normal, halfwayDir), 0.0), spec_exponent);
 
 
   vec3 ambient  = albedo * light.ambient;
@@ -238,6 +237,7 @@ void main()
   vec3 albedo = texture(gAlbedoSpec, TexCoords).rgb;
   vec3 emission = texture(gEmission, TexCoords).rgb;
   float specular_map = texture(gAlbedoSpec, TexCoords).a;
+  float spec_exponent = texture(gNormal, TexCoords).a;
 
   vec3 result = vec3(0.0);
 
@@ -245,15 +245,15 @@ void main()
 
   for (int i=0; i<num_shadow_pointlights; i++)
   {
-    result += calculate_shadowmapped_pointlight(shadow_pointlights[i], albedo, fragPos, normal, specular_map);
+    result += calculate_shadowmapped_pointlight(shadow_pointlights[i], albedo, fragPos, normal, specular_map, spec_exponent);
   }
 
   for (int i=0; i<num_active_pointlights; i++)
   {
-    result += calculate_pointlight(pointlights[i], albedo, fragPos, normal, specular_map);
+    result += calculate_pointlight(pointlights[i], albedo, fragPos, normal, specular_map, spec_exponent);
   }
 
-  result += calculate_dirlight(shadowmapped_dirlight, albedo, fragPos, normal, specular_map);
+  result += calculate_dirlight(shadowmapped_dirlight, albedo, fragPos, normal, specular_map, spec_exponent);
 
   FragColor = vec4(result, 1.0);
 }

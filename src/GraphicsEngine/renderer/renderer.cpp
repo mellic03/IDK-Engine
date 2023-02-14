@@ -9,8 +9,6 @@
 #include <sstream>
 #include "renderer.h"
 
-#include "../../scene/scene.h"
-
 
 void Renderer::createShader(std::string filename, ShaderType type)
 {
@@ -786,6 +784,7 @@ void Renderer::drawModelAnimated_blend(Model *model, Transform *transform, Anima
 void Renderer::drawLightSource(Model *model, Transform *transform, glm::vec3 diffuse)
 {
   this->active_shader->setMat4("model", transform->getModelMatrix_stale());
+  this->active_shader->setFloat("material.spec_exponent", 256.0f);
 
   Mesh &mesh = model->mesh;
 

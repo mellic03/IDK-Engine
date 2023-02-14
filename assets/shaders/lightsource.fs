@@ -24,9 +24,10 @@ void main()
   gPosition = vec4(FragPos, 0.0);
 
   gNormal = vec4(0.0, 0.0, 0.0, 0.0);
+  gNormal.a = material.spec_exponent;
 
   gAlbedoSpec.rgb = diffuseColor;
-  gAlbedoSpec.a = 1.0;
+  gAlbedoSpec.a = material.spec_exponent;
 
   gEmission = diffuseColor;
 }

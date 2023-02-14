@@ -1,0 +1,8 @@
+#gameobject ground
+#GameObjectType GAMEOBJECT_STATIC
+
+#meshlod 0 ground.dae
+
+#collision ground.obj
+
+#exit

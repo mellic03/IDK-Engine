@@ -8,6 +8,8 @@
     objectID: 5
     parentID: -1
     GameObjectFlags: 0
+    PhysicsFlags: 0
+    NavigationFlags: 0
   </HEADER>
   <TRANSFORM>
     position: 0 6.56375 1.80392
@@ -25,6 +27,8 @@
     objectID: 6
     parentID: -1
     GameObjectFlags: 0
+    PhysicsFlags: 0
+    NavigationFlags: 0
   </HEADER>
   <TRANSFORM>
     position: 0 0 0

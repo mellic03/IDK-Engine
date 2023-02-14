@@ -29,10 +29,10 @@ void main()
   normal = normal * 2.0 - 1.0; 
   normal = normalize(TBN * normal);
   gNormal = vec4(normal, 1.0);
-
+  gNormal.a = material.spec_exponent;
 
   gAlbedoSpec.rgb = texture(material.diffuseMap, TexCoords).rgb ;
-  gAlbedoSpec.a = 50.0 * texture(material.specularMap, TexCoords).r;
-
+  gAlbedoSpec.a = 1.0 * texture(material.specularMap, TexCoords).r;
+  
   gEmission = emission_scale * (vec4(emission, 1.0) * (texture(material.emissionMap, TexCoords) + vec4(gAlbedoSpec.rgb, 1.0)));
 }

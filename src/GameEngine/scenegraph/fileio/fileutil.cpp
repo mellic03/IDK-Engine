@@ -12,6 +12,8 @@ void FileUtil::ToText::objectheader(std::ofstream &stream, GameObject *object, s
   stream << indentation + "  " << "objectID: " << object->getID() << "\n";
   stream << indentation + "  " << "parentID: " << object->parentID << "\n";
   stream << indentation + "  " << "GameObjectFlags: " << static_cast<GLuint>(*object->getData()->flags()->bits()) << "\n";
+  stream << indentation + "  " << "PhysicsFlags: " << static_cast<GLuint>(*object->getData()->physData()->flags()->bits()) << "\n";
+  stream << indentation + "  " << "NavigationFlags: " << static_cast<GLuint>(*object->getData()->navData()->flags()->bits()) << "\n";
 
   stream << indentation << "</HEADER>" << std::endl;
 }
@@ -78,7 +80,7 @@ void FileUtil::ToText::pointlight(std::ofstream &stream, PointLight *pointlight,
 
 void FileUtil::ToText::physics(std::ofstream &stream, GameObject *object, std::string indentation)
 {
-  if (object->getData()->flags()->get(GameObjectFlag::PHYSICS) == false)
+  if (object->getComponents()->hasComponent(COMPONENT_PHYSICS) == false)
     return;
 
   stream << indentation << "<PHYSICS>\n";
@@ -158,7 +160,15 @@ GameObjectHeader FileUtil::FromText::objectheader(std::ifstream &stream, GameObj
 
   getline(stream, line);
   eraseUpTo(line, "GameObjectFlags: ");
-  header.flags = static_cast<GLuint>(std::stoi(line));
+  header.gameobjectFlags = static_cast<GLuint>(std::stoi(line));
+  
+  getline(stream, line);
+  eraseUpTo(line, "PhysicsFlags: ");
+  header.physicsFlags = static_cast<GLuint>(std::stoi(line));
+  
+  getline(stream, line);
+  eraseUpTo(line, "NavigationFlags: ");
+  header.navigationFlags = static_cast<GLuint>(std::stoi(line));
 
   return header;
 }

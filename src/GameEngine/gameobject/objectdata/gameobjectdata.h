@@ -1,8 +1,7 @@
 #pragma once
 
 #include "../../../GraphicsEngine/GraphicsEngine.h"
-#include "../../state.h"
-#include "../../util.h"
+#include "../../common.h"
 #include "../../physics.h"
 #include "../../computemesh/computemesh.h"
 
@@ -34,9 +33,8 @@ enum class GameObjectFlag: GLuint {
   NONE        = 0,
   INSTANCED   = 1 << 0,
   ANIMATED    = 1 << 1,
-  PHYSICS     = 1 << 2,
-  HIDDEN      = 1 << 3,
-  GEOMETRY    = 1 << 4
+  HIDDEN      = 1 << 2,
+  GEOMETRY    = 1 << 3
 };
 
 

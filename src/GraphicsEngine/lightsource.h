@@ -65,6 +65,7 @@ struct PointLight {
   float fog_intensity = 0.01f;
 };
 
+
 struct SpotLight {
   
   private:
@@ -90,7 +91,7 @@ struct SpotLight {
 #define NUM_SHADOW_CASCADES 4
 #define DIRLIGHT_RES 2048
 
-class ReflectiveShadowMapCascaded {
+class CSM {
 
   public:
     GLuint FBO;

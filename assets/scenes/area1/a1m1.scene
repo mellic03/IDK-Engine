@@ -8,304 +8,34 @@
     objectID: 0
     parentID: -1
     GameObjectFlags: 0
+    PhysicsFlags: 3
+    NavigationFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: 0.440806 91.9224 41.8379
-    velocity: -2.43719e-21 5 -2.94684e-20
-    orientation: 0.111316 -0.0173827 -0.00194881 -0.993631
+    position: -14.0711 0 5.37951
+    velocity: 0 0 0
+    orientation: -0.0612008 -0.668851 -0.0554068 0.738798
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
-    script: LuaScripting/scripts/player/keypress
   </SCRIPTS>
   <SPHERECOLLIDER>
-    radius: 1.13
-    height offset: -1.46
-  </SPHERECOLLIDER>
-</GAMEOBJECT>
-
-<GAMEOBJECT>
-  <HEADER>
-    template name: wall
-    assigned name: wall
-    objectID: 1
-    parentID: -1
-    GameObjectFlags: 16
-  </HEADER>
-  <TRANSFORM>
-    position: 0 -97.62 0
-    velocity: 0 0 0
-    orientation: 0 0 0 1
-    scale: 1 1 1
-  </TRANSFORM>
-  <SCRIPTS>
-  </SCRIPTS>
-</GAMEOBJECT>
-
-<GAMEOBJECT>
-  <HEADER>
-    template name: bunker
-    assigned name: bunker
-    objectID: 2
-    parentID: 1
-    GameObjectFlags: 16
-  </HEADER>
-  <TRANSFORM>
-    position: -13.72 -99.32 5.89
-    velocity: 0 0 0
-    orientation: 0 0 0 1
-    scale: 1 1 1
-  </TRANSFORM>
-  <SCRIPTS>
-  </SCRIPTS>
-</GAMEOBJECT>
-
-<GAMEOBJECT>
-  <HEADER>
-    template name: pointlight
-    assigned name: pointlight
-    objectID: 3
-    parentID: 19
-    GameObjectFlags: 0
-  </HEADER>
-  <TRANSFORM>
-    position: 2.17 86 19.863
-    velocity: 0 0 0
-    orientation: 0.340341 0.472932 -0.0865546 0.808088
-    scale: 1 1 1
-  </TRANSFORM>
-  <SCRIPTS>
-  </SCRIPTS>
-  <POINTLIGHT>
-    active: 1
-    shadowmapped: 1
-    volumetrics: 0
-    radius: 39.4
-    diffuse: 1 0.11583 0.11583
-    ambient: 0 0 0
-    constant: 0
-    linear: 0
-    quadratic: 0.003
-    bias: -0.04
-  </POINTLIGHT>
-</GAMEOBJECT>
-
-<GAMEOBJECT>
-  <HEADER>
-    template name: tree
-    assigned name: tree
-    objectID: 4
-    parentID: 7
-    GameObjectFlags: 16
-  </HEADER>
-  <TRANSFORM>
-    position: 16.42 -86.26 -0.27
-    velocity: 0 0 0
-    orientation: 0 -0.871586 0 -0.490243
-    scale: 1 1 1
-  </TRANSFORM>
-  <SCRIPTS>
-  </SCRIPTS>
-</GAMEOBJECT>
-
-<GAMEOBJECT>
-  <HEADER>
-    template name: tree
-    assigned name: tree
-    objectID: 5
-    parentID: 7
-    GameObjectFlags: 16
-  </HEADER>
-  <TRANSFORM>
-    position: 6.5 -87.5 0
-    velocity: 0 0 0
-    orientation: 0 -0.871586 0 -0.490243
-    scale: 1 1 1
-  </TRANSFORM>
-  <SCRIPTS>
-  </SCRIPTS>
-</GAMEOBJECT>
-
-<GAMEOBJECT>
-  <HEADER>
-    template name: tree
-    assigned name: tree
-    objectID: 6
-    parentID: 7
-    GameObjectFlags: 16
-  </HEADER>
-  <TRANSFORM>
-    position: -5.13 -90.12 -4.76837e-07
-    velocity: 0 0 0
-    orientation: 0 -0.871586 0 -0.490243
-    scale: 1 1 1
-  </TRANSFORM>
-  <SCRIPTS>
-  </SCRIPTS>
-</GAMEOBJECT>
-
-<GAMEOBJECT>
-  <HEADER>
-    template name: empty
-    assigned name: trees
-    objectID: 7
-    parentID: 1
-    GameObjectFlags: 0
-  </HEADER>
-  <TRANSFORM>
-    position: 6.5 -87.5 0
-    velocity: 0 0 0
-    orientation: 0 0 0 1
-    scale: 1 1 1
-  </TRANSFORM>
-  <SCRIPTS>
-  </SCRIPTS>
-</GAMEOBJECT>
-
-<GAMEOBJECT>
-  <HEADER>
-    template name: testanimation
-    assigned name: testanimation
-    objectID: 8
-    parentID: -1
-    GameObjectFlags: 6
-  </HEADER>
-  <TRANSFORM>
-    position: -14.332 -2.58393 11.36
-    velocity: 0 0 0
-    orientation: 0 1 0 -1.00107e-06
-    scale: 1.7 1.7 1.7
-  </TRANSFORM>
-  <SCRIPTS>
-    script: LuaScripting/scripts/ai/followplayer
-  </SCRIPTS>
-  <SPHERECOLLIDER>
-    radius: 1.69
-    height offset: 1.63
+    radius: 1
+    height offset: 0
   </SPHERECOLLIDER>
   <PHYSICS>
   </PHYSICS>
-  <NAVIGATION>
-    flags: 0
-    speed: 0.05
-  </NAVIGATION>
-</GAMEOBJECT>
-
-<GAMEOBJECT>
-  <HEADER>
-    template name: cube
-    assigned name: cube
-    objectID: 9
-    parentID: -1
-    GameObjectFlags: 16
-  </HEADER>
-  <TRANSFORM>
-    position: -13.74 11.98 0
-    velocity: 0 0 0
-    orientation: 0 0 0 1
-    scale: 1 1 1
-  </TRANSFORM>
-  <SCRIPTS>
-  </SCRIPTS>
-</GAMEOBJECT>
-
-<GAMEOBJECT>
-  <HEADER>
-    template name: cube
-    assigned name: cube
-    objectID: 10
-    parentID: 19
-    GameObjectFlags: 16
-  </HEADER>
-  <TRANSFORM>
-    position: 5.14 86.11 15.36
-    velocity: 0 0 0
-    orientation: 0 0.80146 0 0.598064
-    scale: 1 1 1
-  </TRANSFORM>
-  <SCRIPTS>
-  </SCRIPTS>
-</GAMEOBJECT>
-
-<GAMEOBJECT>
-  <HEADER>
-    template name: tree
-    assigned name: tree
-    objectID: 11
-    parentID: 7
-    GameObjectFlags: 16
-  </HEADER>
-  <TRANSFORM>
-    position: -21.64 -100.46 16.37
-    velocity: 0 0 0
-    orientation: 0 -0.987801 0 0.155724
-    scale: 1 1 1
-  </TRANSFORM>
-  <SCRIPTS>
-  </SCRIPTS>
-</GAMEOBJECT>
-
-<GAMEOBJECT>
-  <HEADER>
-    template name: tree
-    assigned name: tree
-    objectID: 12
-    parentID: 7
-    GameObjectFlags: 16
-  </HEADER>
-  <TRANSFORM>
-    position: -11.94 -101.71 19.38
-    velocity: 0 0 0
-    orientation: 0 -0.794038 0 0.607869
-    scale: 1 1 1
-  </TRANSFORM>
-  <SCRIPTS>
-  </SCRIPTS>
-</GAMEOBJECT>
-
-<GAMEOBJECT>
-  <HEADER>
-    template name: tree
-    assigned name: tree
-    objectID: 13
-    parentID: 7
-    GameObjectFlags: 16
-  </HEADER>
-  <TRANSFORM>
-    position: 7.6 -102.36 22.15
-    velocity: 0 0 0
-    orientation: 0 -0.92671 0 0.375776
-    scale: 1 1 1
-  </TRANSFORM>
-  <SCRIPTS>
-  </SCRIPTS>
-</GAMEOBJECT>
-
-<GAMEOBJECT>
-  <HEADER>
-    template name: tree
-    assigned name: tree
-    objectID: 14
-    parentID: 7
-    GameObjectFlags: 16
-  </HEADER>
-  <TRANSFORM>
-    position: -18.41 -92.14 5.6
-    velocity: 0 0 0
-    orientation: 0 -0.918372 0 0.395718
-    scale: 1 1 1
-  </TRANSFORM>
-  <SCRIPTS>
-  </SCRIPTS>
 </GAMEOBJECT>
 
 <GAMEOBJECT>
   <HEADER>
     template name: area
     assigned name: area
-    objectID: 15
+    objectID: 1
     parentID: -1
-    GameObjectFlags: 16
+    GameObjectFlags: 8
+    PhysicsFlags: 0
+    NavigationFlags: 0
   </HEADER>
   <TRANSFORM>
     position: 0 0 0
@@ -314,25 +44,6 @@
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
-  </SCRIPTS>
-</GAMEOBJECT>
-
-<GAMEOBJECT>
-  <HEADER>
-    template name: empty
-    assigned name: activation bounding box
-    objectID: 16
-    parentID: 17
-    GameObjectFlags: 0
-  </HEADER>
-  <TRANSFORM>
-    position: 0 0.73 -6.86
-    velocity: 0 0 0
-    orientation: 0 0 0 1
-    scale: 5.3 5.04 20.31
-  </TRANSFORM>
-  <SCRIPTS>
-    script: LuaScripting/scripts/gondola/activation
   </SCRIPTS>
 </GAMEOBJECT>
 
@@ -340,14 +51,16 @@
   <HEADER>
     template name: gondola
     assigned name: gondola
-    objectID: 17
+    objectID: 2
     parentID: -1
-    GameObjectFlags: 16
+    GameObjectFlags: 8
+    PhysicsFlags: 1
+    NavigationFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: 0 0 0
-    velocity: 0 0 0
-    orientation: 0 0 0 1
+    position: 2.8026e-45 0 -2.8026e-45
+    velocity: 2.38221e-44 0 -2.38221e-44
+    orientation: 0 -0.00024426 0 1.00002
     scale: 1 1 1
   </TRANSFORM>
   <SCRIPTS>
@@ -356,98 +69,43 @@
 
 <GAMEOBJECT>
   <HEADER>
-    template name: rob
-    assigned name: rob
-    objectID: 18
-    parentID: 19
-    GameObjectFlags: 2
+    template name: empty
+    assigned name: parenting trigger
+    objectID: 3
+    parentID: 2
+    GameObjectFlags: 0
+    PhysicsFlags: 0
+    NavigationFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: 0 86.97 10.84
+    position: -0.00040014 0.73 0.82
     velocity: 0 0 0
-    orientation: -5.1087e-07 -0.0828071 -5.78885e-06 -0.996579
-    scale: 1 1 1
+    orientation: 0 0.000245809 0 0.999937
+    scale: 5.3 5.04 19.46
   </TRANSFORM>
   <SCRIPTS>
-    script: LuaScripting/scripts/ai/followplayer
+    script: LuaScripting/scripts/gondola/parent
   </SCRIPTS>
 </GAMEOBJECT>
 
 <GAMEOBJECT>
   <HEADER>
-    template name: hall
-    assigned name: hall
-    objectID: 19
-    parentID: -1
-    GameObjectFlags: 16
+    template name: empty
+    assigned name: control trigger
+    objectID: 4
+    parentID: 2
+    GameObjectFlags: 0
+    PhysicsFlags: 0
+    NavigationFlags: 0
   </HEADER>
   <TRANSFORM>
-    position: 0 90 0
+    position: 0.00734989 -2.05 -15.0397
     velocity: 0 0 0
-    orientation: 0 0 0 1
-    scale: 1 1 1
+    orientation: 0 0.00048849 0 0.99996
+    scale: 2.5 1.55 1.41
   </TRANSFORM>
   <SCRIPTS>
+    script: LuaScripting/scripts/gondola/control
   </SCRIPTS>
-</GAMEOBJECT>
-
-<GAMEOBJECT>
-  <HEADER>
-    template name: pointlight
-    assigned name: pointlight
-    objectID: 20
-    parentID: 19
-    GameObjectFlags: 16
-  </HEADER>
-  <TRANSFORM>
-    position: 0 86 16.315
-    velocity: 0 0 0
-    orientation: 0 0 1.86265e-09 1
-    scale: 1 1 1
-  </TRANSFORM>
-  <SCRIPTS>
-  </SCRIPTS>
-  <POINTLIGHT>
-    active: 1
-    shadowmapped: 1
-    volumetrics: 0
-    radius: 50
-    diffuse: 0.117647 0.117647 1
-    ambient: 0 0 0
-    constant: 0
-    linear: 0
-    quadratic: 0.003
-    bias: -0.04
-  </POINTLIGHT>
-</GAMEOBJECT>
-
-<GAMEOBJECT>
-  <HEADER>
-    template name: pointlight
-    assigned name: pointlight
-    objectID: 21
-    parentID: 19
-    GameObjectFlags: 16
-  </HEADER>
-  <TRANSFORM>
-    position: -2.405 86 19.862
-    velocity: 0 0 0
-    orientation: -7.45058e-09 0 1.86265e-09 1
-    scale: 1 1 1
-  </TRANSFORM>
-  <SCRIPTS>
-  </SCRIPTS>
-  <POINTLIGHT>
-    active: 1
-    shadowmapped: 1
-    volumetrics: 0
-    radius: 50
-    diffuse: 0.117647 1 0.117647
-    ambient: 0 0 0
-    constant: 0
-    linear: 0
-    quadratic: 0.012
-    bias: -0.04
-  </POINTLIGHT>
 </GAMEOBJECT>
 

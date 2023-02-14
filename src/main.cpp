@@ -5,16 +5,12 @@
 #endif
 
 // #define COOM_SHIPPING
-#ifndef COOM_SHIPPING
-  #include "ui/ui.h"
-  #include "EditorUI/EditorUI.h"
-#endif
+// #define COOM_DEBUG
+
 
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GameEngine/GameEngine.h"
-#include "scene/scene.h"
-#include "scripting/luascripting.h"
-#include "audio/audio.h"
+#include "Game/Game.h"
 
 
 int ENTRY(int argc, const char **argv)
@@ -58,7 +54,7 @@ int ENTRY(int argc, const char **argv)
 
   gl_context = SDL_GL_CreateContext(window);
   SDL_GL_MakeCurrent(window, gl_context);
-  SDL_GL_SetSwapInterval(0); // vsync
+  SDL_GL_SetSwapInterval(1); // vsync
   SDL_SetRelativeMouseMode(SDL_FALSE);
 
   if (glewInit() != GLEW_OK)
@@ -66,7 +62,6 @@ int ENTRY(int argc, const char **argv)
 
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
-  // GLCALL( glEnable(GL_DEPTH_CLAMP) );
 
   SDL_Event event;
 
@@ -91,21 +86,30 @@ int ENTRY(int argc, const char **argv)
   // IMGUI SETUP
   //----------------------------------------
   #ifndef COOM_SHIPPING
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    ImGui::StyleColorsDark();
-    ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
-    ImGui_ImplOpenGL3_Init("#version 330");
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    io.Fonts->AddFontFromFileTTF("./assets/fonts/OpenSans-VariableFont_wdth,wght.ttf", 18.0f);
+    // IMGUI_CHECKVERSION();
+    // ImGui::CreateContext();
+    // ImGuiIO& io = ImGui::GetIO(); (void)io;
+    // ImGui::StyleColorsDark();
+    // ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
+    // ImGui_ImplOpenGL3_Init("#version 330");
+    // io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    // io.Fonts->AddFontFromFileTTF("./assets/fonts/OpenSans-VariableFont_wdth,wght.ttf", 18.0f);
 
-    static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
-    ImFontConfig icons_config; icons_config.MergeMode = true; icons_config.PixelSnapH = true;
-    io.Fonts->AddFontFromFileTTF( "src/fontawesome-webfont.ttf", 16.0f, &icons_config, icons_ranges );
+    // static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
+    // ImFontConfig icons_config; icons_config.MergeMode = true; icons_config.PixelSnapH = true;
+    // io.Fonts->AddFontFromFileTTF( "src/fontawesome-webfont.ttf", 16.0f, &icons_config, icons_ranges );
 
-    ImGui::StyleColorsLight();
+    // ImGui::StyleColorsLight();
+
+    EditorUI::init(window, gl_context);
+
   #endif
+  //----------------------------------------
+
+
+
+  // GameUI SETUP
+  //----------------------------------------
   //----------------------------------------
 
 
@@ -159,7 +163,6 @@ int ENTRY(int argc, const char **argv)
     ///////////////////////////////////////////////////////////////////////////////////////////// Render start
 
     Scene::perFrameUpdate();
-
 
 
     // Render depthmaps
@@ -319,7 +322,6 @@ int ENTRY(int argc, const char **argv)
     ren->blurTexture(ren->generalColorBuffers[1], ren->billboardFBO);
 
 
-
     // FXAA
     //---------------------------------
     GLCALL(glViewport(0, 0, w, h));
@@ -366,12 +368,7 @@ int ENTRY(int argc, const char **argv)
   
     SDL_GL_SwapWindow(window);
     double dtime_milliseconds = ((end - start)*1000 / (double)SDL_GetPerformanceFrequency() );
-    
-    #ifndef COOM_SHIPPING
-      ren->deltaTime = io.DeltaTime;
-    #else
-      ren->deltaTime = dtime_milliseconds / 1000;
-    #endif
+    ren->deltaTime = dtime_milliseconds / 1000;
 
     luaMain(ren, &Scene::player, &Scene::scenegraph.m_object_instances);
   }

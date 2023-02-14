@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../state.h"
 #include "../../GraphicsEngine/GraphicsEngine.h"
 
 #include "../computemesh/computemesh.h"
@@ -19,7 +18,9 @@ struct GameObjectHeader {
   std::string assigned_name = "default";
   int objectID = 0;
   int parentID = -1;
-  GLuint flags = 0;
+  GLuint gameobjectFlags = 0;
+  GLuint physicsFlags = 0;
+  GLuint navigationFlags = 0;
 };
 
 

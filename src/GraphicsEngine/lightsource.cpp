@@ -2,7 +2,7 @@
 #include "glcall.h"
 
 
-void ReflectiveShadowMapCascaded::genBuffers()
+void CSM::genBuffers()
 {
   GLCALL( glDeleteFramebuffers(1, &this->FBO) );
   GLCALL( glDeleteTextures(NUM_SHADOW_CASCADES, this->depthArray) );

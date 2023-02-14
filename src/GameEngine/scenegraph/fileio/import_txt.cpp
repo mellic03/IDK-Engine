@@ -15,7 +15,9 @@ void SceneGraph::objectFromFile(std::ifstream &stream, std::string &line, Player
       object = this->rearObjectPtr();
       object->parentID = header.parentID;
       object->m_given_name = header.assigned_name;
-      *object->getData()->flags()->bits() = header.flags;
+      *object->getData()->flags()->bits() = header.gameobjectFlags;
+      *object->getData()->physData()->flags()->bits() = header.physicsFlags;
+      *object->getData()->navData()->flags()->bits() = header.navigationFlags;
 
       if (object->getObjectType() == GAMEOBJECT_PLAYER)
       {
@@ -44,7 +46,7 @@ void SceneGraph::objectFromFile(std::ifstream &stream, std::string &line, Player
 
     else if (line.find("<PHYSICS>") != std::string::npos)
     { 
-      object->getData()->flags()->set(GameObjectFlag::PHYSICS, true);
+      // object->getData()->flags()->set(GameObjectFlag::PHYSICS, true);
       object->getComponents()->giveComponent(COMPONENT_PHYSICS);
     }
 

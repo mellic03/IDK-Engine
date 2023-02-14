@@ -369,15 +369,14 @@ std::list<GameObject *> *SceneGraph::getObjects(GameObjectType object_type, Game
   return &this->_object_instances[object_type];
 }
 
+
 std::list<GameObject *> SceneGraph::getObjects(GameObjectFlag query_flags)
 {
   std::list<GameObject *> objects;
 
   for (auto &object: this->m_object_instances)
   {
-    GLuint object_flags = *object.getData()->flags()->bits();
-
-    if (static_cast<GLuint>(query_flags) & object_flags)
+    if (object.getData()->flags()->get(query_flags))
       objects.push_back(&object);
   }
 

@@ -125,7 +125,7 @@ class Renderer {
     const int POINT_SHADOW_HEIGHT = 512;
 
     glm::mat4 lightSpaceMatrix;
-    ReflectiveShadowMapCascaded cascaded_rsm;
+    CSM cascaded_rsm;
 
 
     GLuint depthCubeMapFBOS[2], depthCubeMaps[2];

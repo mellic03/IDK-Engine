@@ -6,10 +6,7 @@
 
 #include <stdio.h>
 
-
-#include "../../include/imgui/imgui.h"
-#include "../../include/imgui/imgui_impl_sdl.h"
-#include "../../include/imgui/imgui_impl_opengl3.h"
+#include "../common.h"
 
 #include "../../GraphicsEngine/GraphicsEngine.h"
 #include "../physics.h"

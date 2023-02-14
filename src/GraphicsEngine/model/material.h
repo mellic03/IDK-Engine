@@ -15,7 +15,7 @@
 struct Material {
   Texture diffuseMap, specularMap, emissionMap, normalMap;
   glm::vec3 lightsourceEmission = glm::vec3(0.0f);
-  float spec_exponent = 64.0f;
+  float spec_exponent = 32.0f;
 };
 
 

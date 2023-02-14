@@ -13,7 +13,7 @@ Player::Player(Renderer *ren)
 
 void Player::init()
 {
-  this->footstepsound.load("assets/audio/footsteps.wav");
+
 }
 
 
@@ -61,13 +61,13 @@ void Player::key_input(Renderer *ren)
   }
 
 
-  glm::vec3 temp_front = { this->cam->front.x, 0.0f, this->cam->front.z };
+  glm::vec3 temp_front = glm::vec3(this->cam->front.x, 0.0f, this->cam->front.z);
   temp_front = glm::normalize(temp_front);
 
   this->cam->input();
 
 
-  if (this->m_gameobject->getData()->flags()->get(GameObjectFlag::PHYSICS) == false)
+  if (this->m_gameobject->getData()->physData()->flags()->get() == PhysicsFlag::NONE)
   {
     if (state[SDL_SCANCODE_W])
       *this->getPos() += this->move_speed * ren->deltaTime * temp_front;
@@ -125,12 +125,13 @@ void Player::key_input(Renderer *ren)
   else
     frames_not_grounded = 0;
 
-  if (headbob && frames_not_grounded < 60)
-    this->footstepsound.play();
-  else
-    this->footstepsound.stop();
+  // if (headbob && frames_not_grounded < 60)
+  //   this->footstepsound.play();
+  // else
+  //   this->footstepsound.stop();
 
 }
+
 
 void Player::mouse_input(Renderer *ren, SDL_Event *event)
 {
@@ -170,7 +171,6 @@ void Player::mouse_input(Renderer *ren, SDL_Event *event)
       this->pitch += deltaPitch;
       dpitch = glm::angleAxis(deltaPitch, glm::vec3(1.0f, 0.0f, 0.0f));
     }
-
   
     this->getTransform()->orientation = glm::normalize(dyaw * this->getTransform()->orientation * dpitch);
   }

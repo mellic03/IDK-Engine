@@ -39,7 +39,7 @@ void RenderUtil::genShadowMap_cascade(GLuint *FBO, GLuint depthMaps[], size_t nu
 
 
 
-void RenderUtil::bindWrite_cascade(ReflectiveShadowMapCascaded *rsm, int index)
+void RenderUtil::bindWrite_cascade(CSM *rsm, int index)
 {
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, rsm->FBO);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rsm->depthArray[index], 0);

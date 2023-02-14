@@ -98,37 +98,44 @@ void GameObject::_perFrameUpdate_navigation()
 void GameObject::_perFrameUpdate_physics(Renderer *ren)
 {
 
-  // Add velocity to position
-  //--------------------------------------------
-  float damping;
-
-  this->getVel()->y *= 0.999f;
-  damping = 1 / (1 + (ren->deltaTime * 5.0f));
-  this->getVel()->x *= damping;
-  this->getVel()->z *= damping;
-
-  glm::mat4 inv_model = glm::inverse(this->getTransform()->getModelMatrix_noLocalTransform());
-  glm::vec3 tempvel = inv_model * this->getTransform()->getVel_vec4();
-  *this->getPos() += tempvel * ren->deltaTime;
-  //--------------------------------------------
-
-
-
-  this->collideWithMeshes();
-
-
+  this->pos_worldspace = this->getTransform()->getPos_worldspace();
 
   PhysicsData *pData = this->getData()->physData();
 
-  switch (pData->state)
-  {
-    case (PhysicsState::GROUNDED):
-      break;
+  if (pData->flags()->get() == PhysicsFlag::NONE)
+    return;
 
-    case (PhysicsState::FALLING):
-      this->getVel()->y -= PE::gravity * ren->deltaTime;
-      break;
+
+  if (pData->flags()->get(PhysicsFlag::VELOCITY))
+  {
+    float damping;
+
+    this->getVel()->y *= 0.999f;
+    damping = 1 / (1 + (ren->deltaTime * 5.0f));
+    this->getVel()->x *= damping;
+    this->getVel()->z *= damping;
+
+    glm::mat4 inv_model = glm::inverse(this->getTransform()->getModelMatrix_noLocalTransform());
+    glm::vec3 tempvel = inv_model * this->getTransform()->getVel_vec4();
+    *this->getPos() += tempvel * ren->deltaTime;
   }
+
+  if (pData->flags()->get(PhysicsFlag::GRAVITY))
+  {
+    PhysicsData *pData = this->getData()->physData();
+
+    switch (pData->state)
+    {
+      case (PhysicsState::GROUNDED):
+        break;
+
+      case (PhysicsState::FALLING):
+        this->getVel()->y -= PE::gravity * ren->deltaTime;
+        break;
+    }
+  }
+
+  this->collideWithMeshes();
 }
 
 
@@ -208,14 +215,9 @@ void GameObject::perFrameUpdate(Renderer *ren)
   this->getCullingData()->bounding_sphere_pos = p;
 
 
-  if (this->getData()->flags()->get(GameObjectFlag::PHYSICS) == false)
-    return;
-
-  this->pos_worldspace = this->getTransform()->getPos_worldspace();
-
-
-  this->_perFrameUpdate_navigation();
   this->_perFrameUpdate_physics(ren);
+  this->_perFrameUpdate_navigation();
+
 }
 
 
@@ -275,6 +277,7 @@ bool GameObject::isChild(GameObject *object)
   return is_child;
 }
 
+
 void GameObject::setParent(GameObject *parent)
 {
   *this->getPos() = parent->getTransform()->worldToLocal(this->getTransform()->getPos_vec4());
@@ -299,7 +302,7 @@ void GameObject::collideWithObject(GameObject *object)
   if (this->getObjectType() == GAMEOBJECT_BILLBOARD)
     return;
 
-  if (this->getData()->flags()->get(GameObjectFlag::PHYSICS) == false)
+  if (this->getData()->physData()->flags()->get() == PhysicsFlag::NONE)
     return;
 
   glm::vec3 p0 = this->getTransform()->getPos_worldspace();

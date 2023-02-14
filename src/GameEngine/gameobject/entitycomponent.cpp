@@ -1,12 +1,5 @@
 #include "entitycomponent.h"
 #include "../../GraphicsEngine/GraphicsEngine.h"
-#include "../../ui/UIEngine.h"
-
-
-
-
-
-
 
 
 void EntityComponents::giveComponent(EntityComponentType type)

@@ -13,6 +13,7 @@ function CE_GameObject_GetPos(objectID) return vectorinit(); end;
 function CE_GameObject_GetPos_worldspace(objectID) return vectorinit(); end;
 function CE_GameObject_SetVel(objectID, x, y, z) end;
 function CE_GameObject_GetVel(objectID) return vectorinit(); end;
+function CE_GameObject_AddVel(objectID, x, y, z) end;
 function CE_GameObject_AddRot(objectID, x, y, z) end;
 function CE_GameObject_SetPath(objectID, x, y, z) end;
 
@@ -38,6 +39,8 @@ function CE_GameObject_ClearParent( childID ) end;
 function CE_GameObject_GetParentID( childID ) end;
 
 function CE_GameObject_InBoundingBox( objectID, x, y, z ) end;
+
+function CE_GameObject_GetFront ( objectID ) return vectorinit(); end;
 -----------------------------------------------
 
 

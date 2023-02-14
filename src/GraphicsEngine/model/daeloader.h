@@ -18,6 +18,7 @@ class ColladaEffect {
     std::string m_dae_id;
     std::string m_material_dae_id;
     std::string m_image_dae_id = "DEFAULT";
+    float m_specular_exponent = 32.0f;
     Texture *m_imageptr = nullptr;
 
     ColladaEffect(rapidxml::xml_node<> *node);

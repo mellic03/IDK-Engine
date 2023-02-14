@@ -53,6 +53,7 @@ file(
   GLOB SOURCES
   "src/*.cpp"
 
+
   "src/GraphicsEngine/*.cpp"
   "src/GraphicsEngine/transform/*.cpp"
   "src/GraphicsEngine/primitive/*.cpp"
@@ -60,31 +61,42 @@ file(
   "src/GraphicsEngine/model/animation/*.cpp"
   "src/GraphicsEngine/renderer/*.cpp"
   
+
+
   "src/GameEngine/*.cpp"
+
   "src/GameEngine/computemesh/*.cpp"
+
   "src/GameEngine/gameobject/*.cpp"
   "src/GameEngine/gameobject/objectdata/*.cpp"
   "src/GameEngine/gameobject/objectdata/event/*.cpp"
+
   "src/GameEngine/player/*.cpp"
+  "src/GameEngine/player/inventory/*.cpp"
+  "src/GameEngine/player/weapon/*.cpp"
+
   "src/GameEngine/scenegraph/*.cpp"
   "src/GameEngine/scenegraph/fileio/*.cpp"
+  "src/GameEngine/scene/*.cpp"
 
-  "src/EditorUI/*.cpp"
-  "src/EditorUI/tabs/*.cpp"
+  "src/GameEngine/scripting/*.cpp"
+  "src/GameEngine/scripting/library/*.cpp"
 
-  "src/ui/*.cpp"
-  "src/ui/tabs/*.cpp"
-  "src/ui/tabs/properties/*.cpp"
-  "src/ui/tabs/gameobjects/*.cpp"
+  "src/GameEngine/audio/*.cpp"
 
-  "src/scene/*.cpp"
-  "src/scripting/*.cpp"
-  "src/scripting/library/*.cpp"
+  "src/GameEngine/EditorUI/*.cpp"
+  "src/GameEngine/EditorUI/tabs/*.cpp"
+  "src/GameEngine/EditorUI/tabs/properties/*.cpp"
+  "src/GameEngine/EditorUI/tabs/gameobjects/*.cpp"
 
-  "src/audio/*.cpp"
 
   "src/include/stb_image/*.cpp"
   "src/include/imgui/*.cpp"
+
+
+  "src/Game/GameUI/*.cpp"
+  "src/Game/inventory/*.cpp"
+  "src/Game/weapon/*.cpp"
 )
 
 

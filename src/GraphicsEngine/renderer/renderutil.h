@@ -12,7 +12,7 @@
 namespace RenderUtil {
 
   void genShadowMap_cascade(GLuint *FBO, GLuint depthMaps[], size_t num_cascades, int w, int h);
-  void bindWrite_cascade(ReflectiveShadowMapCascaded *rsm, int index);
+  void bindWrite_cascade(CSM *rsm, int index);
 
   std::vector<glm::vec4> getFrustumCornersWorldSpace(const glm::mat4& proj, const glm::mat4& view);
   glm::mat4 getLightSpaceMatrix_cascade(glm::mat4 proj, glm::mat4 view, glm::vec3 lightdir);

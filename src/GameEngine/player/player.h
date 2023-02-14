@@ -2,17 +2,12 @@
 
 #include "../../include/glm/glm.hpp"
 #include "../gameobject/gameobject.h"
-#include "weapon.h"
 
 #include "../../keylog.h"
-#include "../../audio/AudioEngine.h"
 
 class Player {
   
   private:
-
-    AudioEngine::Sound footstepsound;
-
 
 
   public:
