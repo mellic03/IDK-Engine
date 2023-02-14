@@ -216,7 +216,7 @@ void Renderer::setupDirLightDepthmap(glm::vec3 dirlightpos, glm::vec3 dirlightdi
 }
 
 
-void Renderer::perFrameUpdate(void)
+void Renderer::perFrameUpdate(int w, int h)
 {
   this->cam.projection = glm::perspective(glm::radians(this->fov), (float)this->viewport_width/(float)this->viewport_height, this->near_plane, this->far_plane);
   this->cam.aspect = (float)this->viewport_width/(float)this->viewport_height;
@@ -230,6 +230,10 @@ void Renderer::perFrameUpdate(void)
     this->shaders[i].setMat4("projection", this->cam.projection);
     this->shaders[i].setMat4("view", this->cam.view);
   }
+
+  
+  if (this->viewport_width != w || this->viewport_height != h)
+    this->resize(w, h);
 }
 
 

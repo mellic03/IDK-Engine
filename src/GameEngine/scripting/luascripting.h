@@ -7,5 +7,5 @@
 
 
 void luaInit();
-void luaMain(Renderer *ren, Player *player, std::list<GameObject> *gameobjects);
+void luaMain(Renderer *ren, KeyLog *keylog, std::list<GameObject> *gameobjects);
 

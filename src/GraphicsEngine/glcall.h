@@ -9,7 +9,7 @@
   while (glGetError() != GL_NO_ERROR); \
 }
 
-#ifdef COOM_DEBUG
+#ifdef IDK_DEBUG
   #define GLCALL(glFunc) \
   { \
     GLClearError(); \

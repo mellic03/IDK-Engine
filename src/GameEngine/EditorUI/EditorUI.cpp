@@ -8,7 +8,7 @@ void EditorUI::init(SDL_Window *window, void *gl_context)
   ImGuiIO& io = ImGui::GetIO(); (void)io;
   ImGui::StyleColorsDark();
   ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
-  ImGui_ImplOpenGL3_Init("#version 330");
+  ImGui_ImplOpenGL3_Init("#version 440");
   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
   io.Fonts->AddFontFromFileTTF("assets/fonts/OpenSans-VariableFont_wdth,wght.ttf", 18.0f);
 
@@ -18,3 +18,5 @@ void EditorUI::init(SDL_Window *window, void *gl_context)
 
   ImGui::StyleColorsLight();
 }
+
+

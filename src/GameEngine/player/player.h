@@ -34,7 +34,7 @@ class Player {
     glm::vec3 *getVel(void)             { return this->m_gameobject->getVel(); };
     //----------------------------------------------------
 
-    void key_input(Renderer *ren);
+    void key_input(Renderer *ren, const Uint8 *sdl_keyboardstate);
     void mouse_input(Renderer *ren, SDL_Event *event);
 
 

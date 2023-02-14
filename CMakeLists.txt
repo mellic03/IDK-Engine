@@ -5,28 +5,28 @@ set(CMAKE_BUILD_PARALLEL_LEVEL 8)
 
 
 
-set(COOM_DEBUG FALSE)
-set(COOM_SHIPPING FALSE)
+set(IDK_DEBUG FALSE)
+set(IDK_SHIPPING FALSE)
 
 
 add_compile_options( -pedantic -Wextra )
 
-if (COOM_DEBUG)
+if (IDK_DEBUG)
   add_compile_options( -g )
-  add_definitions( -DCOOM_DEBUG )
+  add_definitions( -DIDK_DEBUG )
 else()
   add_compile_options( -Ofast )
 endif()
 
-if (COOM_SHIPPING)
-  add_definitions( -DCOOM_SHIPPING )
+if (IDK_SHIPPING)
+  add_definitions( -DIDK_SHIPPING )
 else()
 
 endif()
 
 set (CMAKE_CXX_FLAGS "-lstdc++fs -std=c++17 -fdiagnostics-color=always")
 
-project(CoomEngine)
+project(IDKEngine)
 
 
 add_subdirectory (external)
@@ -83,11 +83,14 @@ file(
   "src/GameEngine/scripting/library/*.cpp"
 
   "src/GameEngine/audio/*.cpp"
+  "src/GameEngine/input/*.cpp"
 
   "src/GameEngine/EditorUI/*.cpp"
   "src/GameEngine/EditorUI/tabs/*.cpp"
   "src/GameEngine/EditorUI/tabs/properties/*.cpp"
   "src/GameEngine/EditorUI/tabs/gameobjects/*.cpp"
+
+  "src/GameEngine/ECS/*.cpp"
 
 
   "src/include/stb_image/*.cpp"

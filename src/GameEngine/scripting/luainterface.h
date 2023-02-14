@@ -43,7 +43,7 @@ namespace LuaInterface {
 
     void stdvec_vec3(std::vector<glm::vec3> vecOfVec3, std::string name);
     void gameobject(GameObject *object, int objectID);
-    void keylog(KeyLog keylog, std::string name);
+    void keylog(KeyLog *keylog, std::string name);
   };
   //--------------------------------------------------
 

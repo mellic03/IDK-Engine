@@ -149,7 +149,7 @@ class Renderer {
     void postProcess(void);
 
     void setupDirLightDepthmap(glm::vec3 dirlightpos, glm::vec3 dirlightdir);
-    void perFrameUpdate(void);
+    void perFrameUpdate(int w, int h);
 
     void copyTexture(GLuint src, GLuint dest);
     void blurTexture(GLuint input_texture, GLuint output_framebuffer);

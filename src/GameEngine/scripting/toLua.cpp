@@ -91,8 +91,8 @@ void LuaInterface::ToLua::gameobject(GameObject *object, int objectID)
 }
 
 
-void LuaInterface::ToLua::keylog(KeyLog keylog, std::string name)
+void LuaInterface::ToLua::keylog(KeyLog *keylog, std::string name)
 {
-  LuaInterface::ToLua::array_bool(keylog.keys_pressed, SDL_NUM_SCANCODES, name);
+  LuaInterface::ToLua::array_bool(keylog->keys_pressed, SDL_NUM_SCANCODES, name);
 }
 

@@ -28,13 +28,8 @@ void Player::useGameObject(GameObject *gameobject)
 
 bool mouse_capture = false;
 
-void Player::key_input(Renderer *ren)
+void Player::key_input(Renderer *ren, const Uint8 *sdl_keyboardstate)
 {
-  const Uint8 *state = SDL_GetKeyboardState(NULL);
-
-  this->keylog.clear();
-  this->keylog.log(state);
-
   PhysicsState *pState = &this->m_gameobject->getData()->physData()->state;
 
   if (this->fly && this->fly != this->fly_last)
@@ -43,13 +38,10 @@ void Player::key_input(Renderer *ren)
   else if (!this->fly && this->fly != this->fly_last)
     *pState = PhysicsState::FALLING;
 
-  this->fly_last = this->fly;
-
-
   switch (*pState)
   {
     case (PhysicsState::GROUNDED):
-      if (state[SDL_SCANCODE_SPACE])
+      if (sdl_keyboardstate[SDL_SCANCODE_SPACE])
       {
         *pState = PhysicsState::FALLING;
         this->m_gameobject->getVel()->y = 25 * this->jump_force;
@@ -61,6 +53,7 @@ void Player::key_input(Renderer *ren)
   }
 
 
+
   glm::vec3 temp_front = glm::vec3(this->cam->front.x, 0.0f, this->cam->front.z);
   temp_front = glm::normalize(temp_front);
 
@@ -69,22 +62,22 @@ void Player::key_input(Renderer *ren)
 
   if (this->m_gameobject->getData()->physData()->flags()->get() == PhysicsFlag::NONE)
   {
-    if (state[SDL_SCANCODE_W])
+    if (sdl_keyboardstate[SDL_SCANCODE_W])
       *this->getPos() += this->move_speed * ren->deltaTime * temp_front;
 
-    if (state[SDL_SCANCODE_S])
+    if (sdl_keyboardstate[SDL_SCANCODE_S])
       *this->getPos() -= this->move_speed * ren->deltaTime * temp_front;
    
-    if (state[SDL_SCANCODE_A])
+    if (sdl_keyboardstate[SDL_SCANCODE_A])
       *this->getPos() -= this->move_speed * ren->deltaTime * ren->cam.right;
    
-    if (state[SDL_SCANCODE_D])
+    if (sdl_keyboardstate[SDL_SCANCODE_D])
       *this->getPos() += this->move_speed * ren->deltaTime * ren->cam.right;
 
-    if (state[SDL_SCANCODE_LCTRL])
+    if (sdl_keyboardstate[SDL_SCANCODE_LCTRL])
       this->getPos()->y -= this->move_speed * ren->deltaTime;
 
-    if (state[SDL_SCANCODE_SPACE])
+    if (sdl_keyboardstate[SDL_SCANCODE_SPACE])
       this->getPos()->y += this->move_speed * ren->deltaTime;
 
     return;
@@ -94,25 +87,25 @@ void Player::key_input(Renderer *ren)
 
   bool headbob = false;
 
-  if (state[SDL_SCANCODE_W])
+  if (sdl_keyboardstate[SDL_SCANCODE_W])
   {
     *this->getVel() += this->move_speed * ren->deltaTime * temp_front;
     headbob = true;
   }
 
-  if (state[SDL_SCANCODE_S])
+  if (sdl_keyboardstate[SDL_SCANCODE_S])
   {
     *this->getVel() -= this->move_speed * ren->deltaTime * temp_front;
     headbob = true;
   }
 
-  if (state[SDL_SCANCODE_A])
+  if (sdl_keyboardstate[SDL_SCANCODE_A])
   {
     *this->getVel() -= this->move_speed * ren->deltaTime * ren->cam.right;
     headbob = true;
   }
 
-  if (state[SDL_SCANCODE_D])
+  if (sdl_keyboardstate[SDL_SCANCODE_D])
   {
     *this->getVel() += this->move_speed * ren->deltaTime * ren->cam.right;
     headbob = true;

@@ -6,7 +6,7 @@ ninja
 
 cd ..
 
-copy build\CoomEngine.exe output\CoomEngine.exe
+copy build\IDKEngine.exe output\IDKEngine.exe
 xcopy assets output\assets\ /E /Y
 copy imgui.ini output\imgui.ini
 

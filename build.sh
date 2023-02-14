@@ -10,7 +10,7 @@ ninja
 # Copy game files to output folder
 cd ..
 
-cp ./build/CoomEngine ./output/CoomEngine
+cp ./build/IDKEngine ./output/IDKEngine
 cp -r ./assets ./output/
 cp ./imgui.ini ./output/imgui.ini
 
