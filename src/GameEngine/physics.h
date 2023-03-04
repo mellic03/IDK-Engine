@@ -17,9 +17,10 @@ namespace PhysicsEngine {
 
   struct SphereCollider {
     glm::vec3 pos = glm::vec3(0.0f);
+    glm::vec3 last_pos = glm::vec3(0.0f);
     glm::vec3 vel = glm::vec3(0.0f);
     float radius = 1.0f;
-    float height_offset = 0.0f;
+    glm::vec3 position_offset = glm::vec3(0.0f);
   };
 
   struct CapsuleCollider {

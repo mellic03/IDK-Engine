@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../common.h"
-
+#include "../gameobject/gameobject.h"
 
 namespace ECS {
   
@@ -14,13 +14,6 @@ namespace ECS {
   };
 
   class EntityComponentSystem;
-  class Entity;
-
-
-  namespace System {
-    void geometry(Entity entity);
-    void sphereCollider(Entity entity);
-  };
 
 };
 

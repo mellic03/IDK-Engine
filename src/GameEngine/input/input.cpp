@@ -2,7 +2,7 @@
 
 
 KeyLog Engine::_keylog;
-
+ECS::EntityComponentSystem Engine::_entityComponentSystem;
 
 void Engine::processInput(SDL_Event *event, Renderer *ren)
 {

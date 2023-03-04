@@ -94,8 +94,8 @@ void FileUtil::ToText::spherecollider(std::ofstream &stream, GameObject *object,
     return;
 
   stream << indentation << "<SPHERECOLLIDER>\n";
-  stream << indentation + "  " << "radius: " << object->spherecollider.radius << "\n";
-  stream << indentation + "  " << "height offset: " << object->spherecollider.height_offset << "\n";
+  // stream << indentation + "  " << "radius: " << object->spherecollider.radius << "\n";
+  // stream << indentation + "  " << "height offset: " << object->spherecollider.height_offset << "\n";
   stream << indentation << "</SPHERECOLLIDER>" << std::endl;
 }
 
@@ -307,11 +307,11 @@ void FileUtil::FromText::spherecollider(std::ifstream &stream, GameObject *objec
 
   getline(stream, line);
   eraseUpTo(line, "radius: ");
-  object->spherecollider.radius = std::stof(line);
+  // object->spherecollider.radius = std::stof(line);
 
   getline(stream, line);
   eraseUpTo(line, "height offset: ");
-  object->spherecollider.height_offset = std::stof(line);
+  // object->spherecollider.height_offset = std::stof(line);
 }
 
 

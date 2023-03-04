@@ -3,6 +3,7 @@
 
 
 Player Scene::player = Player(&Render::ren);
+ECS::EntityComponentSystem Scene::_entityComponentSystem;
 SceneGraph Scene::scenegraph;
 
 
@@ -414,6 +415,10 @@ void Scene::physicsTick()
   for (auto &staticobj: *static_list)
     Scene::scenegraph.player_object->collideWithObject(staticobj);
 
+  for (auto &staticobj1: *static_list)
+    for (auto &staticobj2: *static_list)
+        staticobj1->collideWithObject(staticobj2);
+
 
   Scene::physicsTick_actor_terrain();
   Scene::physicsTick_actor_actor();
@@ -599,14 +604,17 @@ void Scene::drawGeometry_batched()
     Render::ren.active_shader->setMat4("projection", Render::ren.cam.projection);
     Render::ren.active_shader->setMat4("view", Render::ren.cam.view);
 
-    for (GameObject *obj: *Scene::scenegraph.getObjects(GAMEOBJECT_ACTOR, GameObjectFlag::ANIMATED))
+    for (GameObject *obj: Scene::scenegraph.getObjects(GameObjectFlag::GEOMETRY))
     {
       if (obj->getComponents()->hasComponent(COMPONENT_SPHERE_COLLIDER))
       {
-        glm::vec3 pos = obj->getTransform()->getPos_worldspace();
-        pos.y += obj->spherecollider.height_offset;
-        float radius = obj->spherecollider.radius;
-        Render::ren.drawPrimitive(PRIMITIVE_SPHERE, pos, radius, obj->getTransform());
+        for (int i=0; i<4; i++)
+        {
+          glm::vec3 pos = obj->getTransform()->getPos_worldspace();
+          pos += glm::vec3(obj->getTransform()->getModelMatrix() * glm::vec4(obj->sphereColliders[i].position_offset, 1.0f));
+          float radius = obj->sphereColliders[i].radius;
+          Render::ren.drawPrimitive(PRIMITIVE_SPHERE, pos, radius, obj->getTransform());
+        }
       }
     }
   }

@@ -27,6 +27,10 @@ void Engine::newFrame(Renderer *ren, int *x, int *y, int *w, int *h)
   #else
     SDL_GetWindowSize(window, &w, &h);
   #endif
+
+
+  Engine::_entityComponentSystem.processEntities();
+
 }
 
 

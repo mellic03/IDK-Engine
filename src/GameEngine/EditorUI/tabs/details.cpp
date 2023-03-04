@@ -27,7 +27,6 @@ void EngineUI::details()
     ImGui::Text("sphere:              %d", object->getComponents()->hasComponent(COMPONENT_SPHERE_COLLIDER));
     ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
-
     ImGui::Text("Scripting Access");
     ImGui::Separator();
     ImGui::Text("Lua objectID: %d", object->getID() + 1);

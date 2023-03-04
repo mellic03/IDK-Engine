@@ -1,7 +1,7 @@
 #gameobject ground
 #GameObjectType GAMEOBJECT_STATIC
 
-#meshlod 0 ground.dae
+#meshlod 0 gr2.dae
 
 #collision ground.obj
 

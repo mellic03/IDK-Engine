@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "common_ECS.h"
-#include "entity.h"
 #include "system.h"
 
 
@@ -14,24 +13,31 @@ class ECS::EntityComponentSystem {
 
   private:
 
-    std::vector<ECS::Entity> _entities;
+    // Entities
+    //-----------------------------------------------------
+    std::vector<GameObject> _entities;
+    //-----------------------------------------------------
 
     // Components
     //-----------------------------------------------------
-    std::vector<ECS::Geometry>       _geometries;
     std::vector<ECS::SphereCollider> _sphereColliders;
     std::vector<ECS::MeshCollider>   _meshColliders;
+    std::vector<ECS::Geometry>       _geometries;
     //-----------------------------------------------------
 
     // Systems
     //-----------------------------------------------------
-    std::vector<std::function<void (void *)>> _systemMethods;
+    std::vector<std::function<void (void *, void *)>> _systems;
+    std::vector<std::function<void (void *, void *)>> _systems_perFrameUpdate;
     //-----------------------------------------------------
 
 
   public:
-    EntityComponentSystem() { };
+    EntityComponentSystem();
+    
+    void addEntity();
     void processEntities();
+
 
 };
 

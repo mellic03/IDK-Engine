@@ -25,7 +25,7 @@ int ENTRY(int argc, const char **argv)
   }
 
   window = SDL_CreateWindow(
-    "BadBad Engine",
+    "IDK Engine",
     SDL_WINDOWPOS_CENTERED,
     SDL_WINDOWPOS_CENTERED,
     1000,

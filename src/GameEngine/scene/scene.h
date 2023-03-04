@@ -2,7 +2,7 @@
 
 #include "../common.h"
 #include "../scenegraph/scenegraph.h"
-
+#include "../ECS/ECS.h"
 
 
 struct SceneData {
@@ -15,6 +15,7 @@ struct SceneData {
 namespace Scene {
 
   extern Player player;
+  extern ECS::EntityComponentSystem _entityComponentSystem;
   extern SceneGraph scenegraph;
   static SceneData _scene_data;
 

@@ -226,8 +226,12 @@ void DrawECS::sphere(GameObject *object, SphereColliderComponent *sphereCollider
   if (ImGui::CollapsingHeader(label.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
   {
     ImGui::Checkbox("Visualise", &sphereColliderComponent->visualise);
-    ImGui::DragFloat("Radius", &object->spherecollider.radius, 0.01f, 0.0f, 0.0f, "%0.3f");
-    ImGui::DragFloat("Height offset", &object->spherecollider.height_offset, 0.01f, 0.0f, 0.0f, "%0.3f");
+
+    for (int i=0; i<4; i++)
+    {
+      ImGui::DragFloat(std::string("Radius ##" + std::to_string(i)).c_str(), &object->sphereColliders[i].radius, 0.01f, 0.0f, 0.0f, "%0.3f");
+      EngineUI::dragVec3("Position offset ##" + std::to_string(i), &object->sphereColliders[i].position_offset, 0.0f, 0.0f, 0.1f, "%0.2f", 0.0f);
+    }
   }
 }
 

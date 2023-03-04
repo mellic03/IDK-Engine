@@ -110,10 +110,7 @@ class GameObject {
 
   public:
 
-    bool in_frustum = true;
-
     GameObjectHeader header;
-
 
     glm::vec3 emission = glm::vec3(0.0f);
     float emission_scale = 1.0f;
@@ -121,8 +118,9 @@ class GameObject {
     int parentID = -1;
     GameObject *m_parent = nullptr;
 
+    PhysicsEngine::SphereCollider sphereColliders[4];
 
-    PhysicsEngine::SphereCollider spherecollider;
+    // PhysicsEngine::SphereCollider spherecollider;
     PhysicsEngine::CapsuleCollider capsulecollider;
 
     CollisionMesh m_collision_mesh;

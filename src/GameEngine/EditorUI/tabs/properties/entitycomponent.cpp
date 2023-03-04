@@ -24,7 +24,7 @@ void EntityComponentUI::newComponent(GameObject *object)
       components->giveComponent(LODComponent());
 
     else if (ImGui::MenuItem(EngineUI::IconLabels::SPHERE_LABEL + id))
-      components->giveComponent(&object->spherecollider);
+      components->giveComponent(COMPONENT_SPHERE_COLLIDER);
 
     else if (ImGui::MenuItem(EngineUI::IconLabels::CAPSULE_LABEL + id))
       components->giveComponent(&object->capsulecollider);

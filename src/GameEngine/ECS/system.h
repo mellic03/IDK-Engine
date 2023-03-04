@@ -1,12 +1,15 @@
 #pragma once
 #include "component.h"
-#include "entity.h"
 
 
 
-void ECS::System::geometry(ECS::Entity entity)
-{
-  if (entity.hasComponent(ComponentType::GEOMETRY) == false)
-    return;
-  
-}
+namespace ECS::System {
+  void sphereCollider (void *entity,  void *component);
+  void sphereCollider_perFrameUpdate(void *a, void *b);
+
+  void meshCollider   (void *entity,  void *component);
+  void meshCollider_perFrameUpdate(void *a, void *b);
+
+  void geometry       (void *entity,  void *component);
+  void geometry_perFrameUpdate(void *a, void *b);
+};
