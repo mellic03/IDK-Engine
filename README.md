@@ -16,9 +16,17 @@ and March 2023.
 - [ ] Implement new base class GameObject. User can then define
     GameObject-derived classes in their project
     ``` C++
-    namespace GameObject {  };
-    Class Actor: public GameObject {  };
-    Class Terrain: public GameObject {  };
+    // GameObject.h ---------------------------------
+    namespace gameobject
+    {
+        class GameObject;
+    };
+    // ----------------------------------------------
+    
+    // SomeFile.h -----------------------------------
+    Class gameobject::Actor: public GameObject;
+    Class gameobject::Terrain: public GameObject;
+    // ----------------------------------------------
     ```
 
 - [ ] Make engine more easily used as a base project.
