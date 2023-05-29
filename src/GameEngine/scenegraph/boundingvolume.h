@@ -28,11 +28,11 @@ struct BVNode {
 
 class BVTree {
 
-  private:
+private:
     BVNode *root = nullptr;
 
-  public:
-    
+public:
+
     BVTree() { };
 
     BVNode *getRootNode() { return this->root; };
@@ -40,14 +40,10 @@ class BVTree {
     void clear();
     void insert(GameObject *objectptr);
     void cullObjects(Frustum *frustum, std::list<GameObject *> visible_objects[]);
-    
-    
+
     void getPotentialColliders(GameObject *object, std::list<GameObject *> *potential_colliders);
 
     void print();
-
-
-
 };
 
 

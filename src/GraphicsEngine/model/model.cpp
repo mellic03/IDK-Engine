@@ -1076,10 +1076,10 @@ void Model::loadDae(std::string directory, std::string filename, bool is_terrain
   this->_mergeMeshes();
 
 
-  if (directory != "assets/gameobjects/npc/test/")
-  {
-    this->_toFile(directory + filename);
-  }
+//   if (directory != "assets/gameobjects/npc/test/")
+//   {
+//     this->_toFile(directory + filename);
+//   }
 
   this->mesh.setBufferData();
 

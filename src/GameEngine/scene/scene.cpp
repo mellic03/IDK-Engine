@@ -608,13 +608,10 @@ void Scene::drawGeometry_batched()
     {
       if (obj->getComponents()->hasComponent(COMPONENT_SPHERE_COLLIDER))
       {
-        for (int i=0; i<4; i++)
-        {
-          glm::vec3 pos = obj->getTransform()->getPos_worldspace();
-          pos += glm::vec3(obj->getTransform()->getModelMatrix() * glm::vec4(obj->sphereColliders[i].position_offset, 1.0f));
-          float radius = obj->sphereColliders[i].radius;
-          Render::ren.drawPrimitive(PRIMITIVE_SPHERE, pos, radius, obj->getTransform());
-        }
+        glm::vec3 pos = obj->getTransform()->getPos_worldspace();
+        pos += glm::vec3(obj->getTransform()->getModelMatrix() * glm::vec4(obj->spherecollider.position_offset, 1.0f));
+        float radius = obj->spherecollider.radius;
+        Render::ren.drawPrimitive(PRIMITIVE_SPHERE, pos, radius, obj->getTransform());
       }
     }
   }

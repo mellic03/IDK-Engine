@@ -1,34 +1,12 @@
 #include "boundingvolume.h"
 
 
-static void swapNodes( BVNode *a , BVNode *b)
+static void swapNodes(BVNode *a , BVNode *b)
 {
   BVNode *temp = a;
   a = b;
   b = temp;
 }
-
-
-// static bool A_inside_B(float distance, GameObject *A, GameObject *B)
-// {
-//   return (distance < B->bounding_sphere_radius - A->bounding_sphere_radius);
-// }
-
-// static bool A_outside_B(float distance, GameObject *A, GameObject *B)
-// {
-//   return (distance > B->bounding_sphere_radius + A->bounding_sphere_radius);
-// }
-
-// static bool A_overlaps_B(float distance, GameObject *A, GameObject *B)
-// {
-//   float min_radius = glm::min(A->bounding_sphere_radius, B->bounding_sphere_radius);
-//   float max_radius = A->bounding_sphere_radius + B->bounding_sphere_radius - min_radius;
-
-//   bool c1 = distance >= max_radius - min_radius;
-//   bool c2 = distance <= max_radius + min_radius;
-
-//   return c1 && c2;
-// }
 
 
 static void recursiveInsert(BVNode *node, GameObject *obj)

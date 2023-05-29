@@ -6,10 +6,6 @@ namespace PE = PhysicsEngine;
 
 GameObject::GameObject(void)
 {
-  this->sphereColliders[0].position_offset = glm::vec3(1.0f, 0.0f, 0.0f);
-  this->sphereColliders[1].position_offset = glm::vec3(-1.0f, 0.0f, 0.0f);
-  this->sphereColliders[2].position_offset = glm::vec3(0.0f, 0.0f, 1.0f);
-  this->sphereColliders[3].position_offset = glm::vec3(0.0f, 0.0f, -1.0f);
 }
 
 bool GameObject::_groundTest(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 normal)
@@ -24,9 +20,9 @@ bool GameObject::_groundTest(glm::vec3 ray, glm::vec3 v0, glm::vec3 v1, glm::vec
   if (intersects)
   {
     float dist = glm::distance(*this->getPos(), intersect_point);
-    if (dist >= 0 && dist < (this->sphereColliders[0].radius - this->sphereColliders[0].position_offset.y + 0.05f))
+    if (dist >= 0 && dist < (this->spherecollider.radius - this->spherecollider.position_offset.y + 0.05f))
     {
-      float overlap = (this->sphereColliders[0].radius - this->sphereColliders[0].position_offset.y + 0.05f) - dist;
+      float overlap = (this->spherecollider.radius - this->spherecollider.position_offset.y + 0.05f) - dist;
       this->getPos()->y += overlap / 2.0f;
       return true;
     }
@@ -100,7 +96,6 @@ void GameObject::_perFrameUpdate_navigation()
 
 void GameObject::_perFrameUpdate_physics(Renderer *ren)
 {
-
   this->pos_worldspace = this->getTransform()->getPos_worldspace();
 
   PhysicsData *pData = this->getData()->physData();
@@ -173,38 +168,34 @@ void GameObject::collideWithMeshes(void)
       float dist = INFINITY;
 
 
-      if (this->getComponents()->hasComponent(COMPONENT_SPHERE_COLLIDER))
-      {
-        for (int i=0; i<4; i++)
-        {
-          PE::SphereCollider &spherecollider = this->sphereColliders[i];
-
-          spherecollider.last_pos = spherecollider.pos;
-
-          spherecollider.pos = *this->getPos() + spherecollider.position_offset;
-          spherecollider.pos = glm::vec3(this->getTransform()->getModelMatrix() * glm::vec4(spherecollider.pos, 1.0f));
-          spherecollider.vel = *this->getVel();
-
-          if (PE::sphere_triangle_detect(&spherecollider, vert0, vert1, vert2, &dist, &edge_collision, &dir))
-            PE::sphere_triangle_response(&spherecollider, vert0, vert1, vert2, dist, edge_collision, dir);
-
-          spherecollider.pos -= glm::vec3(this->getTransform()->getModelMatrix() * glm::vec4(spherecollider.position_offset, 1.0f));
-          *this->getPos() = spherecollider.pos;
-          *this->getVel() = spherecollider.vel;
-        }
-
-      }
-
-      // if (this->getComponents()->hasComponent(COMPONENT_CAPSULE_COLLIDER))
+      // if (this->getComponents()->hasComponent(COMPONENT_SPHERE_COLLIDER))
       // {
-      //   this->capsulecollider.pos = *this->getPos();
-      //   this->capsulecollider.vel = *this->getVel();
+      //   PE::SphereCollider &spherecollider = this->spherecollider;
 
-      //   PE::capsule_triangle_detect(&this->capsulecollider, vert0, vert1, vert2, &dist, &edge_collision, &dir);
+      //   spherecollider.last_pos = spherecollider.pos;
 
-      //   *this->getPos() = (this->capsulecollider.pos);
-      //   *this->getVel() = (this->capsulecollider.vel);
+      //   spherecollider.pos = *this->getPos() + spherecollider.position_offset;
+      //   spherecollider.pos = glm::vec3(this->getTransform()->getModelMatrix() * glm::vec4(spherecollider.pos, 1.0f));
+      //   spherecollider.vel = *this->getVel();
+
+      //   if (PE::sphere_triangle_detect(&spherecollider, vert0, vert1, vert2, &dist, &edge_collision, &dir))
+      //     PE::sphere_triangle_response(&spherecollider, vert0, vert1, vert2, dist, edge_collision, dir);
+
+      //   spherecollider.pos -= glm::vec3(this->getTransform()->getModelMatrix() * glm::vec4(spherecollider.position_offset, 1.0f));
+      //   *this->getPos() = spherecollider.pos;
+      //   *this->getVel() = spherecollider.vel;
       // }
+
+      if (this->getComponents()->hasComponent(COMPONENT_CAPSULE_COLLIDER))
+      {
+        this->capsulecollider.pos = *this->getPos();
+        this->capsulecollider.vel = *this->getVel();
+
+        PE::capsule_triangle_detect(&this->capsulecollider, vert0, vert1, vert2, &dist, &edge_collision, &dir);
+
+        *this->getPos() = (this->capsulecollider.pos);
+        *this->getVel() = (this->capsulecollider.vel);
+      }
       
       
       if (*pState == PhysicsState::FALLING)
@@ -212,17 +203,6 @@ void GameObject::collideWithMeshes(void)
           *pState = PhysicsState::GROUNDED;
     }
   }
-
-  // if (this->getID() != 0 && this->getComponents()->hasComponent(COMPONENT_SPHERE_COLLIDER))
-  // {
-  //   for (int i=0; i<4; i++)
-  //   {
-  //     PE::SphereCollider &spherecollider = this->sphereColliders[i];
-
-  //     glm::mat4 rot = glm::lookAt(*this->getPos(), spherecollider.pos, glm::vec3(0.0f, 1.0f, 0.0f));//TransformUtil::rotationFromPositions(spherecollider.last_pos + spherecollider.position_offset, spherecollider.pos + spherecollider.position_offset);
-  //     this->getTransform()->orientation = glm::quat_cast(rot) * this->getTransform()->orientation;
-  //   }
-  // }
 
 
   this->_collision_transforms.clear();
