@@ -17,15 +17,15 @@ and March 2023.
     GameObject-derived classes in their project
     ``` C++
     // GameObject.h ---------------------------------
-    namespace gameobject
+    namespace IDKEngine
     {
         class GameObject;
     };
     // ----------------------------------------------
     
     // SomeFile.h -----------------------------------
-    Class gameobject::Actor: public GameObject;
-    Class gameobject::Terrain: public GameObject;
+    class Actor: public IDKEngine::GameObject;
+    class Terrain: public IDKEngine::GameObject;
     // ----------------------------------------------
     ```
 
