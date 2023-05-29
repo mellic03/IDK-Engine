@@ -8,6 +8,28 @@ Game engine wee woo text goes here boom bam.
 - [Lua API](#Lua-API)
 
 
+# Purpose of Branch
+This branch exists to refactor all code written between November 2022
+and March 2023.
+
+**Checklist**:
+- [ ] Implement new base class GameObject. User can then define
+    GameObject-derived classes in their project
+    ``` C++
+    namespace GameObject {  };
+    Class Actor: public GameObject {  };
+    Class Terrain: public GameObject {  };
+    ```
+
+- [ ] Make engine more easily used as a base project.
+    ``` C++
+    engine.beginFrame() // Initialise/clear frame.
+    engine.perFrame()   // Defined by user.
+    engine.endFrame()   // Draw frame to screen.
+    ```
+
+
+
 
 # Editor
 - The editor can be broken up into the following windows:
@@ -64,5 +86,8 @@ Some placeholder text.
 
 
 # Lua API
-
+Some placeholder text.
+Some placeholder text.
+Some placeholder text.
+Some placeholder text.
 
