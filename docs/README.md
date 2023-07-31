@@ -10,7 +10,7 @@ I started this project with no C++ or OpenGL experience, but I had experience wi
 This was a great learning exercise and it taught me a lot about the common pitfalls to avoid when writing both a large C++ project and a 3D rendering engine.
 
 
-### Some Screenshots
+### Gallery
 
 <img src="scr1.png">
 <img src="scr2.png">
